@@ -45,7 +45,7 @@ import { notionIntegration } from './src/integrations/notion.js';
  * Default configuration:
  * - Calls API routes at: {window.location.origin}/api/integrate/mcp
  * - OAuth routes at: {window.location.origin}/api/integrate/oauth/*
- * - Does NOT save tokens to localStorage (tokens are managed server-side)
+ * - Saves tokens to localStorage (tokens persist across page reloads)
  * 
  * For custom configuration (different apiBaseUrl, apiRouteBase, localStorage, etc.),
  * use `createMCPClient()` instead.
@@ -63,12 +63,12 @@ import { notionIntegration } from './src/integrations/notion.js';
  * 
  * @example
  * ```typescript
- * // If you need localStorage or custom config, create your own client:
+ * // If you need server-side token management or custom config, create your own client:
  * import { createMCPClient, githubIntegration } from 'integrate-sdk';
  * 
  * const customClient = createMCPClient({
  *   integrations: [githubIntegration()],
- *   skipLocalStorage: false, // Enable localStorage if needed
+ *   skipLocalStorage: true, // Disable localStorage and use server-side callbacks
  * });
  * ```
  */
@@ -78,8 +78,8 @@ export const client = createMCPClient({
     gmailIntegration(),
     notionIntegration(),
   ],
-  // Default client doesn't use localStorage - tokens are managed server-side
-  // If you need localStorage, create your own client with createMCPClient()
-  skipLocalStorage: true,
+  // Default client uses localStorage to persist tokens across page reloads
+  // If you need server-side token management, set skipLocalStorage: true and configure callbacks
+  skipLocalStorage: false,
 });
 
