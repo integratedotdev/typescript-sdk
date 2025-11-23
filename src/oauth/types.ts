@@ -115,6 +115,8 @@ export interface OAuthCallbackParams {
   code: string;
   /** State parameter for CSRF protection */
   state: string;
+  /** Optional token data (for backend redirect flow) */
+  tokenData?: ProviderTokenData & { provider?: string };
 }
 
 /**

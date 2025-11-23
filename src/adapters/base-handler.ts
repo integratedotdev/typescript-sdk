@@ -107,6 +107,8 @@ export interface AuthorizeRequest {
   codeChallenge: string;
   codeChallengeMethod: string;
   redirectUri?: string;
+  /** Optional codeVerifier for backend redirect flow (when apiBaseUrl is set) */
+  codeVerifier?: string;
 }
 
 /**
@@ -311,6 +313,19 @@ export class OAuthHandler {
     const data = await response.json();
     const result: AuthorizeResponse = data as AuthorizeResponse;
     
+    // Store codeVerifier temporarily if provided (for backend redirect flow)
+    if (authorizeRequest.codeVerifier) {
+      try {
+        // Import the storage from server.ts
+        const { storeCodeVerifier } = await import('../server.js');
+        storeCodeVerifier(authorizeRequest.state, authorizeRequest.codeVerifier, authorizeRequest.provider);
+      } catch (error) {
+        // If storage fails, log warning but continue
+        // This might happen if called from a different context
+        console.warn('[OAuth] Failed to store codeVerifier:', error);
+      }
+    }
+
     // Try to capture user context if Web Request is available
     if (webRequest) {
       try {

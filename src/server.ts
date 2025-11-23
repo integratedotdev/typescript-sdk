@@ -38,6 +38,56 @@ let globalServerConfig: {
 } | null = null;
 
 /**
+ * Temporary storage for codeVerifier during OAuth flow
+ * Keyed by state parameter, expires after 5 minutes
+ */
+const codeVerifierStorage = new Map<string, { codeVerifier: string; provider: string; expiresAt: number }>();
+
+/**
+ * Clean up expired codeVerifier entries
+ */
+function cleanupExpiredCodeVerifiers(): void {
+  const now = Date.now();
+  for (const [state, entry] of codeVerifierStorage.entries()) {
+    if (entry.expiresAt < now) {
+      codeVerifierStorage.delete(state);
+    }
+  }
+}
+
+/**
+ * Store codeVerifier temporarily for backend redirect flow
+ * @param state - OAuth state parameter
+ * @param codeVerifier - PKCE code verifier
+ * @param provider - OAuth provider name
+ */
+export function storeCodeVerifier(state: string, codeVerifier: string, provider: string): void {
+  // Store for 5 minutes (same as pending auth expiration)
+  const expiresAt = Date.now() + 5 * 60 * 1000;
+  codeVerifierStorage.set(state, { codeVerifier, provider, expiresAt });
+  // Clean up expired entries
+  cleanupExpiredCodeVerifiers();
+}
+
+/**
+ * Retrieve codeVerifier and provider from temporary storage
+ * @param state - OAuth state parameter
+ * @returns Object with codeVerifier and provider if found and not expired, undefined otherwise
+ */
+export function getCodeVerifier(state: string): { codeVerifier: string; provider: string } | undefined {
+  cleanupExpiredCodeVerifiers();
+  const entry = codeVerifierStorage.get(state);
+  if (entry && entry.expiresAt >= Date.now()) {
+    return { codeVerifier: entry.codeVerifier, provider: entry.provider };
+  }
+  // Clean up expired entry
+  if (entry) {
+    codeVerifierStorage.delete(state);
+  }
+  return undefined;
+}
+
+/**
  * Auto-detect base URL from environment variables
  * Checks INTEGRATE_URL, VERCEL_URL, and falls back to localhost
  * 
@@ -366,6 +416,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
 
       // Extract returnUrl from state parameter (with fallbacks)
       let returnUrl = defaultRedirectUrl;
+      let frontendOrigin: string | undefined;
 
       try {
         // Try to parse state to extract returnUrl
@@ -373,6 +424,14 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
         const stateData = parseState(state);
         if (stateData.returnUrl) {
           returnUrl = stateData.returnUrl;
+          // Try to extract frontend origin from returnUrl if it's absolute
+          try {
+            const returnUrlObj = new URL(stateData.returnUrl);
+            frontendOrigin = returnUrlObj.origin;
+            returnUrl = returnUrlObj.pathname + returnUrlObj.search;
+          } catch {
+            // returnUrl is relative, keep as is
+          }
         }
       } catch (e) {
         // If parsing fails, try to use referrer as fallback
@@ -393,12 +452,78 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
         }
       }
 
-      // Redirect to the return URL with OAuth params in the hash
-      // Using hash to avoid sending sensitive params to the server
-      const targetUrl = new URL(returnUrl, request.url);
-      targetUrl.hash = `oauth_callback=${encodeURIComponent(JSON.stringify({ code, state }))}`;
+      // Check if codeVerifier is stored (backend redirect flow)
+      const codeVerifierEntry = getCodeVerifier(state);
+      
+      if (codeVerifierEntry) {
+        // Backend redirect flow: exchange token and redirect with token data
+        try {
+          const { codeVerifier, provider } = codeVerifierEntry;
 
-      return Response.redirect(targetUrl);
+          // Create OAuth handler and exchange token
+          const { OAuthHandler } = await import('./adapters/base-handler.js');
+          const oauthHandler = new OAuthHandler({
+            providers,
+            serverUrl: config.serverUrl,
+            apiKey: config.apiKey,
+            getSessionContext: config.getSessionContext,
+            setProviderToken: config.setProviderToken,
+            removeProviderToken: config.removeProviderToken,
+          });
+
+          // Exchange code for token
+          const callbackResult = await oauthHandler.handleCallback({
+            provider,
+            code,
+            codeVerifier,
+            state,
+          });
+
+          // Determine frontend origin for redirect
+          if (!frontendOrigin) {
+            // Try to extract from request referer or use a default
+            const referer = request.headers.get('referer') || request.headers.get('referrer');
+            if (referer) {
+              try {
+                const refererUrl = new URL(referer);
+                frontendOrigin = refererUrl.origin;
+              } catch {
+                // Invalid referer URL
+              }
+            }
+            // If still no origin, we can't redirect - this shouldn't happen in practice
+            if (!frontendOrigin) {
+              throw new Error('Could not determine frontend origin for redirect');
+            }
+          }
+
+          // Build redirect URL with token data in hash
+          const frontendUrl = new URL(returnUrl, frontendOrigin);
+          const tokenData = {
+            accessToken: callbackResult.accessToken,
+            refreshToken: callbackResult.refreshToken,
+            tokenType: callbackResult.tokenType,
+            expiresIn: callbackResult.expiresIn,
+            expiresAt: callbackResult.expiresAt,
+            scopes: callbackResult.scopes,
+            provider: callbackResult.provider,
+          };
+          frontendUrl.hash = `oauth_callback=${encodeURIComponent(JSON.stringify({ code, state, tokenData }))}`;
+
+          return Response.redirect(frontendUrl);
+        } catch (error: any) {
+          console.error('[OAuth Backend Callback] Error:', error);
+          // Fall back to error redirect
+          return Response.redirect(
+            new URL(`${errorRedirectUrl}?error=${encodeURIComponent(error.message || 'Failed to exchange token')}`, request.url)
+          );
+        }
+      } else {
+        // Frontend redirect flow: redirect with code/state in hash (existing behavior)
+        const targetUrl = new URL(returnUrl, request.url);
+        targetUrl.hash = `oauth_callback=${encodeURIComponent(JSON.stringify({ code, state }))}`;
+        return Response.redirect(targetUrl);
+      }
     }
 
     const handlerContext = { params: { action: action || 'callback' } };

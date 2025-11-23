@@ -109,7 +109,7 @@ export class OAuthManager {
 
     // 4. Request authorization URL from user's API route
     // Note: Scopes are NOT sent from client - they're defined server-side in integration config
-    const authUrl = await this.getAuthorizationUrl(provider, state, codeChallenge, config.redirectUri);
+    const authUrl = await this.getAuthorizationUrl(provider, state, codeChallenge, config.redirectUri, codeVerifier);
 
     // 5. Open authorization URL (popup or redirect)
     if (this.flowConfig.mode === 'popup') {
@@ -128,6 +128,66 @@ export class OAuthManager {
       // For redirect mode, just redirect - callback will be handled separately
       this.windowManager.openRedirect(authUrl);
     }
+  }
+
+  /**
+   * Handle OAuth callback with token data (backend redirect flow)
+   * Used when backend has already exchanged the code for a token
+   * 
+   * @param code - Authorization code from OAuth provider (for verification)
+   * @param state - State parameter for verification
+   * @param tokenData - Token data from backend
+   * @returns Provider token data with access token
+   */
+  async handleCallbackWithToken(
+    code: string,
+    state: string,
+    tokenData: ProviderTokenData & { provider?: string }
+  ): Promise<ProviderTokenData & { provider: string }> {
+    // 1. Verify state and get pending auth
+    let pendingAuth = this.pendingAuths.get(state);
+
+    // If not in memory (page reload), try to load from localStorage
+    if (!pendingAuth) {
+      pendingAuth = this.loadPendingAuthFromStorage(state);
+    }
+
+    if (!pendingAuth) {
+      throw new Error('Invalid state parameter: no matching OAuth flow found');
+    }
+
+    // Check if auth is not too old (5 minutes)
+    const fiveMinutes = 5 * 60 * 1000;
+    if (Date.now() - pendingAuth.initiatedAt > fiveMinutes) {
+      this.pendingAuths.delete(state);
+      this.removePendingAuthFromStorage(state);
+      throw new Error('OAuth flow expired: please try again');
+    }
+
+    // Use provider from tokenData or pendingAuth
+    const provider = tokenData.provider || pendingAuth.provider;
+
+    // 2. Store provider token
+    const tokenDataToStore: ProviderTokenData = {
+      accessToken: tokenData.accessToken,
+      refreshToken: tokenData.refreshToken,
+      tokenType: tokenData.tokenType,
+      expiresIn: tokenData.expiresIn,
+      expiresAt: tokenData.expiresAt,
+      scopes: tokenData.scopes,
+    };
+
+    this.providerTokens.set(provider, tokenDataToStore);
+
+    // 3. Save to database (via callback) or localStorage
+    // This respects skipLocalStorage and database callbacks
+    await this.saveProviderToken(provider, tokenDataToStore);
+
+    // 4. Clean up pending auth from both memory and storage
+    this.pendingAuths.delete(state);
+    this.removePendingAuthFromStorage(state);
+
+    return { ...tokenDataToStore, provider };
   }
 
   /**
@@ -756,7 +816,8 @@ export class OAuthManager {
     provider: string,
     state: string,
     codeChallenge: string,
-    redirectUri?: string
+    redirectUri?: string,
+    codeVerifier?: string
   ): Promise<string> {
     // Construct URL: {apiBaseUrl}{oauthApiBase}/authorize
     // If apiBaseUrl is not set, use relative URL (same origin)
@@ -776,6 +837,8 @@ export class OAuthManager {
         codeChallenge,
         codeChallengeMethod: 'S256',
         redirectUri,
+        // Include codeVerifier for backend redirect flow (when apiBaseUrl is set)
+        codeVerifier: this.apiBaseUrl ? codeVerifier : undefined,
       }),
     });
 

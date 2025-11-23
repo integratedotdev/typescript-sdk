@@ -182,13 +182,15 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
 
     // Determine OAuth API base and default redirect URI
     const oauthApiBase = config.oauthApiBase || '/api/integrate/oauth';
-    const defaultRedirectUri = this.getDefaultRedirectUri(oauthApiBase, config.apiBaseUrl);
 
     // Determine API route base for tool calls
     this.apiRouteBase = config.apiRouteBase || '/api/integrate';
 
     // Store apiBaseUrl for cross-origin API calls (optional)
     this.apiBaseUrl = config.apiBaseUrl;
+
+    // Get default redirect URI (uses apiBaseUrl if set, otherwise frontend origin)
+    const defaultRedirectUri = this.getDefaultRedirectUri(oauthApiBase, this.apiBaseUrl);
 
     // Clone integrations and inject default redirectUri if not set
     this.integrations = config.integrations.map(integration => {
@@ -316,7 +318,10 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
 
   /**
    * Get default redirect URI for OAuth flows
-   * Uses apiBaseUrl if provided, otherwise window.location.origin + OAuth API base path
+   * Uses apiBaseUrl if set (for backend redirect), otherwise window.location.origin
+   * 
+   * When apiBaseUrl is set, OAuth providers redirect to the backend callback route.
+   * The backend then handles token exchange and redirects back to the frontend.
    * 
    * @param oauthApiBase - The OAuth API base path (e.g., '/api/integrate/oauth')
    * @param apiBaseUrl - Optional base URL for API routes (e.g., 'http://localhost:8080')
@@ -327,9 +332,8 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     const normalizedPath = oauthApiBase.replace(/\/$/, ''); // Remove trailing slash if present
     const callbackPath = `${normalizedPath}/callback`;
 
-    // If apiBaseUrl is provided, use it to construct the redirect URI
+    // If apiBaseUrl is set, use it for backend redirect flow
     if (apiBaseUrl) {
-      // Remove trailing slash from apiBaseUrl if present
       const normalizedApiBaseUrl = apiBaseUrl.replace(/\/$/, '');
       return `${normalizedApiBaseUrl}${callbackPath}`;
     }
@@ -341,6 +345,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     }
 
     // Construct redirect URI from window.location.origin + OAuth API base path
+    // This points to the frontend callback route
     const origin = window.location.origin;
     return `${origin}${callbackPath}`;
   }
@@ -1227,7 +1232,11 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
    */
   async handleOAuthCallback(params: OAuthCallbackParams): Promise<void> {
     try {
-      const result = await this.oauthManager.handleCallback(params.code, params.state);
+      // If tokenData is provided (backend redirect flow), use it directly
+      // Otherwise, exchange code for token
+      const result = params.tokenData
+        ? await this.oauthManager.handleCallbackWithToken(params.code, params.state, params.tokenData)
+        : await this.oauthManager.handleCallback(params.code, params.state);
 
       // Update auth state for this specific provider
       this.authState.set(result.provider, { authenticated: true });
@@ -1560,7 +1569,8 @@ function processOAuthCallbackFromHash(
         // Validate that we have code and state
         if (callbackParams.code && callbackParams.state) {
           // Process the callback and return the promise
-          // handleOAuthCallback will save the token and update auth state
+          // If tokenData is present (backend redirect flow), use it directly
+          // Otherwise, handleOAuthCallback will exchange code for token
           return client.handleOAuthCallback(callbackParams).then(() => {
             // Clean up URL hash after successful callback
             if (mode !== 'redirect' || !errorBehavior?.redirectUrl) {
