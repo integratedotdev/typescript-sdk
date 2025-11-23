@@ -119,17 +119,17 @@ type IntegrationIds<TIntegrations extends readonly MCPIntegration[]> = ExtractIn
  * Uses a single mapped type to avoid intersection issues with IDE autocomplete
  */
 type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
-  [K in IntegrationIds<TIntegrations> as K extends "github" 
-    ? "github" 
-    : K extends "gmail" 
-    ? "gmail"
-    : K extends "notion"
-    ? "notion"
-    : never]: 
-      K extends "github" ? GitHubIntegrationClient :
-      K extends "gmail" ? GmailIntegrationClient :
-      K extends "notion" ? NotionIntegrationClient :
-      never;
+  [K in IntegrationIds<TIntegrations> as K extends "github"
+  ? "github"
+  : K extends "gmail"
+  ? "gmail"
+  : K extends "notion"
+  ? "notion"
+  : never]:
+  K extends "github" ? GitHubIntegrationClient :
+  K extends "gmail" ? GmailIntegrationClient :
+  K extends "notion" ? NotionIntegrationClient :
+  never;
 };
 
 /**
@@ -138,7 +138,7 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
  * Provides type-safe access to MCP server tools with integration-based configuration.
  * Integration namespaces (github, gmail, etc.) are only available when configured.
  */
-export type MCPClient<TIntegrations extends readonly MCPIntegration[] = readonly MCPIntegration[]> = 
+export type MCPClient<TIntegrations extends readonly MCPIntegration[] = readonly MCPIntegration[]> =
   MCPClientBase<TIntegrations> & IntegrationNamespaces<TIntegrations>;
 
 /**
@@ -160,7 +160,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   private eventEmitter: SimpleEventEmitter = new SimpleEventEmitter();
   private apiRouteBase: string;
   private apiBaseUrl?: string;
-  
+
   /**
    * Promise that resolves when OAuth callback processing is complete
    * @internal Used by createMCPClient to store callback promise
@@ -182,11 +182,11 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
 
     // Determine OAuth API base and default redirect URI
     const oauthApiBase = config.oauthApiBase || '/api/integrate/oauth';
-    const defaultRedirectUri = this.getDefaultRedirectUri(oauthApiBase);
+    const defaultRedirectUri = this.getDefaultRedirectUri(oauthApiBase, config.apiBaseUrl);
 
     // Determine API route base for tool calls
     this.apiRouteBase = config.apiRouteBase || '/api/integrate';
-    
+
     // Store apiBaseUrl for cross-origin API calls (optional)
     this.apiBaseUrl = config.apiBaseUrl;
 
@@ -281,7 +281,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
       // Always load existing tokens first, even if there's an OAuth callback pending
       // This ensures any previously saved tokens are available immediately
       this.oauthManager.loadAllProviderTokensSync(providers);
-      
+
       // Update auth state immediately based on loaded tokens (synchronously)
       for (const integration of this.integrations) {
         if (integration.oauth) {
@@ -306,7 +306,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     if (integrationIds.includes("notion")) {
       (this as any).notion = this.createIntegrationProxy("notion");
     }
-    
+
     // Server namespace is always available
     this.server = this.createServerProxy() as any;
 
@@ -316,12 +316,24 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
 
   /**
    * Get default redirect URI for OAuth flows
-   * Uses window.location.origin + OAuth API base path
+   * Uses apiBaseUrl if provided, otherwise window.location.origin + OAuth API base path
    * 
    * @param oauthApiBase - The OAuth API base path (e.g., '/api/integrate/oauth')
+   * @param apiBaseUrl - Optional base URL for API routes (e.g., 'http://localhost:8080')
    * @returns Default redirect URI
    */
-  private getDefaultRedirectUri(oauthApiBase: string): string {
+  private getDefaultRedirectUri(oauthApiBase: string, apiBaseUrl?: string): string {
+    // Normalize the API base path and append '/callback'
+    const normalizedPath = oauthApiBase.replace(/\/$/, ''); // Remove trailing slash if present
+    const callbackPath = `${normalizedPath}/callback`;
+
+    // If apiBaseUrl is provided, use it to construct the redirect URI
+    if (apiBaseUrl) {
+      // Remove trailing slash from apiBaseUrl if present
+      const normalizedApiBaseUrl = apiBaseUrl.replace(/\/$/, '');
+      return `${normalizedApiBaseUrl}${callbackPath}`;
+    }
+
     // Only works in browser environment
     if (typeof window === 'undefined' || !window.location) {
       // Server-side fallback (shouldn't happen for client SDK)
@@ -330,9 +342,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
 
     // Construct redirect URI from window.location.origin + OAuth API base path
     const origin = window.location.origin;
-    // Normalize the API base path and append '/callback'
-    const normalizedPath = oauthApiBase.replace(/\/$/, ''); // Remove trailing slash if present
-    return `${origin}${normalizedPath}/callback`;
+    return `${origin}${callbackPath}`;
   }
 
   /**
@@ -343,11 +353,11 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   private createIntegrationProxy(integrationId: string): any {
     // Check if this integration exists in the configured integrations
     const hasIntegration = this.integrations.some(integration => integration.id === integrationId);
-    
+
     if (!hasIntegration) {
       return undefined;
     }
-    
+
     return new Proxy({}, {
       get: (_target, methodName: string) => {
         // Return a function that calls the tool
@@ -545,11 +555,11 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
         const tokenData = await this.oauthManager.getProviderToken(provider, options?.context);
         if (tokenData && this.transport.setHeader) {
           const previousAuthHeader = transportHeaders['Authorization'];
-          
+
           try {
             // Temporarily set the authorization header
             this.transport.setHeader('Authorization', `Bearer ${tokenData.accessToken}`);
-            
+
             // Call through transport (goes directly to MCP server with API key)
             const result = await this.transport.sendRequest('tools/call', {
               name,
@@ -578,7 +588,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     // Browser clients (no API key) - route through API handler
     // Construct URL: {apiBaseUrl}{apiRouteBase}/mcp
     // If apiBaseUrl is not set, use relative URL (same origin)
-    const url = this.apiBaseUrl 
+    const url = this.apiBaseUrl
       ? `${this.apiBaseUrl}${this.apiRouteBase}/mcp`
       : `${this.apiRouteBase}/mcp`;
 
@@ -828,7 +838,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
    */
   clearSessionToken(): void {
     this.oauthManager.clearAllProviderTokens();
-    
+
     // Update authState to reflect that tokens are cleared
     for (const integration of this.integrations) {
       if (integration.oauth) {
@@ -1016,13 +1026,13 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
       await this.oauthCallbackPromise;
       this.oauthCallbackPromise = null; // Clear it after first use
     }
-    
+
     // Check current token status and update cache
     // Pass context to getProviderToken so it can retrieve the correct user's token from database
     try {
       const tokenData = await this.oauthManager.getProviderToken(provider, context);
       const isAuthenticated = !!tokenData;
-      
+
       // Update the cache with current value
       const currentState = this.authState.get(provider);
       if (currentState) {
@@ -1035,7 +1045,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
         // Initialize state if it doesn't exist
         this.authState.set(provider, { authenticated: isAuthenticated });
       }
-      
+
       return isAuthenticated;
     } catch (error) {
       // If there's an error checking the token, update cache to false
@@ -1147,11 +1157,11 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     // Check if we should use existing connection
     if (options?.useExistingConnection) {
       const authStatus = await this.oauthManager.checkAuthStatus(provider);
-      
+
       if (authStatus.authorized) {
         // Connection exists, use it without OAuth flow
         const tokenData = await this.oauthManager.getProviderToken(provider);
-        
+
         if (tokenData) {
           // Emit auth:complete event with existing token
           this.eventEmitter.emit('auth:complete', {
@@ -1159,11 +1169,11 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
             accessToken: tokenData.accessToken,
             expiresAt: tokenData.expiresAt
           });
-          
+
           // Update auth state
           this.authState.set(provider, { authenticated: true });
         }
-        
+
         // Return early, skipping OAuth flow
         return;
       }
@@ -1261,7 +1271,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
    */
   async setProviderToken(provider: string, tokenData: import('./oauth/types.js').ProviderTokenData | null, context?: MCPContext): Promise<void> {
     await this.oauthManager.setProviderToken(provider, tokenData, context);
-    
+
     // Update authState based on whether token is being set or deleted
     if (tokenData === null) {
       // Token is being deleted - update authState to reflect disconnection
@@ -1582,7 +1592,7 @@ function processOAuthCallbackFromHash(
       return null;
     }
     // 'silent' mode: suppress error
-    
+
     // Clean up URL hash on error (unless redirecting)
     try {
       if (mode !== 'redirect' || !errorBehavior?.redirectUrl) {
@@ -1592,7 +1602,7 @@ function processOAuthCallbackFromHash(
       // Ignore cleanup errors
     }
   }
-  
+
   return null;
 }
 
