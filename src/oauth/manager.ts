@@ -110,6 +110,11 @@ export class OAuthManager {
     // 4. Request authorization URL from user's API route
     // Note: Scopes are NOT sent from client - they're defined server-side in integration config
     const authUrl = await this.getAuthorizationUrl(provider, state, codeChallenge, config.redirectUri, codeVerifier);
+    
+    // Validate authorization URL before redirecting
+    if (!authUrl || authUrl.trim() === '') {
+      throw new Error('Received empty authorization URL from server');
+    }
 
     // 5. Open authorization URL (popup or redirect)
     if (this.flowConfig.mode === 'popup') {
@@ -126,6 +131,7 @@ export class OAuthManager {
       }
     } else {
       // For redirect mode, just redirect - callback will be handled separately
+      console.log('[OAuth] Redirecting to authorization URL:', authUrl.substring(0, 100) + (authUrl.length > 100 ? '...' : ''));
       this.windowManager.openRedirect(authUrl);
     }
   }
@@ -809,6 +815,24 @@ export class OAuthManager {
     }
 
     const data = await response.json() as AuthorizationUrlResponse;
+    
+    // Validate that authorizationUrl is present and valid
+    if (!data.authorizationUrl) {
+      console.error('[OAuth] Authorization URL is missing from response:', data);
+      throw new Error('Authorization URL is missing from server response');
+    }
+    
+    if (typeof data.authorizationUrl !== 'string' || data.authorizationUrl.trim() === '') {
+      console.error('[OAuth] Invalid authorization URL received:', data.authorizationUrl);
+      throw new Error('Invalid authorization URL received from server');
+    }
+    
+    // Log the authorization URL for debugging (truncated for security)
+    const urlPreview = data.authorizationUrl.length > 100 
+      ? data.authorizationUrl.substring(0, 100) + '...' 
+      : data.authorizationUrl;
+    console.log('[OAuth] Received authorization URL from API route:', urlPreview);
+    
     return data.authorizationUrl;
   }
 

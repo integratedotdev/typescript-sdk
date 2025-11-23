@@ -317,6 +317,18 @@ export class OAuthHandler {
     const data = await response.json();
     const result: AuthorizeResponse = data as AuthorizeResponse;
     
+    // Validate that authorizationUrl is present
+    if (!result.authorizationUrl) {
+      console.error('[OAuth] MCP server did not return authorizationUrl:', data);
+      throw new Error('MCP server failed to return authorization URL');
+    }
+    
+    // Log the authorization URL for debugging (truncated for security)
+    const urlPreview = result.authorizationUrl.length > 100 
+      ? result.authorizationUrl.substring(0, 100) + '...' 
+      : result.authorizationUrl;
+    console.log('[OAuth] Generated authorization URL:', urlPreview);
+    
     // Store codeVerifier and frontendOrigin temporarily if provided (for backend redirect flow)
     if (authorizeRequest.codeVerifier) {
       try {
