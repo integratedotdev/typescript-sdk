@@ -66,6 +66,7 @@ export function storeCodeVerifier(state: string, codeVerifier: string, provider:
   // Store for 5 minutes (same as pending auth expiration)
   const expiresAt = Date.now() + 5 * 60 * 1000;
   codeVerifierStorage.set(state, { codeVerifier, provider, frontendOrigin, expiresAt });
+  console.log('[storeCodeVerifier] Stored for state:', state.substring(0, 20) + '...', 'provider:', provider, 'frontendOrigin:', frontendOrigin, 'storage size:', codeVerifierStorage.size);
   // Clean up expired entries
   cleanupExpiredCodeVerifiers();
 }
@@ -77,13 +78,18 @@ export function storeCodeVerifier(state: string, codeVerifier: string, provider:
  */
 export function getCodeVerifier(state: string): { codeVerifier: string; provider: string; frontendOrigin?: string } | undefined {
   cleanupExpiredCodeVerifiers();
+  console.log('[getCodeVerifier] Looking for state:', state.substring(0, 20) + '...', 'storage size:', codeVerifierStorage.size, 'keys:', Array.from(codeVerifierStorage.keys()).map(k => k.substring(0, 20) + '...'));
   const entry = codeVerifierStorage.get(state);
   if (entry && entry.expiresAt >= Date.now()) {
+    console.log('[getCodeVerifier] Found entry for state:', state.substring(0, 20) + '...');
     return { codeVerifier: entry.codeVerifier, provider: entry.provider, frontendOrigin: entry.frontendOrigin };
   }
   // Clean up expired entry
   if (entry) {
+    console.log('[getCodeVerifier] Entry expired for state:', state.substring(0, 20) + '...', 'expiresAt:', entry.expiresAt, 'now:', Date.now());
     codeVerifierStorage.delete(state);
+  } else {
+    console.log('[getCodeVerifier] No entry found for state:', state.substring(0, 20) + '...');
   }
   return undefined;
 }

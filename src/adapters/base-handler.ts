@@ -259,6 +259,8 @@ export class OAuthHandler {
       authorizeRequest = request as AuthorizeRequest;
     }
     
+    console.log('[handleAuthorize] Received request for provider:', authorizeRequest.provider, 'has codeVerifier:', !!authorizeRequest.codeVerifier, 'has frontendOrigin:', !!authorizeRequest.frontendOrigin);
+    
     // Get OAuth config from environment (server-side)
     const providerConfig = this.config.providers[authorizeRequest.provider];
     if (!providerConfig) {
