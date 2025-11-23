@@ -506,7 +506,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
             expiresIn: callbackResult.expiresIn,
             expiresAt: callbackResult.expiresAt,
             scopes: callbackResult.scopes,
-            provider: callbackResult.provider,
+            provider: provider, // Use provider from codeVerifierEntry
           };
           frontendUrl.hash = `oauth_callback=${encodeURIComponent(JSON.stringify({ code, state, tokenData }))}`;
 

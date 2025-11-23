@@ -134,13 +134,13 @@ export class OAuthManager {
    * Handle OAuth callback with token data (backend redirect flow)
    * Used when backend has already exchanged the code for a token
    * 
-   * @param code - Authorization code from OAuth provider (for verification)
+   * @param _code - Authorization code from OAuth provider (for verification, not used)
    * @param state - State parameter for verification
    * @param tokenData - Token data from backend
    * @returns Provider token data with access token
    */
   async handleCallbackWithToken(
-    code: string,
+    _code: string,
     state: string,
     tokenData: ProviderTokenData & { provider?: string }
   ): Promise<ProviderTokenData & { provider: string }> {
