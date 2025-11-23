@@ -363,7 +363,7 @@ describe("OAuth Features", () => {
       expect(await client.getProviderToken("google")).toBeDefined();
     });
 
-    test("makes API call to server route when disconnecting", async () => {
+    test("does not make API call to server route when disconnecting (client-side only)", async () => {
       const client = createMCPClient({
         integrations: [
           githubIntegration({
@@ -382,23 +382,20 @@ describe("OAuth Features", () => {
         expiresIn: 3600,
       });
 
-      // Mock fetch to verify API call is made
-      const fetchMock = mock(async (url: string, options?: any) => {
-        expect(url).toContain("/api/integrate/oauth/disconnect");
-        expect(options?.method).toBe("POST");
-        expect(options?.headers?.["Authorization"]).toBe("Bearer test-token");
-        expect(JSON.parse(options?.body || "{}")).toEqual({ provider: "github" });
-        return new Response(JSON.stringify({ success: true }), { status: 200 });
+      // Mock fetch to verify NO API call is made
+      const fetchMock = mock(async () => {
+        throw new Error("Fetch should not be called for client-side disconnect");
       }) as any;
       global.fetch = fetchMock;
 
       await client.disconnectProvider("github");
 
-      expect(fetchMock).toHaveBeenCalled();
+      // Verify fetch was NOT called (client-side only clears localStorage)
+      expect(fetchMock).not.toHaveBeenCalled();
       expect(await client.getProviderToken("github")).toBeUndefined();
     });
 
-    test("handles missing disconnect route gracefully (404)", async () => {
+    test("clears local state without server calls (client-side only)", async () => {
       const client = createMCPClient({
         integrations: [
           githubIntegration({
@@ -417,30 +414,21 @@ describe("OAuth Features", () => {
         expiresIn: 3600,
       });
 
-      // Mock fetch to return 404 (route doesn't exist)
-      const consoleWarnSpy = mock(() => {});
-      const originalWarn = console.warn;
-      console.warn = consoleWarnSpy as any;
-
-      global.fetch = mock(async () => {
-        return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
+      // Mock fetch to verify NO API call is made
+      const fetchMock = mock(async () => {
+        throw new Error("Fetch should not be called for client-side disconnect");
       }) as any;
+      global.fetch = fetchMock;
 
-      // Should not throw - should continue and clear local state
+      // Should not throw - should clear local state without server calls
       await client.disconnectProvider("github");
 
-      // Verify warning was logged
-      expect(consoleWarnSpy).toHaveBeenCalled();
-      const warnCall = (consoleWarnSpy as any).mock.calls[0]?.[0] || "";
-      expect(warnCall).toContain("OAuth disconnect route not found");
-      expect(warnCall).toContain("Local token will still be cleared");
+      // Verify fetch was NOT called
+      expect(fetchMock).not.toHaveBeenCalled();
 
-      // Verify local state was cleared despite 404
+      // Verify local state was cleared
       expect(await client.getProviderToken("github")).toBeUndefined();
       expect(client.isProviderAuthenticated("github")).toBe(false);
-
-      // Restore console.warn
-      console.warn = originalWarn;
     });
   });
 

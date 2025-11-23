@@ -856,7 +856,10 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   /**
    * Disconnect a specific OAuth provider
    * Removes authorization for a single provider while keeping others connected
-   * Makes a server-side call to revoke the provider's authorization
+   * 
+   * When using database callbacks (server-side), this will delete the token from the database.
+   * When using client-side storage (no callbacks), this only clears tokens from localStorage
+   * and does not make any server calls.
    * 
    * When using database callbacks (server-side), provide context to delete
    * the correct user's token from the database.
@@ -866,8 +869,9 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
    * 
    * @example
    * ```typescript
-   * // Client-side usage (no context needed)
+   * // Client-side usage (no context needed, no server calls)
    * await client.disconnectProvider('github');
+   * // Token is cleared from localStorage only
    * 
    * // Check if still authorized
    * const isAuthorized = await client.isAuthorized('github'); // false
@@ -890,7 +894,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     }
 
     try {
-      // Make server-side call to disconnect the provider
+      // Disconnect the provider (handles database callbacks if configured, otherwise client-side only)
       // Pass context so removeProviderToken callback can delete the correct user's token
       await this.oauthManager.disconnectProvider(provider, context);
 
@@ -1033,6 +1037,8 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     }
 
     // Check current token status and update cache
+    // Note: This method only checks token existence - it does NOT clear tokens from localStorage
+    // or make any server calls. Token clearing should be done via disconnectProvider or clearProviderToken.
     // Pass context to getProviderToken so it can retrieve the correct user's token from database
     try {
       const tokenData = await this.oauthManager.getProviderToken(provider, context);

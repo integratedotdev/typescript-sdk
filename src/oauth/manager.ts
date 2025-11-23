@@ -321,6 +321,9 @@ export class OAuthManager {
    * from the database. It first tries to use `removeProviderToken` callback if provided,
    * otherwise falls back to calling `setProviderToken` with null for backward compatibility.
    * 
+   * When using client-side storage (no callbacks), this only clears tokens from localStorage
+   * and in-memory cache. No server calls are made.
+   * 
    * Note: This only clears the local/in-memory token and database token. It does not revoke the token
    * on the provider's side. For full revocation, handle that separately
    * in your application if needed.
@@ -359,75 +362,13 @@ export class OAuthManager {
         // If deletion fails, log but don't throw - we'll still clear local cache
         console.error(`Failed to delete token for ${provider} from database via setProviderToken:`, error);
       }
-    } else {
-      // Client-side: no database callbacks, make API call to server route
-      try {
-        // Get the provider token to include in Authorization header
-        const tokenData = await this.getProviderToken(provider);
-        
-        if (tokenData?.accessToken) {
-          // Construct URL: {apiBaseUrl}{oauthApiBase}/disconnect
-          // If apiBaseUrl is not set, use relative URL (same origin)
-          const url = this.apiBaseUrl 
-            ? `${this.apiBaseUrl}${this.oauthApiBase}/disconnect`
-            : `${this.oauthApiBase}/disconnect`;
-
-          const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${tokenData.accessToken}`,
-            },
-            body: JSON.stringify({
-              provider,
-            }),
-          });
-
-          if (!response.ok) {
-            // Handle 404 (route doesn't exist) with a helpful warning
-            if (response.status === 404) {
-              console.warn(
-                `[Integrate SDK] OAuth disconnect route not found at ${url}. ` +
-                `The route may not be set up on your server. ` +
-                `Local token will still be cleared. ` +
-                `To enable server-side disconnect, set up the route handler at ${this.oauthApiBase}/disconnect`
-              );
-            } else {
-              // Other errors - log with details
-              const errorText = await response.text();
-              console.warn(
-                `[Integrate SDK] Failed to disconnect ${provider} via API: ${response.status} ${errorText}. ` +
-                `Local token will still be cleared.`
-              );
-            }
-            // Continue to clear local state even if API call fails (idempotent)
-          }
-        }
-      } catch (error) {
-        // Network errors or other fetch failures
-        const url = this.apiBaseUrl 
-          ? `${this.apiBaseUrl}${this.oauthApiBase}/disconnect`
-          : `${this.oauthApiBase}/disconnect`;
-        
-        // Check if it's a network error that might indicate route doesn't exist
-        if (error instanceof TypeError && error.message.includes('fetch')) {
-          console.warn(
-            `[Integrate SDK] Could not reach disconnect route at ${url}. ` +
-            `The route may not be set up on your server. ` +
-            `Local token will still be cleared. ` +
-            `To enable server-side disconnect, set up the route handler at ${this.oauthApiBase}/disconnect`
-          );
-        } else {
-          console.warn(
-            `[Integrate SDK] Failed to disconnect ${provider} via API: ${error}. ` +
-            `Local token will still be cleared.`
-          );
-        }
-        // Continue to clear local cache (idempotent operation)
-      }
     }
+    // Client-side: no database callbacks - just clear localStorage
+    // No server calls should be made when using client-side storage
     
-    // Clear provider token from in-memory cache (idempotent - safe to call even if already cleared)
+    // Client-side localStorage clearing happens independently of server operations above
+    // This ensures tokens are always cleared locally, even if server calls fail
+    // clearProviderToken is purely client-side and does not make any server calls
     this.providerTokens.delete(provider);
     this.clearProviderToken(provider);
   }
@@ -435,6 +376,11 @@ export class OAuthManager {
   /**
    * Get provider token data
    * Uses callback if provided, otherwise checks in-memory cache
+   * 
+   * Note: This method only retrieves tokens - it does NOT clear tokens from localStorage
+   * or make any server calls for token deletion. Token clearing should be done via
+   * disconnectProvider or clearProviderToken.
+   * 
    * @param provider - Provider name (e.g., 'github', 'gmail')
    * @param context - Optional user context (userId, organizationId, etc.) for multi-tenant apps
    */
@@ -494,14 +440,22 @@ export class OAuthManager {
   }
 
   /**
-   * Clear specific provider token
-   * Note: When using database callbacks, this only clears the in-memory cache.
-   * Token deletion from database should be handled by the host application.
+   * Clear specific provider token from client-side storage only
+   * 
+   * This method is purely client-side and only clears tokens from:
+   * - In-memory cache
+   * - localStorage (when available and not using server-side database storage)
+   * 
+   * Note: This method does NOT make any server calls or API requests.
+   * When using database callbacks, this only clears the in-memory cache.
+   * Token deletion from database should be handled by the host application
+   * (e.g., via disconnectProvider which handles server-side operations separately).
    */
   clearProviderToken(provider: string): void {
     this.providerTokens.delete(provider);
     
     // Only clear from localStorage if not using server-side database storage
+    // This is purely client-side - no server calls should be made here
     if (!this.skipLocalStorage && typeof window !== 'undefined' && window.localStorage) {
       try {
         window.localStorage.removeItem(`integrate_token_${provider}`);
