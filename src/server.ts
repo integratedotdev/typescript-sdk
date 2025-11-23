@@ -9,13 +9,16 @@ import type { MCPServerConfig } from './config/types.js';
 import type { MCPIntegration } from './integrations/types.js';
 import { createNextOAuthHandler } from './adapters/nextjs.js';
 import { getEnv } from './utils/env.js';
+import { toWebRequest, sendWebResponse } from './adapters/node.js';
+import type { IncomingMessage, ServerResponse } from 'http';
 
 /**
  * Server client with attached handler, POST, and GET route handlers
  */
 export type MCPServerClient<TIntegrations extends readonly MCPIntegration[]> = MCPClient<TIntegrations> & {
-  /** Unified handler function that handles both POST and GET requests */
-  handler: (request: Request, context?: { params?: { action?: string; all?: string | string[] } }) => Promise<Response>;
+  /** Unified handler function that handles both POST and GET requests. Supports both Web API Request and Node.js IncomingMessage. 
+   * If a ServerResponse is provided, the response will be automatically sent to it. Otherwise, returns a Response object. */
+  handler: (request: Request | IncomingMessage, contextOrRes?: { params?: { action?: string; all?: string | string[] } } | ServerResponse, context?: { params?: { action?: string; all?: string | string[] } }) => Promise<Response | void>;
   /** OAuth POST handler - for Next.js route exports */
   POST: (req: any, context: { params: { action: string } | Promise<{ action: string }> }) => Promise<Response>;
   /** OAuth GET handler - for Next.js route exports */
@@ -293,18 +296,42 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
   /**
    * Unified handler function that handles both POST and GET requests
    * Useful for frameworks like Astro, Remix, etc. that use a single handler
+   * Also supports Node.js IncomingMessage for native Node.js HTTP servers
    * 
    * Available as `client.handler` for convenience
    * 
-   * @param request - The incoming request
-   * @param context - Optional context with params (for frameworks that support it)
-   * @returns Response
+   * @param request - The incoming request (Web API Request or Node.js IncomingMessage)
+   * @param contextOrRes - Optional context with params OR Node.js ServerResponse (if provided, response will be sent automatically)
+   * @param context - Optional context with params (only used if contextOrRes is ServerResponse)
+   * @returns Response (or void if ServerResponse was provided)
    */
   const handler = async (
-    request: Request,
+    request: Request | IncomingMessage,
+    contextOrRes?: { params?: { action?: string; all?: string | string[] } } | ServerResponse,
     context?: { params?: { action?: string; all?: string | string[] } }
-  ): Promise<Response> => {
-    const method = request.method.toUpperCase();
+  ): Promise<Response | void> => {
+    // Check if second parameter is ServerResponse
+    let nodeRes: ServerResponse | undefined;
+    let handlerContext: { params?: { action?: string; all?: string | string[] } } | undefined;
+    
+    if (contextOrRes && 'write' in contextOrRes && 'end' in contextOrRes && 'setHeader' in contextOrRes) {
+      // It's a ServerResponse
+      nodeRes = contextOrRes as ServerResponse;
+      handlerContext = context;
+    } else {
+      // It's a context object
+      handlerContext = contextOrRes as { params?: { action?: string; all?: string | string[] } } | undefined;
+    }
+
+    // Convert Node.js IncomingMessage to Web API Request if needed
+    let webRequest: Request;
+    if (request instanceof Request) {
+      webRequest = request;
+    } else {
+      webRequest = await toWebRequest(request);
+    }
+    
+    const method = webRequest.method.toUpperCase();
 
     // Extract action from context params or URL
     // Route structure: /api/integrate/oauth/[action]
@@ -312,11 +339,11 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
     let action: string | undefined;
     let segments: string[] = [];
 
-    if (context?.params?.action) {
-      action = context.params.action;
-    } else if (context?.params?.all) {
+    if (handlerContext?.params?.action) {
+      action = handlerContext.params.action;
+    } else if (handlerContext?.params?.all) {
       // For catch-all routes like [...all]
-      const all = context.params.all;
+      const all = handlerContext.params.all;
 
       if (Array.isArray(all)) {
         segments = all;
@@ -342,7 +369,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
       }
     } else {
       // Try to extract from URL path
-      const url = new URL(request.url);
+      const url = new URL(webRequest.url);
       const pathParts = url.pathname.split('/').filter(Boolean);
       segments = pathParts;
       // Look for 'oauth' in the path and get the next segment
@@ -361,8 +388,8 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
     // The API key from createMCPServer config is automatically included in requests
     if (action === 'mcp' && method === 'POST') {
       try {
-        const body = await request.json();
-        const authHeader = request.headers.get('authorization');
+        const body = await webRequest.json();
+        const authHeader = webRequest.headers.get('authorization');
 
         // Create OAuth handler with config that includes API key
         // The API key will be automatically sent as X-API-KEY header to the MCP server
@@ -406,7 +433,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
 
     // Special handling for GET /oauth/callback (OAuth provider redirect)
     if (method === 'GET' && action === 'callback') {
-      const url = new URL(request.url);
+      const url = new URL(webRequest.url);
       const searchParams = url.searchParams;
 
       const code = searchParams.get('code');
@@ -424,7 +451,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
         console.error('[OAuth Redirect] Error:', errorMsg);
 
         return Response.redirect(
-          new URL(`${errorRedirectUrl}?error=${encodeURIComponent(errorMsg)}`, request.url)
+          new URL(`${errorRedirectUrl}?error=${encodeURIComponent(errorMsg)}`, webRequest.url)
         );
       }
 
@@ -433,7 +460,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
         console.error('[OAuth Redirect] Missing code or state parameter');
 
         return Response.redirect(
-          new URL(`${errorRedirectUrl}?error=${encodeURIComponent('Invalid OAuth callback')}`, request.url)
+          new URL(`${errorRedirectUrl}?error=${encodeURIComponent('Invalid OAuth callback')}`, webRequest.url)
         );
       }
 
@@ -459,10 +486,10 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
       } catch (e) {
         // If parsing fails, try to use referrer as fallback
         try {
-          const referrer = request.headers.get('referer') || request.headers.get('referrer');
+          const referrer = webRequest.headers.get('referer') || webRequest.headers.get('referrer');
           if (referrer) {
             const referrerUrl = new URL(referrer);
-            const currentUrl = new URL(request.url);
+            const currentUrl = new URL(webRequest.url);
 
             // Only use referrer if it's from the same origin (security)
             if (referrerUrl.origin === currentUrl.origin) {
@@ -550,7 +577,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
           console.error('[OAuth Backend Callback] Error:', error);
           // Fall back to error redirect
           return Response.redirect(
-            new URL(`${errorRedirectUrl}?error=${encodeURIComponent(error.message || 'Failed to exchange token')}`, request.url)
+            new URL(`${errorRedirectUrl}?error=${encodeURIComponent(error.message || 'Failed to exchange token')}`, webRequest.url)
           );
         }
       } else {
@@ -566,7 +593,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
             returnUrl = returnUrlObj.pathname + returnUrlObj.search;
           } catch {
             // returnUrl is relative, try referer
-            const referer = request.headers.get('referer') || request.headers.get('referrer');
+            const referer = webRequest.headers.get('referer') || webRequest.headers.get('referrer');
             if (referer) {
               try {
                 const refererUrl = new URL(referer);
@@ -582,7 +609,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
         // This shouldn't happen, but log a warning
         if (!targetOrigin) {
           console.warn('[OAuth] Could not determine frontend origin for redirect. Using request origin as fallback.');
-          targetOrigin = new URL(request.url).origin;
+          targetOrigin = new URL(webRequest.url).origin;
         }
         
         const targetUrl = new URL(returnUrl, targetOrigin);
@@ -591,18 +618,27 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
       }
     }
 
-    const handlerContext = { params: { action: action || 'callback' } };
+    const finalContext = handlerContext || { params: { action: action || 'callback' } };
 
+    let response: Response;
     if (method === 'POST') {
-      return POST(request, handlerContext);
+      response = await POST(webRequest, finalContext);
     } else if (method === 'GET') {
-      return GET(request, handlerContext);
+      response = await GET(webRequest, finalContext);
     } else {
-      return Response.json(
+      response = Response.json(
         { error: `Method ${method} not allowed` },
         { status: 405 }
       );
     }
+
+    // If ServerResponse was provided, send the response automatically
+    if (nodeRes) {
+      await sendWebResponse(response, nodeRes);
+      return;
+    }
+
+    return response;
   };
 
   // Attach handler, POST, and GET to the client for convenient access

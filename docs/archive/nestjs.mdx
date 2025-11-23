@@ -49,16 +49,14 @@ Create a controller to handle OAuth routes:
 // oauth.controller.ts
 import { Controller, All, Req, Res } from "@nestjs/common";
 import { Request, Response } from "express";
-import { handler } from "@/lib/integrate-server";
-import { toNodeHandler } from "integrate-sdk";
+import { serverClient } from "@/lib/integrate-server";
 
-@Controller("api/auth")
+@Controller("api/integrate")
 export class OAuthController {
-  private nodeHandler = toNodeHandler(handler);
-
   @All("*")
-  handleOAuth(@Req() req: Request, @Res() res: Response) {
-    return this.nodeHandler(req, res);
+  async handleOAuth(@Req() req: Request, @Res() res: Response) {
+    // Pass both req and res - handler will automatically send the response
+    await serverClient.handler(req, res);
   }
 }
 ```

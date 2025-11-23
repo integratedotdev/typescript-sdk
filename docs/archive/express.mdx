@@ -47,17 +47,16 @@ Add OAuth route handlers to your Express application:
 
 ```typescript
 import express from "express";
-import { handler } from "./lib/integrate-server";
-import { toNodeHandler } from "integrate-sdk";
+import { serverClient } from "./lib/integrate-server";
 
 const app = express();
 app.use(express.json());
 
-// Convert Web API handler to Node.js handler
-const nodeHandler = toNodeHandler(handler);
-
 // Register OAuth catch-all route
-app.all("/api/integrate/*", nodeHandler);
+app.all("/api/integrate/*", async (req, res) => {
+  // Pass both req and res - handler will automatically send the response
+  await serverClient.handler(req, res);
+});
 
 app.listen(3000, () => {
   console.log("Server running on port 3000");

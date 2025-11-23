@@ -17,22 +17,24 @@ Add OAuth route handlers to your Node.js HTTP server:
 
 ```typescript
 import { createServer } from "http";
-import { toNodeHandler } from "integrate-sdk/adapters/node";
+import { createMCPServer, githubIntegration } from "integrate-sdk/server";
 
-const handler = toNodeHandler({
-  providers: {
-    github: {
+const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    githubIntegration({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-      redirectUri: "http://localhost:3000/api/integrate/oauth/callback",
-    },
-  },
+      scopes: ["repo", "user"],
+    }),
+  ],
 });
 
 createServer(async (req, res) => {
-  // Handle OAuth routes
+  // Handle OAuth routes - serverClient.handler accepts Node.js IncomingMessage and ServerResponse
   if (req.url?.startsWith("/api/integrate/")) {
-    await handler(req, res);
+    // Pass both req and res - handler will automatically send the response
+    await serverClient.handler(req, res);
   } else {
     res.statusCode = 404;
     res.end("Not Found");
@@ -71,7 +73,8 @@ createServer(async (req, res) => {
   }
 
   if (req.url?.startsWith("/api/integrate/")) {
-    await handler(req, res);
+    // Pass both req and res - handler will automatically send the response
+    await serverClient.handler(req, res);
   } else {
     res.statusCode = 404;
     res.end("Not Found");
