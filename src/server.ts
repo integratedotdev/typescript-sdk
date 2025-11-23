@@ -456,6 +456,13 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
       // Check if codeVerifier is stored (backend redirect flow)
       const codeVerifierEntry = getCodeVerifier(state);
       
+      // Debug: log if codeVerifier is found
+      if (codeVerifierEntry) {
+        console.log('[OAuth Backend Callback] Found codeVerifier, using backend redirect flow');
+      } else {
+        console.log('[OAuth Backend Callback] No codeVerifier found, using frontend redirect flow');
+      }
+      
       if (codeVerifierEntry) {
         // Backend redirect flow: exchange token and redirect with token data
         try {
@@ -526,7 +533,37 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
         }
       } else {
         // Frontend redirect flow: redirect with code/state in hash (existing behavior)
-        const targetUrl = new URL(returnUrl, request.url);
+        // But we need to determine frontend origin - can't use request.url (backend URL)
+        let targetOrigin = frontendOrigin;
+        
+        if (!targetOrigin) {
+          // Try to extract from returnUrl if it's absolute
+          try {
+            const returnUrlObj = new URL(returnUrl);
+            targetOrigin = returnUrlObj.origin;
+            returnUrl = returnUrlObj.pathname + returnUrlObj.search;
+          } catch {
+            // returnUrl is relative, try referer
+            const referer = request.headers.get('referer') || request.headers.get('referrer');
+            if (referer) {
+              try {
+                const refererUrl = new URL(referer);
+                targetOrigin = refererUrl.origin;
+              } catch {
+                // Invalid referer
+              }
+            }
+          }
+        }
+        
+        // If we still don't have an origin, we can't redirect properly
+        // This shouldn't happen, but log a warning
+        if (!targetOrigin) {
+          console.warn('[OAuth] Could not determine frontend origin for redirect. Using request origin as fallback.');
+          targetOrigin = new URL(request.url).origin;
+        }
+        
+        const targetUrl = new URL(returnUrl, targetOrigin);
         targetUrl.hash = `oauth_callback=${encodeURIComponent(JSON.stringify({ code, state }))}`;
         return Response.redirect(targetUrl);
       }

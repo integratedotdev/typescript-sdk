@@ -321,11 +321,14 @@ export class OAuthHandler {
         // Import the storage from server.ts
         const { storeCodeVerifier } = await import('../server.js');
         storeCodeVerifier(authorizeRequest.state, authorizeRequest.codeVerifier, authorizeRequest.provider, authorizeRequest.frontendOrigin);
+        console.log('[OAuth] Stored codeVerifier for state:', authorizeRequest.state.substring(0, 20) + '...', 'frontendOrigin:', authorizeRequest.frontendOrigin);
       } catch (error) {
         // If storage fails, log warning but continue
         // This might happen if called from a different context
         console.warn('[OAuth] Failed to store codeVerifier:', error);
       }
+    } else {
+      console.log('[OAuth] No codeVerifier provided in authorize request');
     }
 
     // Try to capture user context if Web Request is available
