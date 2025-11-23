@@ -54,8 +54,12 @@ export class OAuthManager {
     this.getTokenCallback = tokenCallbacks?.getProviderToken;
     this.setTokenCallback = tokenCallbacks?.setProviderToken;
     this.removeTokenCallback = tokenCallbacks?.removeProviderToken;
-    // Skip localStorage if explicitly requested OR if getTokenCallback is provided
-    // (indicating server-side database storage is being used)
+    
+    // Determine skipLocalStorage setting:
+    // 1. If explicitly set, use that value
+    // 2. If getTokenCallback is provided (indicating server-side database storage), auto-set to true
+    // 3. Otherwise, default to false (use localStorage when callbacks are not configured)
+    // This ensures localStorage is only used when callbacks are NOT configured AND skipLocalStorage is false
     this.skipLocalStorage = tokenCallbacks?.skipLocalStorage ?? !!tokenCallbacks?.getProviderToken;
 
     // Clean up any expired pending auth entries from localStorage
@@ -109,7 +113,9 @@ export class OAuthManager {
 
     // 4. Request authorization URL from user's API route
     // Note: Scopes are NOT sent from client - they're defined server-side in integration config
+    console.log('[OAuth] Requesting authorization URL, flow mode:', this.flowConfig.mode);
     const authUrl = await this.getAuthorizationUrl(provider, state, codeChallenge, config.redirectUri, codeVerifier);
+    console.log('[OAuth] Received authorization URL, length:', authUrl?.length);
     
     // Validate authorization URL before redirecting
     if (!authUrl || authUrl.trim() === '') {
@@ -117,6 +123,7 @@ export class OAuthManager {
     }
 
     // 5. Open authorization URL (popup or redirect)
+    console.log('[OAuth] Opening authorization URL, mode:', this.flowConfig.mode);
     if (this.flowConfig.mode === 'popup') {
       this.windowManager.openPopup(authUrl, this.flowConfig.popupOptions);
 
@@ -522,12 +529,19 @@ export class OAuthManager {
 
   /**
    * Save provider token to database (via callback) or localStorage
+   * 
+   * Storage decision logic:
+   * 1. If setTokenCallback is configured → use callback exclusively (no localStorage)
+   * 2. If skipLocalStorage is true → skip localStorage (token only in memory)
+   * 3. Otherwise → use localStorage (when callbacks are NOT configured AND skipLocalStorage is false)
+   * 
    * @param provider - Provider name (e.g., 'github', 'gmail')
    * @param tokenData - Token data to store, or null to delete
    * @param context - Optional user context (userId, organizationId, etc.) for multi-tenant apps
    */
   private async saveProviderToken(provider: string, tokenData: ProviderTokenData | null, context?: MCPContext): Promise<void> {
-    // If callback is provided, use it exclusively (server-side with database)
+    // Rule 1: If callback is provided, use it exclusively (server-side with database)
+    // When callbacks are configured, we do NOT save to localStorage
     if (this.setTokenCallback) {
       try {
         await this.setTokenCallback(provider, tokenData, context);
@@ -535,23 +549,28 @@ export class OAuthManager {
         console.error(`Failed to ${tokenData === null ? 'delete' : 'save'} token for ${provider} via callback:`, error);
         throw error;
       }
+      // Return early - callbacks are exclusive, no localStorage when callbacks are configured
       return;
     }
     
-    // If tokenData is null and we're using localStorage, delete it
+    // If tokenData is null, delete the token (clear from memory and localStorage if applicable)
     if (tokenData === null) {
       this.clearProviderToken(provider);
       return;
     }
 
-    // If skipLocalStorage is enabled, don't save to localStorage
-    // This happens when server-side database storage is being used
+    // Rule 2: If skipLocalStorage is enabled, don't save to localStorage
+    // This happens when server-side database storage is being used (but callbacks may not be configured yet)
     if (this.skipLocalStorage) {
       // Token storage is handled server-side, skip localStorage
+      // Note: Token is still stored in memory (this.providerTokens), but will be lost on page reload
+      // Make sure you have setProviderToken/getProviderToken callbacks configured for persistence
+      console.log(`[OAuth] Token for ${provider} stored in memory only (skipLocalStorage: true). Configure setProviderToken/getProviderToken callbacks for persistence.`);
       return;
     }
 
-    // Otherwise use localStorage (browser-only, no database callbacks)
+    // Rule 3: Use localStorage when callbacks are NOT configured AND skipLocalStorage is false
+    // This is the default behavior for client-side only usage without database callbacks
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
         const key = `integrate_token_${provider}`;
@@ -564,10 +583,17 @@ export class OAuthManager {
 
   /**
    * Load provider token from database (via callback) or localStorage
+   * 
+   * Loading decision logic (mirrors saveProviderToken):
+   * 1. If getTokenCallback is configured → use callback exclusively (no localStorage)
+   * 2. If skipLocalStorage is true → skip localStorage (return undefined)
+   * 3. Otherwise → use localStorage (when callbacks are NOT configured AND skipLocalStorage is false)
+   * 
    * Returns undefined if not found or invalid
    */
   private async loadProviderToken(provider: string): Promise<ProviderTokenData | undefined> {
-    // If callback is provided, use it exclusively
+    // Rule 1: If callback is provided, use it exclusively
+    // When callbacks are configured, we do NOT load from localStorage
     if (this.getTokenCallback) {
       try {
         return await this.getTokenCallback(provider);
@@ -577,7 +603,15 @@ export class OAuthManager {
       }
     }
 
-    // Otherwise use localStorage
+    // Rule 2: If skipLocalStorage is enabled, don't load from localStorage
+    // This happens when server-side database storage is being used (but callbacks may not be configured yet)
+    if (this.skipLocalStorage) {
+      // No localStorage access when skipLocalStorage is true
+      return undefined;
+    }
+
+    // Rule 3: Use localStorage when callbacks are NOT configured AND skipLocalStorage is false
+    // This is the default behavior for client-side only usage without database callbacks
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
         const key = `integrate_token_${provider}`;

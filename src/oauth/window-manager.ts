@@ -98,6 +98,7 @@ export class OAuthWindowManager {
       throw new Error('OAuthWindowManager.openRedirect() can only be used in browser environments');
     }
     
+    console.log('[OAuthWindowManager] Redirecting to:', url.substring(0, 100) + (url.length > 100 ? '...' : ''));
     window.location.href = url;
   }
 
