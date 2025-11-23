@@ -329,7 +329,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
       webRequest = request;
     } else if (typeof (request as any).url === 'string' && typeof (request as any).method === 'string' && typeof (request as any).headers?.get === 'function') {
       // It's already a Request-like object (mock or compatible), use it directly
-      webRequest = request as Request;
+      webRequest = request as unknown as Request;
     } else {
       // It's a Node.js IncomingMessage, convert it
       webRequest = await toWebRequest(request as IncomingMessage);
