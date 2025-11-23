@@ -109,6 +109,8 @@ export interface AuthorizeRequest {
   redirectUri?: string;
   /** Optional codeVerifier for backend redirect flow (when apiBaseUrl is set) */
   codeVerifier?: string;
+  /** Optional frontend origin for backend redirect flow (when apiBaseUrl is set) */
+  frontendOrigin?: string;
 }
 
 /**
@@ -313,12 +315,12 @@ export class OAuthHandler {
     const data = await response.json();
     const result: AuthorizeResponse = data as AuthorizeResponse;
     
-    // Store codeVerifier temporarily if provided (for backend redirect flow)
+    // Store codeVerifier and frontendOrigin temporarily if provided (for backend redirect flow)
     if (authorizeRequest.codeVerifier) {
       try {
         // Import the storage from server.ts
         const { storeCodeVerifier } = await import('../server.js');
-        storeCodeVerifier(authorizeRequest.state, authorizeRequest.codeVerifier, authorizeRequest.provider);
+        storeCodeVerifier(authorizeRequest.state, authorizeRequest.codeVerifier, authorizeRequest.provider, authorizeRequest.frontendOrigin);
       } catch (error) {
         // If storage fails, log warning but continue
         // This might happen if called from a different context

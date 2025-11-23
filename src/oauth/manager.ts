@@ -837,8 +837,9 @@ export class OAuthManager {
         codeChallenge,
         codeChallengeMethod: 'S256',
         redirectUri,
-        // Include codeVerifier for backend redirect flow (when apiBaseUrl is set)
+        // Include codeVerifier and frontendOrigin for backend redirect flow (when apiBaseUrl is set)
         codeVerifier: this.apiBaseUrl ? codeVerifier : undefined,
+        frontendOrigin: this.apiBaseUrl && typeof window !== 'undefined' ? window.location.origin : undefined,
       }),
     });
 

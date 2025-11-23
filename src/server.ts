@@ -38,10 +38,10 @@ let globalServerConfig: {
 } | null = null;
 
 /**
- * Temporary storage for codeVerifier during OAuth flow
+ * Temporary storage for codeVerifier and frontend origin during OAuth flow
  * Keyed by state parameter, expires after 5 minutes
  */
-const codeVerifierStorage = new Map<string, { codeVerifier: string; provider: string; expiresAt: number }>();
+const codeVerifierStorage = new Map<string, { codeVerifier: string; provider: string; frontendOrigin?: string; expiresAt: number }>();
 
 /**
  * Clean up expired codeVerifier entries
@@ -60,11 +60,12 @@ function cleanupExpiredCodeVerifiers(): void {
  * @param state - OAuth state parameter
  * @param codeVerifier - PKCE code verifier
  * @param provider - OAuth provider name
+ * @param frontendOrigin - Optional frontend origin for redirect
  */
-export function storeCodeVerifier(state: string, codeVerifier: string, provider: string): void {
+export function storeCodeVerifier(state: string, codeVerifier: string, provider: string, frontendOrigin?: string): void {
   // Store for 5 minutes (same as pending auth expiration)
   const expiresAt = Date.now() + 5 * 60 * 1000;
-  codeVerifierStorage.set(state, { codeVerifier, provider, expiresAt });
+  codeVerifierStorage.set(state, { codeVerifier, provider, frontendOrigin, expiresAt });
   // Clean up expired entries
   cleanupExpiredCodeVerifiers();
 }
@@ -72,13 +73,13 @@ export function storeCodeVerifier(state: string, codeVerifier: string, provider:
 /**
  * Retrieve codeVerifier and provider from temporary storage
  * @param state - OAuth state parameter
- * @returns Object with codeVerifier and provider if found and not expired, undefined otherwise
+ * @returns Object with codeVerifier, provider, and frontendOrigin if found and not expired, undefined otherwise
  */
-export function getCodeVerifier(state: string): { codeVerifier: string; provider: string } | undefined {
+export function getCodeVerifier(state: string): { codeVerifier: string; provider: string; frontendOrigin?: string } | undefined {
   cleanupExpiredCodeVerifiers();
   const entry = codeVerifierStorage.get(state);
   if (entry && entry.expiresAt >= Date.now()) {
-    return { codeVerifier: entry.codeVerifier, provider: entry.provider };
+    return { codeVerifier: entry.codeVerifier, provider: entry.provider, frontendOrigin: entry.frontendOrigin };
   }
   // Clean up expired entry
   if (entry) {
@@ -458,7 +459,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
       if (codeVerifierEntry) {
         // Backend redirect flow: exchange token and redirect with token data
         try {
-          const { codeVerifier, provider } = codeVerifierEntry;
+          const { codeVerifier, provider, frontendOrigin: storedFrontendOrigin } = codeVerifierEntry;
 
           // Create OAuth handler and exchange token
           const { OAuthHandler } = await import('./adapters/base-handler.js');
@@ -480,20 +481,25 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
           });
 
           // Determine frontend origin for redirect
+          // Priority: stored frontendOrigin > extracted from returnUrl > referer
           if (!frontendOrigin) {
-            // Try to extract from request referer or use a default
-            const referer = request.headers.get('referer') || request.headers.get('referrer');
-            if (referer) {
-              try {
-                const refererUrl = new URL(referer);
-                frontendOrigin = refererUrl.origin;
-              } catch {
-                // Invalid referer URL
+            if (storedFrontendOrigin) {
+              frontendOrigin = storedFrontendOrigin;
+            } else {
+              // Try to extract from request referer as fallback
+              const referer = request.headers.get('referer') || request.headers.get('referrer');
+              if (referer) {
+                try {
+                  const refererUrl = new URL(referer);
+                  frontendOrigin = refererUrl.origin;
+                } catch {
+                  // Invalid referer URL
+                }
               }
-            }
-            // If still no origin, we can't redirect - this shouldn't happen in practice
-            if (!frontendOrigin) {
-              throw new Error('Could not determine frontend origin for redirect');
+              // If still no origin, we can't redirect - this shouldn't happen in practice
+              if (!frontendOrigin) {
+                throw new Error('Could not determine frontend origin for redirect. Please ensure frontendOrigin is provided in the authorize request when using apiBaseUrl.');
+              }
             }
           }
 
