@@ -599,6 +599,10 @@ export class OAuthHandler {
    * Handle MCP tool call
    * Forwards tool call requests to MCP server with API key and provider token
    * 
+   * The API key (if configured via createMCPServer) is automatically included
+   * in the X-API-KEY header via getHeaders(). This ensures authentication and
+   * usage tracking with the MCP server.
+   * 
    * @param request - Tool call request with name and arguments
    * @param authHeader - Authorization header from client (Bearer token)
    * @returns Tool call response
@@ -609,7 +613,8 @@ export class OAuthHandler {
     // Use the MCP server URL directly (JSON-RPC method is in the body, not the path)
     const url = this.serverUrl;
 
-    // Prepare headers with API key
+    // Prepare headers with API key (automatically included if configured)
+    // getHeaders() will add X-API-KEY header if this.apiKey is set
     const headers: Record<string, string> = this.getHeaders({
       'Content-Type': 'application/json',
     });

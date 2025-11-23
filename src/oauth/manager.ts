@@ -765,6 +765,9 @@ export class OAuthManager {
   /**
    * Request authorization URL from user's API route
    * The API route will add OAuth secrets and scopes from server config and forward to MCP server
+   * 
+   * For redirect flows, the codeVerifier is sent to the server so it can be stored and used
+   * during the callback after redirect. For popup flows, codeVerifier stays client-side.
    */
   private async getAuthorizationUrl(
     provider: string,
@@ -791,9 +794,12 @@ export class OAuthManager {
         codeChallenge,
         codeChallengeMethod: 'S256',
         redirectUri,
-        // Include codeVerifier and frontendOrigin for backend redirect flow (when apiBaseUrl is set)
-        codeVerifier: this.apiBaseUrl ? codeVerifier : undefined,
-        frontendOrigin: this.apiBaseUrl && typeof window !== 'undefined' ? window.location.origin : undefined,
+        // Include codeVerifier for redirect flows (both same-origin and cross-origin)
+        // For redirect flows, the server needs to store codeVerifier to use during callback
+        // For popup flows, codeVerifier stays client-side since page doesn't reload
+        codeVerifier: this.flowConfig.mode === 'redirect' ? codeVerifier : undefined,
+        // Include frontendOrigin for cross-origin redirect flows (when apiBaseUrl is set)
+        frontendOrigin: this.apiBaseUrl && this.flowConfig.mode === 'redirect' && typeof window !== 'undefined' ? window.location.origin : undefined,
       }),
     });
 

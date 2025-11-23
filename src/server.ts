@@ -133,13 +133,17 @@ function getDefaultRedirectUri(): string {
  * 
  * The returned client has `handler`, `POST`, and `GET` attached for easy access.
  * 
+ * ⚠️ IMPORTANT: To use the default client with API key authentication, you MUST set up
+ * the API route handler. The API key configured here will be automatically included
+ * in requests to the MCP server when using the handler.
+ * 
  * ⚠️ SECURITY: The API key should NEVER be exposed to client-side code.
  * Use environment variables WITHOUT the NEXT_PUBLIC_ prefix.
  * 
  * @example
  * ```typescript
  * // lib/integrate-server.ts (server-side only!)
- * import { createMCPServer, githubIntegration, gmailIntegration } from 'integrate-sdk/server';
+ * import { createMCPServer, githubIntegration, gmailIntegration, toNextJsHandler } from 'integrate-sdk/server';
  * 
  * // ✅ CORRECT - Server-side only, API key from secure env var
  * export const { client: serverClient } = createMCPServer({
@@ -162,7 +166,16 @@ function getDefaultRedirectUri(): string {
  * });
  * ```
  * 
- * Then use the handler directly from the client:
+ * Then set up the API route handler (REQUIRED for default client to work with API key):
+ * ```typescript
+ * // app/api/integrate/[...all]/route.ts (Next.js)
+ * import { toNextJsHandler } from 'integrate-sdk/server';
+ * 
+ * // Uses global config from createMCPServer (includes API key automatically)
+ * export const { POST, GET } = toNextJsHandler();
+ * ```
+ * 
+ * Or use the handler directly from the client:
  * ```typescript
  * // routes/api/integrate/[...all]/+server.ts (SvelteKit)
  * import { serverClient } from '$lib/integrate-server';
@@ -344,17 +357,20 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
     }
 
     // Handle /mcp route BEFORE validating OAuth routes
+    // This route is used by the default client to make tool calls
+    // The API key from createMCPServer config is automatically included in requests
     if (action === 'mcp' && method === 'POST') {
       try {
         const body = await request.json();
         const authHeader = request.headers.get('authorization');
 
         // Create OAuth handler with config that includes API key
+        // The API key will be automatically sent as X-API-KEY header to the MCP server
         const { OAuthHandler } = await import('./adapters/base-handler.js');
         const oauthHandler = new OAuthHandler({
           providers,
           serverUrl: config.serverUrl,
-          apiKey: config.apiKey,
+          apiKey: config.apiKey, // API key is included here and sent to MCP server
         });
 
         const result = await oauthHandler.handleToolCall(body, authHeader);
@@ -713,16 +729,45 @@ export * from './ai/index.js';
 /**
  * Create catch-all route handlers for Next.js
  * 
- * Supports two usage patterns:
- * 1. Pass a client instance from createMCPServer
- * 2. Pass config object directly (for inline configuration)
+ * Supports three usage patterns:
+ * 1. No arguments - uses global config from createMCPServer (includes API key automatically)
+ * 2. Pass a client instance from createMCPServer
+ * 3. Pass config object directly (for inline configuration)
+ * 
+ * ⚠️ IMPORTANT: When using the default client with an API key configured in createMCPServer,
+ * you MUST call this function (with no arguments) to set up the API routes. The API key
+ * will be automatically included in requests to the MCP server.
  * 
  * @param clientOrOptions - Client instance from createMCPServer, or config options
  * @param redirectOptions - Redirect URL configuration (when first param is a client)
  * @returns Object with POST and GET handlers for Next.js catch-all routes
  * 
  * @example
- * **Pattern 1: Using client from createMCPServer (Recommended)**
+ * **Pattern 1: Using global config from createMCPServer (Recommended for default client)**
+ * ```typescript
+ * // lib/integrate-server.ts
+ * import { createMCPServer, githubIntegration } from 'integrate-sdk/server';
+ * 
+ * export const { client: serverClient } = createMCPServer({
+ *   apiKey: process.env.INTEGRATE_API_KEY, // API key configured here
+ *   integrations: [
+ *     githubIntegration({
+ *       clientId: process.env.GITHUB_CLIENT_ID!,
+ *       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+ *       scopes: ['repo', 'user'],
+ *     }),
+ *   ],
+ * });
+ * 
+ * // app/api/integrate/[...all]/route.ts
+ * import { toNextJsHandler } from 'integrate-sdk/server';
+ * 
+ * // Uses global config from createMCPServer (API key included automatically)
+ * export const { POST, GET } = toNextJsHandler();
+ * ```
+ * 
+ * @example
+ * **Pattern 2: Using client from createMCPServer**
  * ```typescript
  * // lib/integrate-server.ts
  * import { createMCPServer, githubIntegration } from 'integrate-sdk/server';
@@ -748,7 +793,7 @@ export * from './ai/index.js';
  * ```
  * 
  * @example
- * **Pattern 2: Inline configuration**
+ * **Pattern 3: Inline configuration**
  * ```typescript
  * // app/api/integrate/[...all]/route.ts
  * import { toNextJsHandler } from 'integrate-sdk/server';
@@ -760,6 +805,7 @@ export * from './ai/index.js';
  *       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
  *     },
  *   },
+ *   apiKey: process.env.INTEGRATE_API_KEY, // Include API key here
  *   redirectUrl: '/dashboard',
  *   errorRedirectUrl: '/auth-error',
  * });
@@ -796,7 +842,8 @@ export function toNextJsHandler<TIntegrations extends readonly MCPIntegration[] 
   let redirectUrl: string | undefined;
   let errorRedirectUrl: string | undefined;
 
-  // Pattern 1: No arguments provided (use global config)
+  // Pattern 1: No arguments provided (use global config from createMCPServer)
+  // This automatically includes the API key if it was configured in createMCPServer
   if (!clientOrOptions) {
     config = globalServerConfig;
     redirectUrl = redirectOptions?.redirectUrl;
