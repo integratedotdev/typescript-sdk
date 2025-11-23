@@ -327,8 +327,12 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
     let webRequest: Request;
     if (request instanceof Request) {
       webRequest = request;
+    } else if (typeof (request as any).url === 'string' && typeof (request as any).method === 'string' && typeof (request as any).headers?.get === 'function') {
+      // It's already a Request-like object (mock or compatible), use it directly
+      webRequest = request as Request;
     } else {
-      webRequest = await toWebRequest(request);
+      // It's a Node.js IncomingMessage, convert it
+      webRequest = await toWebRequest(request as IncomingMessage);
     }
     
     const method = webRequest.method.toUpperCase();
@@ -543,7 +547,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
               frontendOrigin = storedFrontendOrigin;
             } else {
               // Try to extract from request referer as fallback
-              const referer = request.headers.get('referer') || request.headers.get('referrer');
+              const referer = webRequest.headers.get('referer') || webRequest.headers.get('referrer');
               if (referer) {
                 try {
                   const refererUrl = new URL(referer);
@@ -618,7 +622,9 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
       }
     }
 
-    const finalContext = handlerContext || { params: { action: action || 'callback' } };
+    // Ensure action is always a string for POST/GET handlers
+    const finalAction = action || 'callback';
+    const finalContext = { params: { action: finalAction } };
 
     let response: Response;
     if (method === 'POST') {

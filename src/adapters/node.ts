@@ -32,9 +32,9 @@ export function fromNodeHeaders(nodeHeaders: IncomingHttpHeaders): Headers {
  * @returns Web API Request object
  */
 export async function toWebRequest(req: IncomingMessage): Promise<Request> {
-  const protocol = (req.socket as any).encrypted ? 'https' : 'http';
+  const protocol = (req.socket as any)?.encrypted ? 'https' : 'http';
   const host = req.headers.host || 'localhost';
-  const url = `${protocol}://${host}${req.url}`;
+  const url = `${protocol}://${host}${req.url || ''}`;
 
   const headers = fromNodeHeaders(req.headers);
 
