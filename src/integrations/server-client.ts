@@ -16,5 +16,10 @@ export interface ServerIntegrationClient {
   listToolsByIntegration(params: {
     integration: string;
   }): Promise<MCPToolCallResponse>;
+
+  /**
+   * List all tools available on the MCP server
+   */
+  listAllTools(): Promise<MCPToolCallResponse>;
 }
 
