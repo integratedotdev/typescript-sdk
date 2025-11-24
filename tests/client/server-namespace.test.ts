@@ -20,6 +20,7 @@ describe("Server Namespace", () => {
 
     expect(client.server).toBeDefined();
     expect(typeof client.server.listToolsByIntegration).toBe("function");
+    expect(typeof client.server.listAllTools).toBe("function");
   });
 
   test("server methods work through API handler without initialization", async () => {
@@ -88,6 +89,39 @@ describe("Server Namespace", () => {
     });
     expect(result.content).toHaveLength(1);
     expect(result.content[0].text).toBe("server tools via callServerTool");
+  });
+
+  test("listAllTools method works through API handler without initialization", async () => {
+    const mockFetch = mock(async (url: string) => {
+      if (url.includes("/api/integrate/mcp")) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            content: [{ type: "text", text: "all tools result" }],
+          }),
+          headers: new Headers(),
+        } as Response;
+      }
+      return { ok: false } as Response;
+    }) as any;
+
+    global.fetch = mockFetch;
+
+    const client = createMCPClient({
+      integrations: [
+        githubIntegration({
+          clientId: "test-id",
+        }),
+      ],
+      connectionMode: 'manual',  // Manual mode - no auto-connect
+      singleton: false,
+    });
+
+    // Should work through API handler without calling connect()
+    const result = await client.server.listAllTools();
+    expect(result.content).toHaveLength(1);
+    expect(result.content[0].text).toBe("all tools result");
   });
 });
 
