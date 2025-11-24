@@ -20,7 +20,7 @@ describe("Server Namespace", () => {
 
     expect(client.server).toBeDefined();
     expect(typeof client.server.listToolsByIntegration).toBe("function");
-    expect(typeof client.server.listAllTools).toBe("function");
+    expect(typeof client.server.listAllProviders).toBe("function");
   });
 
   test("server methods work through API handler without initialization", async () => {
@@ -91,7 +91,7 @@ describe("Server Namespace", () => {
     expect(result.content[0].text).toBe("server tools via callServerTool");
   });
 
-  test("listAllTools method works through API handler without initialization", async () => {
+  test("listAllProviders method works through API handler without initialization", async () => {
     const mockFetch = mock(async (url: string) => {
       if (url.includes("/api/integrate/mcp")) {
         return {
@@ -119,7 +119,7 @@ describe("Server Namespace", () => {
     });
 
     // Should work through API handler without calling connect()
-    const result = await client.server.listAllTools();
+    const result = await client.server.listAllProviders();
     expect(result.content).toHaveLength(1);
     expect(result.content[0].text).toBe("all tools result");
   });

@@ -76,9 +76,19 @@ const tools = await serverClient.server.listToolsByIntegration({
 
 ### Tool Discovery
 
+- **`listAllProviders`** - List all providers available on the MCP server
 - **`listToolsByIntegration`** - List all tools available for a specific integration
 
 ## Examples
+
+### List All Providers
+
+```typescript
+// List all available providers on the MCP server
+const result = await client.server.listAllProviders();
+
+console.log("All providers:", result);
+```
 
 ### List Tools for an Integration
 

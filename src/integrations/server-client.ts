@@ -20,6 +20,6 @@ export interface ServerIntegrationClient {
   /**
    * List all tools available on the MCP server
    */
-  listAllTools(): Promise<MCPToolCallResponse>;
+  listAllProviders(): Promise<MCPToolCallResponse>;
 }
 
