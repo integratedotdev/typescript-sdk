@@ -9,13 +9,48 @@ import { gmailIntegration } from "../../src/integrations/gmail.js";
 
 describe("Client OAuth Methods", () => {
   let originalFetch: typeof fetch;
+  let originalLocalStorage: Storage | undefined;
+  let originalWindow: Window & typeof globalThis | undefined;
+  const mockLocalStorage = new Map<string, string>();
 
   beforeEach(() => {
     originalFetch = global.fetch;
+    originalLocalStorage = global.localStorage;
+    originalWindow = global.window;
+
+    // Mock localStorage
+    global.localStorage = {
+      getItem: (key: string) => mockLocalStorage.get(key) || null,
+      setItem: (key: string, value: string) => mockLocalStorage.set(key, value),
+      removeItem: (key: string) => mockLocalStorage.delete(key),
+      clear: () => mockLocalStorage.clear(),
+      get length() { return mockLocalStorage.size; },
+      key: (index: number) => Array.from(mockLocalStorage.keys())[index] || null,
+    } as any;
+
+    // Mock window if it doesn't exist
+    if (!global.window) {
+      (global as any).window = {
+        localStorage: global.localStorage,
+      };
+    }
   });
 
   afterEach(() => {
     global.fetch = originalFetch;
+    mockLocalStorage.clear();
+    
+    if (originalLocalStorage) {
+      global.localStorage = originalLocalStorage;
+    } else {
+      delete (global as any).localStorage;
+    }
+    
+    if (originalWindow) {
+      global.window = originalWindow;
+    } else {
+      delete (global as any).window;
+    }
   });
 
   describe("Provider Token Management", () => {
@@ -55,8 +90,15 @@ describe("Client OAuth Methods", () => {
     });
 
     test("provider tokens are loaded from localStorage", async () => {
-      // This test verifies tokens are loaded on initialization
-      // Pre-populate localStorage if we're in a browser-like environment
+      // This test verifies tokens are loaded from localStorage on initialization
+      // Pre-populate localStorage with a token
+      const tokenData = {
+        accessToken: 'stored-token',
+        tokenType: 'Bearer',
+        expiresIn: 3600,
+      };
+      mockLocalStorage.set('integrate_token_github', JSON.stringify(tokenData));
+
       const client = createMCPClient({
         integrations: [
           githubIntegration({
@@ -67,8 +109,12 @@ describe("Client OAuth Methods", () => {
         singleton: false,
       });
 
-      // Initially undefined since no token is set
-      expect(await client.getProviderToken('github')).toBeUndefined();
+      // Give a moment for async token loading to complete
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      // Token should be loaded from localStorage
+      const loadedToken = await client.getProviderToken('github');
+      expect(loadedToken).toEqual(tokenData);
     });
   });
 
