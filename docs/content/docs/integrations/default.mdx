@@ -1,0 +1,159 @@
+---
+title: Default (server)
+description: Server-level tools provided by Integrate
+---
+
+The default server integration provides access to server-level tools that don't belong to a specific integration. These tools are always available on both the client and server without any configuration.
+
+## Installation
+
+The server namespace is automatically included with the SDK - no installation needed. It's always available on all MCP clients:
+
+```typescript
+import { client } from "integrate-sdk";
+
+// Server namespace is always available
+const tools = await client.server.listToolsByIntegration({
+  integration: "github",
+});
+```
+
+## Setup
+
+### No Configuration Required
+
+Unlike other integrations, the server namespace requires no setup or configuration. It's automatically included in both:
+
+- **MCP Client** - Available via `client.server.*` on all clients
+- **MCP Server** - Automatically handles server-level tool calls
+
+### Client-Side Usage
+
+The default client automatically includes the server namespace. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+const tools = await client.server.listToolsByIntegration({
+  integration: "github",
+});
+```
+
+If you're using a custom client, the server namespace is still always available:
+
+```typescript
+import { createMCPClient, githubIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [githubIntegration()],
+});
+
+// Server namespace is always available, even on custom clients
+const tools = await customClient.server.listToolsByIntegration({
+  integration: "github",
+});
+```
+
+### Server-Side Usage
+
+When using the server client, the server namespace is also available:
+
+```typescript
+import { createMCPServer, githubIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [githubIntegration()],
+});
+
+// Server namespace works on server clients too
+const tools = await serverClient.server.listToolsByIntegration({
+  integration: "github",
+});
+```
+
+## Available Tools
+
+### Tool Discovery
+
+- **`listToolsByIntegration`** - List all tools available for a specific integration
+
+## Examples
+
+### List Tools for an Integration
+
+```typescript
+// List all available GitHub tools
+const result = await client.server.listToolsByIntegration({
+  integration: "github",
+});
+
+console.log("GitHub tools:", result);
+```
+
+### Discover Available Integrations
+
+You can use this tool to discover what tools are available for any integration:
+
+```typescript
+// Check what Gmail tools are available
+const gmailTools = await client.server.listToolsByIntegration({
+  integration: "gmail",
+});
+
+// Check what Notion tools are available
+const notionTools = await client.server.listToolsByIntegration({
+  integration: "notion",
+});
+
+console.log("Gmail tools:", gmailTools);
+console.log("Notion tools:", notionTools);
+```
+
+### Dynamic Tool Discovery
+
+Use this tool to dynamically discover available tools at runtime:
+
+```typescript
+async function getIntegrationTools(integrationName: string) {
+  try {
+    const result = await client.server.listToolsByIntegration({
+      integration: integrationName,
+    });
+    return result;
+  } catch (error) {
+    console.error(`Failed to get tools for ${integrationName}:`, error);
+    return null;
+  }
+}
+
+// Use it to discover tools
+const githubTools = await getIntegrationTools("github");
+const gmailTools = await getIntegrationTools("gmail");
+```
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.server.listToolsByIntegration({
+    integration: "github",
+  });
+  console.log("Tools:", result);
+} catch (error) {
+  if (error.message.includes("not found")) {
+    console.error("Integration not found");
+  } else if (error.message.includes("authentication")) {
+    console.error("Authentication required");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [GitHub Integration](/docs/integrations/github)
+- Explore the [Gmail Integration](/docs/integrations/gmail)
+- Learn about [Custom Integrations](/docs/integrations/custom-integrations)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples

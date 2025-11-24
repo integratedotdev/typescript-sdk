@@ -48,7 +48,7 @@ export { createNextOAuthHandler } from "./adapters/nextjs.js";
 export { createOAuthRedirectHandler } from "./adapters/nextjs-oauth-redirect.js";
 export type { OAuthRedirectConfig } from "./adapters/nextjs-oauth-redirect.js";
 
-export { toNodeHandler, fromNodeHeaders } from "./adapters/node.js";
+export { fromNodeHeaders, toWebRequest } from "./adapters/node.js";
 export { toSolidStartHandler } from "./adapters/solid-start.js";
 export { toSvelteKitHandler, svelteKitHandler } from "./adapters/svelte-kit.js";
 export { toTanStackStartHandler, createTanStackOAuthHandler } from "./adapters/tanstack-start.js";

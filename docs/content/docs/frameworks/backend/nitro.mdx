@@ -1,0 +1,91 @@
+---
+title: Nitro
+description: Integrate the Integrate SDK with Nitro
+---
+
+The Integrate SDK provides seamless integration with Nitro through server-side configuration and route handlers. This guide assumes you have a Nitro project already set up.
+
+## Installation
+
+Install the Integrate SDK in your Nitro project:
+
+```bash
+bun add integrate-sdk
+```
+
+## Setup
+
+Create a server configuration file with your OAuth credentials:
+
+```typescript
+// server/routes/index.ts
+import { defineEventHandler } from "h3"
+
+import {
+  createMCPServer,
+  githubIntegration,
+} from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    githubIntegration({
+      scopes: ["repo", "user"],
+    }),
+  ],
+});
+
+export default defineEventHandler(async (event) => {
+  return serverClient.handler(event.node.req);
+});
+```
+
+You can get an API key from the [Integrate Dashboard](https://app.integrate.dev).
+
+## Configuration
+
+Add your OAuth credentials to your `.env` file:
+
+```bash
+INTEGRATE_API_KEY=your_integrate_api_key
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+FRONTEND_URL=http://localhost:3000
+PORT=8080
+```
+
+## CORS Setup
+
+Configure CORS using Nitro middleware:
+
+```typescript
+// server/middleware/cors.ts
+import { defineEventHandler, setHeaders } from "h3";
+
+export default defineEventHandler((event) => {
+    // Set CORS headers
+    setHeaders(event, {
+        "Access-Control-Allow-Origin": process.env.FRONTEND_URL || "http://localhost:3000",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Credentials": "true",
+    });
+
+    // Handle preflight requests
+    if (event.node.req.method === "OPTIONS") {
+        return new Response(null, { status: 204 });
+    }
+});
+```
+
+## Usage Examples
+
+### Client-Side Authorization
+
+The client is automatically configured when making requests to the server.
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("github");
+```

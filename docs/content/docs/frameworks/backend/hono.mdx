@@ -1,0 +1,90 @@
+---
+title: Hono
+description: Integrate the Integrate SDK with Hono
+---
+
+The Integrate SDK provides seamless integration with Hono through server-side configuration and route handlers. This guide assumes you have a Hono project already set up.
+
+## Installation
+
+Install the Integrate SDK in your Hono project:
+
+```bash
+bun add integrate-sdk
+```
+
+## Setup
+
+Create a server configuration file with your OAuth credentials:
+
+```typescript
+// src/index.ts
+import { Hono } from 'hono'
+import { cors } from 'hono/cors'
+import { createMCPServer, githubIntegration } from 'integrate-sdk/server';
+
+const app = new Hono()
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    githubIntegration({
+      scopes: ["repo", "user"],
+    }),
+  ],
+});
+
+app.use(
+  "/api/integrate/*",
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    credentials: true,
+  }),
+);
+
+app.on(["POST", "GET"], "/api/integrate/*", (c) => {
+  return serverClient.handler(c.req.raw);
+});
+
+export default app
+```
+
+You can get an API key from the [Integrate Dashboard](https://app.integrate.dev).
+
+## Configuration
+
+Add your OAuth credentials to your `.env` file:
+
+```bash
+INTEGRATE_API_KEY=your_integrate_api_key
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+FRONTEND_URL=http://localhost:3000
+PORT=8080
+```
+
+## CORS Setup
+
+CORS is configured in the setup above. If you need to customize it, adjust the CORS middleware:
+
+```typescript
+app.use(
+  "/api/integrate/*",
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    credentials: true,
+  })
+);
+```
+
+## Usage Examples
+
+### Client-Side Authorization
+
+The client is automatically configured when making requests to the server.
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("github");
+```
