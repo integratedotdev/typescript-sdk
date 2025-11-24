@@ -66,9 +66,15 @@ export async function getProviderTokens(manualTokens?: Record<string, string>): 
     // This uses AsyncLocalStorage and works in Next.js App Router server components
     if (!tokensString) {
         try {
-            // Dynamic import to avoid requiring Next.js at build time
+            // Dynamic import with runtime-constructed path to prevent Vite from statically analyzing it
+            // This allows the import to fail gracefully in non-Next.js environments
+            // Using a function to construct the path prevents static analysis
+            const getNextHeadersPath = () => {
+                const parts = ['next', '/headers'];
+                return parts.join('');
+            };
             // @ts-ignore, we don't have this bundled
-            const nextHeaders = await import('next/headers').catch(() => null);
+            const nextHeaders = await import(getNextHeadersPath()).catch(() => null);
             if (nextHeaders && typeof nextHeaders.headers === 'function') {
                 // Next.js 15+ returns a Promise, earlier versions return the headers directly
                 const headersList = await Promise.resolve(nextHeaders.headers());
