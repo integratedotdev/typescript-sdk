@@ -397,10 +397,20 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
           providers,
           serverUrl: config.serverUrl,
           apiKey: config.apiKey, // API key is included here and sent to MCP server
+          setProviderToken: config.setProviderToken,
+          removeProviderToken: config.removeProviderToken,
+          getSessionContext: config.getSessionContext,
         });
 
         const result = await oauthHandler.handleToolCall(body, authHeader);
-        return Response.json(result);
+        const response = Response.json(result);
+        
+        // Add X-Integrate-Use-Database header if database callbacks are configured
+        if (oauthHandler.hasDatabaseCallbacks()) {
+          response.headers.set('X-Integrate-Use-Database', 'true');
+        }
+        
+        return response;
       } catch (error: any) {
         console.error('[MCP Tool Call] Error:', error);
         return Response.json(

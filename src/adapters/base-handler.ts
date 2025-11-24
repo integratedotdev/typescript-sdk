@@ -232,6 +232,14 @@ export class OAuthHandler {
   }
 
   /**
+   * Check if database callbacks are configured
+   * Used to determine if we should set X-Integrate-Use-Database header
+   */
+  hasDatabaseCallbacks(): boolean {
+    return !!this.config.setProviderToken;
+  }
+
+  /**
    * Handle authorization URL request
    * Gets authorization URL from MCP server with full OAuth credentials
    * Also captures user context for later use in callback

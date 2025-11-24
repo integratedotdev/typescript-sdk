@@ -115,6 +115,11 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
           response.headers.set('Set-Cookie', result.setCookie);
         }
         
+        // Add X-Integrate-Use-Database header if database callbacks are configured
+        if (handler.hasDatabaseCallbacks()) {
+          response.headers.set('X-Integrate-Use-Database', 'true');
+        }
+        
         return response;
       } catch (error: any) {
         console.error('[OAuth Authorize] Error:', error);
@@ -178,6 +183,11 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
         // Add Set-Cookie header to clear context cookie
         if (result.clearCookie) {
           response.headers.set('Set-Cookie', result.clearCookie);
+        }
+        
+        // Add X-Integrate-Use-Database header if database callbacks are configured
+        if (handler.hasDatabaseCallbacks()) {
+          response.headers.set('X-Integrate-Use-Database', 'true');
         }
         
         return response;
@@ -248,7 +258,14 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
 
         const accessToken = authHeader.substring(7); // Remove 'Bearer ' prefix
         const result = await handler.handleStatus(provider, accessToken);
-        return Response.json(result);
+        const response = Response.json(result);
+        
+        // Add X-Integrate-Use-Database header if database callbacks are configured
+        if (handler.hasDatabaseCallbacks()) {
+          response.headers.set('X-Integrate-Use-Database', 'true');
+        }
+        
+        return response;
       } catch (error: any) {
         console.error('[OAuth Status] Error:', error);
         return Response.json(
@@ -322,7 +339,14 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
 
         // Pass the request object for context extraction
         const result = await handler.handleDisconnect({ provider }, accessToken, req);
-        return Response.json(result);
+        const response = Response.json(result);
+        
+        // Add X-Integrate-Use-Database header if database callbacks are configured
+        if (handler.hasDatabaseCallbacks()) {
+          response.headers.set('X-Integrate-Use-Database', 'true');
+        }
+        
+        return response;
       } catch (error: any) {
         console.error('[OAuth Disconnect] Error:', error);
         return Response.json(

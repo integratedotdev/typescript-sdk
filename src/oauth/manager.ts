@@ -40,7 +40,6 @@ export class OAuthManager {
       getProviderToken?: (provider: string, context?: MCPContext) => Promise<ProviderTokenData | undefined> | ProviderTokenData | undefined;
       setProviderToken?: (provider: string, tokenData: ProviderTokenData | null, context?: MCPContext) => Promise<void> | void;
       removeProviderToken?: (provider: string, context?: MCPContext) => Promise<void> | void;
-      skipLocalStorage?: boolean;
     }
   ) {
     this.oauthApiBase = oauthApiBase;
@@ -55,12 +54,10 @@ export class OAuthManager {
     this.setTokenCallback = tokenCallbacks?.setProviderToken;
     this.removeTokenCallback = tokenCallbacks?.removeProviderToken;
     
-    // Determine skipLocalStorage setting:
-    // 1. If explicitly set, use that value
-    // 2. If getTokenCallback is provided (indicating server-side database storage), auto-set to true
-    // 3. Otherwise, default to false (use localStorage when callbacks are not configured)
-    // This ensures localStorage is only used when callbacks are NOT configured AND skipLocalStorage is false
-    this.skipLocalStorage = tokenCallbacks?.skipLocalStorage ?? !!tokenCallbacks?.getProviderToken;
+    // Auto-detect skipLocalStorage from callbacks:
+    // If getTokenCallback or setTokenCallback is provided (indicating server-side database storage), auto-set to true
+    // Otherwise, default to false (use localStorage when callbacks are not configured)
+    this.skipLocalStorage = !!(tokenCallbacks?.getProviderToken || tokenCallbacks?.setProviderToken);
 
     // Clean up any expired pending auth entries from localStorage
     this.cleanupExpiredPendingAuths();
@@ -843,6 +840,11 @@ export class OAuthManager {
       }),
     });
 
+    // Check for X-Integrate-Use-Database header to auto-detect database usage
+    if (response.headers.get('X-Integrate-Use-Database') === 'true') {
+      this.skipLocalStorage = true;
+    }
+
     if (!response.ok) {
       const error = await response.text();
       throw new Error(`Failed to get authorization URL: ${error}`);
@@ -899,6 +901,11 @@ export class OAuthManager {
       }),
     });
 
+    // Check for X-Integrate-Use-Database header to auto-detect database usage
+    if (response.headers.get('X-Integrate-Use-Database') === 'true') {
+      this.skipLocalStorage = true;
+    }
+
     if (!response.ok) {
       const error = await response.text();
       throw new Error(`Failed to exchange code for token: ${error}`);
@@ -906,6 +913,14 @@ export class OAuthManager {
 
     const data = await response.json() as OAuthCallbackResponse;
     return data;
+  }
+
+  /**
+   * Update skipLocalStorage setting at runtime
+   * Called automatically when server indicates database usage via response header
+   */
+  setSkipLocalStorage(value: boolean): void {
+    this.skipLocalStorage = value;
   }
 
   /**

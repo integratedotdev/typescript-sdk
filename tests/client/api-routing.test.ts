@@ -465,5 +465,93 @@ describe("MCP Client - API Routing", () => {
 
     expect(apiHandlerCalled).toBe(true);
   });
+
+  it("should detect X-Integrate-Use-Database header and update skipLocalStorage", async () => {
+    const mockLocalStorage = new Map<string, string>();
+    
+    // Mock localStorage
+    global.localStorage = {
+      getItem: (key: string) => mockLocalStorage.get(key) || null,
+      setItem: (key: string, value: string) => mockLocalStorage.set(key, value),
+      removeItem: (key: string) => mockLocalStorage.delete(key),
+      clear: () => mockLocalStorage.clear(),
+      length: 0,
+      key: () => null,
+    } as any;
+
+    let headerDetected = false;
+
+    global.fetch = mock(async (url: string, options?: any) => {
+      if (url.includes("/api/integrate/mcp")) {
+        // Return response with X-Integrate-Use-Database header
+        const headers = new Headers();
+        headers.set('X-Integrate-Use-Database', 'true');
+        
+        return {
+          ok: true,
+          headers,
+          json: async () => ({
+            content: [{ type: "text", text: "result" }],
+          }),
+        } as Response;
+      } else if (url.includes("mcp.integrate.dev")) {
+        // Mock initialization calls
+        return {
+          ok: true,
+          headers: new Headers(),
+          json: async () => ({
+            jsonrpc: "2.0",
+            id: 1,
+            result: { tools: [] },
+          }),
+        } as Response;
+      }
+      return { ok: false, headers: new Headers() } as Response;
+    }) as any;
+
+    const mockOAuthManager = {
+      getProviderToken: mock(() => null),
+      loadAllProviderTokens: mock(() => { }),
+      getAllProviderTokens: mock(() => new Map()),
+      setProviderToken: mock(() => { }),
+      clearAllProviderTokens: mock(() => { }),
+      clearAllPendingAuths: mock(() => { }),
+      checkAuthStatus: mock(() => Promise.resolve({ authorized: false })),
+      initiateFlow: mock(() => Promise.resolve()),
+      handleCallback: mock(() => Promise.resolve({ provider: "github", accessToken: "token", expiresAt: Date.now() })),
+      disconnectProvider: mock(() => Promise.resolve()),
+      setSkipLocalStorage: mock((value: boolean) => {
+        headerDetected = value;
+      }),
+    };
+
+    const integration = createSimpleIntegration({
+      id: "test",
+      tools: ["test_tool"],
+    });
+
+    const client = new MCPClientBase({
+      integrations: [integration],
+      apiRouteBase: "/api/integrate",
+      connectionMode: "manual",
+    });
+
+    (client as any).oauthManager = mockOAuthManager;
+    (client as any).initialized = true;
+    (client as any).transport.connected = true;
+    (client as any).availableTools.set("test_tool", {
+      name: "test_tool",
+      description: "Test tool",
+      inputSchema: { type: "object" },
+    });
+    (client as any).enabledToolNames.add("test_tool");
+
+    // Make a tool call - should detect header
+    await (client as any).callServerTool("test_tool", {});
+
+    // Verify header was detected and skipLocalStorage was set
+    expect(mockOAuthManager.setSkipLocalStorage).toHaveBeenCalledWith(true);
+    expect(headerDetected).toBe(true);
+  });
 });
 
