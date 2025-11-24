@@ -69,7 +69,6 @@ export function storeCodeVerifier(state: string, codeVerifier: string, provider:
   // Store for 5 minutes (same as pending auth expiration)
   const expiresAt = Date.now() + 5 * 60 * 1000;
   codeVerifierStorage.set(state, { codeVerifier, provider, frontendOrigin, expiresAt });
-  console.log('[storeCodeVerifier] Stored for state:', state.substring(0, 20) + '...', 'provider:', provider, 'frontendOrigin:', frontendOrigin, 'storage size:', codeVerifierStorage.size);
   // Clean up expired entries
   cleanupExpiredCodeVerifiers();
 }
@@ -81,18 +80,14 @@ export function storeCodeVerifier(state: string, codeVerifier: string, provider:
  */
 export function getCodeVerifier(state: string): { codeVerifier: string; provider: string; frontendOrigin?: string } | undefined {
   cleanupExpiredCodeVerifiers();
-  console.log('[getCodeVerifier] Looking for state:', state.substring(0, 20) + '...', 'storage size:', codeVerifierStorage.size, 'keys:', Array.from(codeVerifierStorage.keys()).map(k => k.substring(0, 20) + '...'));
   const entry = codeVerifierStorage.get(state);
   if (entry && entry.expiresAt >= Date.now()) {
-    console.log('[getCodeVerifier] Found entry for state:', state.substring(0, 20) + '...');
     return { codeVerifier: entry.codeVerifier, provider: entry.provider, frontendOrigin: entry.frontendOrigin };
   }
   // Clean up expired entry
   if (entry) {
-    console.log('[getCodeVerifier] Entry expired for state:', state.substring(0, 20) + '...', 'expiresAt:', entry.expiresAt, 'now:', Date.now());
     codeVerifierStorage.delete(state);
   } else {
-    console.log('[getCodeVerifier] No entry found for state:', state.substring(0, 20) + '...');
   }
   return undefined;
 }
@@ -313,7 +308,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
     // Check if second parameter is ServerResponse
     let nodeRes: ServerResponse | undefined;
     let handlerContext: { params?: { action?: string; all?: string | string[] } } | undefined;
-    
+
     if (contextOrRes && 'write' in contextOrRes && 'end' in contextOrRes && 'setHeader' in contextOrRes) {
       // It's a ServerResponse
       nodeRes = contextOrRes as ServerResponse;
@@ -334,7 +329,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
       // It's a Node.js IncomingMessage, convert it
       webRequest = await toWebRequest(request as IncomingMessage);
     }
-    
+
     const method = webRequest.method.toUpperCase();
 
     // Extract action from context params or URL
@@ -508,14 +503,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
 
       // Check if codeVerifier is stored (backend redirect flow)
       const codeVerifierEntry = getCodeVerifier(state);
-      
-      // Debug: log if codeVerifier is found
-      if (codeVerifierEntry) {
-        console.log('[OAuth Backend Callback] Found codeVerifier, using backend redirect flow');
-      } else {
-        console.log('[OAuth Backend Callback] No codeVerifier found, using frontend redirect flow');
-      }
-      
+
       if (codeVerifierEntry) {
         // Backend redirect flow: exchange token and redirect with token data
         try {
@@ -588,7 +576,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
         // Frontend redirect flow: redirect with code/state in hash (existing behavior)
         // But we need to determine frontend origin - can't use request.url (backend URL)
         let targetOrigin = frontendOrigin;
-        
+
         if (!targetOrigin) {
           // Try to extract from returnUrl if it's absolute
           try {
@@ -608,14 +596,14 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
             }
           }
         }
-        
+
         // If we still don't have an origin, we can't redirect properly
         // This shouldn't happen, but log a warning
         if (!targetOrigin) {
           console.warn('[OAuth] Could not determine frontend origin for redirect. Using request origin as fallback.');
           targetOrigin = new URL(webRequest.url).origin;
         }
-        
+
         const targetUrl = new URL(returnUrl, targetOrigin);
         targetUrl.hash = `oauth_callback=${encodeURIComponent(JSON.stringify({ code, state }))}`;
         return Response.redirect(targetUrl);
