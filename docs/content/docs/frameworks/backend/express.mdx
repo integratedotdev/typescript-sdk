@@ -1,0 +1,95 @@
+---
+title: Express
+description: Integrate the Integrate SDK with Express
+---
+
+The Integrate SDK provides seamless integration with Express through server-side configuration and route handlers. This guide assumes you have an Express project already set up.
+
+## Installation
+
+Install the Integrate SDK in your Express project:
+
+```bash
+bun add integrate-sdk
+```
+
+## Setup
+
+Create a server configuration file with your OAuth credentials:
+
+```typescript
+// src/index.ts
+import express from "express";
+import {
+    createMCPServer,
+    githubIntegration,
+} from "integrate-sdk/server";
+import cors from "cors";
+
+const app = express();
+
+export const { client: serverClient } = createMCPServer({
+    apiKey: process.env.INTEGRATE_API_KEY,
+    integrations: [
+        githubIntegration({
+            scopes: ["repo", "user"],
+        }),
+    ],
+});
+
+app.use(
+    cors({
+        origin: process.env.FRONTEND_URL || "http://localhost:3000",
+        credentials: true,
+    })
+)
+
+app.all("/api/integrate/*", (request: Request) => {
+    return serverClient.handler(request);
+});
+
+app.use(express.json());
+
+app.listen(process.env.PORT || 8080, () => {
+    console.log(`Server running on port ${process.env.PORT || 8080}`);
+});
+```
+
+## Configuration
+
+Add your OAuth credentials to your `.env` file:
+
+```bash
+INTEGRATE_API_KEY=your_integrate_api_key
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+FRONTEND_URL=http://localhost:3000
+PORT=8080
+```
+
+You can get an API key from the [Integrate Dashboard](https://app.integrate.dev).
+
+## CORS Setup
+
+CORS is configured in the setup above. If you need to customize it, adjust the CORS middleware:
+
+```typescript
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    credentials: true,
+  })
+);
+```
+
+## Usage Examples
+
+### Client-Side Authorization
+
+The client is automatically configured when making requests to the server.
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("github");
+```

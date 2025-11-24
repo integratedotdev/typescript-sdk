@@ -1,0 +1,46 @@
+---
+title: Lynx
+description: Integrate the Integrate SDK with Lynx cross-platform framework
+---
+
+The Integrate SDK provides seamless integration with Lynx through client-side configuration. This guide assumes you have a Lynx project already set up.
+
+## Installation
+
+Install the Integrate SDK in your Lynx project:
+
+```bash
+bun add integrate-sdk
+```
+
+## Setup
+
+Create a client configuration file with your OAuth credentials:
+
+```typescript
+// src/lib/integrate.ts
+import { createMCPClient, githubIntegration } from "integrate-sdk";
+
+export const client = createMCPClient({
+  apiBaseUrl: "http://localhost:8080",
+  integrations: [
+    githubIntegration({
+      scopes: ["repo", "user"],
+    }),
+  ],
+});
+```
+
+You'll need a backend server running with the Integrate SDK configured. See the backend framework guides for setting up the server.
+
+## Usage Examples
+
+### Client-Side Authorization
+
+The client is automatically configured when making requests to the server.
+
+```typescript
+import { client } from "./lib/integrate";
+
+await client.authorize("github");
+```
