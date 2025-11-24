@@ -10,7 +10,7 @@ The Gmail integration provides access to Gmail's API through the Integrate MCP s
 The Gmail integration is included with the SDK:
 
 ```typescript
-import { createMCPClient, gmailIntegration } from "integrate-sdk";
+import { gmailIntegration } from "integrate-sdk/server";
 ```
 
 ## Setup
@@ -23,12 +23,15 @@ import { createMCPClient, gmailIntegration } from "integrate-sdk";
 4. Create OAuth 2.0 credentials
 5. Note your Client ID and Client Secret
 
-### 2. Configure the Integration
+### 2. Configure the Integration on Your Server
 
-The integration automatically reads `GMAIL_CLIENT_ID` and `GMAIL_CLIENT_SECRET` from your environment variables:
+Add the Gmail integration to your server configuration. The integration automatically reads `GMAIL_CLIENT_ID` and `GMAIL_CLIENT_SECRET` from your environment variables:
 
 ```typescript
-const client = createMCPClient({
+import { createMCPServer, gmailIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     gmailIntegration({
       scopes: [
@@ -44,14 +47,31 @@ const client = createMCPClient({
 You can override the environment variables by passing explicit values:
 
 ```typescript
-const client = createMCPClient({
-  integrations: [
-    gmailIntegration({
-      clientId: process.env.CUSTOM_GMAIL_ID!,
-      clientSecret: process.env.CUSTOM_GMAIL_SECRET!,
-      scopes: ["https://www.googleapis.com/auth/gmail.send"],
-    }),
-  ],
+gmailIntegration({
+  clientId: process.env.CUSTOM_GMAIL_ID,
+  clientSecret: process.env.CUSTOM_GMAIL_SECRET,
+  scopes: ["https://www.googleapis.com/auth/gmail.send"],
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("gmail");
+const emails = await client.gmail.listEmails({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, gmailIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [gmailIntegration()],
 });
 ```
 
@@ -91,8 +111,6 @@ Use `client.getEnabledTools()` to see all available Gmail tools.
 ### Send an Email
 
 ```typescript
-await client.connect();
-
 const result = await client.gmail.sendEmail({
   to: "recipient@example.com",
   subject: "Hello from Integrate SDK",

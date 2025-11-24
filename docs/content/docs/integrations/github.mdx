@@ -10,7 +10,7 @@ The GitHub integration provides access to GitHub's API through the Integrate MCP
 The GitHub integration is included with the SDK:
 
 ```typescript
-import { createMCPClient, githubIntegration } from "integrate-sdk";
+import { githubIntegration } from "integrate-sdk/server";
 ```
 
 ## Setup
@@ -22,16 +22,18 @@ import { createMCPClient, githubIntegration } from "integrate-sdk";
 3. Fill in the application details
 4. Note your Client ID and Client Secret
 
-### 2. Configure the Integration
+### 2. Configure the Integration on Your Server
 
-The integration automatically reads `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` from your environment variables:
+Add the GitHub integration to your server configuration. The integration automatically reads `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` from your environment variables:
 
 ```typescript
-const client = createMCPClient({
+import { createMCPServer, githubIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     githubIntegration({
       scopes: ["repo", "user", "read:org"], // Optional
-      redirectUri: "http://localhost:3000/callback", // Optional
     }),
   ],
 });
@@ -40,14 +42,31 @@ const client = createMCPClient({
 You can override the environment variables by passing explicit values:
 
 ```typescript
-const client = createMCPClient({
-  integrations: [
-    githubIntegration({
-      clientId: process.env.CUSTOM_GITHUB_ID!,
-      clientSecret: process.env.CUSTOM_GITHUB_SECRET!,
-      scopes: ["repo", "user", "read:org"],
-    }),
-  ],
+githubIntegration({
+  clientId: process.env.CUSTOM_GITHUB_ID,
+  clientSecret: process.env.CUSTOM_GITHUB_SECRET,
+  scopes: ["repo", "user", "read:org"],
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("github");
+const repos = await client.github.listOwnRepos({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, githubIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [githubIntegration()],
 });
 ```
 
@@ -91,8 +110,6 @@ The integration provides access to many more GitHub tools. Use `client.getEnable
 ### Create an Issue
 
 ```typescript
-await client.connect();
-
 const result = await client.github.createIssue({
   owner: "username",
   repo: "repository",
