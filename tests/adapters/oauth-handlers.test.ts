@@ -541,7 +541,7 @@ describe("Next.js Catch-All Route Handler", () => {
     });
 
     it("should call removeProviderToken with context when disconnecting", async () => {
-      const removeProviderTokenMock = mock(async (provider: string, context?: any) => {});
+      const removeProviderTokenMock = mock(async (provider: string, email?: string, context?: any) => {});
       const mockFetch = mock(async () => ({
         ok: true,
         json: async () => ({
@@ -579,7 +579,7 @@ describe("Next.js Catch-All Route Handler", () => {
       const data = await response.json();
 
       expect(data.success).toBe(true);
-      expect(removeProviderTokenMock).toHaveBeenCalledWith("github", { userId: "user123", organizationId: "org456" });
+      expect(removeProviderTokenMock).toHaveBeenCalledWith("github", undefined, { userId: "user123", organizationId: "org456" });
     });
 
     it("should handle GET /oauth/status", async () => {

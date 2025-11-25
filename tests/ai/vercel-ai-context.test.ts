@@ -171,11 +171,11 @@ describe('Vercel AI SDK Context Passing', () => {
 
       // Verify getProviderToken was called with context (2 initial + 1 with context)
       expect(getProviderToken).toHaveBeenCalledTimes(3);
-      expect(getProviderToken).toHaveBeenCalledWith('github', context);
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, context);
     });
 
     it('should support multi-user scenarios with different contexts', async () => {
-      const getProviderToken = vi.fn().mockImplementation((provider: string, context?: MCPContext) => {
+      const getProviderToken = vi.fn().mockImplementation((provider: string, email?: string, context?: MCPContext) => {
         if (context?.userId === 'user1') {
           return Promise.resolve({ ...mockTokenData, accessToken: 'user1-token' });
         } else if (context?.userId === 'user2') {
@@ -231,8 +231,8 @@ describe('Vercel AI SDK Context Passing', () => {
       await toolsUser2['github_list_repos'].execute({ per_page: 10 });
 
       // Verify both users' contexts were used (2 initial + 2 with context)
-      expect(getProviderToken).toHaveBeenCalledWith('github', { userId: 'user1' });
-      expect(getProviderToken).toHaveBeenCalledWith('github', { userId: 'user2' });
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, { userId: 'user1' });
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, { userId: 'user2' });
       expect(getProviderToken).toHaveBeenCalledTimes(4);
     });
 
@@ -318,7 +318,7 @@ describe('Vercel AI SDK Context Passing', () => {
 
       // Verify getProviderToken received the full context with custom fields (2 initial + 1 with context)
       expect(getProviderToken).toHaveBeenCalledTimes(3);
-      expect(getProviderToken).toHaveBeenCalledWith('github', context);
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, context);
     });
   });
 
@@ -372,7 +372,7 @@ describe('Vercel AI SDK Context Passing', () => {
 
       // Verify getProviderToken was called with userId (2 initial + 1 with context)
       expect(getProviderToken).toHaveBeenCalledTimes(3);
-      expect(getProviderToken).toHaveBeenCalledWith('github', { userId });
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, { userId });
     });
 
     it('should support organization context in multi-org apps', async () => {
@@ -421,7 +421,7 @@ describe('Vercel AI SDK Context Passing', () => {
 
       // Verify organization context was used (2 initial + 1 with context)
       expect(getProviderToken).toHaveBeenCalledTimes(3);
-      expect(getProviderToken).toHaveBeenCalledWith('github', context);
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, context);
     });
   });
 });

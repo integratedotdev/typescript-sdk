@@ -417,7 +417,28 @@ export class OAuthManager {
       try {
         await this.indexedDBStorage.deleteTokensByProvider(provider);
       } catch (error) {
-        console.error(`Failed to delete tokens from IndexedDB for ${provider}:`, error);
+        // Fallback to localStorage for backward compatibility when IndexedDB is not available
+        if (typeof window !== 'undefined' && window.localStorage) {
+          try {
+            const key = `integrate_token_${provider}`;
+            window.localStorage.removeItem(key);
+          } catch (localStorageError) {
+            // Ignore localStorage errors
+          }
+        }
+      }
+    }
+    
+    // Also clear from localStorage for backward compatibility when not using callbacks
+    // This ensures tokens are removed even if IndexedDB deletion fails
+    if (!this.setTokenCallback && !this.removeTokenCallback) {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        try {
+          const key = `integrate_token_${provider}`;
+          window.localStorage.removeItem(key);
+        } catch (localStorageError) {
+          // Ignore localStorage errors
+        }
       }
     }
 
@@ -573,8 +594,24 @@ export class OAuthManager {
   clearAllProviderTokens(): void {
     this.providerTokens.clear();
 
-    // Clear from IndexedDB if not using server-side database storage
+    // Clear from IndexedDB and localStorage if not using server-side database storage
     if (!this.setTokenCallback && !this.removeTokenCallback) {
+      // Clear from localStorage for backward compatibility
+      if (typeof window !== 'undefined' && window.localStorage) {
+        try {
+          // Remove all integrate_token_* keys
+          const keysToRemove: string[] = [];
+          for (let i = 0; i < window.localStorage.length; i++) {
+            const key = window.localStorage.key(i);
+            if (key && key.startsWith('integrate_token_')) {
+              keysToRemove.push(key);
+            }
+          }
+          keysToRemove.forEach(key => window.localStorage.removeItem(key));
+        } catch (localStorageError) {
+          // Ignore localStorage errors
+        }
+      }
       this.indexedDBStorage.clearAll().catch((error) => {
         console.error('Failed to clear all tokens from IndexedDB:', error);
       });
@@ -641,13 +678,30 @@ export class OAuthManager {
       if (email) {
       // Delete specific account
       if (!this.setTokenCallback && !this.removeTokenCallback) {
-        await this.indexedDBStorage.deleteToken(provider, email).catch((error) => {
-          console.error(`Failed to delete token from IndexedDB for ${provider} (${email}):`, error);
+        await this.indexedDBStorage.deleteToken(provider, email).catch(() => {
+          // Fallback to localStorage for backward compatibility when IndexedDB is not available
+          if (typeof window !== 'undefined' && window.localStorage) {
+            try {
+              const key = `integrate_token_${provider}`;
+              window.localStorage.removeItem(key);
+            } catch (localStorageError) {
+              // Ignore localStorage errors
+            }
+          }
         });
       }
       } else {
         // Delete all tokens for provider
         this.clearProviderToken(provider);
+        // Also clear from localStorage for backward compatibility
+        if (typeof window !== 'undefined' && window.localStorage) {
+          try {
+            const key = `integrate_token_${provider}`;
+            window.localStorage.removeItem(key);
+          } catch (localStorageError) {
+            // Ignore localStorage errors
+          }
+        }
       }
       return;
     }
@@ -659,7 +713,27 @@ export class OAuthManager {
       try {
         await this.indexedDBStorage.saveToken(provider, tokenEmail, tokenData);
       } catch (error) {
-        console.error(`Failed to save token for ${provider} to IndexedDB:`, error);
+        // Fallback to localStorage for backward compatibility when IndexedDB is not available
+        if (typeof window !== 'undefined' && window.localStorage) {
+          try {
+            const key = `integrate_token_${provider}`;
+            window.localStorage.setItem(key, JSON.stringify(tokenData));
+          } catch (localStorageError) {
+            console.error(`Failed to save token for ${provider} to localStorage:`, localStorageError);
+          }
+        } else {
+          console.error(`Failed to save token for ${provider} to IndexedDB:`, error);
+        }
+      }
+    } else {
+      // No email provided, fallback to localStorage for backward compatibility
+      if (typeof window !== 'undefined' && window.localStorage) {
+        try {
+          const key = `integrate_token_${provider}`;
+          window.localStorage.setItem(key, JSON.stringify(tokenData));
+        } catch (localStorageError) {
+          console.error(`Failed to save token for ${provider} to localStorage:`, localStorageError);
+        }
       }
     }
   }
@@ -671,16 +745,17 @@ export class OAuthManager {
    * 1. If getTokenCallback is configured → use callback exclusively (no IndexedDB)
    * 2. If skipIndexedDB is true → skip IndexedDB (return undefined)
    * 3. Otherwise → use IndexedDB (when callbacks are NOT configured AND skipIndexedDB is false)
+   * 4. Fallback to localStorage if IndexedDB is not available (for backward compatibility)
    * 
    * Returns undefined if not found or invalid
    * Note: Without email, returns the first token found for the provider
    */
-  private async loadProviderToken(provider: string, email?: string): Promise<ProviderTokenData | undefined> {
+  private async loadProviderToken(provider: string, email?: string, context?: MCPContext): Promise<ProviderTokenData | undefined> {
     // Rule 1: If callback is provided, use it exclusively
     // When callbacks are configured, we do NOT load from IndexedDB
     if (this.getTokenCallback) {
       try {
-        return await this.getTokenCallback(provider, email);
+        return await this.getTokenCallback(provider, email, context);
       } catch (error) {
         console.error(`Failed to load token for ${provider} via callback:`, error);
         return undefined;
@@ -693,7 +768,18 @@ export class OAuthManager {
       try {
         return await this.indexedDBStorage.getToken(provider, email);
       } catch (error) {
-        console.error(`Failed to load token for ${provider} from IndexedDB:`, error);
+        // Fallback to localStorage for backward compatibility when IndexedDB is not available
+        if (typeof window !== 'undefined' && window.localStorage) {
+          try {
+            const key = `integrate_token_${provider}`;
+            const stored = window.localStorage.getItem(key);
+            if (stored) {
+              return JSON.parse(stored) as ProviderTokenData;
+            }
+          } catch (localStorageError) {
+            // Ignore localStorage errors
+          }
+        }
         return undefined;
       }
     } else {
@@ -705,7 +791,18 @@ export class OAuthManager {
           return tokens.values().next().value;
         }
       } catch (error) {
-        console.error(`Failed to load tokens for ${provider} from IndexedDB:`, error);
+        // Fallback to localStorage for backward compatibility when IndexedDB is not available
+        if (typeof window !== 'undefined' && window.localStorage) {
+          try {
+            const key = `integrate_token_${provider}`;
+            const stored = window.localStorage.getItem(key);
+            if (stored) {
+              return JSON.parse(stored) as ProviderTokenData;
+            }
+          } catch (localStorageError) {
+            // Ignore localStorage errors
+          }
+        }
       }
     }
     return undefined;
@@ -716,7 +813,7 @@ export class OAuthManager {
    */
   async loadAllProviderTokens(providers: string[]): Promise<void> {
     for (const provider of providers) {
-      const tokenData = await this.loadProviderToken(provider);
+      const tokenData = await this.loadProviderToken(provider, undefined, undefined);
       if (tokenData) {
         this.providerTokens.set(provider, tokenData);
       }
@@ -727,19 +824,35 @@ export class OAuthManager {
    * Load all provider tokens synchronously from IndexedDB on initialization
    * Only works when database callbacks are NOT configured
    * This ensures tokens are available immediately for isAuthorized() calls
-   * Note: IndexedDB operations are async, so this method is deprecated but kept for compatibility
+   * Note: IndexedDB operations are async, so this method falls back to localStorage synchronously
    */
   loadAllProviderTokensSync(providers: string[]): void {
-    // IndexedDB operations are async, so we can't do this synchronously
-    // This method is kept for backward compatibility but doesn't do anything
-    // The async loadAllProviderTokens should be used instead
     if (this.getTokenCallback) {
       return;
     }
 
-    // Attempt async load (fire and forget)
-    this.loadAllProviderTokens(providers).catch((error) => {
-      console.error('Failed to load provider tokens:', error);
+    // Try to load from localStorage synchronously first (for backward compatibility)
+    // This ensures tokens are available immediately when IndexedDB is not available
+    if (typeof window !== 'undefined' && window.localStorage) {
+      for (const provider of providers) {
+        try {
+          const key = `integrate_token_${provider}`;
+          const stored = window.localStorage.getItem(key);
+          if (stored) {
+            const tokenData = JSON.parse(stored) as ProviderTokenData;
+            // Store in memory cache for immediate access
+            this.providerTokens.set(provider, tokenData);
+          }
+        } catch {
+          // Ignore localStorage errors
+        }
+      }
+    }
+
+    // Also attempt async load from IndexedDB (fire and forget)
+    // This will update the cache if IndexedDB has more recent data
+    this.loadAllProviderTokens(providers).catch(() => {
+      // Ignore errors - we've already tried localStorage as fallback
     });
   }
 

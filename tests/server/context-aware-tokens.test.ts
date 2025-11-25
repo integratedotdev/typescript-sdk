@@ -78,10 +78,10 @@ describe('Context-Aware Token Storage', () => {
       await (client as any).github.listRepos({}, { context });
 
       // Verify getProviderToken was called with the context
-      // Note: It's called twice - once during client init (without context) and once for the method call (with context)
+      // Note: It's called multiple times - during client init (without context) and for the method call (with context)
       expect(getProviderToken).toHaveBeenCalledTimes(3);
-      expect(getProviderToken).toHaveBeenCalledWith('github', undefined); // Initial check during construction
-      expect(getProviderToken).toHaveBeenCalledWith('github', context); // Method call with context
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, undefined); // Initial check during construction
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, context); // Method call with context
     });
 
     it('should work without context (backward compatibility)', async () => {
@@ -108,7 +108,7 @@ describe('Context-Aware Token Storage', () => {
       await (client as any).github.listRepos({});
 
       // Verify getProviderToken was called without context (twice - init + method call)
-      expect(getProviderToken).toHaveBeenCalledWith('github', undefined);
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, undefined);
     });
 
     it('should pass context with multiple fields', async () => {
@@ -153,8 +153,8 @@ describe('Context-Aware Token Storage', () => {
       // Verify all context fields were passed
       // Note: It's called twice - once during client init (without context) and once for the method call (with context)
       expect(getProviderToken).toHaveBeenCalledTimes(3);
-      expect(getProviderToken).toHaveBeenCalledWith('github', undefined); // Initial check during construction
-      expect(getProviderToken).toHaveBeenCalledWith('github', context); // Method call with context
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, undefined); // Initial check during construction
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, context); // Method call with context
     });
   });
 
@@ -175,11 +175,11 @@ describe('Context-Aware Token Storage', () => {
         userId: 'user123',
       };
 
-      // Call getProviderToken directly
-      await client.getProviderToken('github', context);
+      // Call getProviderToken directly (email must be undefined when passing context)
+      await client.getProviderToken('github', undefined, context);
 
-      // Verify context was passed
-      expect(getProviderToken).toHaveBeenCalledWith('github', context);
+      // Verify context was passed (email is undefined when not provided)
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, context);
     });
 
     it('should pass context to setProviderToken when called directly', async () => {
@@ -198,11 +198,11 @@ describe('Context-Aware Token Storage', () => {
         organizationId: 'org456',
       };
 
-      // Call setProviderToken directly
-      await client.setProviderToken('github', mockTokenData, context);
+      // Call setProviderToken directly (email must be undefined when passing context)
+      await client.setProviderToken('github', mockTokenData, undefined, context);
 
-      // Verify context was passed
-      expect(setProviderToken).toHaveBeenCalledWith('github', mockTokenData, context);
+      // Verify context was passed (email is undefined when not provided)
+      expect(setProviderToken).toHaveBeenCalledWith('github', mockTokenData, undefined, context);
     });
   });
 
@@ -256,7 +256,7 @@ describe('Context-Aware Token Storage', () => {
         expiresIn: 3600,
       };
 
-      const getProviderToken = vi.fn().mockImplementation((provider: string, context?: MCPContext) => {
+      const getProviderToken = vi.fn().mockImplementation((provider: string, email?: string, context?: MCPContext) => {
         if (context?.userId === 'user1') {
           return Promise.resolve(mockUser1Token);
         } else if (context?.userId === 'user2') {
@@ -292,18 +292,18 @@ describe('Context-Aware Token Storage', () => {
 
       // Call for user1
       await (client as any).github.listRepos({}, { context: { userId: 'user1' } });
-      expect(getProviderToken).toHaveBeenCalledWith('github', { userId: 'user1' });
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, { userId: 'user1' });
 
       // Call for user2
       await (client as any).github.listRepos({}, { context: { userId: 'user2' } });
-      expect(getProviderToken).toHaveBeenCalledWith('github', { userId: 'user2' });
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, { userId: 'user2' });
 
       // Verify all calls (2 initial checks + 2 method calls)
       expect(getProviderToken).toHaveBeenCalledTimes(4);
     });
 
     it('should handle organization-scoped tokens', async () => {
-      const getProviderToken = vi.fn().mockImplementation((provider: string, context?: MCPContext) => {
+      const getProviderToken = vi.fn().mockImplementation((provider: string, email?: string, context?: MCPContext) => {
         if (context?.organizationId) {
           return Promise.resolve({
             ...mockTokenData,
@@ -349,8 +349,8 @@ describe('Context-Aware Token Storage', () => {
       // Verify organization context was used
       // Note: It's called twice - once during client init (without context) and once for the method call (with context)
       expect(getProviderToken).toHaveBeenCalledTimes(3);
-      expect(getProviderToken).toHaveBeenCalledWith('github', undefined); // Initial check
-      expect(getProviderToken).toHaveBeenCalledWith('github', context); // Method call with context
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, undefined); // Initial check
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, context); // Method call with context
     });
   });
 
@@ -372,10 +372,10 @@ describe('Context-Aware Token Storage', () => {
       };
 
       // Should not throw, but return undefined
-      const result = await client.getProviderToken('github', context);
+      const result = await client.getProviderToken('github', undefined, context);
 
       expect(result).toBeUndefined();
-      expect(getProviderToken).toHaveBeenCalledWith('github', context);
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, context);
     });
 
     it('should handle setProviderToken callback errors', async () => {
@@ -395,10 +395,10 @@ describe('Context-Aware Token Storage', () => {
 
       // Should throw the error
       await expect(
-        client.setProviderToken('github', mockTokenData, context)
+        client.setProviderToken('github', mockTokenData, undefined, context)
       ).rejects.toThrow('Database write failed');
 
-      expect(setProviderToken).toHaveBeenCalledWith('github', mockTokenData, context);
+      expect(setProviderToken).toHaveBeenCalledWith('github', mockTokenData, undefined, context);
     });
   });
 
@@ -441,8 +441,8 @@ describe('Context-Aware Token Storage', () => {
 
       // Verify getProviderToken was called with the context
       expect(getProviderToken).toHaveBeenCalledTimes(3);
-      expect(getProviderToken).toHaveBeenCalledWith('github', undefined); // Initial check during construction
-      expect(getProviderToken).toHaveBeenCalledWith('github', context); // Method call with context
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, undefined); // Initial check during construction
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, context); // Method call with context
     });
 
     it('should handle empty context object', async () => {
@@ -479,8 +479,8 @@ describe('Context-Aware Token Storage', () => {
 
       // Verify getProviderToken was called with the context
       expect(getProviderToken).toHaveBeenCalledTimes(3);
-      expect(getProviderToken).toHaveBeenCalledWith('github', undefined); // Initial check during construction
-      expect(getProviderToken).toHaveBeenCalledWith('github', context); // Method call with context
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, undefined); // Initial check during construction
+      expect(getProviderToken).toHaveBeenCalledWith('github', undefined, context); // Method call with context
     });
   });
 
