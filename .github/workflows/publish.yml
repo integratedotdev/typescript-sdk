@@ -12,7 +12,7 @@ on:
       - "!.github/workflows/publish.yml"
 
 permissions:
-  contents: write  # Required to create releases and tags
+  contents: write # Required to create releases and tags
 
 jobs:
   check-version:
@@ -113,3 +113,15 @@ jobs:
             ```
           draft: false
           prerelease: false
+
+      - name: Github Releases To Discord
+        uses: SethCohen/github-releases-to-discord@v1.13.1
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          color: "1316451"
+          # username: "Integrate.dev Release"
+          # avatar_url: "https://raw.githubusercontent.com/integratedotdev/typescript-sdk/refs/heads/main/docs/src/app/favicon.ico"
+          content: "@everyone,"
+          footer_title: "integrate.dev"
+          # footer_icon_url: "https://raw.githubusercontent.com/integratedotdev/typescript-sdk/refs/heads/main/docs/src/app/favicon.ico"
+          footer_timestamp: true
