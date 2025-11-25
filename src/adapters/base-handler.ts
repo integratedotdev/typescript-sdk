@@ -60,41 +60,49 @@ export interface OAuthHandlerConfig {
    * Called automatically after successful OAuth callback
    * 
    * @param provider - Provider name (e.g., 'github')
-   * @param tokenData - OAuth tokens (accessToken, refreshToken, etc.)
+   * @param tokenData - OAuth tokens (accessToken, refreshToken, etc.), or null to delete
+   * @param email - Optional email to store specific account token
    * @param context - User context (userId, organizationId, etc.)
    * 
    * @example
    * ```typescript
-   * setProviderToken: async (provider, tokens, context) => {
+   * setProviderToken: async (provider, tokens, email, context) => {
    *   await db.tokens.upsert({
-   *     where: { provider_userId: { provider, userId: context.userId } },
-   *     create: { provider, userId: context.userId, ...tokens },
+   *     where: { provider_email_userId: { provider, email, userId: context.userId } },
+   *     create: { provider, email, userId: context.userId, ...tokens },
    *     update: tokens,
    *   });
    * }
    * ```
    */
-  setProviderToken?: (provider: string, tokenData: ProviderTokenData, context?: MCPContext) => Promise<void> | void;
+  setProviderToken?: (provider: string, tokenData: ProviderTokenData | null, email?: string, context?: MCPContext) => Promise<void> | void;
   /**
    * Optional callback to delete provider tokens from database
-   * Called automatically when disconnecting providers
+   * Called automatically when disconnecting providers or accounts
    * 
    * @param provider - Provider name (e.g., 'github')
+   * @param email - Optional email to delete specific account token. If not provided, deletes all tokens for the provider
    * @param context - User context (userId, organizationId, etc.)
    * 
    * @example
    * ```typescript
-   * removeProviderToken: async (provider, context) => {
+   * removeProviderToken: async (provider, email, context) => {
    *   const userId = context?.userId;
    *   if (!userId) return;
    *   
-   *   await db.tokens.delete({
-   *     where: { provider_userId: { provider, userId } }
-   *   });
+   *   if (email) {
+   *     await db.tokens.deleteMany({
+   *       where: { provider, email, userId }
+   *     });
+   *   } else {
+   *     await db.tokens.deleteMany({
+   *       where: { provider, userId }
+   *     });
+   *   }
    * }
    * ```
    */
-  removeProviderToken?: (provider: string, context?: MCPContext) => Promise<void> | void;
+  removeProviderToken?: (provider: string, email?: string, context?: MCPContext) => Promise<void> | void;
 }
 
 /**
@@ -565,9 +573,10 @@ export class OAuthHandler {
         }
 
         // Call removeProviderToken callback with context
+        // Note: Email is not available in disconnect requests - pass undefined to delete all tokens for provider
         if (context) {
           try {
-            await this.config.removeProviderToken(request.provider, context);
+            await this.config.removeProviderToken(request.provider, undefined, context);
           } catch (error) {
             // Log error but don't fail the request - MCP server revocation will still happen
             console.error(`Failed to delete token for ${request.provider} from database via removeProviderToken:`, error);

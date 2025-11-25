@@ -85,7 +85,7 @@ async function fetchGitHubEmail(accessToken: string): Promise<string | undefined
     }
 
     // Fallback to first email
-    if (emails.length > 0) {
+    if (emails.length > 0 && emails[0]?.email) {
       return emails[0].email;
     }
 
