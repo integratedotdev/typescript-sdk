@@ -18,22 +18,25 @@ describe("Client OAuth Methods", () => {
     originalLocalStorage = global.localStorage;
     originalWindow = global.window;
 
+    // Clear mock storage
+    mockLocalStorage.clear();
+
     // Mock localStorage
-    global.localStorage = {
+    const mockStorage = {
       getItem: (key: string) => mockLocalStorage.get(key) || null,
       setItem: (key: string, value: string) => mockLocalStorage.set(key, value),
       removeItem: (key: string) => mockLocalStorage.delete(key),
       clear: () => mockLocalStorage.clear(),
       get length() { return mockLocalStorage.size; },
       key: (index: number) => Array.from(mockLocalStorage.keys())[index] || null,
-    } as any;
+    };
 
-    // Mock window if it doesn't exist
-    if (!global.window) {
-      (global as any).window = {
-        localStorage: global.localStorage,
-      };
-    }
+    global.localStorage = mockStorage as any;
+
+    // Always set up window with localStorage before creating clients
+    (global as any).window = {
+      localStorage: mockStorage,
+    };
   });
 
   afterEach(() => {
@@ -166,6 +169,9 @@ describe("Client OAuth Methods", () => {
         singleton: false,
       });
 
+      // Wait a moment for token loading to complete
+      await new Promise(resolve => setTimeout(resolve, 10));
+
       const isAuthorized = await client.isAuthorized("github");
       expect(isAuthorized).toBe(false);
     });
@@ -279,6 +285,9 @@ describe("Client OAuth Methods", () => {
         ],
         singleton: false,
       });
+
+      // Wait a moment for token loading to complete
+      await new Promise(resolve => setTimeout(resolve, 10));
 
       const authorized = await client.authorizedProviders();
       expect(authorized).toEqual([]);

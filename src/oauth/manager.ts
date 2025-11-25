@@ -647,6 +647,11 @@ export class OAuthManager {
       return undefined;
     }
 
+    // Skip localStorage if skipLocalStorage is enabled
+    if (this.skipLocalStorage) {
+      return undefined;
+    }
+
     // Read from localStorage synchronously
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
