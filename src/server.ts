@@ -404,12 +404,12 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
 
         const result = await oauthHandler.handleToolCall(body, authHeader);
         const response = Response.json(result);
-        
+
         // Add X-Integrate-Use-Database header if database callbacks are configured
         if (oauthHandler.hasDatabaseCallbacks()) {
           response.headers.set('X-Integrate-Use-Database', 'true');
         }
-        
+
         return response;
       } catch (error: any) {
         console.error('[MCP Tool Call] Error:', error);
@@ -610,7 +610,6 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
         // If we still don't have an origin, we can't redirect properly
         // This shouldn't happen, but log a warning
         if (!targetOrigin) {
-          console.warn('[OAuth] Could not determine frontend origin for redirect. Using request origin as fallback.');
           targetOrigin = new URL(webRequest.url).origin;
         }
 

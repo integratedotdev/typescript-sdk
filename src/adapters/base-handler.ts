@@ -203,18 +203,18 @@ export interface ToolCallResponse {
 export class OAuthHandler {
   private readonly serverUrl: string;
   private readonly apiKey?: string;
-  
+
   constructor(private config: OAuthHandlerConfig) {
     // Validate config on initialization
     if (!config || !config.providers) {
       throw new Error('OAuthHandler requires a valid config with providers');
     }
-    
+
     // Use configured serverUrl or default
     this.serverUrl = config.serverUrl || MCP_SERVER_URL;
     this.apiKey = config.apiKey;
   }
-  
+
   /**
    * Get headers with API key if configured
    */
@@ -222,12 +222,12 @@ export class OAuthHandler {
     const headers: Record<string, string> = {
       ...additionalHeaders,
     };
-    
+
     // Add API key header if configured (for usage tracking)
     if (this.apiKey) {
       headers['X-API-KEY'] = this.apiKey;
     }
-    
+
     return headers;
   }
 
@@ -254,7 +254,7 @@ export class OAuthHandler {
     // Determine if request is a Web Request or parsed body
     let webRequest: Request | undefined;
     let authorizeRequest: AuthorizeRequest;
-    
+
     if (request instanceof Request) {
       // Full Web Request object - extract body
       webRequest = request;
@@ -266,9 +266,7 @@ export class OAuthHandler {
       // Already parsed AuthorizeRequest
       authorizeRequest = request as AuthorizeRequest;
     }
-    
-    console.log('[handleAuthorize] Received request for provider:', authorizeRequest.provider, 'has codeVerifier:', !!authorizeRequest.codeVerifier, 'has frontendOrigin:', !!authorizeRequest.frontendOrigin);
-    
+
     // Get OAuth config from environment (server-side)
     const providerConfig = this.config.providers[authorizeRequest.provider];
     if (!providerConfig) {
@@ -285,23 +283,23 @@ export class OAuthHandler {
     url.searchParams.set('provider', authorizeRequest.provider);
     url.searchParams.set('client_id', providerConfig.clientId);
     url.searchParams.set('client_secret', providerConfig.clientSecret);
-    
+
     // Use scopes from request if provided, otherwise use provider config scopes
     const scopes = authorizeRequest.scopes || providerConfig.scopes || [];
     if (scopes.length > 0) {
       url.searchParams.set('scope', scopes.join(','));
     }
-    
+
     url.searchParams.set('state', authorizeRequest.state);
     url.searchParams.set('code_challenge', authorizeRequest.codeChallenge);
     url.searchParams.set('code_challenge_method', authorizeRequest.codeChallengeMethod);
-    
+
     // Use request redirect URI or fallback to provider config
     const redirectUri = authorizeRequest.redirectUri || providerConfig.redirectUri;
     if (redirectUri) {
       url.searchParams.set('redirect_uri', redirectUri);
     }
-    
+
     // Add provider-specific config parameters (e.g., Notion's 'owner' parameter)
     if (providerConfig.config) {
       for (const [key, value] of Object.entries(providerConfig.config)) {
@@ -324,33 +322,23 @@ export class OAuthHandler {
 
     const data = await response.json();
     const result: AuthorizeResponse = data as AuthorizeResponse;
-    
+
     // Validate that authorizationUrl is present
     if (!result.authorizationUrl) {
-      console.error('[OAuth] MCP server did not return authorizationUrl:', data);
       throw new Error('MCP server failed to return authorization URL');
     }
-    
-    // Log the authorization URL for debugging (truncated for security)
-    const urlPreview = result.authorizationUrl.length > 100 
-      ? result.authorizationUrl.substring(0, 100) + '...' 
-      : result.authorizationUrl;
-    console.log('[OAuth] Generated authorization URL:', urlPreview);
-    
+
     // Store codeVerifier and frontendOrigin temporarily if provided (for backend redirect flow)
     if (authorizeRequest.codeVerifier) {
       try {
         // Import the storage from server.ts
         const { storeCodeVerifier } = await import('../server.js');
         storeCodeVerifier(authorizeRequest.state, authorizeRequest.codeVerifier, authorizeRequest.provider, authorizeRequest.frontendOrigin);
-        console.log('[OAuth] Stored codeVerifier for state:', authorizeRequest.state.substring(0, 20) + '...', 'frontendOrigin:', authorizeRequest.frontendOrigin);
       } catch (error) {
         // If storage fails, log warning but continue
         // This might happen if called from a different context
-        console.warn('[OAuth] Failed to store codeVerifier:', error);
       }
     } else {
-      console.log('[OAuth] No codeVerifier provided in authorize request');
     }
 
     // Try to capture user context if Web Request is available
@@ -358,18 +346,18 @@ export class OAuthHandler {
       try {
         const { detectSessionContext } = await import('./session-detector.js');
         const { createContextCookie, getSetCookieHeader } = await import('./context-cookie.js');
-        
+
         // Try custom session context extractor first
         let context: MCPContext | undefined;
         if (this.config.getSessionContext) {
           context = await this.config.getSessionContext(webRequest);
         }
-        
+
         // Fallback to automatic detection
         if (!context || !context.userId) {
           context = await detectSessionContext(webRequest);
         }
-        
+
         // If we have user context, create encrypted cookie
         if (context && context.userId) {
           // Use API key or provider secret as encryption key
@@ -380,10 +368,9 @@ export class OAuthHandler {
       } catch (error) {
         // Context capture failed - continue without it
         // This is not a fatal error since user can still complete OAuth manually
-        console.warn('[OAuth] Failed to capture user context:', error);
       }
     }
-    
+
     return result;
   }
 
@@ -402,7 +389,7 @@ export class OAuthHandler {
     // Determine if request is a Web Request or parsed body
     let webRequest: Request | undefined;
     let callbackRequest: CallbackRequest;
-    
+
     if (request instanceof Request) {
       // Full Web Request object - extract body
       webRequest = request;
@@ -414,7 +401,7 @@ export class OAuthHandler {
       // Already parsed CallbackRequest
       callbackRequest = request as CallbackRequest;
     }
-    
+
     // Get OAuth config from environment (server-side)
     const providerConfig = this.config.providers[callbackRequest.provider];
 
@@ -433,19 +420,18 @@ export class OAuthHandler {
       try {
         const { getContextCookieFromRequest, readContextCookie } = await import('./context-cookie.js');
         const cookieValue = getContextCookieFromRequest(webRequest);
-        
+
         if (cookieValue) {
           // Use API key or provider secret as decryption key
           const secret = this.apiKey || providerConfig.clientSecret;
           const contextData = await readContextCookie(cookieValue, secret);
-          
+
           if (contextData && contextData.provider === callbackRequest.provider) {
             context = contextData.context;
           }
         }
       } catch (error) {
         // Context restoration failed - continue without it
-        console.warn('[OAuth] Failed to restore user context:', error);
       }
     }
 
@@ -475,7 +461,7 @@ export class OAuthHandler {
 
     const data = await response.json();
     const result: CallbackResponse = data as CallbackResponse;
-    
+
     // Call setProviderToken callback if configured
     // Note: We save the token even if context is undefined, as some apps
     // may use single-user scenarios or handle context internally in their callback
@@ -489,20 +475,19 @@ export class OAuthHandler {
           expiresAt: result.expiresAt,
           scopes: result.scopes, // Include scopes in token data
         };
-        
+
         await this.config.setProviderToken(callbackRequest.provider, tokenData, context);
       } catch (error) {
         // Token storage failed - log but don't fail the OAuth flow
-        console.error('[OAuth] Failed to save provider token:', error);
       }
     }
-    
+
     // Include cookie clear header if Web Request was provided
     if (webRequest) {
       const { getClearCookieHeader } = await import('./context-cookie.js');
       result.clearCookie = getClearCookieHeader();
     }
-    
+
     return result;
   }
 
@@ -565,18 +550,18 @@ export class OAuthHandler {
     if (webRequest && this.config.removeProviderToken) {
       try {
         let context: MCPContext | undefined;
-        
+
         // Try custom session context extractor first
         if (this.config.getSessionContext) {
           context = await this.config.getSessionContext(webRequest);
         }
-        
+
         // Fallback to automatic detection
         if (!context || !context.userId) {
           const { detectSessionContext } = await import('./session-detector.js');
           context = await detectSessionContext(webRequest);
         }
-        
+
         // Call removeProviderToken callback with context
         if (context) {
           try {

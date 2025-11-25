@@ -53,7 +53,7 @@ export class OAuthManager {
     this.getTokenCallback = tokenCallbacks?.getProviderToken;
     this.setTokenCallback = tokenCallbacks?.setProviderToken;
     this.removeTokenCallback = tokenCallbacks?.removeProviderToken;
-    
+
     // Auto-detect skipLocalStorage from callbacks:
     // If getTokenCallback or setTokenCallback is provided (indicating server-side database storage), auto-set to true
     // Otherwise, default to false (use localStorage when callbacks are not configured)
@@ -110,17 +110,14 @@ export class OAuthManager {
 
     // 4. Request authorization URL from user's API route
     // Note: Scopes are NOT sent from client - they're defined server-side in integration config
-    console.log('[OAuth] Requesting authorization URL, flow mode:', this.flowConfig.mode);
     const authUrl = await this.getAuthorizationUrl(provider, state, codeChallenge, config.redirectUri, codeVerifier);
-    console.log('[OAuth] Received authorization URL, length:', authUrl?.length);
-    
+
     // Validate authorization URL before redirecting
     if (!authUrl || authUrl.trim() === '') {
       throw new Error('Received empty authorization URL from server');
     }
 
     // 5. Open authorization URL (popup or redirect)
-    console.log('[OAuth] Opening authorization URL, mode:', this.flowConfig.mode);
     if (this.flowConfig.mode === 'popup') {
       this.windowManager.openPopup(authUrl, this.flowConfig.popupOptions);
 
@@ -135,7 +132,6 @@ export class OAuthManager {
       }
     } else {
       // For redirect mode, just redirect - callback will be handled separately
-      console.log('[OAuth] Redirecting to authorization URL:', authUrl.substring(0, 100) + (authUrl.length > 100 ? '...' : ''));
       this.windowManager.openRedirect(authUrl);
     }
   }
@@ -363,7 +359,7 @@ export class OAuthManager {
       try {
         // Try to get the token from the database to check if it exists
         const tokenData = await this.getProviderToken(provider, context);
-        
+
         // If token exists in database, delete it by calling setProviderToken with null
         if (tokenData) {
           await this.setTokenCallback(provider, null, context);
@@ -375,7 +371,7 @@ export class OAuthManager {
     }
     // Client-side: no database callbacks - just clear localStorage
     // No server calls should be made when using client-side storage
-    
+
     // Client-side localStorage clearing happens independently of server operations above
     // This ensures tokens are always cleared locally, even if server calls fail
     // clearProviderToken is purely client-side and does not make any server calls
@@ -409,7 +405,7 @@ export class OAuthManager {
         return undefined;
       }
     }
-    
+
     // Otherwise use in-memory cache (loaded from localStorage)
     return this.providerTokens.get(provider);
   }
@@ -463,7 +459,7 @@ export class OAuthManager {
    */
   clearProviderToken(provider: string): void {
     this.providerTokens.delete(provider);
-    
+
     // Only clear from localStorage if not using server-side database storage
     // This is purely client-side - no server calls should be made here
     if (!this.skipLocalStorage && typeof window !== 'undefined' && window.localStorage) {
@@ -549,7 +545,7 @@ export class OAuthManager {
       // Return early - callbacks are exclusive, no localStorage when callbacks are configured
       return;
     }
-    
+
     // If tokenData is null, delete the token (clear from memory and localStorage if applicable)
     if (tokenData === null) {
       this.clearProviderToken(provider);
@@ -562,7 +558,6 @@ export class OAuthManager {
       // Token storage is handled server-side, skip localStorage
       // Note: Token is still stored in memory (this.providerTokens), but will be lost on page reload
       // Make sure you have setProviderToken/getProviderToken callbacks configured for persistence
-      console.log(`[OAuth] Token for ${provider} stored in memory only (skipLocalStorage: true). Configure setProviderToken/getProviderToken callbacks for persistence.`);
       return;
     }
 
@@ -699,7 +694,7 @@ export class OAuthManager {
     if (this.skipLocalStorage) {
       return;
     }
-    
+
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
         const key = `integrate_oauth_pending_${state}`;
@@ -721,7 +716,7 @@ export class OAuthManager {
     if (this.skipLocalStorage) {
       return undefined;
     }
-    
+
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
         const key = `integrate_oauth_pending_${state}`;
@@ -746,7 +741,7 @@ export class OAuthManager {
     if (this.skipLocalStorage) {
       return;
     }
-    
+
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
         const key = `integrate_oauth_pending_${state}`;
@@ -768,7 +763,7 @@ export class OAuthManager {
     if (this.skipLocalStorage) {
       return;
     }
-    
+
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
         const prefix = 'integrate_oauth_pending_';
@@ -820,7 +815,7 @@ export class OAuthManager {
   ): Promise<string> {
     // Construct URL: {apiBaseUrl}{oauthApiBase}/authorize
     // If apiBaseUrl is not set, use relative URL (same origin)
-    const url = this.apiBaseUrl 
+    const url = this.apiBaseUrl
       ? `${this.apiBaseUrl}${this.oauthApiBase}/authorize`
       : `${this.oauthApiBase}/authorize`;
 
@@ -856,24 +851,16 @@ export class OAuthManager {
     }
 
     const data = await response.json() as AuthorizationUrlResponse;
-    
+
     // Validate that authorizationUrl is present and valid
     if (!data.authorizationUrl) {
-      console.error('[OAuth] Authorization URL is missing from response:', data);
       throw new Error('Authorization URL is missing from server response');
     }
-    
+
     if (typeof data.authorizationUrl !== 'string' || data.authorizationUrl.trim() === '') {
-      console.error('[OAuth] Invalid authorization URL received:', data.authorizationUrl);
       throw new Error('Invalid authorization URL received from server');
     }
-    
-    // Log the authorization URL for debugging (truncated for security)
-    const urlPreview = data.authorizationUrl.length > 100 
-      ? data.authorizationUrl.substring(0, 100) + '...' 
-      : data.authorizationUrl;
-    console.log('[OAuth] Received authorization URL from API route:', urlPreview);
-    
+
     return data.authorizationUrl;
   }
 
@@ -889,7 +876,7 @@ export class OAuthManager {
   ): Promise<OAuthCallbackResponse> {
     // Construct URL: {apiBaseUrl}{oauthApiBase}/callback
     // If apiBaseUrl is not set, use relative URL (same origin)
-    const url = this.apiBaseUrl 
+    const url = this.apiBaseUrl
       ? `${this.apiBaseUrl}${this.oauthApiBase}/callback`
       : `${this.oauthApiBase}/callback`;
 
