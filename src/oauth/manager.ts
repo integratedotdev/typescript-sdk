@@ -11,10 +11,13 @@ import type {
   AuthorizationUrlResponse,
   OAuthCallbackResponse,
   ProviderTokenData,
+  AccountInfo,
 } from "./types.js";
 import type { MCPContext } from "../config/types.js";
 import { generateCodeVerifier, generateCodeChallenge, generateStateWithReturnUrl } from "./pkce.js";
 import { OAuthWindowManager } from "./window-manager.js";
+import { IndexedDBStorage } from "./indexeddb-storage.js";
+import { fetchUserEmail } from "./email-fetcher.js";
 
 /**
  * OAuth Manager
@@ -27,19 +30,19 @@ export class OAuthManager {
   private flowConfig: OAuthFlowConfig;
   private oauthApiBase: string;
   private apiBaseUrl?: string;
-  private getTokenCallback?: (provider: string, context?: MCPContext) => Promise<ProviderTokenData | undefined> | ProviderTokenData | undefined;
-  private setTokenCallback?: (provider: string, tokenData: ProviderTokenData | null, context?: MCPContext) => Promise<void> | void;
-  private removeTokenCallback?: (provider: string, context?: MCPContext) => Promise<void> | void;
-  private skipLocalStorage: boolean;
+  private getTokenCallback?: (provider: string, email?: string, context?: MCPContext) => Promise<ProviderTokenData | undefined> | ProviderTokenData | undefined;
+  private setTokenCallback?: (provider: string, tokenData: ProviderTokenData | null, email?: string, context?: MCPContext) => Promise<void> | void;
+  private removeTokenCallback?: (provider: string, email?: string, context?: MCPContext) => Promise<void> | void;
+  private indexedDBStorage: IndexedDBStorage;
 
   constructor(
     oauthApiBase: string,
     flowConfig?: Partial<OAuthFlowConfig>,
     apiBaseUrl?: string,
     tokenCallbacks?: {
-      getProviderToken?: (provider: string, context?: MCPContext) => Promise<ProviderTokenData | undefined> | ProviderTokenData | undefined;
-      setProviderToken?: (provider: string, tokenData: ProviderTokenData | null, context?: MCPContext) => Promise<void> | void;
-      removeProviderToken?: (provider: string, context?: MCPContext) => Promise<void> | void;
+      getProviderToken?: (provider: string, email?: string, context?: MCPContext) => Promise<ProviderTokenData | undefined> | ProviderTokenData | undefined;
+      setProviderToken?: (provider: string, tokenData: ProviderTokenData | null, email?: string, context?: MCPContext) => Promise<void> | void;
+      removeProviderToken?: (provider: string, email?: string, context?: MCPContext) => Promise<void> | void;
     }
   ) {
     this.oauthApiBase = oauthApiBase;
@@ -54,10 +57,8 @@ export class OAuthManager {
     this.setTokenCallback = tokenCallbacks?.setProviderToken;
     this.removeTokenCallback = tokenCallbacks?.removeProviderToken;
 
-    // Auto-detect skipLocalStorage from callbacks:
-    // If getTokenCallback or setTokenCallback is provided (indicating server-side database storage), auto-set to true
-    // Otherwise, default to false (use localStorage when callbacks are not configured)
-    this.skipLocalStorage = !!(tokenCallbacks?.getProviderToken || tokenCallbacks?.setProviderToken);
+    // Initialize IndexedDB storage (only used when callbacks are not configured)
+    this.indexedDBStorage = new IndexedDBStorage();
 
     // Clean up any expired pending auth entries from localStorage
     this.cleanupExpiredPendingAuths();
@@ -183,13 +184,20 @@ export class OAuthManager {
       scopes: tokenData.scopes,
     };
 
+    // 3. Fetch user email from provider
+    const email = await fetchUserEmail(provider, tokenDataToStore);
+    if (email) {
+      tokenDataToStore.email = email;
+    }
+
+    // 4. Store in memory cache (keyed by provider for backward compatibility, but email is in tokenData)
     this.providerTokens.set(provider, tokenDataToStore);
 
-    // 3. Save to database (via callback) or localStorage
-    // This respects skipLocalStorage and database callbacks
-    await this.saveProviderToken(provider, tokenDataToStore);
+    // 5. Save to database (via callback) or IndexedDB
+    // This respects skipIndexedDB and database callbacks
+    await this.saveProviderToken(provider, tokenDataToStore, email);
 
-    // 4. Clean up pending auth from both memory and storage
+    // 6. Clean up pending auth from both memory and storage
     this.pendingAuths.delete(state);
     this.removePendingAuthFromStorage(state);
 
@@ -260,12 +268,19 @@ export class OAuthManager {
         scopes: response.scopes,
       };
 
+      // 4. Fetch user email from provider
+      const email = await fetchUserEmail(pendingAuth.provider, tokenData);
+      if (email) {
+        tokenData.email = email;
+      }
+
+      // 5. Store in memory cache (keyed by provider for backward compatibility, but email is in tokenData)
       this.providerTokens.set(pendingAuth.provider, tokenData);
 
-      // 4. Save to database (via callback) or localStorage
-      await this.saveProviderToken(pendingAuth.provider, tokenData);
+      // 6. Save to database (via callback) or IndexedDB
+      await this.saveProviderToken(pendingAuth.provider, tokenData, email);
 
-      // 5. Clean up pending auth from both memory and storage
+      // 7. Clean up pending auth from both memory and storage
       this.pendingAuths.delete(state);
       this.removePendingAuthFromStorage(state);
 
@@ -295,8 +310,8 @@ export class OAuthManager {
    * }
    * ```
    */
-  async checkAuthStatus(provider: string): Promise<AuthStatus> {
-    const tokenData = await this.getProviderToken(provider);
+  async checkAuthStatus(provider: string, email?: string): Promise<AuthStatus> {
+    const tokenData = await this.getProviderToken(provider, email);
 
     if (!tokenData) {
       return {
@@ -316,21 +331,57 @@ export class OAuthManager {
   }
 
   /**
-   * Disconnect a specific provider
-   * Clears the local token for the provider and removes it from the database if using callbacks
+   * Disconnect a specific account for a provider
+   * Clears the token for the specific account and removes it from the database if using callbacks
+   * 
+   * @param provider - OAuth provider to disconnect
+   * @param email - Email of the account to disconnect
+   * @param context - Optional user context (userId, organizationId, etc.) for multi-tenant apps
+   * @returns Promise that resolves when disconnection is complete
+   */
+  async disconnectAccount(provider: string, email: string, context?: MCPContext): Promise<void> {
+    // Delete token from database if using callbacks
+    if (this.removeTokenCallback) {
+      try {
+        await this.removeTokenCallback(provider, email, context);
+      } catch (error) {
+        console.error(`Failed to delete token for ${provider} (${email}) from database:`, error);
+      }
+    } else if (this.setTokenCallback) {
+      try {
+        await this.setTokenCallback(provider, null, email, context);
+      } catch (error) {
+        console.error(`Failed to delete token for ${provider} (${email}) from database:`, error);
+      }
+    }
+
+    // Delete from IndexedDB if not using callbacks
+    if (!this.setTokenCallback && !this.removeTokenCallback) {
+      try {
+        await this.indexedDBStorage.deleteToken(provider, email);
+      } catch (error) {
+        console.error(`Failed to delete token from IndexedDB for ${provider} (${email}):`, error);
+      }
+    }
+
+    // Clear from memory cache
+    this.providerTokens.delete(provider);
+  }
+
+  /**
+   * Disconnect all accounts for a provider
+   * Clears all tokens for the provider and removes them from the database if using callbacks
    * 
    * This method is idempotent - it can be called safely even if the provider
-   * is already disconnected or has no token. If no token exists, it will
-   * simply ensure all state is cleared and return successfully.
+   * is already disconnected or has no tokens.
    * 
-   * When using database callbacks (server-side), this will also delete the token
-   * from the database. It first tries to use `removeProviderToken` callback if provided,
-   * otherwise falls back to calling `setProviderToken` with null for backward compatibility.
+   * When using database callbacks (server-side), this will also delete all tokens
+   * from the database for the provider.
    * 
-   * When using client-side storage (no callbacks), this only clears tokens from localStorage
+   * When using client-side storage (no callbacks), this only clears tokens from IndexedDB
    * and in-memory cache. No server calls are made.
    * 
-   * Note: This only clears the local/in-memory token and database token. It does not revoke the token
+   * Note: This only clears the local/in-memory tokens and database tokens. It does not revoke the tokens
    * on the provider's side. For full revocation, handle that separately
    * in your application if needed.
    * 
@@ -341,60 +392,84 @@ export class OAuthManager {
    * @example
    * ```typescript
    * await oauthManager.disconnectProvider('github');
-   * // GitHub token is now cleared from cache and database
+   * // All GitHub tokens are now cleared from cache and database
    * ```
    */
   async disconnectProvider(provider: string, context?: MCPContext): Promise<void> {
-    // Delete token from database if using callbacks
+    // Delete all tokens from database if using callbacks
+    // Note: Without email, we can't target specific accounts, so we clear all
     if (this.removeTokenCallback) {
-      // Use dedicated removeProviderToken callback if available
       try {
-        await this.removeTokenCallback(provider, context);
+        await this.removeTokenCallback(provider, undefined, context);
       } catch (error) {
-        // If deletion fails, log but don't throw - we'll still clear local cache
-        console.error(`Failed to delete token for ${provider} from database via removeProviderToken:`, error);
+        console.error(`Failed to delete tokens for ${provider} from database:`, error);
       }
     } else if (this.setTokenCallback) {
-      // Fall back to setProviderToken(null) for backward compatibility
       try {
-        // Try to get the token from the database to check if it exists
-        const tokenData = await this.getProviderToken(provider, context);
-
-        // If token exists in database, delete it by calling setProviderToken with null
-        if (tokenData) {
-          await this.setTokenCallback(provider, null, context);
-        }
+        await this.setTokenCallback(provider, null, undefined, context);
       } catch (error) {
-        // If deletion fails, log but don't throw - we'll still clear local cache
-        console.error(`Failed to delete token for ${provider} from database via setProviderToken:`, error);
+        console.error(`Failed to delete tokens for ${provider} from database:`, error);
       }
     }
-    // Client-side: no database callbacks - just clear localStorage
-    // No server calls should be made when using client-side storage
 
-    // Client-side localStorage clearing happens independently of server operations above
-    // This ensures tokens are always cleared locally, even if server calls fail
-    // clearProviderToken is purely client-side and does not make any server calls
+    // Delete all tokens from IndexedDB if not using callbacks
+    if (!this.setTokenCallback && !this.removeTokenCallback) {
+      try {
+        await this.indexedDBStorage.deleteTokensByProvider(provider);
+      } catch (error) {
+        console.error(`Failed to delete tokens from IndexedDB for ${provider}:`, error);
+      }
+    }
+
+    // Clear from memory cache
     this.providerTokens.delete(provider);
-    this.clearProviderToken(provider);
+  }
+
+  /**
+   * List all connected accounts for a provider
+   * 
+   * @param provider - Provider name (e.g., 'github', 'gmail')
+   * @returns Array of account information
+   */
+  async listAccounts(provider: string): Promise<AccountInfo[]> {
+    // If using callbacks, we can't list accounts (no standard API)
+    // Return empty array or try to get from cache
+    if (this.getTokenCallback) {
+      // With callbacks, we don't have a way to list all accounts
+      // Return empty array or try to infer from cache
+      return [];
+    }
+
+    // Get from IndexedDB
+    if (!this.getTokenCallback) {
+      try {
+        return await this.indexedDBStorage.listAccounts(provider);
+      } catch (error) {
+        console.error(`Failed to list accounts for ${provider}:`, error);
+        return [];
+      }
+    }
+
+    return [];
   }
 
   /**
    * Get provider token data
-   * Uses callback if provided, otherwise checks in-memory cache
+   * Uses callback if provided, otherwise checks IndexedDB or in-memory cache
    * 
-   * Note: This method only retrieves tokens - it does NOT clear tokens from localStorage
+   * Note: This method only retrieves tokens - it does NOT clear tokens from IndexedDB
    * or make any server calls for token deletion. Token clearing should be done via
-   * disconnectProvider or clearProviderToken.
+   * disconnectProvider or disconnectAccount.
    * 
    * @param provider - Provider name (e.g., 'github', 'gmail')
+   * @param email - Optional email to get specific account token
    * @param context - Optional user context (userId, organizationId, etc.) for multi-tenant apps
    */
-  async getProviderToken(provider: string, context?: MCPContext): Promise<ProviderTokenData | undefined> {
+  async getProviderToken(provider: string, email?: string, context?: MCPContext): Promise<ProviderTokenData | undefined> {
     // If callback is provided, use it exclusively
     if (this.getTokenCallback) {
       try {
-        const tokenData = await this.getTokenCallback(provider, context);
+        const tokenData = await this.getTokenCallback(provider, email, context);
         // Update in-memory cache for performance
         if (tokenData) {
           this.providerTokens.set(provider, tokenData);
@@ -406,7 +481,20 @@ export class OAuthManager {
       }
     }
 
-    // Otherwise use in-memory cache (loaded from localStorage)
+    // If email is provided, get specific account token from IndexedDB
+    if (email && !this.getTokenCallback) {
+      try {
+        const tokenData = await this.indexedDBStorage.getToken(provider, email);
+        if (tokenData) {
+          this.providerTokens.set(provider, tokenData);
+        }
+        return tokenData;
+      } catch (error) {
+        console.error(`Failed to get token from IndexedDB for ${provider}:`, error);
+      }
+    }
+
+    // Otherwise use in-memory cache (loaded from IndexedDB on initialization)
     return this.providerTokens.get(provider);
   }
 
@@ -429,20 +517,29 @@ export class OAuthManager {
 
   /**
    * Set provider token (for manual token management)
-   * Uses callback if provided, otherwise uses localStorage
+   * Uses callback if provided, otherwise uses IndexedDB
    * @param provider - Provider name (e.g., 'github', 'gmail')
    * @param tokenData - Token data to store
+   * @param email - Optional email to store specific account token
    * @param context - Optional user context (userId, organizationId, etc.) for multi-tenant apps
    */
-  async setProviderToken(provider: string, tokenData: ProviderTokenData | null, context?: MCPContext): Promise<void> {
+  async setProviderToken(provider: string, tokenData: ProviderTokenData | null, email?: string, context?: MCPContext): Promise<void> {
+    const tokenEmail = email || tokenData?.email;
+    
     if (tokenData === null) {
       // Delete token
-      this.providerTokens.delete(provider);
+      if (tokenEmail) {
+        // Delete specific account
+        this.providerTokens.delete(provider);
+      } else {
+        // Delete all tokens for provider
+        this.providerTokens.delete(provider);
+      }
     } else {
       // Set token
       this.providerTokens.set(provider, tokenData);
     }
-    await this.saveProviderToken(provider, tokenData, context);
+    await this.saveProviderToken(provider, tokenData, tokenEmail, context);
   }
 
   /**
@@ -450,7 +547,7 @@ export class OAuthManager {
    * 
    * This method is purely client-side and only clears tokens from:
    * - In-memory cache
-   * - localStorage (when available and not using server-side database storage)
+   * - IndexedDB (when available and not using server-side database storage)
    * 
    * Note: This method does NOT make any server calls or API requests.
    * When using database callbacks, this only clears the in-memory cache.
@@ -460,14 +557,11 @@ export class OAuthManager {
   clearProviderToken(provider: string): void {
     this.providerTokens.delete(provider);
 
-    // Only clear from localStorage if not using server-side database storage
-    // This is purely client-side - no server calls should be made here
-    if (!this.skipLocalStorage && typeof window !== 'undefined' && window.localStorage) {
-      try {
-        window.localStorage.removeItem(`integrate_token_${provider}`);
-      } catch (error) {
-        console.error(`Failed to clear token for ${provider} from localStorage:`, error);
-      }
+    // Clear from IndexedDB if not using server-side database storage
+    if (!this.setTokenCallback && !this.removeTokenCallback) {
+      this.indexedDBStorage.deleteTokensByProvider(provider).catch((error) => {
+        console.error(`Failed to clear tokens for ${provider} from IndexedDB:`, error);
+      });
     }
   }
 
@@ -477,18 +571,13 @@ export class OAuthManager {
    * Token deletion from database should be handled by the host application.
    */
   clearAllProviderTokens(): void {
-    const providers = Array.from(this.providerTokens.keys());
     this.providerTokens.clear();
 
-    // Only clear from localStorage if not using server-side database storage
-    if (!this.skipLocalStorage && typeof window !== 'undefined' && window.localStorage) {
-      for (const provider of providers) {
-        try {
-          window.localStorage.removeItem(`integrate_token_${provider}`);
-        } catch (error) {
-          console.error(`Failed to clear token for ${provider} from localStorage:`, error);
-        }
-      }
+    // Clear from IndexedDB if not using server-side database storage
+    if (!this.setTokenCallback && !this.removeTokenCallback) {
+      this.indexedDBStorage.clearAll().catch((error) => {
+        console.error('Failed to clear all tokens from IndexedDB:', error);
+      });
     }
   }
 
@@ -521,105 +610,109 @@ export class OAuthManager {
   }
 
   /**
-   * Save provider token to database (via callback) or localStorage
+   * Save provider token to database (via callback) or IndexedDB
    * 
    * Storage decision logic:
-   * 1. If setTokenCallback is configured → use callback exclusively (no localStorage)
-   * 2. If skipLocalStorage is true → skip localStorage (token only in memory)
-   * 3. Otherwise → use localStorage (when callbacks are NOT configured AND skipLocalStorage is false)
+   * 1. If setTokenCallback is configured → use callback exclusively (no IndexedDB)
+   * 2. If skipIndexedDB is true → skip IndexedDB (token only in memory)
+   * 3. Otherwise → use IndexedDB (when callbacks are NOT configured AND skipIndexedDB is false)
    * 
    * @param provider - Provider name (e.g., 'github', 'gmail')
    * @param tokenData - Token data to store, or null to delete
+   * @param email - Optional email to store specific account token
    * @param context - Optional user context (userId, organizationId, etc.) for multi-tenant apps
    */
-  private async saveProviderToken(provider: string, tokenData: ProviderTokenData | null, context?: MCPContext): Promise<void> {
+  private async saveProviderToken(provider: string, tokenData: ProviderTokenData | null, email?: string, context?: MCPContext): Promise<void> {
     // Rule 1: If callback is provided, use it exclusively (server-side with database)
-    // When callbacks are configured, we do NOT save to localStorage
+    // When callbacks are configured, we do NOT save to IndexedDB
     if (this.setTokenCallback) {
       try {
-        await this.setTokenCallback(provider, tokenData, context);
+        await this.setTokenCallback(provider, tokenData, email, context);
       } catch (error) {
         console.error(`Failed to ${tokenData === null ? 'delete' : 'save'} token for ${provider} via callback:`, error);
         throw error;
       }
-      // Return early - callbacks are exclusive, no localStorage when callbacks are configured
+      // Return early - callbacks are exclusive, no IndexedDB when callbacks are configured
       return;
     }
 
-    // If tokenData is null, delete the token (clear from memory and localStorage if applicable)
+    // If tokenData is null, delete the token (clear from memory and IndexedDB if applicable)
     if (tokenData === null) {
-      this.clearProviderToken(provider);
+      if (email) {
+      // Delete specific account
+      if (!this.setTokenCallback && !this.removeTokenCallback) {
+        await this.indexedDBStorage.deleteToken(provider, email).catch((error) => {
+          console.error(`Failed to delete token from IndexedDB for ${provider} (${email}):`, error);
+        });
+      }
+      } else {
+        // Delete all tokens for provider
+        this.clearProviderToken(provider);
+      }
       return;
     }
 
-    // Rule 2: If skipLocalStorage is enabled, don't save to localStorage
-    // This happens when server-side database storage is being used (but callbacks may not be configured yet)
-    if (this.skipLocalStorage) {
-      // Token storage is handled server-side, skip localStorage
-      // Note: Token is still stored in memory (this.providerTokens), but will be lost on page reload
-      // Make sure you have setProviderToken/getProviderToken callbacks configured for persistence
-      return;
-    }
-
-    // Rule 3: Use localStorage when callbacks are NOT configured AND skipLocalStorage is false
+    // Rule 2: Use IndexedDB when callbacks are NOT configured
     // This is the default behavior for client-side only usage without database callbacks
-    if (typeof window !== 'undefined' && window.localStorage) {
+    const tokenEmail = email || tokenData.email;
+    if (tokenEmail) {
       try {
-        const key = `integrate_token_${provider}`;
-        window.localStorage.setItem(key, JSON.stringify(tokenData));
+        await this.indexedDBStorage.saveToken(provider, tokenEmail, tokenData);
       } catch (error) {
-        console.error(`Failed to save token for ${provider} to localStorage:`, error);
+        console.error(`Failed to save token for ${provider} to IndexedDB:`, error);
       }
     }
   }
 
   /**
-   * Load provider token from database (via callback) or localStorage
+   * Load provider token from database (via callback) or IndexedDB
    * 
    * Loading decision logic (mirrors saveProviderToken):
-   * 1. If getTokenCallback is configured → use callback exclusively (no localStorage)
-   * 2. If skipLocalStorage is true → skip localStorage (return undefined)
-   * 3. Otherwise → use localStorage (when callbacks are NOT configured AND skipLocalStorage is false)
+   * 1. If getTokenCallback is configured → use callback exclusively (no IndexedDB)
+   * 2. If skipIndexedDB is true → skip IndexedDB (return undefined)
+   * 3. Otherwise → use IndexedDB (when callbacks are NOT configured AND skipIndexedDB is false)
    * 
    * Returns undefined if not found or invalid
+   * Note: Without email, returns the first token found for the provider
    */
-  private async loadProviderToken(provider: string): Promise<ProviderTokenData | undefined> {
+  private async loadProviderToken(provider: string, email?: string): Promise<ProviderTokenData | undefined> {
     // Rule 1: If callback is provided, use it exclusively
-    // When callbacks are configured, we do NOT load from localStorage
+    // When callbacks are configured, we do NOT load from IndexedDB
     if (this.getTokenCallback) {
       try {
-        return await this.getTokenCallback(provider);
+        return await this.getTokenCallback(provider, email);
       } catch (error) {
         console.error(`Failed to load token for ${provider} via callback:`, error);
         return undefined;
       }
     }
 
-    // Rule 2: If skipLocalStorage is enabled, don't load from localStorage
-    // This happens when server-side database storage is being used (but callbacks may not be configured yet)
-    if (this.skipLocalStorage) {
-      // No localStorage access when skipLocalStorage is true
-      return undefined;
-    }
-
-    // Rule 3: Use localStorage when callbacks are NOT configured AND skipLocalStorage is false
+    // Rule 2: Use IndexedDB when callbacks are NOT configured
     // This is the default behavior for client-side only usage without database callbacks
-    if (typeof window !== 'undefined' && window.localStorage) {
+    if (email) {
       try {
-        const key = `integrate_token_${provider}`;
-        const stored = window.localStorage.getItem(key);
-        if (stored) {
-          return JSON.parse(stored) as ProviderTokenData;
+        return await this.indexedDBStorage.getToken(provider, email);
+      } catch (error) {
+        console.error(`Failed to load token for ${provider} from IndexedDB:`, error);
+        return undefined;
+      }
+    } else {
+      // Without email, get all tokens and return the first one (for backward compatibility)
+      try {
+        const tokens = await this.indexedDBStorage.getTokensByProvider(provider);
+        if (tokens.size > 0) {
+          // Return first token (arbitrary choice when no email specified)
+          return tokens.values().next().value;
         }
       } catch (error) {
-        console.error(`Failed to load token for ${provider} from localStorage:`, error);
+        console.error(`Failed to load tokens for ${provider} from IndexedDB:`, error);
       }
     }
     return undefined;
   }
 
   /**
-   * Load all provider tokens from database (via callback) or localStorage on initialization
+   * Load all provider tokens from database (via callback) or IndexedDB on initialization
    */
   async loadAllProviderTokens(providers: string[]): Promise<void> {
     for (const provider of providers) {
@@ -631,54 +724,23 @@ export class OAuthManager {
   }
 
   /**
-   * Load provider token synchronously from localStorage only
-   * Returns undefined if not found or if using database callbacks
-   * This method is synchronous and should only be used during initialization
-   * when database callbacks are NOT configured
-   */
-  private loadProviderTokenSync(provider: string): ProviderTokenData | undefined {
-    // Only works for localStorage, not database callbacks
-    if (this.getTokenCallback) {
-      return undefined;
-    }
-
-    // Skip localStorage if skipLocalStorage is enabled
-    if (this.skipLocalStorage) {
-      return undefined;
-    }
-
-    // Read from localStorage synchronously
-    if (typeof window !== 'undefined' && window.localStorage) {
-      try {
-        const key = `integrate_token_${provider}`;
-        const stored = window.localStorage.getItem(key);
-        if (stored) {
-          return JSON.parse(stored) as ProviderTokenData;
-        }
-      } catch (error) {
-        console.error(`Failed to load token for ${provider} from localStorage:`, error);
-      }
-    }
-    return undefined;
-  }
-
-  /**
-   * Load all provider tokens synchronously from localStorage on initialization
+   * Load all provider tokens synchronously from IndexedDB on initialization
    * Only works when database callbacks are NOT configured
    * This ensures tokens are available immediately for isAuthorized() calls
+   * Note: IndexedDB operations are async, so this method is deprecated but kept for compatibility
    */
   loadAllProviderTokensSync(providers: string[]): void {
-    // Only works for localStorage, not database callbacks
+    // IndexedDB operations are async, so we can't do this synchronously
+    // This method is kept for backward compatibility but doesn't do anything
+    // The async loadAllProviderTokens should be used instead
     if (this.getTokenCallback) {
       return;
     }
 
-    for (const provider of providers) {
-      const tokenData = this.loadProviderTokenSync(provider);
-      if (tokenData) {
-        this.providerTokens.set(provider, tokenData);
-      }
-    }
+    // Attempt async load (fire and forget)
+    this.loadAllProviderTokens(providers).catch((error) => {
+      console.error('Failed to load provider tokens:', error);
+    });
   }
 
   /**
@@ -824,10 +886,8 @@ export class OAuthManager {
       }),
     });
 
-    // Check for X-Integrate-Use-Database header to auto-detect database usage
-    if (response.headers.get('X-Integrate-Use-Database') === 'true') {
-      this.skipLocalStorage = true;
-    }
+    // Note: X-Integrate-Use-Database header is no longer used
+    // Database usage is determined by presence of callbacks
 
     if (!response.ok) {
       const error = await response.text();
@@ -877,10 +937,8 @@ export class OAuthManager {
       }),
     });
 
-    // Check for X-Integrate-Use-Database header to auto-detect database usage
-    if (response.headers.get('X-Integrate-Use-Database') === 'true') {
-      this.skipLocalStorage = true;
-    }
+    // Note: X-Integrate-Use-Database header is no longer used
+    // Database usage is determined by presence of callbacks
 
     if (!response.ok) {
       const error = await response.text();
@@ -891,13 +949,6 @@ export class OAuthManager {
     return data;
   }
 
-  /**
-   * Update skipLocalStorage setting at runtime
-   * Called automatically when server indicates database usage via response header
-   */
-  setSkipLocalStorage(value: boolean): void {
-    this.skipLocalStorage = value;
-  }
 
   /**
    * Close any open OAuth windows

@@ -160,7 +160,6 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   private eventEmitter: SimpleEventEmitter = new SimpleEventEmitter();
   private apiRouteBase: string;
   private apiBaseUrl?: string;
-  private databaseDetected: boolean = false;
 
   /**
    * Promise that resolves when OAuth callback processing is complete
@@ -279,7 +278,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
         console.error('Failed to load provider tokens:', error);
       });
     } else {
-      // localStorage: Load tokens synchronously for immediate availability
+      // IndexedDB: Load tokens asynchronously (IndexedDB operations are async)
       // Always load existing tokens first, even if there's an OAuth callback pending
       // This ensures any previously saved tokens are available immediately
       this.oauthManager.loadAllProviderTokensSync(providers);
@@ -557,7 +556,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     if (hasApiKey) {
       // Add provider token to transport if available
       if (provider) {
-        const tokenData = await this.oauthManager.getProviderToken(provider, options?.context);
+        const tokenData = await this.oauthManager.getProviderToken(provider, undefined, options?.context);
         if (tokenData && this.transport.setHeader) {
           const previousAuthHeader = transportHeaders['Authorization'];
 
@@ -604,7 +603,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
 
     // Add provider token if available
     if (provider) {
-      const tokenData = await this.oauthManager.getProviderToken(provider, options?.context);
+      const tokenData = await this.oauthManager.getProviderToken(provider, undefined, options?.context);
       if (tokenData) {
         headers['Authorization'] = `Bearer ${tokenData.accessToken}`;
       }
@@ -620,11 +619,8 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
       }),
     });
 
-    // Check for X-Integrate-Use-Database header to auto-detect database usage
-    if (!this.databaseDetected && response.headers.get('X-Integrate-Use-Database') === 'true') {
-      this.oauthManager.setSkipLocalStorage(true);
-      this.databaseDetected = true;
-    }
+    // Note: X-Integrate-Use-Database header is no longer used
+    // Database usage is determined by presence of callbacks
 
     if (!response.ok) {
       // Try to parse error response
@@ -860,15 +856,15 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   }
 
   /**
-   * Disconnect a specific OAuth provider
-   * Removes authorization for a single provider while keeping others connected
+   * Disconnect all accounts for a specific OAuth provider
+   * Removes authorization for all accounts of a provider while keeping other providers connected
    * 
-   * When using database callbacks (server-side), this will delete the token from the database.
-   * When using client-side storage (no callbacks), this only clears tokens from localStorage
+   * When using database callbacks (server-side), this will delete all tokens from the database for the provider.
+   * When using client-side storage (no callbacks), this only clears tokens from IndexedDB
    * and does not make any server calls.
    * 
    * When using database callbacks (server-side), provide context to delete
-   * the correct user's token from the database.
+   * the correct user's tokens from the database.
    * 
    * @param provider - Provider name to disconnect (e.g., 'github', 'gmail')
    * @param context - Optional user context (userId, organizationId, etc.) for multi-tenant apps
@@ -877,7 +873,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
    * ```typescript
    * // Client-side usage (no context needed, no server calls)
    * await client.disconnectProvider('github');
-   * // Token is cleared from localStorage only
+   * // All GitHub tokens are cleared from IndexedDB
    * 
    * // Check if still authorized
    * const isAuthorized = await client.isAuthorized('github'); // false
@@ -888,7 +884,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
    * // Server-side usage with context (multi-tenant)
    * const context = await getSessionContext(request);
    * await client.disconnectProvider('github', context);
-   * // Token is now deleted from database for the specific user
+   * // All GitHub tokens are now deleted from database for the specific user
    * ```
    */
   async disconnectProvider(provider: string, context?: MCPContext): Promise<void> {
@@ -900,8 +896,8 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     }
 
     try {
-      // Disconnect the provider (handles database callbacks if configured, otherwise client-side only)
-      // Pass context so removeProviderToken callback can delete the correct user's token
+      // Disconnect all accounts for the provider (handles database callbacks if configured, otherwise client-side only)
+      // Pass context so removeProviderToken callback can delete the correct user's tokens
       await this.oauthManager.disconnectProvider(provider, context);
 
       // Reset authentication state for this provider only
@@ -920,6 +916,85 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
 
     // Note: We don't clear the session token since other providers may still be using it
     // The session on the server side will still exist for other providers
+  }
+
+  /**
+   * Disconnect a specific account for a provider
+   * Removes authorization for a single account while keeping other accounts connected
+   * 
+   * When using database callbacks (server-side), this will delete the token from the database.
+   * When using client-side storage (no callbacks), this only clears the token from IndexedDB
+   * and does not make any server calls.
+   * 
+   * @param provider - Provider name (e.g., 'github', 'gmail')
+   * @param email - Email of the account to disconnect
+   * @param context - Optional user context (userId, organizationId, etc.) for multi-tenant apps
+   * 
+   * @example
+   * ```typescript
+   * // Disconnect specific account
+   * await client.disconnectAccount('github', 'user@example.com');
+   * 
+   * // Check if account is still authorized
+   * const isAuthorized = await client.isAuthorized('github', 'user@example.com'); // false
+   * ```
+   */
+  async disconnectAccount(provider: string, email: string, context?: MCPContext): Promise<void> {
+    // Verify the provider exists in integrations
+    const integration = this.integrations.find(p => p.oauth?.provider === provider);
+
+    if (!integration?.oauth) {
+      throw new Error(`No OAuth configuration found for provider: ${provider}`);
+    }
+
+    try {
+      // Disconnect the specific account
+      await this.oauthManager.disconnectAccount(provider, email, context);
+
+      // Check if there are any remaining accounts for this provider
+      const accounts = await this.oauthManager.listAccounts(provider);
+      if (accounts.length === 0) {
+        // No more accounts, update auth state
+        this.authState.set(provider, { authenticated: false });
+      }
+
+      // Emit disconnect event for this provider
+      this.eventEmitter.emit('auth:disconnect', { provider });
+    } catch (error) {
+      // Emit error event
+      this.eventEmitter.emit('auth:error', {
+        provider,
+        error: error as Error
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * List all connected accounts for a provider
+   * Returns information about all accounts that have been authorized for the provider
+   * 
+   * @param provider - Provider name (e.g., 'github', 'gmail')
+   * @returns Array of account information including email, accountId, and token details
+   * 
+   * @example
+   * ```typescript
+   * // List all GitHub accounts
+   * const accounts = await client.listAccounts('github');
+   * console.log('Connected accounts:', accounts);
+   * // [
+   * //   { email: 'user1@example.com', accountId: 'github_abc123', ... },
+   * //   { email: 'user2@example.com', accountId: 'github_def456', ... }
+   * // ]
+   * 
+   * // Disconnect a specific account
+   * if (accounts.length > 0) {
+   *   await client.disconnectAccount('github', accounts[0].email);
+   * }
+   * ```
+   */
+  async listAccounts(provider: string): Promise<import('./oauth/types.js').AccountInfo[]> {
+    return await this.oauthManager.listAccounts(provider);
   }
 
   /**
@@ -1014,6 +1089,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
    * identification (works for single-user scenarios).
    * 
    * @param provider - Provider name (github, gmail, etc.)
+   * @param email - Optional email to check specific account authorization
    * @param context - Optional user context (userId, organizationId, etc.) for multi-tenant apps
    * @returns Promise that resolves to authorization status
    * 
@@ -1030,12 +1106,18 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
    * 
    * @example
    * ```typescript
+   * // Check specific account
+   * const isAuthorized = await client.isAuthorized('github', 'user@example.com');
+   * ```
+   * 
+   * @example
+   * ```typescript
    * // Server-side usage with context
    * const context = await getSessionContext(request);
-   * const isAuthorized = await client.isAuthorized('github', context);
+   * const isAuthorized = await client.isAuthorized('github', undefined, context);
    * ```
    */
-  async isAuthorized(provider: string, context?: MCPContext): Promise<boolean> {
+  async isAuthorized(provider: string, email?: string, context?: MCPContext): Promise<boolean> {
     // Wait for any pending OAuth callback to complete first
     if (this.oauthCallbackPromise) {
       await this.oauthCallbackPromise;
@@ -1043,11 +1125,11 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     }
 
     // Check current token status and update cache
-    // Note: This method only checks token existence - it does NOT clear tokens from localStorage
-    // or make any server calls. Token clearing should be done via disconnectProvider or clearProviderToken.
+    // Note: This method only checks token existence - it does NOT clear tokens from IndexedDB
+    // or make any server calls. Token clearing should be done via disconnectProvider or disconnectAccount.
     // Pass context to getProviderToken so it can retrieve the correct user's token from database
     try {
-      const tokenData = await this.oauthManager.getProviderToken(provider, context);
+      const tokenData = await this.oauthManager.getProviderToken(provider, email, context);
       const isAuthenticated = !!tokenData;
 
       // Update the cache with current value
@@ -1121,10 +1203,11 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
    * Get detailed authorization status for a provider
    * 
    * @param provider - Provider name
+   * @param email - Optional email to check specific account status
    * @returns Full authorization status including scopes and expiration
    */
-  async getAuthorizationStatus(provider: string): Promise<AuthStatus> {
-    return await this.oauthManager.checkAuthStatus(provider);
+  async getAuthorizationStatus(provider: string, email?: string): Promise<AuthStatus> {
+    return await this.oauthManager.checkAuthStatus(provider, email);
   }
 
   /**
@@ -1274,11 +1357,12 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
    * Useful for making direct API calls or storing tokens
    * 
    * @param provider - Provider name (e.g., 'github', 'gmail')
+   * @param email - Optional email to get specific account token
    * @param context - Optional user context (userId, organizationId, etc.) for multi-tenant apps
    * @returns Provider token data or undefined if not authorized
    */
-  async getProviderToken(provider: string, context?: MCPContext): Promise<import('./oauth/types.js').ProviderTokenData | undefined> {
-    return await this.oauthManager.getProviderToken(provider, context);
+  async getProviderToken(provider: string, email?: string, context?: MCPContext): Promise<import('./oauth/types.js').ProviderTokenData | undefined> {
+    return await this.oauthManager.getProviderToken(provider, email, context);
   }
 
   /**
@@ -1288,10 +1372,11 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
    * 
    * @param provider - Provider name
    * @param tokenData - Provider token data, or null to delete
+   * @param email - Optional email to store specific account token
    * @param context - Optional user context (userId, organizationId, etc.) for multi-tenant apps
    */
-  async setProviderToken(provider: string, tokenData: import('./oauth/types.js').ProviderTokenData | null, context?: MCPContext): Promise<void> {
-    await this.oauthManager.setProviderToken(provider, tokenData, context);
+  async setProviderToken(provider: string, tokenData: import('./oauth/types.js').ProviderTokenData | null, email?: string, context?: MCPContext): Promise<void> {
+    await this.oauthManager.setProviderToken(provider, tokenData, email, context);
 
     // Update authState based on whether token is being set or deleted
     if (tokenData === null) {

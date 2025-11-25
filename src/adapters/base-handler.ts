@@ -476,7 +476,9 @@ export class OAuthHandler {
           scopes: result.scopes, // Include scopes in token data
         };
 
-        await this.config.setProviderToken(callbackRequest.provider, tokenData, context);
+        // Email is not available at server-side callback time (fetched client-side)
+        // Pass undefined for email - customer's callback can fetch it if needed
+        await this.config.setProviderToken(callbackRequest.provider, tokenData, undefined, context);
       } catch (error) {
         // Token storage failed - log but don't fail the OAuth flow
       }
