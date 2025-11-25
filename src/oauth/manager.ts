@@ -687,14 +687,10 @@ export class OAuthManager {
    * and sessionStorage is isolated per tab. localStorage is shared across tabs.
    * Keyed by state parameter for security and retrieval.
    * 
-   * Skipped when using server-side database storage (skipLocalStorage is enabled)
+   * Note: Pending auths are always stored in localStorage regardless of skipLocalStorage,
+   * as they are temporary OAuth state needed for the flow, not permanent token storage.
    */
   private savePendingAuthToStorage(state: string, pendingAuth: PendingAuth): void {
-    // Skip localStorage if using server-side database storage
-    if (this.skipLocalStorage) {
-      return;
-    }
-
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
         const key = `integrate_oauth_pending_${state}`;
@@ -709,14 +705,10 @@ export class OAuthManager {
    * Load pending auth from localStorage (after redirect)
    * Returns undefined if not found or invalid
    * 
-   * Skipped when using server-side database storage (skipLocalStorage is enabled)
+   * Note: Pending auths are always loaded from localStorage regardless of skipLocalStorage,
+   * as they are temporary OAuth state needed for the flow, not permanent token storage.
    */
   private loadPendingAuthFromStorage(state: string): PendingAuth | undefined {
-    // Skip localStorage if using server-side database storage
-    if (this.skipLocalStorage) {
-      return undefined;
-    }
-
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
         const key = `integrate_oauth_pending_${state}`;
@@ -734,14 +726,10 @@ export class OAuthManager {
   /**
    * Remove pending auth from localStorage
    * 
-   * Skipped when using server-side database storage (skipLocalStorage is enabled)
+   * Note: Pending auths are always removed from localStorage regardless of skipLocalStorage,
+   * as they are temporary OAuth state that should be cleaned up after the flow completes.
    */
   private removePendingAuthFromStorage(state: string): void {
-    // Skip localStorage if using server-side database storage
-    if (this.skipLocalStorage) {
-      return;
-    }
-
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
         const key = `integrate_oauth_pending_${state}`;
@@ -756,14 +744,10 @@ export class OAuthManager {
    * Clean up expired pending auth entries from localStorage
    * Removes any entries older than 5 minutes
    * 
-   * Skipped when using server-side database storage (skipLocalStorage is enabled)
+   * Note: Pending auths are always cleaned up from localStorage regardless of skipLocalStorage,
+   * as they are temporary OAuth state that should be removed when expired.
    */
   private cleanupExpiredPendingAuths(): void {
-    // Skip localStorage if using server-side database storage
-    if (this.skipLocalStorage) {
-      return;
-    }
-
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
         const prefix = 'integrate_oauth_pending_';

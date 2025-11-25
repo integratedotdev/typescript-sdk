@@ -311,7 +311,7 @@ describe("Automatic skipLocalStorage Detection", () => {
   describe("Combined scenarios", () => {
     test("client-side: tokens persist in localStorage across page reloads", async () => {
       const manager1 = new OAuthManager("/api/integrate/oauth");
-      
+
       const tokenData: ProviderTokenData = {
         accessToken: "persistent-token",
         tokenType: "Bearer",
@@ -414,7 +414,7 @@ describe("Automatic skipLocalStorage Detection", () => {
 
       // Should call removeProviderToken callback
       expect(removeTokenMock).toHaveBeenCalledWith("github", undefined);
-      
+
       // Should be removed from database
       expect(dbTokens["github"]).toBeUndefined();
 
@@ -491,6 +491,57 @@ describe("Automatic skipLocalStorage Detection", () => {
       // But should be in memory
       const allTokens = manager.getAllProviderTokens();
       expect(allTokens.get("github")).toEqual(newToken);
+    });
+
+    test("pending auths are always cleaned up even with database callbacks", async () => {
+      const setTokenMock = mock(async (provider: string, tokenData: ProviderTokenData) => {
+        // Simulate database save
+      });
+
+      const manager = new OAuthManager(
+        "/api/integrate/oauth",
+        undefined,
+        undefined,
+        {
+          setProviderToken: setTokenMock,
+        }
+      );
+
+      // Simulate OAuth flow: create pending auth
+      const state = "test-state-123";
+      const pendingAuth = {
+        provider: "github",
+        state,
+        codeVerifier: "verifier",
+        codeChallenge: "challenge",
+        redirectUri: "http://localhost/callback",
+        returnUrl: undefined,
+        initiatedAt: Date.now(),
+      };
+
+      // Save pending auth to memory and localStorage (simulating initiateFlow)
+      (manager as any).pendingAuths.set(state, pendingAuth);
+      const pendingKey = `integrate_oauth_pending_${state}`;
+      mockLocalStorage.set(pendingKey, JSON.stringify(pendingAuth));
+      expect(mockLocalStorage.has(pendingKey)).toBe(true);
+
+      // Simulate callback completion with token (backend redirect flow)
+      const tokenData: ProviderTokenData = {
+        accessToken: "db-token",
+        tokenType: "Bearer",
+        expiresIn: 3600,
+      };
+
+      await manager.handleCallbackWithToken("code", state, { ...tokenData, provider: "github" });
+
+      // Pending auth should be removed from localStorage even though we're using database for tokens
+      expect(mockLocalStorage.has(pendingKey)).toBe(false);
+
+      // Token should NOT be in localStorage (goes to database instead)
+      expect(mockLocalStorage.has("integrate_token_github")).toBe(false);
+
+      // But token should be saved via callback
+      expect(setTokenMock).toHaveBeenCalledWith("github", tokenData, undefined);
     });
   });
 });
