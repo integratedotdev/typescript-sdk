@@ -671,8 +671,8 @@ function createOAuthRouteHandlers(config: {
   serverUrl?: string;
   apiKey?: string;
   getSessionContext?: (request: Request) => Promise<import('./config/types.js').MCPContext | undefined> | import('./config/types.js').MCPContext | undefined;
-  setProviderToken?: (provider: string, tokenData: import('./oauth/types.js').ProviderTokenData, context?: import('./config/types.js').MCPContext) => Promise<void> | void;
-  removeProviderToken?: (provider: string, context?: import('./config/types.js').MCPContext) => Promise<void> | void;
+  setProviderToken?: (provider: string, tokenData: import('./oauth/types.js').ProviderTokenData | null, email?: string, context?: import('./config/types.js').MCPContext) => Promise<void> | void;
+  removeProviderToken?: (provider: string, email?: string, context?: import('./config/types.js').MCPContext) => Promise<void> | void;
 }) {
   const handler = createNextOAuthHandler(config);
   return handler.createRoutes();

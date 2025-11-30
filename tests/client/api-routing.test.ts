@@ -509,6 +509,10 @@ describe("MCP Client - API Routing", () => {
       return { ok: false, headers: new Headers() } as Response;
     }) as any;
 
+    const setSkipLocalStorageMock = mock((value: boolean) => {
+      headerDetected = value;
+    });
+
     const mockOAuthManager = {
       getProviderToken: mock(() => null),
       loadAllProviderTokens: mock(() => { }),
@@ -520,9 +524,7 @@ describe("MCP Client - API Routing", () => {
       initiateFlow: mock(() => Promise.resolve()),
       handleCallback: mock(() => Promise.resolve({ provider: "github", accessToken: "token", expiresAt: Date.now() })),
       disconnectProvider: mock(() => Promise.resolve()),
-      setSkipLocalStorage: mock((value: boolean) => {
-        headerDetected = value;
-      }),
+      setSkipLocalStorage: setSkipLocalStorageMock,
     };
 
     const integration = createSimpleIntegration({
@@ -549,9 +551,10 @@ describe("MCP Client - API Routing", () => {
     // Make a tool call - should detect header
     await (client as any).callServerTool("test_tool", {});
 
-    // Verify header was detected and skipLocalStorage was set
-    expect(mockOAuthManager.setSkipLocalStorage).toHaveBeenCalledWith(true);
+    // Verify header was detected and setSkipLocalStorage was called
+    expect(setSkipLocalStorageMock).toHaveBeenCalledWith(true);
     expect(headerDetected).toBe(true);
+    expect((client as any).databaseDetected).toBe(true);
   });
 });
 

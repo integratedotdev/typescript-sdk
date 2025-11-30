@@ -20,7 +20,7 @@ describe("Database Token Callbacks", () => {
         scopes: ["repo", "user"],
       };
 
-      const getTokenMock = mock(async (provider: string) => {
+      const getTokenMock = mock(async (provider: string, email?: string, context?: any) => {
         if (provider === "github") {
           return mockTokenData;
         }
@@ -38,7 +38,7 @@ describe("Database Token Callbacks", () => {
 
       const token = await manager.getProviderToken("github");
       
-      expect(getTokenMock).toHaveBeenCalledWith("github", undefined);
+      expect(getTokenMock).toHaveBeenCalledWith("github", undefined, undefined);
       expect(token).toEqual(mockTokenData);
     });
 
@@ -50,7 +50,7 @@ describe("Database Token Callbacks", () => {
         refreshToken: "refresh-789",
       };
 
-      const setTokenMock = mock(async (provider: string, tokenData: ProviderTokenData) => {
+      const setTokenMock = mock(async (provider: string, tokenData: ProviderTokenData, email?: string, context?: any) => {
         // Simulate database save
       });
 
@@ -65,7 +65,7 @@ describe("Database Token Callbacks", () => {
 
       await manager.setProviderToken("github", mockTokenData);
       
-      expect(setTokenMock).toHaveBeenCalledWith("github", mockTokenData, undefined);
+      expect(setTokenMock).toHaveBeenCalledWith("github", mockTokenData, undefined, undefined);
     });
 
     test("loads all provider tokens using callback", async () => {
@@ -82,7 +82,7 @@ describe("Database Token Callbacks", () => {
         },
       };
 
-      const getTokenMock = mock(async (provider: string) => {
+      const getTokenMock = mock(async (provider: string, email?: string, context?: any) => {
         return mockTokens[provider];
       });
 
@@ -98,9 +98,9 @@ describe("Database Token Callbacks", () => {
       await manager.loadAllProviderTokens(["github", "gmail"]);
       
       expect(getTokenMock).toHaveBeenCalledTimes(2);
-      // loadAllProviderTokens doesn't pass context, so both should be called without it
-      expect(getTokenMock).toHaveBeenCalledWith("github");
-      expect(getTokenMock).toHaveBeenCalledWith("gmail");
+      // loadAllProviderTokens doesn't pass context, so both should be called with undefined email and context
+      expect(getTokenMock).toHaveBeenCalledWith("github", undefined, undefined);
+      expect(getTokenMock).toHaveBeenCalledWith("gmail", undefined, undefined);
 
       // Verify tokens are loaded in memory
       const allTokens = manager.getAllProviderTokens();
@@ -149,11 +149,11 @@ describe("Database Token Callbacks", () => {
         expiresIn: 3600,
       };
 
-      const getTokenMock = mock(async (provider: string) => {
+      const getTokenMock = mock(async (provider: string, email?: string, context?: any) => {
         return provider === "github" ? mockTokenData : undefined;
       });
 
-      const setTokenMock = mock(async (provider: string, tokenData: ProviderTokenData | null) => {});
+      const setTokenMock = mock(async (provider: string, tokenData: ProviderTokenData | null, email?: string, context?: any) => {});
 
       const manager = new OAuthManager(
         TEST_OAUTH_API_BASE,
@@ -167,9 +167,8 @@ describe("Database Token Callbacks", () => {
 
       await manager.disconnectProvider("github");
       
-      // Should check for token and then call setProviderToken(null)
-      expect(getTokenMock).toHaveBeenCalledWith("github", undefined);
-      expect(setTokenMock).toHaveBeenCalledWith("github", null, undefined);
+      // disconnectProvider directly calls setProviderToken(null) without checking for token first
+      expect(setTokenMock).toHaveBeenCalledWith("github", null, undefined, undefined);
     });
 
     test("handles callback errors gracefully in getProviderToken", async () => {
@@ -223,8 +222,8 @@ describe("Database Token Callbacks", () => {
         expiresIn: 3600,
       };
 
-      const getTokenMock = mock(async (provider: string) => mockTokenData);
-      const setTokenMock = mock(async (provider: string, tokenData: ProviderTokenData) => {});
+      const getTokenMock = mock(async (provider: string, email?: string, context?: any) => mockTokenData);
+      const setTokenMock = mock(async (provider: string, tokenData: ProviderTokenData, email?: string, context?: any) => {});
 
       const manager = new OAuthManager(
         TEST_OAUTH_API_BASE,
@@ -239,8 +238,8 @@ describe("Database Token Callbacks", () => {
       // Set a token
       await manager.setProviderToken("github", mockTokenData);
 
-      // Verify callback was used (setProviderToken now includes context parameter)
-      expect(setTokenMock).toHaveBeenCalledWith("github", mockTokenData, undefined);
+      // Verify callback was used (setProviderToken now includes email and context parameters)
+      expect(setTokenMock).toHaveBeenCalledWith("github", mockTokenData, undefined, undefined);
 
       // Clear the token
       manager.clearProviderToken("github");
@@ -261,11 +260,11 @@ describe("Database Token Callbacks", () => {
       };
 
       // Synchronous callback (not async)
-      const getTokenMock = mock((provider: string) => {
+      const getTokenMock = mock((provider: string, email?: string, context?: any) => {
         return provider === "github" ? mockTokenData : undefined;
       });
 
-      const setTokenMock = mock((provider: string, tokenData: ProviderTokenData) => {
+      const setTokenMock = mock((provider: string, tokenData: ProviderTokenData, email?: string, context?: any) => {
         // Synchronous save
       });
 
@@ -284,7 +283,7 @@ describe("Database Token Callbacks", () => {
       expect(token).toEqual(mockTokenData);
 
       await manager.setProviderToken("github", mockTokenData);
-      expect(setTokenMock).toHaveBeenCalledWith("github", mockTokenData, undefined);
+      expect(setTokenMock).toHaveBeenCalledWith("github", mockTokenData, undefined, undefined);
     });
 
     test("falls back to localStorage when callbacks are not provided", async () => {
@@ -352,11 +351,11 @@ describe("Database Token Callbacks", () => {
         expiresIn: 3600,
       };
 
-      const getTokenMock = mock(async (provider: string) => {
+      const getTokenMock = mock(async (provider: string, email?: string, context?: any) => {
         return provider === "github" ? mockTokenData : undefined;
       });
 
-      const removeTokenMock = mock(async (provider: string) => {
+      const removeTokenMock = mock(async (provider: string, email?: string, context?: any) => {
         // Simulate database deletion
       });
 
@@ -373,23 +372,13 @@ describe("Database Token Callbacks", () => {
       // Disconnect should use removeProviderToken callback
       await manager.disconnectProvider("github");
 
-      expect(removeTokenMock).toHaveBeenCalledWith("github", undefined);
+      expect(removeTokenMock).toHaveBeenCalledWith("github", undefined, undefined);
       // Should not call getTokenMock since removeProviderToken is provided
       expect(getTokenMock).not.toHaveBeenCalled();
     });
 
     test("disconnectProvider falls back to setProviderToken(null) when removeProviderToken not provided", async () => {
-      const mockTokenData: ProviderTokenData = {
-        accessToken: "token-to-delete",
-        tokenType: "Bearer",
-        expiresIn: 3600,
-      };
-
-      const getTokenMock = mock(async (provider: string) => {
-        return provider === "github" ? mockTokenData : undefined;
-      });
-
-      const setTokenMock = mock(async (provider: string, tokenData: ProviderTokenData | null) => {
+      const setTokenMock = mock(async (provider: string, tokenData: ProviderTokenData | null, email?: string, context?: any) => {
         // Should be called with null for deletion
       });
 
@@ -398,7 +387,6 @@ describe("Database Token Callbacks", () => {
         undefined,
         undefined,
         {
-          getProviderToken: getTokenMock,
           setProviderToken: setTokenMock,
         }
       );
@@ -406,12 +394,12 @@ describe("Database Token Callbacks", () => {
       // Disconnect should fall back to setProviderToken(null)
       await manager.disconnectProvider("github");
 
-      expect(getTokenMock).toHaveBeenCalledWith("github", undefined);
-      expect(setTokenMock).toHaveBeenCalledWith("github", null, undefined);
+      // disconnectProvider directly calls setProviderToken(null) without checking for token first
+      expect(setTokenMock).toHaveBeenCalledWith("github", null, undefined, undefined);
     });
 
     test("disconnectProvider is idempotent when removeProviderToken is provided", async () => {
-      const removeTokenMock = mock(async (provider: string) => {
+      const removeTokenMock = mock(async (provider: string, email?: string, context?: any) => {
         // Simulate database deletion (idempotent - safe to call multiple times)
       });
 
@@ -431,10 +419,11 @@ describe("Database Token Callbacks", () => {
 
       // Should be called each time (idempotent operation)
       expect(removeTokenMock).toHaveBeenCalledTimes(3);
+      expect(removeTokenMock).toHaveBeenCalledWith("github", undefined, undefined);
     });
 
     test("disconnectProvider handles removeProviderToken errors gracefully", async () => {
-      const removeTokenMock = mock(async (provider: string) => {
+      const removeTokenMock = mock(async (provider: string, email?: string, context?: any) => {
         throw new Error("Database deletion failed");
       });
 
@@ -450,12 +439,12 @@ describe("Database Token Callbacks", () => {
       // Should not throw - errors are logged but operation continues
       await manager.disconnectProvider("github");
 
-      expect(removeTokenMock).toHaveBeenCalledWith("github", undefined);
+      expect(removeTokenMock).toHaveBeenCalledWith("github", undefined, undefined);
     });
 
     test("disconnectProvider prefers removeProviderToken over setProviderToken(null)", async () => {
-      const removeTokenMock = mock(async (provider: string) => {});
-      const setTokenMock = mock(async (provider: string, tokenData: ProviderTokenData | null) => {});
+      const removeTokenMock = mock(async (provider: string, email?: string, context?: any) => {});
+      const setTokenMock = mock(async (provider: string, tokenData: ProviderTokenData | null, email?: string, context?: any) => {});
 
       const manager = new OAuthManager(
         TEST_OAUTH_API_BASE,
@@ -470,12 +459,12 @@ describe("Database Token Callbacks", () => {
       await manager.disconnectProvider("github");
 
       // Should use removeProviderToken, not setProviderToken
-      expect(removeTokenMock).toHaveBeenCalledWith("github", undefined);
+      expect(removeTokenMock).toHaveBeenCalledWith("github", undefined, undefined);
       expect(setTokenMock).not.toHaveBeenCalled();
     });
 
     test("disconnectProvider passes context to removeProviderToken callback", async () => {
-      const removeTokenMock = mock(async (provider: string, context?: any) => {});
+      const removeTokenMock = mock(async (provider: string, email?: string, context?: any) => {});
       const context = { userId: "user123", organizationId: "org456" };
 
       const manager = new OAuthManager(
@@ -489,8 +478,8 @@ describe("Database Token Callbacks", () => {
 
       await manager.disconnectProvider("github", context);
 
-      // Verify context was passed to callback
-      expect(removeTokenMock).toHaveBeenCalledWith("github", context);
+      // Verify context was passed to callback (email is undefined when not provided)
+      expect(removeTokenMock).toHaveBeenCalledWith("github", undefined, context);
     });
   });
 });

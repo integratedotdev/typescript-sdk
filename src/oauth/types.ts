@@ -105,6 +105,26 @@ export interface ProviderTokenData {
   expiresAt?: string;
   /** Granted scopes */
   scopes?: string[];
+  /** User email address (for multi-account support) */
+  email?: string;
+  /** Account ID (provider + email hash) */
+  accountId?: string;
+}
+
+/**
+ * Account information for listing connected accounts
+ */
+export interface AccountInfo {
+  /** User email address */
+  email: string;
+  /** Account ID */
+  accountId: string;
+  /** Token expiration timestamp */
+  expiresAt?: string;
+  /** Granted scopes */
+  scopes?: string[];
+  /** Creation timestamp */
+  createdAt: number;
 }
 
 /**

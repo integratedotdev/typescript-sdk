@@ -95,12 +95,13 @@ export interface MCPServerConfig<TIntegrations extends readonly MCPIntegration[]
 
   /**
    * Custom token retrieval callback (SERVER-SIDE ONLY)
-   * Allows storing OAuth provider tokens in your database instead of localStorage
+   * Allows storing OAuth provider tokens in your database instead of IndexedDB
    * 
-   * When provided, this callback is used exclusively for token retrieval (no localStorage fallback).
-   * The callback receives the provider name and optional context with user identifiers.
+   * When provided, this callback is used exclusively for token retrieval (no IndexedDB fallback).
+   * The callback receives the provider name, optional email for multi-account support, and optional context with user identifiers.
    * 
    * @param provider - Provider name (e.g., 'github', 'gmail')
+   * @param email - Optional email to get specific account token
    * @param context - Optional user context (userId, organizationId, etc.) for multi-tenant apps
    * @returns Provider token data from your database, or undefined if not found
    * 
@@ -111,12 +112,12 @@ export interface MCPServerConfig<TIntegrations extends readonly MCPIntegration[]
    * 
    * createMCPServer({
    *   integrations: [...],
-   *   getProviderToken: async (provider, context) => {
+   *   getProviderToken: async (provider, email, context) => {
    *     const userId = context?.userId;
    *     if (!userId) return undefined;
    *     
    *     const token = await db.tokens.findFirst({
-   *       where: { provider, userId }
+   *       where: { provider, email, userId }
    *     });
    *     return token ? {
    *       accessToken: token.accessToken,
@@ -130,7 +131,7 @@ export interface MCPServerConfig<TIntegrations extends readonly MCPIntegration[]
    * });
    * ```
    */
-  getProviderToken?: (provider: string, context?: MCPContext) => Promise<ProviderTokenData | undefined> | ProviderTokenData | undefined;
+  getProviderToken?: (provider: string, email?: string, context?: MCPContext) => Promise<ProviderTokenData | undefined> | ProviderTokenData | undefined;
 
   /**
    * Custom session context extraction callback (SERVER-SIDE ONLY)
@@ -165,7 +166,8 @@ export interface MCPServerConfig<TIntegrations extends readonly MCPIntegration[]
    * If not provided, tokens retrieved via getProviderToken are assumed to be read-only.
    * 
    * @param provider - Provider name (e.g., 'github', 'gmail')
-   * @param tokenData - Token data to store in your database
+   * @param tokenData - Token data to store in your database, or null to delete
+   * @param email - Optional email to store specific account token
    * @param context - Optional user context (userId, organizationId, etc.) for multi-tenant apps
    * 
    * @example
@@ -175,30 +177,38 @@ export interface MCPServerConfig<TIntegrations extends readonly MCPIntegration[]
    * 
    * createMCPServer({
    *   integrations: [...],
-   *   setProviderToken: async (provider, tokenData, context) => {
+   *   setProviderToken: async (provider, tokenData, email, context) => {
    *     const userId = context?.userId;
    *     if (!userId) return;
    *     
-   *     await db.tokens.upsert({
-   *       where: { provider_userId: { provider, userId } },
-   *       create: { provider, userId, ...tokenData },
-   *       update: tokenData,
-   *     });
+   *     if (tokenData === null) {
+   *       // Delete token
+   *       await db.tokens.deleteMany({
+   *         where: { provider, email, userId }
+   *       });
+   *     } else {
+   *       await db.tokens.upsert({
+   *         where: { provider_email_userId: { provider, email, userId } },
+   *         create: { provider, email, userId, ...tokenData },
+   *         update: tokenData,
+   *       });
+   *     }
    *   }
    * });
    * ```
    */
-  setProviderToken?: (provider: string, tokenData: ProviderTokenData | null, context?: MCPContext) => Promise<void> | void;
+  setProviderToken?: (provider: string, tokenData: ProviderTokenData | null, email?: string, context?: MCPContext) => Promise<void> | void;
 
   /**
    * Custom token deletion callback (SERVER-SIDE ONLY)
    * Allows deleting OAuth provider tokens from your database
    * 
-   * When provided, this callback is used for deleting tokens when disconnecting providers.
-   * If not provided, the SDK will fall back to calling `setProviderToken(provider, null, context)`
+   * When provided, this callback is used for deleting tokens when disconnecting providers or accounts.
+   * If not provided, the SDK will fall back to calling `setProviderToken(provider, null, email, context)`
    * for backward compatibility.
    * 
    * @param provider - Provider name (e.g., 'github', 'gmail')
+   * @param email - Optional email to delete specific account token. If not provided, deletes all tokens for the provider
    * @param context - Optional user context (userId, organizationId, etc.) for multi-tenant apps
    * 
    * @example
@@ -207,20 +217,26 @@ export interface MCPServerConfig<TIntegrations extends readonly MCPIntegration[]
    * 
    * createMCPServer({
    *   integrations: [...],
-   *   removeProviderToken: async (provider, context) => {
+   *   removeProviderToken: async (provider, email, context) => {
    *     const userId = context?.userId;
    *     if (!userId) return;
    *     
-   *     await db.tokens.delete({
-   *       where: { 
-   *         provider_userId: { provider, userId } 
-   *       }
-   *     });
+   *     if (email) {
+   *       // Delete specific account
+   *       await db.tokens.deleteMany({
+   *         where: { provider, email, userId }
+   *       });
+   *     } else {
+   *       // Delete all accounts for provider
+   *       await db.tokens.deleteMany({
+   *         where: { provider, userId }
+   *       });
+   *     }
    *   }
    * });
    * ```
    */
-  removeProviderToken?: (provider: string, context?: MCPContext) => Promise<void> | void;
+  removeProviderToken?: (provider: string, email?: string, context?: MCPContext) => Promise<void> | void;
 }
 
 /**
