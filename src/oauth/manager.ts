@@ -34,6 +34,7 @@ export class OAuthManager {
   private setTokenCallback?: (provider: string, tokenData: ProviderTokenData | null, email?: string, context?: MCPContext) => Promise<void> | void;
   private removeTokenCallback?: (provider: string, email?: string, context?: MCPContext) => Promise<void> | void;
   private indexedDBStorage: IndexedDBStorage;
+  private skipLocalStorage: boolean = false;
 
   constructor(
     oauthApiBase: string,
@@ -578,8 +579,8 @@ export class OAuthManager {
   clearProviderToken(provider: string): void {
     this.providerTokens.delete(provider);
 
-    // Clear from IndexedDB if not using server-side database storage
-    if (!this.setTokenCallback && !this.removeTokenCallback) {
+    // Clear from IndexedDB if not using server-side database storage and not skipping localStorage
+    if (!this.setTokenCallback && !this.removeTokenCallback && !this.skipLocalStorage) {
       this.indexedDBStorage.deleteTokensByProvider(provider).catch((error) => {
         console.error(`Failed to clear tokens for ${provider} from IndexedDB:`, error);
       });
@@ -594,8 +595,8 @@ export class OAuthManager {
   clearAllProviderTokens(): void {
     this.providerTokens.clear();
 
-    // Clear from IndexedDB and localStorage if not using server-side database storage
-    if (!this.setTokenCallback && !this.removeTokenCallback) {
+    // Clear from IndexedDB and localStorage if not using server-side database storage and not skipping localStorage
+    if (!this.setTokenCallback && !this.removeTokenCallback && !this.skipLocalStorage) {
       // Clear from localStorage for backward compatibility
       if (typeof window !== 'undefined' && window.localStorage) {
         try {
@@ -651,8 +652,8 @@ export class OAuthManager {
    * 
    * Storage decision logic:
    * 1. If setTokenCallback is configured → use callback exclusively (no IndexedDB)
-   * 2. If skipIndexedDB is true → skip IndexedDB (token only in memory)
-   * 3. Otherwise → use IndexedDB (when callbacks are NOT configured AND skipIndexedDB is false)
+   * 2. If skipLocalStorage is true → skip IndexedDB/localStorage (token only in memory)
+   * 3. Otherwise → use IndexedDB (when callbacks are NOT configured AND skipLocalStorage is false)
    * 
    * @param provider - Provider name (e.g., 'github', 'gmail')
    * @param tokenData - Token data to store, or null to delete
@@ -670,6 +671,13 @@ export class OAuthManager {
         throw error;
       }
       // Return early - callbacks are exclusive, no IndexedDB when callbacks are configured
+      return;
+    }
+
+    // Rule 2: If skipLocalStorage is true, only store in memory (skip IndexedDB/localStorage)
+    if (this.skipLocalStorage) {
+      // Token is already stored in memory cache (providerTokens map)
+      // No need to save to IndexedDB/localStorage
       return;
     }
 
@@ -706,7 +714,7 @@ export class OAuthManager {
       return;
     }
 
-    // Rule 2: Use IndexedDB when callbacks are NOT configured
+    // Rule 3: Use IndexedDB when callbacks are NOT configured and skipLocalStorage is false
     // This is the default behavior for client-side only usage without database callbacks
     const tokenEmail = email || tokenData.email;
     if (tokenEmail) {
@@ -743,8 +751,8 @@ export class OAuthManager {
    * 
    * Loading decision logic (mirrors saveProviderToken):
    * 1. If getTokenCallback is configured → use callback exclusively (no IndexedDB)
-   * 2. If skipIndexedDB is true → skip IndexedDB (return undefined)
-   * 3. Otherwise → use IndexedDB (when callbacks are NOT configured AND skipIndexedDB is false)
+   * 2. If skipLocalStorage is true → skip IndexedDB/localStorage (only check memory cache)
+   * 3. Otherwise → use IndexedDB (when callbacks are NOT configured AND skipLocalStorage is false)
    * 4. Fallback to localStorage if IndexedDB is not available (for backward compatibility)
    * 
    * Returns undefined if not found or invalid
@@ -762,7 +770,13 @@ export class OAuthManager {
       }
     }
 
-    // Rule 2: Use IndexedDB when callbacks are NOT configured
+    // Rule 2: If skipLocalStorage is true, only check memory cache (skip IndexedDB/localStorage)
+    if (this.skipLocalStorage) {
+      // Only return from memory cache, don't load from IndexedDB/localStorage
+      return this.providerTokens.get(provider);
+    }
+
+    // Rule 3: Use IndexedDB when callbacks are NOT configured and skipLocalStorage is false
     // This is the default behavior for client-side only usage without database callbacks
     if (email) {
       try {
@@ -828,6 +842,11 @@ export class OAuthManager {
    */
   loadAllProviderTokensSync(providers: string[]): void {
     if (this.getTokenCallback) {
+      return;
+    }
+
+    // If skipLocalStorage is true, don't load from localStorage/IndexedDB
+    if (this.skipLocalStorage) {
       return;
     }
 
@@ -999,8 +1018,10 @@ export class OAuthManager {
       }),
     });
 
-    // Note: X-Integrate-Use-Database header is no longer used
-    // Database usage is determined by presence of callbacks
+    // Check for X-Integrate-Use-Database header to auto-detect database usage
+    if (response.headers.get('X-Integrate-Use-Database') === 'true') {
+      this.setSkipLocalStorage(true);
+    }
 
     if (!response.ok) {
       const error = await response.text();
@@ -1050,8 +1071,10 @@ export class OAuthManager {
       }),
     });
 
-    // Note: X-Integrate-Use-Database header is no longer used
-    // Database usage is determined by presence of callbacks
+    // Check for X-Integrate-Use-Database header to auto-detect database usage
+    if (response.headers.get('X-Integrate-Use-Database') === 'true') {
+      this.setSkipLocalStorage(true);
+    }
 
     if (!response.ok) {
       const error = await response.text();
@@ -1062,6 +1085,17 @@ export class OAuthManager {
     return data;
   }
 
+
+  /**
+   * Set whether to skip localStorage/IndexedDB storage
+   * When true, tokens will only be stored in memory and via callbacks (if configured)
+   * This is automatically set when X-Integrate-Use-Database header is detected
+   * 
+   * @param value - Whether to skip localStorage/IndexedDB
+   */
+  setSkipLocalStorage(value: boolean): void {
+    this.skipLocalStorage = value;
+  }
 
   /**
    * Close any open OAuth windows

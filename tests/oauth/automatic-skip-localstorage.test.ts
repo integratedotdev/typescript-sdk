@@ -181,108 +181,130 @@ describe("Automatic skipLocalStorage Detection", () => {
 
   describe("Runtime detection from response header", () => {
     test("detects X-Integrate-Use-Database header and updates skipLocalStorage", async () => {
-      // Note: setSkipLocalStorage method was removed. skipLocalStorage is now automatically
-      // detected based on whether callbacks are provided. This test verifies that when
-      // callbacks are provided, localStorage is not used.
-      const dbTokens: Record<string, ProviderTokenData> = {};
-      const setTokenMock = mock(async (provider: string, tokenData: ProviderTokenData, email?: string, context?: any) => {
-        dbTokens[provider] = tokenData;
-      });
-      const getTokenMock = mock(async (provider: string, email?: string, context?: any) => {
-        return dbTokens[provider];
-      });
+      const manager = new OAuthManager("/api/integrate/oauth");
 
-      const manager = new OAuthManager(
-        "/api/integrate/oauth",
-        undefined,
-        undefined,
-        {
-          getProviderToken: getTokenMock,
-          setProviderToken: setTokenMock,
-        }
-      );
-
+      // Initially, skipLocalStorage should be false
       const tokenData: ProviderTokenData = {
         accessToken: "initial-token",
         tokenType: "Bearer",
         expiresIn: 3600,
       };
 
+      // Set token before header detection - should save to localStorage
       await manager.setProviderToken("github", tokenData);
-      // Should NOT be in localStorage when callbacks are provided
-      expect(mockLocalStorage.has("integrate_token_github")).toBe(false);
-      // Should be in database (callback)
-      expect(dbTokens["github"]).toEqual(tokenData);
-    });
+      expect(mockLocalStorage.has("integrate_token_github")).toBe(true);
 
-    test("header detection in getAuthorizationUrl updates skipLocalStorage", async () => {
-      // Note: setSkipLocalStorage method was removed. skipLocalStorage is now automatically
-      // detected based on whether callbacks are provided. This test verifies that when
-      // callbacks are provided, localStorage is not used.
-      const dbTokens: Record<string, ProviderTokenData> = {};
-      const setTokenMock = mock(async (provider: string, tokenData: ProviderTokenData, email?: string, context?: any) => {
-        dbTokens[provider] = tokenData;
-      });
-      const getTokenMock = mock(async (provider: string, email?: string, context?: any) => {
-        return dbTokens[provider];
-      });
+      // Simulate header detection by calling setSkipLocalStorage
+      manager.setSkipLocalStorage(true);
 
-      const manager = new OAuthManager(
-        "/api/integrate/oauth",
-        undefined,
-        undefined,
-        {
-          getProviderToken: getTokenMock,
-          setProviderToken: setTokenMock,
-        }
-      );
-
-      const tokenData: ProviderTokenData = {
+      // Set another token after header detection - should NOT save to localStorage
+      const tokenData2: ProviderTokenData = {
         accessToken: "token-after-header",
         tokenType: "Bearer",
         expiresIn: 3600,
       };
+      await manager.setProviderToken("github", tokenData2);
+      
+      // Token should be in memory but NOT in localStorage
+      const retrieved = await manager.getProviderToken("github");
+      expect(retrieved).toEqual(tokenData2);
+      // localStorage should still have the old token (not updated)
+      const stored = JSON.parse(mockLocalStorage.get("integrate_token_github")!);
+      expect(stored).toEqual(tokenData);
+    });
 
-      await manager.setProviderToken("github", tokenData);
-      // Should NOT be in localStorage when callbacks are provided
-      expect(mockLocalStorage.has("integrate_token_github")).toBe(false);
-      // Should be in database (callback)
-      expect(dbTokens["github"]).toEqual(tokenData);
+    test("header detection in getAuthorizationUrl updates skipLocalStorage", async () => {
+      const manager = new OAuthManager("/api/integrate/oauth");
+
+      // Mock fetch to return header
+      const originalFetch = global.fetch;
+      global.fetch = mock(async (url: string) => {
+        if (url.includes("/authorize")) {
+          const headers = new Headers();
+          headers.set('X-Integrate-Use-Database', 'true');
+          return {
+            ok: true,
+            headers,
+            json: async () => ({
+              authorizationUrl: "https://example.com/oauth/authorize",
+            }),
+          } as Response;
+        }
+        return { ok: false, headers: new Headers() } as Response;
+      }) as any;
+
+      try {
+        // Call getAuthorizationUrl - should detect header and set skipLocalStorage
+        await (manager as any).getAuthorizationUrl(
+          "github",
+          "state",
+          "challenge",
+          "http://localhost/callback"
+        );
+
+        // After header detection, setting a token should NOT save to localStorage
+        const tokenData: ProviderTokenData = {
+          accessToken: "token-after-header",
+          tokenType: "Bearer",
+          expiresIn: 3600,
+        };
+        await manager.setProviderToken("github", tokenData);
+        
+        // Token should be in memory but NOT in localStorage
+        const retrieved = await manager.getProviderToken("github");
+        expect(retrieved).toEqual(tokenData);
+        expect(mockLocalStorage.has("integrate_token_github")).toBe(false);
+      } finally {
+        global.fetch = originalFetch;
+      }
     });
 
     test("header detection in exchangeCodeForToken updates skipLocalStorage", async () => {
-      // Note: setSkipLocalStorage method was removed. skipLocalStorage is now automatically
-      // detected based on whether callbacks are provided. This test verifies that when
-      // callbacks are provided, localStorage is not used.
-      const dbTokens: Record<string, ProviderTokenData> = {};
-      const setTokenMock = mock(async (provider: string, tokenData: ProviderTokenData, email?: string, context?: any) => {
-        dbTokens[provider] = tokenData;
-      });
-      const getTokenMock = mock(async (provider: string, email?: string, context?: any) => {
-        return dbTokens[provider];
-      });
+      const manager = new OAuthManager("/api/integrate/oauth");
 
-      const manager = new OAuthManager(
-        "/api/integrate/oauth",
-        undefined,
-        undefined,
-        {
-          getProviderToken: getTokenMock,
-          setProviderToken: setTokenMock,
+      // Mock fetch to return header
+      const originalFetch = global.fetch;
+      global.fetch = mock(async (url: string) => {
+        if (url.includes("/callback")) {
+          const headers = new Headers();
+          headers.set('X-Integrate-Use-Database', 'true');
+          return {
+            ok: true,
+            headers,
+            json: async () => ({
+              accessToken: "token-from-server",
+              tokenType: "Bearer",
+              expiresIn: 3600,
+            }),
+          } as Response;
         }
-      );
+        return { ok: false, headers: new Headers() } as Response;
+      }) as any;
 
-      const tokenData: ProviderTokenData = {
-        accessToken: "token-after-callback-header",
-        tokenType: "Bearer",
-        expiresIn: 3600,
-      };
+      try {
+        // Call exchangeCodeForToken - should detect header and set skipLocalStorage
+        await (manager as any).exchangeCodeForToken(
+          "github",
+          "code",
+          "verifier",
+          "state"
+        );
 
-      await manager.setProviderToken("github", tokenData);
-      // Should NOT be in localStorage when callbacks are provided
-      expect(mockLocalStorage.has("integrate_token_github")).toBe(false);
-      // Should be in database (callback)
-      expect(dbTokens["github"]).toEqual(tokenData);
+        // After header detection, setting a token should NOT save to localStorage
+        const tokenData: ProviderTokenData = {
+          accessToken: "token-after-callback-header",
+          tokenType: "Bearer",
+          expiresIn: 3600,
+        };
+        await manager.setProviderToken("github", tokenData);
+        
+        // Token should be in memory but NOT in localStorage
+        const retrieved = await manager.getProviderToken("github");
+        expect(retrieved).toEqual(tokenData);
+        expect(mockLocalStorage.has("integrate_token_github")).toBe(false);
+      } finally {
+        global.fetch = originalFetch;
+      }
     });
   });
 

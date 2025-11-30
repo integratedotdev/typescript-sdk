@@ -509,6 +509,10 @@ describe("MCP Client - API Routing", () => {
       return { ok: false, headers: new Headers() } as Response;
     }) as any;
 
+    const setSkipLocalStorageMock = mock((value: boolean) => {
+      headerDetected = value;
+    });
+
     const mockOAuthManager = {
       getProviderToken: mock(() => null),
       loadAllProviderTokens: mock(() => { }),
@@ -520,9 +524,7 @@ describe("MCP Client - API Routing", () => {
       initiateFlow: mock(() => Promise.resolve()),
       handleCallback: mock(() => Promise.resolve({ provider: "github", accessToken: "token", expiresAt: Date.now() })),
       disconnectProvider: mock(() => Promise.resolve()),
-      // Note: setSkipLocalStorage method was removed - skipLocalStorage is now automatically
-      // detected based on whether callbacks are provided. This test verifies header detection
-      // but the method no longer exists, so we'll just verify the header was received.
+      setSkipLocalStorage: setSkipLocalStorageMock,
     };
 
     const integration = createSimpleIntegration({
@@ -549,11 +551,10 @@ describe("MCP Client - API Routing", () => {
     // Make a tool call - should detect header
     await (client as any).callServerTool("test_tool", {});
 
-    // Note: setSkipLocalStorage method was removed. The X-Integrate-Use-Database header
-    // is still sent by the server when callbacks are configured, but the client no longer
-    // has a setSkipLocalStorage method. skipLocalStorage is now automatically detected
-    // based on whether callbacks are provided.
-    // This test verifies the tool call works, but we can't verify setSkipLocalStorage anymore.
+    // Verify header was detected and setSkipLocalStorage was called
+    expect(setSkipLocalStorageMock).toHaveBeenCalledWith(true);
+    expect(headerDetected).toBe(true);
+    expect((client as any).databaseDetected).toBe(true);
   });
 });
 

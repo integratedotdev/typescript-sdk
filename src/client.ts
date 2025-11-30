@@ -160,6 +160,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   private eventEmitter: SimpleEventEmitter = new SimpleEventEmitter();
   private apiRouteBase: string;
   private apiBaseUrl?: string;
+  private databaseDetected: boolean = false;
 
   /**
    * Promise that resolves when OAuth callback processing is complete
@@ -619,8 +620,11 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
       }),
     });
 
-    // Note: X-Integrate-Use-Database header is no longer used
-    // Database usage is determined by presence of callbacks
+    // Check for X-Integrate-Use-Database header to auto-detect database usage
+    if (!this.databaseDetected && response.headers.get('X-Integrate-Use-Database') === 'true') {
+      this.oauthManager.setSkipLocalStorage(true);
+      this.databaseDetected = true;
+    }
 
     if (!response.ok) {
       // Try to parse error response
