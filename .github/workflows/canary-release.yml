@@ -189,8 +189,12 @@ jobs:
           prerelease: true
 
       - name: Send Discord notification
-        if: secrets.DISCORD_WEBHOOK_URL != ''
         run: |
+          if [ -z "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
+            echo "Discord webhook URL not set, skipping notification"
+            exit 0
+          fi
+          
           CANARY_VERSION="${{ needs.generate-version.outputs.canary-version }}"
           REPO="${{ github.repository }}"
           RELEASE_URL="https://github.com/${REPO}/releases/tag/v${CANARY_VERSION}"
