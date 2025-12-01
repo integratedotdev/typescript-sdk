@@ -114,14 +114,42 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Github Releases To Discord
-        uses: SethCohen/github-releases-to-discord@v1.13.1
-        with:
-          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          color: "1316451"
-          # username: "Integrate.dev Release"
-          # avatar_url: "https://raw.githubusercontent.com/integratedotdev/typescript-sdk/refs/heads/main/docs/src/app/favicon.ico"
-          content: "@everyone,"
-          footer_title: "integrate.dev"
-          # footer_icon_url: "https://raw.githubusercontent.com/integratedotdev/typescript-sdk/refs/heads/main/docs/src/app/favicon.ico"
-          footer_timestamp: true
+      - name: Send Discord notification
+        run: |
+          if [ -z "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
+            echo "Discord webhook URL not set, skipping notification"
+            exit 0
+          fi
+          
+          VERSION="${{ needs.check-version.outputs.version }}"
+          REPO="${{ github.repository }}"
+          RELEASE_URL="https://github.com/${REPO}/releases/tag/v${VERSION}"
+          
+          # Use node to construct the JSON payload
+          PAYLOAD=$(node -e "
+            const version = process.argv[1];
+            const url = process.argv[2];
+            const payload = {
+              embeds: [{
+                title: 'Release v' + version,
+                description: 'A new stable release has been published!',
+                url: url,
+                color: 1316451,
+                fields: [{
+                  name: 'Installation',
+                  value: '\`\`\`bash\nbun add integrate-sdk@' + version + '\n\`\`\`',
+                  inline: false
+                }],
+                footer: {
+                  text: 'integrate.dev'
+                },
+                timestamp: new Date().toISOString()
+              }]
+            };
+            console.log(JSON.stringify(payload));
+          " "$VERSION" "$RELEASE_URL")
+          
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "${{ secrets.DISCORD_WEBHOOK_URL }}"
