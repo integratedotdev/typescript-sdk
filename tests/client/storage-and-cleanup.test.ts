@@ -360,17 +360,10 @@ describe("Storage and Cleanup", () => {
 
   describe("Multiple Client Instances", () => {
     test("each non-singleton instance manages its own state", async () => {
+      // Clear localStorage to ensure clean state
+      mockLocalStorage.clear();
+      
       const client1 = createMCPClient({
-        integrations: [
-          githubIntegration({
-            clientId: "test-id",
-            clientSecret: "test-secret",
-          }),
-        ],
-        singleton: false,
-      });
-
-      const client2 = createMCPClient({
         integrations: [
           githubIntegration({
             clientId: "test-id",
@@ -386,17 +379,49 @@ describe("Storage and Cleanup", () => {
         expiresIn: 3600,
       };
 
+      await client1.setProviderToken('github', token1);
+      
+      // Verify client1 has token1 in its in-memory cache
+      const client1Token = await client1.getProviderToken('github');
+      expect(client1Token).toEqual(token1);
+
+      // Create client2 after client1 has set its token
+      const client2 = createMCPClient({
+        integrations: [
+          githubIntegration({
+            clientId: "test-id",
+            clientSecret: "test-secret",
+          }),
+        ],
+        singleton: false,
+      });
+
       const token2 = {
         accessToken: 'token2',
         tokenType: 'Bearer',
         expiresIn: 3600,
       };
 
-      await client1.setProviderToken('github', token1);
       await client2.setProviderToken('github', token2);
 
-      expect(await client1.getProviderToken('github')).toEqual(token1);
-      expect(await client2.getProviderToken('github')).toEqual(token2);
+      // Note: When not using callbacks, tokens are stored in shared localStorage/IndexedDB.
+      // Each client instance maintains its own in-memory cache, but when tokens are loaded
+      // from storage, they come from the shared storage. The second client's token will
+      // overwrite the first in localStorage.
+      // 
+      // getProviderToken checks in-memory cache first, then falls back to storage.
+      // Since setProviderToken updates both the in-memory cache and storage, each client
+      // should have its own token in memory immediately after setProviderToken.
+      const client1TokenAfter = await client1.getProviderToken('github');
+      const client2Token = await client2.getProviderToken('github');
+      
+      // client1 should still have token1 in its in-memory cache
+      // client2 should have token2 in its in-memory cache
+      expect(client1TokenAfter).toEqual(token1);
+      expect(client2Token).toEqual(token2);
+      
+      // Verify they are different instances (not sharing the same cache)
+      expect(client1TokenAfter).not.toEqual(client2Token);
     });
 
     test("disconnecting provider in one instance does not affect others", async () => {

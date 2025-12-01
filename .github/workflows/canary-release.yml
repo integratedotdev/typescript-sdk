@@ -1,0 +1,230 @@
+name: Canary Release
+
+on:
+  push:
+    branches:
+      - dev
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - "examples/**"
+      - ".github/**"
+      - "!.github/workflows/canary-release.yml"
+
+permissions:
+  contents: write # Required to create releases and tags
+
+jobs:
+  generate-version:
+    runs-on: ubuntu-latest
+    outputs:
+      canary-version: ${{ steps.version.outputs.canary-version }}
+      base-version: ${{ steps.version.outputs.base-version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Get base version
+        id: base
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Find next available canary version
+        id: npm-versions
+        run: |
+          BASE_VERSION="${{ steps.base.outputs.version }}"
+          echo "Base version: $BASE_VERSION"
+          
+          # Find next available version by checking incrementally
+          # Start from 0 and check each version until we find one that doesn't exist
+          NEXT_INCREMENT=$(node -e "
+            const { execSync } = require('child_process');
+            const baseVersion = process.argv[1];
+            
+            function versionExists(increment) {
+              const version = baseVersion + '-dev.' + increment;
+              try {
+                execSync('npm view integrate-sdk@' + version + ' version', { 
+                  encoding: 'utf-8',
+                  stdio: ['pipe', 'pipe', 'pipe'],
+                  timeout: 10000
+                });
+                return true;
+              } catch (e) {
+                return false;
+              }
+            }
+            
+            // Start checking from 0, increment until we find one that doesn't exist
+            let increment = 0;
+            let foundExisting = false;
+            
+            // Check up to 100 increments (safety limit)
+            while (increment < 100) {
+              if (versionExists(increment)) {
+                console.error('Version ' + baseVersion + '-dev.' + increment + ' exists');
+                foundExisting = true;
+                increment++;
+              } else {
+                console.error('Version ' + baseVersion + '-dev.' + increment + ' does not exist - using this');
+                break;
+              }
+            }
+            
+            if (increment >= 100) {
+              console.error('ERROR: Reached safety limit of 100 increments');
+              process.exit(1);
+            }
+            
+            console.log(increment);
+          " "$BASE_VERSION")
+          
+          echo "next-increment=$NEXT_INCREMENT" >> $GITHUB_OUTPUT
+          echo "Next increment: $NEXT_INCREMENT"
+
+      - name: Generate canary version
+        id: version
+        run: |
+          BASE_VERSION="${{ steps.base.outputs.version }}"
+          NEXT_INCREMENT="${{ steps.npm-versions.outputs.next-increment }}"
+          
+          echo "Base version: $BASE_VERSION"
+          echo "Next increment: $NEXT_INCREMENT"
+          
+          # Use the next available increment
+          CANARY_VERSION="${BASE_VERSION}-dev.${NEXT_INCREMENT}"
+          
+          echo "Generated canary version: $CANARY_VERSION"
+          
+          # Double-check the version doesn't already exist (safety check)
+          if npm view "integrate-sdk@$CANARY_VERSION" version > /dev/null 2>&1; then
+            echo "ERROR: Version $CANARY_VERSION already exists on npm!"
+            echo "This should not happen. The version query may have failed."
+            exit 1
+          fi
+          
+          echo "base-version=$BASE_VERSION" >> $GITHUB_OUTPUT
+          echo "canary-version=$CANARY_VERSION" >> $GITHUB_OUTPUT
+
+  publish:
+    needs: generate-version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run tests
+        run: bun test
+
+      - name: Type check
+        run: bun run type-check
+
+      - name: Build
+        run: bun run build
+
+      - name: Update package.json version
+        run: |
+          CANARY_VERSION="${{ needs.generate-version.outputs.canary-version }}"
+          # Use node to update package.json version
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = '$CANARY_VERSION';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          echo "Updated package.json version to $CANARY_VERSION"
+
+      - name: Setup Node.js (for npm publish)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Publish to npm
+        run: npm publish --tag dev
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create Git Tag
+        run: |
+          CANARY_VERSION="${{ needs.generate-version.outputs.canary-version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a v$CANARY_VERSION -m "Canary release v$CANARY_VERSION"
+          git push origin v$CANARY_VERSION
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.generate-version.outputs.canary-version }}
+          name: Canary Release v${{ needs.generate-version.outputs.canary-version }}
+          body: |
+            ## Canary Release v${{ needs.generate-version.outputs.canary-version }}
+
+            This is a canary release from the `dev` branch.
+
+            ### Installation
+            ```bash
+            # Install latest canary version
+            bun add integrate-sdk@dev
+            
+            # Or install specific canary version
+            bun add integrate-sdk@${{ needs.generate-version.outputs.canary-version }}
+            ```
+            
+            **Note:** Canary releases are published with the `dev` tag and will not affect the `latest` tag.
+          draft: false
+          prerelease: true
+
+      - name: Send Discord notification
+        run: |
+          if [ -z "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
+            echo "Discord webhook URL not set, skipping notification"
+            exit 0
+          fi
+          
+          CANARY_VERSION="${{ needs.generate-version.outputs.canary-version }}"
+          REPO="${{ github.repository }}"
+          RELEASE_URL="https://github.com/${REPO}/releases/tag/v${CANARY_VERSION}"
+          
+          # Use node to construct the JSON payload
+          PAYLOAD=$(node -e "
+            const version = process.argv[1];
+            const url = process.argv[2];
+            const payload = {
+              embeds: [{
+                title: 'Canary Release v' + version,
+                description: 'A new canary release has been published from the \`dev\` branch.',
+                url: url,
+                color: 1316451,
+                fields: [{
+                  name: 'Installation',
+                  value: '\`\`\`bash\nbun add integrate-sdk@dev\n\`\`\`',
+                  inline: false
+                }],
+                footer: {
+                  text: 'integrate.dev'
+                },
+                timestamp: new Date().toISOString()
+              }]
+            };
+            console.log(JSON.stringify(payload));
+          " "$CANARY_VERSION" "$RELEASE_URL")
+          
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "${{ secrets.DISCORD_WEBHOOK_URL }}"
+

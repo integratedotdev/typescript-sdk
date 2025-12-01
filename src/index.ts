@@ -21,6 +21,7 @@ export type {
   OAuthCallbackResponse,
   OAuthCallbackParams,
   ProviderTokenData,
+  AccountInfo,
   OAuthEventType,
   OAuthEventHandler,
   AuthStartedEvent,
