@@ -45,23 +45,37 @@ jobs:
             const baseVersion = process.argv[1];
             let versions = [];
             try {
-              const output = execSync('npm view integrate-sdk versions --json', { encoding: 'utf-8' });
-              versions = JSON.parse(output);
+              const output = execSync('npm view integrate-sdk versions --json', { 
+                encoding: 'utf-8',
+                stdio: ['pipe', 'pipe', 'pipe'],
+                timeout: 30000
+              });
+              const parsed = JSON.parse(output);
+              // npm view can return a string for single version or array for multiple
+              versions = Array.isArray(parsed) ? parsed : [parsed];
+              console.error('Found ' + versions.length + ' total versions on npm');
             } catch (e) {
+              console.error('Error querying npm:', e.message);
               versions = [];
             }
             const pattern = new RegExp('^' + baseVersion.replace(/\./g, '\\.') + '-dev\\.(\\d+)$');
             const matches = versions
-              .filter(v => pattern.test(v))
+              .filter(v => {
+                const matches = pattern.test(v);
+                if (matches) console.error('Found matching canary version: ' + v);
+                return matches;
+              })
               .map(v => {
                 const match = v.match(pattern);
                 return match ? parseInt(match[1], 10) : 0;
               });
             const maxIncrement = matches.length > 0 ? Math.max(...matches) : -1;
+            console.error('Max increment found: ' + maxIncrement);
             console.log(maxIncrement);
           " "$BASE_VERSION")
           
           echo "max-increment=$MAX_INCREMENT" >> $GITHUB_OUTPUT
+          echo "Max increment: $MAX_INCREMENT"
 
       - name: Generate canary version
         id: version
@@ -69,13 +83,25 @@ jobs:
           BASE_VERSION="${{ steps.base.outputs.version }}"
           MAX_INCREMENT="${{ steps.npm-versions.outputs.max-increment }}"
           
+          echo "Base version: $BASE_VERSION"
+          echo "Max increment from npm: $MAX_INCREMENT"
+          
           # Increment the number
           NEXT_INCREMENT=$((MAX_INCREMENT + 1))
           CANARY_VERSION="${BASE_VERSION}-dev.${NEXT_INCREMENT}"
           
+          echo "Next increment: $NEXT_INCREMENT"
+          echo "Generated canary version: $CANARY_VERSION"
+          
+          # Verify the version doesn't already exist
+          if npm view "integrate-sdk@$CANARY_VERSION" version > /dev/null 2>&1; then
+            echo "ERROR: Version $CANARY_VERSION already exists on npm!"
+            echo "This should not happen. The version query may have failed."
+            exit 1
+          fi
+          
           echo "base-version=$BASE_VERSION" >> $GITHUB_OUTPUT
           echo "canary-version=$CANARY_VERSION" >> $GITHUB_OUTPUT
-          echo "Generated canary version: $CANARY_VERSION"
 
   publish:
     needs: generate-version
