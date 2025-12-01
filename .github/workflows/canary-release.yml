@@ -197,11 +197,18 @@ jobs:
             echo "has_webhook=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Wait for release to propagate
+        if: steps.check-discord.outputs.has_webhook == 'true'
+        run: sleep 5
+
       - name: Github Releases To Discord
         if: steps.check-discord.outputs.has_webhook == 'true'
         uses: SethCohen/github-releases-to-discord@v1.13.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          tag_name: v${{ needs.generate-version.outputs.canary-version }}
           color: "1316451"
           content: "Canary release published:"
           footer_title: "integrate.dev"
