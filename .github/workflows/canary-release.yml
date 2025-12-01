@@ -132,39 +132,39 @@ jobs:
           git tag -a v$CANARY_VERSION -m "Canary release v$CANARY_VERSION"
           git push origin v$CANARY_VERSION
 
-            - name: Create GitHub Release
-              uses: softprops/action-gh-release@v1
-              with:
-                tag_name: v${{ needs.generate-version.outputs.canary-version }}
-                name: Canary Release v${{ needs.generate-version.outputs.canary-version }}
-                body: |
-                  ## Canary Release v${{ needs.generate-version.outputs.canary-version }}
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.generate-version.outputs.canary-version }}
+          name: Canary Release v${{ needs.generate-version.outputs.canary-version }}
+          body: |
+            ## Canary Release v${{ needs.generate-version.outputs.canary-version }}
 
-                  This is a canary release from the `dev` branch.
+            This is a canary release from the `dev` branch.
 
-                  ### Installation
-                  ```bash
-                  bun add integrate-sdk@${{ needs.generate-version.outputs.canary-version }}
-                  ```
-                draft: false
-                prerelease: true
+            ### Installation
+            ```bash
+            bun add integrate-sdk@${{ needs.generate-version.outputs.canary-version }}
+            ```
+          draft: false
+          prerelease: true
 
-            - name: Check for Discord webhook
-              id: check-discord
-              run: |
-                if [ -n "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
-                  echo "has_webhook=true" >> $GITHUB_OUTPUT
-                else
-                  echo "has_webhook=false" >> $GITHUB_OUTPUT
-                fi
+      - name: Check for Discord webhook
+        id: check-discord
+        run: |
+          if [ -n "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
+            echo "has_webhook=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_webhook=false" >> $GITHUB_OUTPUT
+          fi
 
-            - name: Github Releases To Discord
-              if: steps.check-discord.outputs.has_webhook == 'true'
-              uses: SethCohen/github-releases-to-discord@v1.13.1
-              with:
-                webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-                color: "1316451"
-                content: "Canary release published:"
-                footer_title: "integrate.dev"
-                footer_timestamp: true
+      - name: Github Releases To Discord
+        if: steps.check-discord.outputs.has_webhook == 'true'
+        uses: SethCohen/github-releases-to-discord@v1.13.1
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          color: "1316451"
+          content: "Canary release published:"
+          footer_title: "integrate.dev"
+          footer_timestamp: true
 
