@@ -687,6 +687,10 @@ export type { ProviderTokenData } from './oauth/types.js';
 export { githubIntegration } from './integrations/github.js';
 export { gmailIntegration } from './integrations/gmail.js';
 export { notionIntegration } from './integrations/notion.js';
+export { slackIntegration } from './integrations/slack.js';
+export { linearIntegration } from './integrations/linear.js';
+export { vercelIntegration } from './integrations/vercel.js';
+export { zendeskIntegration } from './integrations/zendesk.js';
 export { genericOAuthIntegration, createSimpleIntegration } from './integrations/generic.js';
 
 /**

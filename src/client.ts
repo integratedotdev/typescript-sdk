@@ -23,6 +23,10 @@ import { methodToToolName } from "./utils/naming.js";
 import type { GitHubIntegrationClient } from "./integrations/github-client.js";
 import type { GmailIntegrationClient } from "./integrations/gmail-client.js";
 import type { NotionIntegrationClient } from "./integrations/notion-client.js";
+import type { SlackIntegrationClient } from "./integrations/slack-client.js";
+import type { LinearIntegrationClient } from "./integrations/linear-client.js";
+import type { VercelIntegrationClient } from "./integrations/vercel-client.js";
+import type { ZendeskIntegrationClient } from "./integrations/zendesk-client.js";
 import type { ServerIntegrationClient } from "./integrations/server-client.js";
 import { OAuthManager } from "./oauth/manager.js";
 import type {
@@ -125,10 +129,22 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   ? "gmail"
   : K extends "notion"
   ? "notion"
+  : K extends "slack"
+  ? "slack"
+  : K extends "linear"
+  ? "linear"
+  : K extends "vercel"
+  ? "vercel"
+  : K extends "zendesk"
+  ? "zendesk"
   : never]:
   K extends "github" ? GitHubIntegrationClient :
   K extends "gmail" ? GmailIntegrationClient :
   K extends "notion" ? NotionIntegrationClient :
+  K extends "slack" ? SlackIntegrationClient :
+  K extends "linear" ? LinearIntegrationClient :
+  K extends "vercel" ? VercelIntegrationClient :
+  K extends "zendesk" ? ZendeskIntegrationClient :
   never;
 };
 
@@ -307,6 +323,18 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     }
     if (integrationIds.includes("notion")) {
       (this as any).notion = this.createIntegrationProxy("notion");
+    }
+    if (integrationIds.includes("slack")) {
+      (this as any).slack = this.createIntegrationProxy("slack");
+    }
+    if (integrationIds.includes("linear")) {
+      (this as any).linear = this.createIntegrationProxy("linear");
+    }
+    if (integrationIds.includes("vercel")) {
+      (this as any).vercel = this.createIntegrationProxy("vercel");
+    }
+    if (integrationIds.includes("zendesk")) {
+      (this as any).zendesk = this.createIntegrationProxy("zendesk");
     }
 
     // Server namespace is always available

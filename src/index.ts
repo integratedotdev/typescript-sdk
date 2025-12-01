@@ -89,6 +89,18 @@ export type { GmailIntegrationConfig, GmailTools, GmailIntegrationClient } from 
 export { notionIntegration } from "./integrations/notion.js";
 export type { NotionIntegrationConfig, NotionTools, NotionIntegrationClient } from "./integrations/notion.js";
 
+export { slackIntegration } from "./integrations/slack.js";
+export type { SlackIntegrationConfig, SlackTools, SlackIntegrationClient } from "./integrations/slack.js";
+
+export { linearIntegration } from "./integrations/linear.js";
+export type { LinearIntegrationConfig, LinearTools, LinearIntegrationClient } from "./integrations/linear.js";
+
+export { vercelIntegration } from "./integrations/vercel.js";
+export type { VercelIntegrationConfig, VercelTools, VercelIntegrationClient } from "./integrations/vercel.js";
+
+export { zendeskIntegration } from "./integrations/zendesk.js";
+export type { ZendeskIntegrationConfig, ZendeskTools, ZendeskIntegrationClient } from "./integrations/zendesk.js";
+
 // Server client
 export type { ServerIntegrationClient } from "./integrations/server-client.js";
 
