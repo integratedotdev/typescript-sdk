@@ -188,29 +188,31 @@ jobs:
           draft: false
           prerelease: true
 
-      - name: Check for Discord webhook
-        id: check-discord
+      - name: Send Discord notification
+        if: secrets.DISCORD_WEBHOOK_URL != ''
         run: |
-          if [ -n "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
-            echo "has_webhook=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_webhook=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Wait for release to propagate
-        if: steps.check-discord.outputs.has_webhook == 'true'
-        run: sleep 5
-
-      - name: Github Releases To Discord
-        if: steps.check-discord.outputs.has_webhook == 'true'
-        uses: SethCohen/github-releases-to-discord@v1.13.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          tag_name: v${{ needs.generate-version.outputs.canary-version }}
-          color: "1316451"
-          content: "Canary release published:"
-          footer_title: "integrate.dev"
-          footer_timestamp: true
+          CANARY_VERSION="${{ needs.generate-version.outputs.canary-version }}"
+          RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/v${CANARY_VERSION}"
+          
+          curl -H "Content-Type: application/json" \
+            -d "{
+              \"embeds\": [{
+                \"title\": \"Canary Release v${CANARY_VERSION}\",
+                \"description\": \"A new canary release has been published from the \`dev\` branch.\",
+                \"url\": \"${RELEASE_URL}\",
+                \"color\": 1316451,
+                \"fields\": [
+                  {
+                    \"name\": \"Installation\",
+                    \"value\": \"\`\`\`bash\nbun add integrate-sdk@dev\n\`\`\`\",
+                    \"inline\": false
+                  }
+                ],
+                \"footer\": {
+                  \"text\": \"integrate.dev\"
+                },
+                \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+              }]
+            }" \
+            "${{ secrets.DISCORD_WEBHOOK_URL }}"
 
