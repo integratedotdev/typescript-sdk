@@ -192,27 +192,35 @@ jobs:
         if: secrets.DISCORD_WEBHOOK_URL != ''
         run: |
           CANARY_VERSION="${{ needs.generate-version.outputs.canary-version }}"
-          RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/v${CANARY_VERSION}"
+          REPO="${{ github.repository }}"
+          RELEASE_URL="https://github.com/${REPO}/releases/tag/v${CANARY_VERSION}"
           
-          curl -H "Content-Type: application/json" \
-            -d "{
-              \"embeds\": [{
-                \"title\": \"Canary Release v${CANARY_VERSION}\",
-                \"description\": \"A new canary release has been published from the \`dev\` branch.\",
-                \"url\": \"${RELEASE_URL}\",
-                \"color\": 1316451,
-                \"fields\": [
-                  {
-                    \"name\": \"Installation\",
-                    \"value\": \"\`\`\`bash\nbun add integrate-sdk@dev\n\`\`\`\",
-                    \"inline\": false
-                  }
-                ],
-                \"footer\": {
-                  \"text\": \"integrate.dev\"
+          # Use node to construct the JSON payload
+          PAYLOAD=$(node -e "
+            const version = process.argv[1];
+            const url = process.argv[2];
+            const payload = {
+              embeds: [{
+                title: 'Canary Release v' + version,
+                description: 'A new canary release has been published from the \`dev\` branch.',
+                url: url,
+                color: 1316451,
+                fields: [{
+                  name: 'Installation',
+                  value: '\`\`\`bash\nbun add integrate-sdk@dev\n\`\`\`',
+                  inline: false
+                }],
+                footer: {
+                  text: 'integrate.dev'
                 },
-                \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+                timestamp: new Date().toISOString()
               }]
-            }" \
+            };
+            console.log(JSON.stringify(payload));
+          " "$CANARY_VERSION" "$RELEASE_URL")
+          
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
             "${{ secrets.DISCORD_WEBHOOK_URL }}"
 
