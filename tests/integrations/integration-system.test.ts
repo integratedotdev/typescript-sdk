@@ -10,6 +10,11 @@ import { slackIntegration } from "../../src/integrations/slack.js";
 import { linearIntegration } from "../../src/integrations/linear.js";
 import { vercelIntegration } from "../../src/integrations/vercel.js";
 import { zendeskIntegration } from "../../src/integrations/zendesk.js";
+import { stripeIntegration } from "../../src/integrations/stripe.js";
+import { gcalIntegration } from "../../src/integrations/gcal.js";
+import { outlookIntegration } from "../../src/integrations/outlook.js";
+import { airtableIntegration } from "../../src/integrations/airtable.js";
+import { todoistIntegration } from "../../src/integrations/todoist.js";
 import { genericOAuthIntegration, createSimpleIntegration } from "../../src/integrations/generic.js";
 import { hasOAuthConfig } from "../../src/integrations/types.js";
 
@@ -505,6 +510,326 @@ describe("Integration System", () => {
 
     test("lifecycle hooks execute successfully", async () => {
       const integration = zendeskIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      await expect(integration.onInit?.(null as any)).resolves.toBeUndefined();
+      await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+  });
+
+  describe("Stripe Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = stripeIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("stripe");
+      expect(integration.tools).toBeArray();
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeDefined();
+    });
+
+    test("includes OAuth configuration", () => {
+      const integration = stripeIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+        scopes: ["read_write"],
+      });
+
+      expect(integration.oauth?.provider).toBe("stripe");
+      expect(integration.oauth?.clientId).toBe("test-id");
+      expect(integration.oauth?.clientSecret).toBe("test-secret");
+      expect(integration.oauth?.scopes).toEqual(["read_write"]);
+    });
+
+    test("includes expected tools", () => {
+      const integration = stripeIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.tools).toContain("stripe_list_customers");
+      expect(integration.tools).toContain("stripe_create_payment");
+      expect(integration.tools).toContain("stripe_list_subscriptions");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = stripeIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+
+    test("lifecycle hooks execute successfully", async () => {
+      const integration = stripeIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      await expect(integration.onInit?.(null as any)).resolves.toBeUndefined();
+      await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+  });
+
+  describe("Google Calendar Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = gcalIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("gcal");
+      expect(integration.tools).toBeArray();
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeDefined();
+    });
+
+    test("includes OAuth configuration", () => {
+      const integration = gcalIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.provider).toBe("gcal");
+      expect(integration.oauth?.clientId).toBe("test-id");
+      expect(integration.oauth?.clientSecret).toBe("test-secret");
+    });
+
+    test("uses default scopes when not provided", () => {
+      const integration = gcalIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.scopes).toContain("https://www.googleapis.com/auth/calendar");
+    });
+
+    test("includes expected tools", () => {
+      const integration = gcalIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.tools).toContain("gcal_list_calendars");
+      expect(integration.tools).toContain("gcal_create_event");
+      expect(integration.tools).toContain("gcal_quick_add");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = gcalIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+
+    test("lifecycle hooks execute successfully", async () => {
+      const integration = gcalIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      await expect(integration.onInit?.(null as any)).resolves.toBeUndefined();
+      await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+  });
+
+  describe("Outlook Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = outlookIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("outlook");
+      expect(integration.tools).toBeArray();
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeDefined();
+    });
+
+    test("includes OAuth configuration", () => {
+      const integration = outlookIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.provider).toBe("outlook");
+      expect(integration.oauth?.clientId).toBe("test-id");
+      expect(integration.oauth?.clientSecret).toBe("test-secret");
+    });
+
+    test("uses default scopes when not provided", () => {
+      const integration = outlookIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.scopes).toContain("Mail.Read");
+      expect(integration.oauth?.scopes).toContain("Mail.Send");
+    });
+
+    test("includes expected tools", () => {
+      const integration = outlookIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.tools).toContain("outlook_list_messages");
+      expect(integration.tools).toContain("outlook_send_message");
+      expect(integration.tools).toContain("outlook_search");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = outlookIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+
+    test("lifecycle hooks execute successfully", async () => {
+      const integration = outlookIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      await expect(integration.onInit?.(null as any)).resolves.toBeUndefined();
+      await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+  });
+
+  describe("Airtable Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = airtableIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("airtable");
+      expect(integration.tools).toBeArray();
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeDefined();
+    });
+
+    test("includes OAuth configuration", () => {
+      const integration = airtableIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.provider).toBe("airtable");
+      expect(integration.oauth?.clientId).toBe("test-id");
+      expect(integration.oauth?.clientSecret).toBe("test-secret");
+    });
+
+    test("uses default scopes when not provided", () => {
+      const integration = airtableIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.scopes).toContain("data.records:read");
+      expect(integration.oauth?.scopes).toContain("data.records:write");
+    });
+
+    test("includes expected tools", () => {
+      const integration = airtableIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.tools).toContain("airtable_list_bases");
+      expect(integration.tools).toContain("airtable_create_record");
+      expect(integration.tools).toContain("airtable_search_records");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = airtableIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+
+    test("lifecycle hooks execute successfully", async () => {
+      const integration = airtableIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      await expect(integration.onInit?.(null as any)).resolves.toBeUndefined();
+      await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+  });
+
+  describe("Todoist Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = todoistIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("todoist");
+      expect(integration.tools).toBeArray();
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeDefined();
+    });
+
+    test("includes OAuth configuration", () => {
+      const integration = todoistIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.provider).toBe("todoist");
+      expect(integration.oauth?.clientId).toBe("test-id");
+      expect(integration.oauth?.clientSecret).toBe("test-secret");
+    });
+
+    test("uses default scopes when not provided", () => {
+      const integration = todoistIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.scopes).toContain("data:read_write");
+    });
+
+    test("includes expected tools", () => {
+      const integration = todoistIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.tools).toContain("todoist_list_projects");
+      expect(integration.tools).toContain("todoist_create_task");
+      expect(integration.tools).toContain("todoist_complete_task");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = todoistIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+
+    test("lifecycle hooks execute successfully", async () => {
+      const integration = todoistIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });

@@ -101,6 +101,21 @@ export type { VercelIntegrationConfig, VercelTools, VercelIntegrationClient } fr
 export { zendeskIntegration } from "./integrations/zendesk.js";
 export type { ZendeskIntegrationConfig, ZendeskTools, ZendeskIntegrationClient } from "./integrations/zendesk.js";
 
+export { stripeIntegration } from "./integrations/stripe.js";
+export type { StripeIntegrationConfig, StripeTools, StripeIntegrationClient } from "./integrations/stripe.js";
+
+export { gcalIntegration } from "./integrations/gcal.js";
+export type { GcalIntegrationConfig, GcalTools, GcalIntegrationClient } from "./integrations/gcal.js";
+
+export { outlookIntegration } from "./integrations/outlook.js";
+export type { OutlookIntegrationConfig, OutlookTools, OutlookIntegrationClient } from "./integrations/outlook.js";
+
+export { airtableIntegration } from "./integrations/airtable.js";
+export type { AirtableIntegrationConfig, AirtableTools, AirtableIntegrationClient } from "./integrations/airtable.js";
+
+export { todoistIntegration } from "./integrations/todoist.js";
+export type { TodoistIntegrationConfig, TodoistTools, TodoistIntegrationClient } from "./integrations/todoist.js";
+
 // Server client
 export type { ServerIntegrationClient } from "./integrations/server-client.js";
 

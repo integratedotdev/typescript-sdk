@@ -691,6 +691,11 @@ export { slackIntegration } from './integrations/slack.js';
 export { linearIntegration } from './integrations/linear.js';
 export { vercelIntegration } from './integrations/vercel.js';
 export { zendeskIntegration } from './integrations/zendesk.js';
+export { stripeIntegration } from './integrations/stripe.js';
+export { gcalIntegration } from './integrations/gcal.js';
+export { outlookIntegration } from './integrations/outlook.js';
+export { airtableIntegration } from './integrations/airtable.js';
+export { todoistIntegration } from './integrations/todoist.js';
 export { genericOAuthIntegration, createSimpleIntegration } from './integrations/generic.js';
 
 /**

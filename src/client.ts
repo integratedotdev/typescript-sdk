@@ -27,6 +27,11 @@ import type { SlackIntegrationClient } from "./integrations/slack-client.js";
 import type { LinearIntegrationClient } from "./integrations/linear-client.js";
 import type { VercelIntegrationClient } from "./integrations/vercel-client.js";
 import type { ZendeskIntegrationClient } from "./integrations/zendesk-client.js";
+import type { StripeIntegrationClient } from "./integrations/stripe-client.js";
+import type { GcalIntegrationClient } from "./integrations/gcal-client.js";
+import type { OutlookIntegrationClient } from "./integrations/outlook-client.js";
+import type { AirtableIntegrationClient } from "./integrations/airtable-client.js";
+import type { TodoistIntegrationClient } from "./integrations/todoist-client.js";
 import type { ServerIntegrationClient } from "./integrations/server-client.js";
 import { OAuthManager } from "./oauth/manager.js";
 import type {
@@ -137,6 +142,16 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   ? "vercel"
   : K extends "zendesk"
   ? "zendesk"
+  : K extends "stripe"
+  ? "stripe"
+  : K extends "gcal"
+  ? "gcal"
+  : K extends "outlook"
+  ? "outlook"
+  : K extends "airtable"
+  ? "airtable"
+  : K extends "todoist"
+  ? "todoist"
   : never]:
   K extends "github" ? GitHubIntegrationClient :
   K extends "gmail" ? GmailIntegrationClient :
@@ -145,6 +160,11 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   K extends "linear" ? LinearIntegrationClient :
   K extends "vercel" ? VercelIntegrationClient :
   K extends "zendesk" ? ZendeskIntegrationClient :
+  K extends "stripe" ? StripeIntegrationClient :
+  K extends "gcal" ? GcalIntegrationClient :
+  K extends "outlook" ? OutlookIntegrationClient :
+  K extends "airtable" ? AirtableIntegrationClient :
+  K extends "todoist" ? TodoistIntegrationClient :
   never;
 };
 
@@ -335,6 +355,21 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     }
     if (integrationIds.includes("zendesk")) {
       (this as any).zendesk = this.createIntegrationProxy("zendesk");
+    }
+    if (integrationIds.includes("stripe")) {
+      (this as any).stripe = this.createIntegrationProxy("stripe");
+    }
+    if (integrationIds.includes("gcal")) {
+      (this as any).gcal = this.createIntegrationProxy("gcal");
+    }
+    if (integrationIds.includes("outlook")) {
+      (this as any).outlook = this.createIntegrationProxy("outlook");
+    }
+    if (integrationIds.includes("airtable")) {
+      (this as any).airtable = this.createIntegrationProxy("airtable");
+    }
+    if (integrationIds.includes("todoist")) {
+      (this as any).todoist = this.createIntegrationProxy("todoist");
     }
 
     // Server namespace is always available
