@@ -696,6 +696,16 @@ export { gcalIntegration } from './integrations/gcal.js';
 export { outlookIntegration } from './integrations/outlook.js';
 export { airtableIntegration } from './integrations/airtable.js';
 export { todoistIntegration } from './integrations/todoist.js';
+export { whatsappIntegration } from './integrations/whatsapp.js';
+export { calcomIntegration } from './integrations/calcom.js';
+export { rampIntegration } from './integrations/ramp.js';
+export { onedriveIntegration } from './integrations/onedrive.js';
+export { gworkspaceIntegration } from './integrations/gworkspace.js';
+export { polarIntegration } from './integrations/polar.js';
+export { figmaIntegration } from './integrations/figma.js';
+export { intercomIntegration } from './integrations/intercom.js';
+export { hubspotIntegration } from './integrations/hubspot.js';
+export { youtubeIntegration } from './integrations/youtube.js';
 export { genericOAuthIntegration, createSimpleIntegration } from './integrations/generic.js';
 
 /**

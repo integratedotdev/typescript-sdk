@@ -116,6 +116,36 @@ export type { AirtableIntegrationConfig, AirtableTools, AirtableIntegrationClien
 export { todoistIntegration } from "./integrations/todoist.js";
 export type { TodoistIntegrationConfig, TodoistTools, TodoistIntegrationClient } from "./integrations/todoist.js";
 
+export { whatsappIntegration } from "./integrations/whatsapp.js";
+export type { WhatsAppIntegrationConfig, WhatsAppTools, WhatsAppIntegrationClient } from "./integrations/whatsapp.js";
+
+export { calcomIntegration } from "./integrations/calcom.js";
+export type { CalcomIntegrationConfig, CalcomTools, CalcomIntegrationClient } from "./integrations/calcom.js";
+
+export { rampIntegration } from "./integrations/ramp.js";
+export type { RampIntegrationConfig, RampTools, RampIntegrationClient } from "./integrations/ramp.js";
+
+export { onedriveIntegration } from "./integrations/onedrive.js";
+export type { OneDriveIntegrationConfig, OneDriveTools, OneDriveIntegrationClient } from "./integrations/onedrive.js";
+
+export { gworkspaceIntegration } from "./integrations/gworkspace.js";
+export type { GWorkspaceIntegrationConfig, GWorkspaceTools, GWorkspaceIntegrationClient } from "./integrations/gworkspace.js";
+
+export { polarIntegration } from "./integrations/polar.js";
+export type { PolarIntegrationConfig, PolarTools, PolarIntegrationClient } from "./integrations/polar.js";
+
+export { figmaIntegration } from "./integrations/figma.js";
+export type { FigmaIntegrationConfig, FigmaTools, FigmaIntegrationClient } from "./integrations/figma.js";
+
+export { intercomIntegration } from "./integrations/intercom.js";
+export type { IntercomIntegrationConfig, IntercomTools, IntercomIntegrationClient } from "./integrations/intercom.js";
+
+export { hubspotIntegration } from "./integrations/hubspot.js";
+export type { HubSpotIntegrationConfig, HubSpotTools, HubSpotIntegrationClient } from "./integrations/hubspot.js";
+
+export { youtubeIntegration } from "./integrations/youtube.js";
+export type { YouTubeIntegrationConfig, YouTubeTools, YouTubeIntegrationClient } from "./integrations/youtube.js";
+
 // Server client
 export type { ServerIntegrationClient } from "./integrations/server-client.js";
 

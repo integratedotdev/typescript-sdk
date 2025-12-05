@@ -32,6 +32,16 @@ import type { GcalIntegrationClient } from "./integrations/gcal-client.js";
 import type { OutlookIntegrationClient } from "./integrations/outlook-client.js";
 import type { AirtableIntegrationClient } from "./integrations/airtable-client.js";
 import type { TodoistIntegrationClient } from "./integrations/todoist-client.js";
+import type { WhatsAppIntegrationClient } from "./integrations/whatsapp-client.js";
+import type { CalcomIntegrationClient } from "./integrations/calcom-client.js";
+import type { RampIntegrationClient } from "./integrations/ramp-client.js";
+import type { OneDriveIntegrationClient } from "./integrations/onedrive-client.js";
+import type { GWorkspaceIntegrationClient } from "./integrations/gworkspace-client.js";
+import type { PolarIntegrationClient } from "./integrations/polar-client.js";
+import type { FigmaIntegrationClient } from "./integrations/figma-client.js";
+import type { IntercomIntegrationClient } from "./integrations/intercom-client.js";
+import type { HubSpotIntegrationClient } from "./integrations/hubspot-client.js";
+import type { YouTubeIntegrationClient } from "./integrations/youtube-client.js";
 import type { ServerIntegrationClient } from "./integrations/server-client.js";
 import { OAuthManager } from "./oauth/manager.js";
 import type {
@@ -152,6 +162,26 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   ? "airtable"
   : K extends "todoist"
   ? "todoist"
+  : K extends "whatsapp"
+  ? "whatsapp"
+  : K extends "calcom"
+  ? "calcom"
+  : K extends "ramp"
+  ? "ramp"
+  : K extends "onedrive"
+  ? "onedrive"
+  : K extends "gworkspace"
+  ? "gworkspace"
+  : K extends "polar"
+  ? "polar"
+  : K extends "figma"
+  ? "figma"
+  : K extends "intercom"
+  ? "intercom"
+  : K extends "hubspot"
+  ? "hubspot"
+  : K extends "youtube"
+  ? "youtube"
   : never]:
   K extends "github" ? GitHubIntegrationClient :
   K extends "gmail" ? GmailIntegrationClient :
@@ -165,6 +195,16 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   K extends "outlook" ? OutlookIntegrationClient :
   K extends "airtable" ? AirtableIntegrationClient :
   K extends "todoist" ? TodoistIntegrationClient :
+  K extends "whatsapp" ? WhatsAppIntegrationClient :
+  K extends "calcom" ? CalcomIntegrationClient :
+  K extends "ramp" ? RampIntegrationClient :
+  K extends "onedrive" ? OneDriveIntegrationClient :
+  K extends "gworkspace" ? GWorkspaceIntegrationClient :
+  K extends "polar" ? PolarIntegrationClient :
+  K extends "figma" ? FigmaIntegrationClient :
+  K extends "intercom" ? IntercomIntegrationClient :
+  K extends "hubspot" ? HubSpotIntegrationClient :
+  K extends "youtube" ? YouTubeIntegrationClient :
   never;
 };
 
