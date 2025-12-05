@@ -1,0 +1,178 @@
+---
+title: Polar
+description: Manage products, subscriptions, and customers
+---
+
+The Polar integration provides access to Polar's API through the Integrate MCP server.
+
+## Installation
+
+The Polar integration is included with the SDK:
+
+```typescript
+import { polarIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Polar OAuth App
+
+1. Go to [Polar Settings](https://polar.sh/settings)
+2. Navigate to the API section
+3. Create a new OAuth application
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Polar integration to your server configuration. The integration automatically reads `POLAR_CLIENT_ID` and `POLAR_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, polarIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    polarIntegration({
+      scopes: ["products:read", "subscriptions:read", "customers:read", "orders:read", "benefits:read"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+polarIntegration({
+  clientId: process.env.CUSTOM_POLAR_ID,
+  clientSecret: process.env.CUSTOM_POLAR_SECRET,
+  scopes: ["products:read", "subscriptions:read"],
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("polar");
+const products = await client.polar.listProducts({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, polarIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [polarIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/polar.ts"
+  name="PolarIntegrationConfig"
+/>
+
+## Available Tools
+
+### Products
+
+- **`polar_list_products`** - List products
+- **`polar_get_product`** - Get a specific product
+
+### Subscriptions
+
+- **`polar_list_subscriptions`** - List subscriptions
+- **`polar_get_subscription`** - Get a specific subscription
+
+### Customers
+
+- **`polar_list_customers`** - List customers
+- **`polar_get_customer`** - Get a specific customer
+
+### Orders
+
+- **`polar_list_orders`** - List orders
+- **`polar_get_order`** - Get a specific order
+
+### Benefits
+
+- **`polar_list_benefits`** - List benefits
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available Polar tools.
+
+## Examples
+
+### List Products
+
+```typescript
+const result = await client.polar.listProducts({
+  organizationId: "org_123",
+});
+
+console.log("Products:", result);
+```
+
+### Get Subscription
+
+```typescript
+const result = await client.polar.getSubscription({
+  subscriptionId: "sub_123",
+});
+
+console.log("Subscription:", result);
+```
+
+### List Customers
+
+```typescript
+const result = await client.polar.listCustomers({
+  organizationId: "org_123",
+  limit: 50,
+});
+
+console.log("Customers:", result);
+```
+
+## OAuth Scopes
+
+The default scopes are `['products:read', 'subscriptions:read', 'customers:read', 'orders:read', 'benefits:read']`. You may need different scopes:
+
+- **`products:read`** - Read products
+- **`products:write`** - Create and update products
+- **`subscriptions:read`** - Read subscriptions
+- **`subscriptions:write`** - Manage subscriptions
+- **`customers:read`** - Read customers
+- **`customers:write`** - Manage customers
+- **`orders:read`** - Read orders
+- **`benefits:read`** - Read benefits
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.polar.getProduct({
+    productId: "prod_123",
+  });
+} catch (error) {
+  if (error.message.includes("not found")) {
+    console.error("Product not found");
+  } else if (error.message.includes("authentication")) {
+    console.error("Authentication failed");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [Stripe Integration](/docs/integrations/stripe)
+- Explore the [Ramp Integration](/docs/integrations/ramp)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples

@@ -1,0 +1,184 @@
+---
+title: Linear
+description: Manage issues, projects, and teams
+---
+
+The Linear integration provides access to Linear's API through the Integrate MCP server.
+
+## Installation
+
+The Linear integration is included with the SDK:
+
+```typescript
+import { linearIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Linear OAuth App
+
+1. Go to [Linear Settings](https://linear.app/settings/api)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Linear integration to your server configuration. The integration automatically reads `LINEAR_CLIENT_ID` and `LINEAR_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, linearIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    linearIntegration({
+      scopes: ["read", "write", "issues:create"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+linearIntegration({
+  clientId: process.env.CUSTOM_LINEAR_ID,
+  clientSecret: process.env.CUSTOM_LINEAR_SECRET,
+  scopes: ["read", "write", "issues:create"],
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("linear");
+const issues = await client.linear.listIssues({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, linearIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [linearIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/linear.ts"
+  name="LinearIntegrationConfig"
+/>
+
+## Available Tools
+
+### Issues
+
+- **`linear_create_issue`** - Create a new issue
+- **`linear_list_issues`** - List issues
+- **`linear_get_issue`** - Get a specific issue
+- **`linear_update_issue`** - Update an issue
+- **`linear_search_issues`** - Search issues
+
+### Projects
+
+- **`linear_list_projects`** - List projects
+
+### Teams
+
+- **`linear_list_teams`** - List teams
+
+### Comments
+
+- **`linear_add_comment`** - Add a comment to an issue
+
+### Labels
+
+- **`linear_list_labels`** - List available labels
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available Linear tools.
+
+## Examples
+
+### Create an Issue
+
+```typescript
+const result = await client.linear.createIssue({
+  teamId: "team_abc123",
+  title: "Fix login bug",
+  description: "Users are unable to log in with Google OAuth",
+  priority: 1,
+  labelIds: ["label_xyz789"],
+  assigneeId: "user_def456",
+});
+
+console.log("Issue created:", result);
+```
+
+### List Issues
+
+```typescript
+const result = await client.linear.listIssues({
+  teamId: "team_abc123",
+  filter: {
+    state: { name: { eq: "In Progress" } },
+  },
+  first: 50,
+});
+
+console.log("Issues:", result);
+```
+
+### Add Comment
+
+```typescript
+const result = await client.linear.addComment({
+  issueId: "issue_abc123",
+  body: "I've started working on this issue",
+});
+
+console.log("Comment added:", result);
+```
+
+## OAuth Scopes
+
+The default scopes are `['read', 'write', 'issues:create']`. You may need different scopes:
+
+- **`read`** - Read workspace data
+- **`write`** - Modify workspace data
+- **`issues:create`** - Create issues
+- **`admin`** - Administrative access
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.linear.createIssue({
+    teamId: "team_abc123",
+    title: "New issue",
+  });
+} catch (error) {
+  if (error.message.includes("not found")) {
+    console.error("Team not found");
+  } else if (error.message.includes("authentication")) {
+    console.error("Authentication failed");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [GitHub Integration](/docs/integrations/github)
+- Explore the [Notion Integration](/docs/integrations/notion)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples

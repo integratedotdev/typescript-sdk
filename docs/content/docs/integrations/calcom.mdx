@@ -1,0 +1,182 @@
+---
+title: Cal.com
+description: Manage bookings, event types, and schedules
+---
+
+The Cal.com integration provides access to Cal.com's API through the Integrate MCP server.
+
+## Installation
+
+The Cal.com integration is included with the SDK:
+
+```typescript
+import { calcomIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Cal.com OAuth App
+
+1. Go to [Cal.com Platform Settings](https://app.cal.com/settings/developer)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Cal.com integration to your server configuration. The integration automatically reads `CALCOM_CLIENT_ID` and `CALCOM_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, calcomIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    calcomIntegration({
+      scopes: ["read:bookings", "write:bookings", "read:event-types", "read:schedules"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+calcomIntegration({
+  clientId: process.env.CUSTOM_CALCOM_ID,
+  clientSecret: process.env.CUSTOM_CALCOM_SECRET,
+  scopes: ["read:bookings", "write:bookings"],
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("calcom");
+const bookings = await client.calcom.listBookings({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, calcomIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [calcomIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/calcom.ts"
+  name="CalcomIntegrationConfig"
+/>
+
+## Available Tools
+
+### Bookings
+
+- **`calcom_list_bookings`** - List all bookings
+- **`calcom_get_booking`** - Get a specific booking
+- **`calcom_create_booking`** - Create a new booking
+- **`calcom_cancel_booking`** - Cancel a booking
+- **`calcom_reschedule_booking`** - Reschedule an existing booking
+
+### Event Types
+
+- **`calcom_list_event_types`** - List available event types
+- **`calcom_get_availability`** - Check availability for an event type
+
+### Schedules
+
+- **`calcom_list_schedules`** - List user schedules
+
+### User
+
+- **`calcom_get_me`** - Get current user information
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available Cal.com tools.
+
+## Examples
+
+### List Bookings
+
+```typescript
+const result = await client.calcom.listBookings({
+  status: "upcoming",
+});
+
+console.log("Upcoming bookings:", result);
+```
+
+### Create a Booking
+
+```typescript
+const result = await client.calcom.createBooking({
+  eventTypeId: 123456,
+  start: "2024-12-10T10:00:00Z",
+  responses: {
+    name: "John Doe",
+    email: "john@example.com",
+    notes: "Looking forward to the meeting",
+  },
+});
+
+console.log("Booking created:", result);
+```
+
+### Check Availability
+
+```typescript
+const result = await client.calcom.getAvailability({
+  eventTypeId: 123456,
+  dateFrom: "2024-12-10",
+  dateTo: "2024-12-17",
+});
+
+console.log("Available slots:", result);
+```
+
+## OAuth Scopes
+
+The default scopes are `['read:bookings', 'write:bookings', 'read:event-types', 'read:schedules']`. You may need different scopes:
+
+- **`read:bookings`** - View bookings
+- **`write:bookings`** - Create and manage bookings
+- **`read:event-types`** - View event types
+- **`write:event-types`** - Manage event types
+- **`read:schedules`** - View schedules
+- **`write:schedules`** - Manage schedules
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.calcom.createBooking({
+    eventTypeId: 123456,
+    start: "2024-12-10T10:00:00Z",
+    responses: { name: "John Doe", email: "john@example.com" },
+  });
+} catch (error) {
+  if (error.message.includes("not available")) {
+    console.error("Time slot not available");
+  } else if (error.message.includes("authentication")) {
+    console.error("Authentication failed");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [Google Calendar Integration](/docs/integrations/gcal)
+- Explore the [Outlook Integration](/docs/integrations/outlook)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples

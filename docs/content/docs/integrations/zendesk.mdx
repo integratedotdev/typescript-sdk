@@ -1,0 +1,194 @@
+---
+title: Zendesk
+description: Manage tickets, users, and organizations
+---
+
+The Zendesk integration provides access to Zendesk's API through the Integrate MCP server.
+
+## Installation
+
+The Zendesk integration is included with the SDK:
+
+```typescript
+import { zendeskIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Zendesk OAuth App
+
+1. Go to your Zendesk Admin Center
+2. Navigate to Apps and integrations > APIs > Zendesk API > OAuth Clients
+3. Create a new OAuth client
+4. Note your Client ID and Client Secret
+5. Configure your redirect URI
+
+### 2. Configure the Integration on Your Server
+
+Add the Zendesk integration to your server configuration. The integration automatically reads `ZENDESK_CLIENT_ID`, `ZENDESK_CLIENT_SECRET`, and `ZENDESK_SUBDOMAIN` from your environment variables:
+
+```typescript
+import { createMCPServer, zendeskIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    zendeskIntegration({
+      scopes: ["read", "write"], // Optional
+      subdomain: "mycompany", // Your Zendesk subdomain
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+zendeskIntegration({
+  clientId: process.env.CUSTOM_ZENDESK_ID,
+  clientSecret: process.env.CUSTOM_ZENDESK_SECRET,
+  scopes: ["read", "write"],
+  subdomain: "mycompany",
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("zendesk");
+const tickets = await client.zendesk.listTickets({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, zendeskIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [zendeskIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/zendesk.ts"
+  name="ZendeskIntegrationConfig"
+/>
+
+## Available Tools
+
+### Tickets
+
+- **`zendesk_list_tickets`** - List tickets
+- **`zendesk_get_ticket`** - Get a specific ticket
+- **`zendesk_create_ticket`** - Create a new ticket
+- **`zendesk_update_ticket`** - Update a ticket
+- **`zendesk_add_comment`** - Add a comment to a ticket
+- **`zendesk_search_tickets`** - Search tickets
+
+### Users
+
+- **`zendesk_list_users`** - List users
+- **`zendesk_get_user`** - Get a specific user
+
+### Organizations
+
+- **`zendesk_list_organizations`** - List organizations
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available Zendesk tools.
+
+## Examples
+
+### Create a Ticket
+
+```typescript
+const result = await client.zendesk.createTicket({
+  subject: "Help with login issue",
+  comment: {
+    body: "I'm unable to log in to my account. Getting error 'Invalid credentials'.",
+  },
+  priority: "high",
+  type: "incident",
+  tags: ["login", "authentication"],
+});
+
+console.log("Ticket created:", result);
+```
+
+### List Tickets
+
+```typescript
+const result = await client.zendesk.listTickets({
+  status: "open",
+  sort_by: "created_at",
+  sort_order: "desc",
+});
+
+console.log("Open tickets:", result);
+```
+
+### Add Comment
+
+```typescript
+const result = await client.zendesk.addComment({
+  ticketId: 12345,
+  body: "We're looking into this issue and will update you shortly.",
+  public: true,
+});
+
+console.log("Comment added:", result);
+```
+
+### Search Tickets
+
+```typescript
+const result = await client.zendesk.searchTickets({
+  query: "type:ticket status:open priority:high",
+});
+
+console.log("High priority open tickets:", result);
+```
+
+## OAuth Scopes
+
+The default scopes are `['read', 'write']`. Available scopes:
+
+- **`read`** - Read access to tickets, users, organizations
+- **`write`** - Create and update tickets, users, organizations
+- **`impersonate`** - Act on behalf of other users (admin only)
+
+## Subdomain Configuration
+
+Zendesk requires your subdomain (e.g., "mycompany" from mycompany.zendesk.com) for API requests. Set this via the `subdomain` config option or the `ZENDESK_SUBDOMAIN` environment variable.
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.zendesk.createTicket({
+    subject: "Issue report",
+    comment: { body: "Description of the issue" },
+  });
+} catch (error) {
+  if (error.message.includes("not found")) {
+    console.error("Resource not found");
+  } else if (error.message.includes("authentication")) {
+    console.error("Authentication failed");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [HubSpot Integration](/docs/integrations/hubspot)
+- Explore the [Intercom Integration](/docs/integrations/intercom)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples

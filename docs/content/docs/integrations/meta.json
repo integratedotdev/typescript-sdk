@@ -1,0 +1,28 @@
+{
+  "pages": [
+    "default",
+    "github",
+    "gmail",
+    "airtable",
+    "calcom",
+    "cursor",
+    "figma",
+    "gcal",
+    "gworkspace",
+    "hubspot",
+    "intercom",
+    "linear",
+    "notion",
+    "onedrive",
+    "outlook",
+    "polar",
+    "ramp",
+    "slack",
+    "stripe",
+    "todoist",
+    "vercel",
+    "whatsapp",
+    "youtube",
+    "zendesk"
+  ]
+}

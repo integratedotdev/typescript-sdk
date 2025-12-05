@@ -1,0 +1,176 @@
+---
+title: Airtable
+description: Manage Airtable bases, tables, and records
+---
+
+The Airtable integration provides access to Airtable's API through the Integrate MCP server.
+
+## Installation
+
+The Airtable integration is included with the SDK:
+
+```typescript
+import { airtableIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create an Airtable OAuth App
+
+1. Go to [Airtable Developer Hub](https://airtable.com/create/oauth)
+2. Create a new OAuth integration
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Airtable integration to your server configuration. The integration automatically reads `AIRTABLE_CLIENT_ID` and `AIRTABLE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, airtableIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    airtableIntegration({
+      scopes: ["data.records:read", "data.records:write", "schema.bases:read"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+airtableIntegration({
+  clientId: process.env.CUSTOM_AIRTABLE_ID,
+  clientSecret: process.env.CUSTOM_AIRTABLE_SECRET,
+  scopes: ["data.records:read", "data.records:write", "schema.bases:read"],
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("airtable");
+const bases = await client.airtable.listBases({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, airtableIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [airtableIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/airtable.ts"
+  name="AirtableIntegrationConfig"
+/>
+
+## Available Tools
+
+### Bases
+
+- **`airtable_list_bases`** - List all accessible bases
+- **`airtable_get_base`** - Get details of a specific base
+
+### Tables
+
+- **`airtable_list_tables`** - List tables in a base
+- **`airtable_get_table`** - Get table schema
+
+### Records
+
+- **`airtable_list_records`** - List records in a table
+- **`airtable_get_record`** - Get a specific record
+- **`airtable_create_record`** - Create a new record
+- **`airtable_update_record`** - Update an existing record
+- **`airtable_search_records`** - Search records with filters
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available Airtable tools.
+
+## Examples
+
+### List Bases
+
+```typescript
+const result = await client.airtable.listBases({});
+
+console.log("Bases:", result);
+```
+
+### Create a Record
+
+```typescript
+const result = await client.airtable.createRecord({
+  baseId: "appXXXXXXXXXXXXXX",
+  tableId: "tblYYYYYYYYYYYYYY",
+  fields: {
+    Name: "New Task",
+    Status: "In Progress",
+    Priority: "High",
+  },
+});
+
+console.log("Record created:", result);
+```
+
+### Search Records
+
+```typescript
+const result = await client.airtable.searchRecords({
+  baseId: "appXXXXXXXXXXXXXX",
+  tableId: "tblYYYYYYYYYYYYYY",
+  filterByFormula: "{Status} = 'In Progress'",
+  maxRecords: 100,
+});
+
+console.log("Matching records:", result);
+```
+
+## OAuth Scopes
+
+The default scopes are `['data.records:read', 'data.records:write', 'schema.bases:read']`. You may need different scopes depending on your use case:
+
+- **`data.records:read`** - Read records from tables
+- **`data.records:write`** - Create, update, and delete records
+- **`schema.bases:read`** - Read base and table schemas
+- **`schema.bases:write`** - Modify base and table schemas
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.airtable.createRecord({
+    baseId: "appXXXXXXXXXXXXXX",
+    tableId: "tblYYYYYYYYYYYYYY",
+    fields: { Name: "New Record" },
+  });
+} catch (error) {
+  if (error.message.includes("not found")) {
+    console.error("Base or table not found");
+  } else if (error.message.includes("authentication")) {
+    console.error("Authentication failed");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [Linear Integration](/docs/integrations/linear)
+- Explore the [Notion Integration](/docs/integrations/notion)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples

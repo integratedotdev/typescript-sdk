@@ -1,0 +1,177 @@
+---
+title: Stripe
+description: Manage customers, payments, and subscriptions
+---
+
+The Stripe integration provides access to Stripe's API through the Integrate MCP server.
+
+## Installation
+
+The Stripe integration is included with the SDK:
+
+```typescript
+import { stripeIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Stripe Connect App
+
+1. Go to [Stripe Connect Settings](https://dashboard.stripe.com/settings/applications)
+2. Configure your Connect platform
+3. Note your Client ID and obtain your keys
+4. Set up OAuth redirect URIs
+
+### 2. Configure the Integration on Your Server
+
+Add the Stripe integration to your server configuration. The integration automatically reads `STRIPE_CLIENT_ID` and `STRIPE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, stripeIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    stripeIntegration({
+      scopes: ["read_write"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+stripeIntegration({
+  clientId: process.env.CUSTOM_STRIPE_ID,
+  clientSecret: process.env.CUSTOM_STRIPE_SECRET,
+  scopes: ["read_write"],
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("stripe");
+const customers = await client.stripe.listCustomers({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, stripeIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [stripeIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/stripe.ts"
+  name="StripeIntegrationConfig"
+/>
+
+## Available Tools
+
+### Customers
+
+- **`stripe_list_customers`** - List customers
+- **`stripe_get_customer`** - Get a specific customer
+- **`stripe_create_customer`** - Create a new customer
+
+### Payments
+
+- **`stripe_list_payments`** - List payment intents
+- **`stripe_get_payment`** - Get a specific payment
+- **`stripe_create_payment`** - Create a payment intent
+
+### Invoices
+
+- **`stripe_list_invoices`** - List invoices
+
+### Subscriptions
+
+- **`stripe_list_subscriptions`** - List subscriptions
+- **`stripe_create_subscription`** - Create a new subscription
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available Stripe tools.
+
+## Examples
+
+### Create a Customer
+
+```typescript
+const result = await client.stripe.createCustomer({
+  email: "customer@example.com",
+  name: "John Doe",
+  description: "Premium customer",
+  metadata: {
+    userId: "user_123",
+  },
+});
+
+console.log("Customer created:", result);
+```
+
+### List Payments
+
+```typescript
+const result = await client.stripe.listPayments({
+  limit: 100,
+  customer: "cus_123",
+});
+
+console.log("Payments:", result);
+```
+
+### Create a Subscription
+
+```typescript
+const result = await client.stripe.createSubscription({
+  customer: "cus_123",
+  items: [
+    { price: "price_123" },
+  ],
+});
+
+console.log("Subscription created:", result);
+```
+
+## OAuth Scopes
+
+Stripe Connect uses a simplified scope model:
+
+- **`read_write`** - Full access to the connected account (default)
+- **`read_only`** - Read-only access to the connected account
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.stripe.createCustomer({
+    email: "customer@example.com",
+  });
+} catch (error) {
+  if (error.message.includes("invalid email")) {
+    console.error("Invalid email address");
+  } else if (error.message.includes("authentication")) {
+    console.error("Authentication failed");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [Ramp Integration](/docs/integrations/ramp)
+- Explore the [Polar Integration](/docs/integrations/polar)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples

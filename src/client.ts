@@ -23,6 +23,26 @@ import { methodToToolName } from "./utils/naming.js";
 import type { GitHubIntegrationClient } from "./integrations/github-client.js";
 import type { GmailIntegrationClient } from "./integrations/gmail-client.js";
 import type { NotionIntegrationClient } from "./integrations/notion-client.js";
+import type { SlackIntegrationClient } from "./integrations/slack-client.js";
+import type { LinearIntegrationClient } from "./integrations/linear-client.js";
+import type { VercelIntegrationClient } from "./integrations/vercel-client.js";
+import type { ZendeskIntegrationClient } from "./integrations/zendesk-client.js";
+import type { StripeIntegrationClient } from "./integrations/stripe-client.js";
+import type { GcalIntegrationClient } from "./integrations/gcal-client.js";
+import type { OutlookIntegrationClient } from "./integrations/outlook-client.js";
+import type { AirtableIntegrationClient } from "./integrations/airtable-client.js";
+import type { TodoistIntegrationClient } from "./integrations/todoist-client.js";
+import type { WhatsAppIntegrationClient } from "./integrations/whatsapp-client.js";
+import type { CalcomIntegrationClient } from "./integrations/calcom-client.js";
+import type { RampIntegrationClient } from "./integrations/ramp-client.js";
+import type { OneDriveIntegrationClient } from "./integrations/onedrive-client.js";
+import type { GWorkspaceIntegrationClient } from "./integrations/gworkspace-client.js";
+import type { PolarIntegrationClient } from "./integrations/polar-client.js";
+import type { FigmaIntegrationClient } from "./integrations/figma-client.js";
+import type { IntercomIntegrationClient } from "./integrations/intercom-client.js";
+import type { HubSpotIntegrationClient } from "./integrations/hubspot-client.js";
+import type { YouTubeIntegrationClient } from "./integrations/youtube-client.js";
+import type { CursorIntegrationClient } from "./integrations/cursor-client.js";
 import type { ServerIntegrationClient } from "./integrations/server-client.js";
 import { OAuthManager } from "./oauth/manager.js";
 import type {
@@ -125,10 +145,70 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   ? "gmail"
   : K extends "notion"
   ? "notion"
+  : K extends "slack"
+  ? "slack"
+  : K extends "linear"
+  ? "linear"
+  : K extends "vercel"
+  ? "vercel"
+  : K extends "zendesk"
+  ? "zendesk"
+  : K extends "stripe"
+  ? "stripe"
+  : K extends "gcal"
+  ? "gcal"
+  : K extends "outlook"
+  ? "outlook"
+  : K extends "airtable"
+  ? "airtable"
+  : K extends "todoist"
+  ? "todoist"
+  : K extends "whatsapp"
+  ? "whatsapp"
+  : K extends "calcom"
+  ? "calcom"
+  : K extends "ramp"
+  ? "ramp"
+  : K extends "onedrive"
+  ? "onedrive"
+  : K extends "gworkspace"
+  ? "gworkspace"
+  : K extends "polar"
+  ? "polar"
+  : K extends "figma"
+  ? "figma"
+  : K extends "intercom"
+  ? "intercom"
+  : K extends "hubspot"
+  ? "hubspot"
+  : K extends "youtube"
+  ? "youtube"
+  : K extends "cursor"
+  ? "cursor"
   : never]:
   K extends "github" ? GitHubIntegrationClient :
   K extends "gmail" ? GmailIntegrationClient :
   K extends "notion" ? NotionIntegrationClient :
+  K extends "slack" ? SlackIntegrationClient :
+  K extends "linear" ? LinearIntegrationClient :
+  K extends "vercel" ? VercelIntegrationClient :
+  K extends "zendesk" ? ZendeskIntegrationClient :
+  K extends "stripe" ? StripeIntegrationClient :
+  K extends "gcal" ? GcalIntegrationClient :
+  K extends "outlook" ? OutlookIntegrationClient :
+  K extends "airtable" ? AirtableIntegrationClient :
+  K extends "todoist" ? TodoistIntegrationClient :
+  K extends "whatsapp" ? WhatsAppIntegrationClient :
+  K extends "calcom" ? CalcomIntegrationClient :
+  K extends "ramp" ? RampIntegrationClient :
+  K extends "onedrive" ? OneDriveIntegrationClient :
+  K extends "gworkspace" ? GWorkspaceIntegrationClient :
+  K extends "polar" ? PolarIntegrationClient :
+  K extends "figma" ? FigmaIntegrationClient :
+  K extends "intercom" ? IntercomIntegrationClient :
+  K extends "hubspot" ? HubSpotIntegrationClient :
+  K extends "youtube" ? YouTubeIntegrationClient :
+  K extends "cursor" ? CursorIntegrationClient :
   never;
 };
 
@@ -307,6 +387,33 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     }
     if (integrationIds.includes("notion")) {
       (this as any).notion = this.createIntegrationProxy("notion");
+    }
+    if (integrationIds.includes("slack")) {
+      (this as any).slack = this.createIntegrationProxy("slack");
+    }
+    if (integrationIds.includes("linear")) {
+      (this as any).linear = this.createIntegrationProxy("linear");
+    }
+    if (integrationIds.includes("vercel")) {
+      (this as any).vercel = this.createIntegrationProxy("vercel");
+    }
+    if (integrationIds.includes("zendesk")) {
+      (this as any).zendesk = this.createIntegrationProxy("zendesk");
+    }
+    if (integrationIds.includes("stripe")) {
+      (this as any).stripe = this.createIntegrationProxy("stripe");
+    }
+    if (integrationIds.includes("gcal")) {
+      (this as any).gcal = this.createIntegrationProxy("gcal");
+    }
+    if (integrationIds.includes("outlook")) {
+      (this as any).outlook = this.createIntegrationProxy("outlook");
+    }
+    if (integrationIds.includes("airtable")) {
+      (this as any).airtable = this.createIntegrationProxy("airtable");
+    }
+    if (integrationIds.includes("todoist")) {
+      (this as any).todoist = this.createIntegrationProxy("todoist");
     }
 
     // Server namespace is always available

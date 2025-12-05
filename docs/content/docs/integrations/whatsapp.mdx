@@ -1,0 +1,193 @@
+---
+title: WhatsApp Business
+description: Send messages, templates, and media
+---
+
+The WhatsApp Business integration provides access to WhatsApp Business API through the Integrate MCP server.
+
+## Installation
+
+The WhatsApp Business integration is included with the SDK:
+
+```typescript
+import { whatsappIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a WhatsApp Business App
+
+1. Go to [Meta for Developers](https://developers.facebook.com)
+2. Create a new app with WhatsApp product
+3. Configure WhatsApp Business API
+4. Note your Client ID and Client Secret
+5. Get your WhatsApp Business Account ID
+
+### 2. Configure the Integration on Your Server
+
+Add the WhatsApp Business integration to your server configuration. The integration automatically reads `WHATSAPP_CLIENT_ID` and `WHATSAPP_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, whatsappIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    whatsappIntegration({
+      scopes: ["business_management", "whatsapp_business_messaging", "whatsapp_business_management"], // Optional
+      businessAccountId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID,
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+whatsappIntegration({
+  clientId: process.env.CUSTOM_WHATSAPP_ID,
+  clientSecret: process.env.CUSTOM_WHATSAPP_SECRET,
+  scopes: ["whatsapp_business_messaging"],
+  businessAccountId: "123456789",
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("whatsapp");
+const phoneNumbers = await client.whatsapp.getPhoneNumbers({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, whatsappIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [whatsappIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/whatsapp.ts"
+  name="WhatsAppIntegrationConfig"
+/>
+
+## Available Tools
+
+### Messages
+
+- **`whatsapp_send_message`** - Send a message
+- **`whatsapp_send_template`** - Send a template message
+- **`whatsapp_send_media`** - Send media (image, video, document)
+- **`whatsapp_get_message_status`** - Get message delivery status
+- **`whatsapp_mark_read`** - Mark message as read
+
+### Templates
+
+- **`whatsapp_list_templates`** - List message templates
+
+### Phone Numbers
+
+- **`whatsapp_get_phone_numbers`** - Get registered phone numbers
+
+### Profile
+
+- **`whatsapp_get_profile`** - Get business profile
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available WhatsApp tools.
+
+## Examples
+
+### Send a Message
+
+```typescript
+const result = await client.whatsapp.sendMessage({
+  to: "+1234567890",
+  type: "text",
+  text: {
+    body: "Hello from WhatsApp Business API!",
+  },
+});
+
+console.log("Message sent:", result);
+```
+
+### Send a Template
+
+```typescript
+const result = await client.whatsapp.sendTemplate({
+  to: "+1234567890",
+  template: {
+    name: "hello_world",
+    language: {
+      code: "en_US",
+    },
+  },
+});
+
+console.log("Template sent:", result);
+```
+
+### Send Media
+
+```typescript
+const result = await client.whatsapp.sendMedia({
+  to: "+1234567890",
+  type: "image",
+  image: {
+    link: "https://example.com/image.jpg",
+    caption: "Check out this image!",
+  },
+});
+
+console.log("Media sent:", result);
+```
+
+## OAuth Scopes
+
+The default scopes are `['business_management', 'whatsapp_business_messaging', 'whatsapp_business_management']`. You may need different scopes:
+
+- **`business_management`** - Manage business assets
+- **`whatsapp_business_messaging`** - Send and receive messages
+- **`whatsapp_business_management`** - Manage WhatsApp Business account
+- **`public_profile`** - Access public profile information
+
+## Message Templates
+
+WhatsApp requires pre-approved templates for outbound messages outside of the 24-hour customer service window. Create and manage templates in the Meta Business Manager.
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.whatsapp.sendMessage({
+    to: "+1234567890",
+    type: "text",
+    text: { body: "Hello!" },
+  });
+} catch (error) {
+  if (error.message.includes("invalid recipient")) {
+    console.error("Invalid phone number");
+  } else if (error.message.includes("rate limit")) {
+    console.error("Rate limit exceeded");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [Slack Integration](/docs/integrations/slack)
+- Explore the [Intercom Integration](/docs/integrations/intercom)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples

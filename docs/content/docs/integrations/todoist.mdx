@@ -1,0 +1,185 @@
+---
+title: Todoist
+description: Manage tasks, projects, and labels
+---
+
+The Todoist integration provides access to Todoist's API through the Integrate MCP server.
+
+## Installation
+
+The Todoist integration is included with the SDK:
+
+```typescript
+import { todoistIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Todoist App
+
+1. Go to [Todoist App Console](https://developer.todoist.com/appconsole.html)
+2. Create a new app
+3. Configure OAuth settings
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Todoist integration to your server configuration. The integration automatically reads `TODOIST_CLIENT_ID` and `TODOIST_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, todoistIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    todoistIntegration({
+      scopes: ["data:read_write"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+todoistIntegration({
+  clientId: process.env.CUSTOM_TODOIST_ID,
+  clientSecret: process.env.CUSTOM_TODOIST_SECRET,
+  scopes: ["data:read_write"],
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("todoist");
+const tasks = await client.todoist.listTasks({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, todoistIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [todoistIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/todoist.ts"
+  name="TodoistIntegrationConfig"
+/>
+
+## Available Tools
+
+### Projects
+
+- **`todoist_list_projects`** - List projects
+- **`todoist_get_project`** - Get a specific project
+- **`todoist_create_project`** - Create a new project
+
+### Tasks
+
+- **`todoist_list_tasks`** - List tasks
+- **`todoist_get_task`** - Get a specific task
+- **`todoist_create_task`** - Create a new task
+- **`todoist_complete_task`** - Mark a task as complete
+
+### Labels
+
+- **`todoist_list_labels`** - List labels
+- **`todoist_create_label`** - Create a new label
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available Todoist tools.
+
+## Examples
+
+### Create a Task
+
+```typescript
+const result = await client.todoist.createTask({
+  content: "Review pull request",
+  description: "Review the authentication PR",
+  projectId: "2203306141",
+  priority: 4,
+  dueString: "tomorrow at 10:00",
+  labels: ["work", "urgent"],
+});
+
+console.log("Task created:", result);
+```
+
+### List Tasks
+
+```typescript
+const result = await client.todoist.listTasks({
+  projectId: "2203306141",
+  filter: "today | overdue",
+});
+
+console.log("Tasks:", result);
+```
+
+### Create a Project
+
+```typescript
+const result = await client.todoist.createProject({
+  name: "New Project",
+  color: "blue",
+  isFavorite: true,
+});
+
+console.log("Project created:", result);
+```
+
+### Complete a Task
+
+```typescript
+const result = await client.todoist.completeTask({
+  taskId: "1234567890",
+});
+
+console.log("Task completed:", result);
+```
+
+## OAuth Scopes
+
+The default scope is `['data:read_write']`. Available scopes:
+
+- **`data:read`** - Read tasks, projects, and labels
+- **`data:read_write`** - Full access to read and write data (default)
+- **`data:delete`** - Delete tasks, projects, and labels
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.todoist.createTask({
+    content: "New task",
+    projectId: "2203306141",
+  });
+} catch (error) {
+  if (error.message.includes("not found")) {
+    console.error("Project not found");
+  } else if (error.message.includes("authentication")) {
+    console.error("Authentication failed");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [Linear Integration](/docs/integrations/linear)
+- Explore the [Notion Integration](/docs/integrations/notion)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples

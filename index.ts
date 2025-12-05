@@ -35,6 +35,15 @@ import { createMCPClient } from './src/client.js';
 import { githubIntegration } from './src/integrations/github.js';
 import { gmailIntegration } from './src/integrations/gmail.js';
 import { notionIntegration } from './src/integrations/notion.js';
+import { slackIntegration } from './src/integrations/slack.js';
+import { linearIntegration } from './src/integrations/linear.js';
+import { vercelIntegration } from './src/integrations/vercel.js';
+import { zendeskIntegration } from './src/integrations/zendesk.js';
+import { stripeIntegration } from './src/integrations/stripe.js';
+import { gcalIntegration } from './src/integrations/gcal.js';
+import { outlookIntegration } from './src/integrations/outlook.js';
+import { airtableIntegration } from './src/integrations/airtable.js';
+import { todoistIntegration } from './src/integrations/todoist.js';
 
 /**
  * Default MCP Client with all integrations pre-configured
@@ -76,6 +85,15 @@ export const client = createMCPClient({
     githubIntegration(),
     gmailIntegration(),
     notionIntegration(),
+    slackIntegration(),
+    linearIntegration(),
+    vercelIntegration(),
+    zendeskIntegration(),
+    stripeIntegration(),
+    gcalIntegration(),
+    outlookIntegration(),
+    airtableIntegration(),
+    todoistIntegration(),
   ],
 });
 

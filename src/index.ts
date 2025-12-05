@@ -89,6 +89,66 @@ export type { GmailIntegrationConfig, GmailTools, GmailIntegrationClient } from 
 export { notionIntegration } from "./integrations/notion.js";
 export type { NotionIntegrationConfig, NotionTools, NotionIntegrationClient } from "./integrations/notion.js";
 
+export { slackIntegration } from "./integrations/slack.js";
+export type { SlackIntegrationConfig, SlackTools, SlackIntegrationClient } from "./integrations/slack.js";
+
+export { linearIntegration } from "./integrations/linear.js";
+export type { LinearIntegrationConfig, LinearTools, LinearIntegrationClient } from "./integrations/linear.js";
+
+export { vercelIntegration } from "./integrations/vercel.js";
+export type { VercelIntegrationConfig, VercelTools, VercelIntegrationClient } from "./integrations/vercel.js";
+
+export { zendeskIntegration } from "./integrations/zendesk.js";
+export type { ZendeskIntegrationConfig, ZendeskTools, ZendeskIntegrationClient } from "./integrations/zendesk.js";
+
+export { stripeIntegration } from "./integrations/stripe.js";
+export type { StripeIntegrationConfig, StripeTools, StripeIntegrationClient } from "./integrations/stripe.js";
+
+export { gcalIntegration } from "./integrations/gcal.js";
+export type { GcalIntegrationConfig, GcalTools, GcalIntegrationClient } from "./integrations/gcal.js";
+
+export { outlookIntegration } from "./integrations/outlook.js";
+export type { OutlookIntegrationConfig, OutlookTools, OutlookIntegrationClient } from "./integrations/outlook.js";
+
+export { airtableIntegration } from "./integrations/airtable.js";
+export type { AirtableIntegrationConfig, AirtableTools, AirtableIntegrationClient } from "./integrations/airtable.js";
+
+export { todoistIntegration } from "./integrations/todoist.js";
+export type { TodoistIntegrationConfig, TodoistTools, TodoistIntegrationClient } from "./integrations/todoist.js";
+
+export { whatsappIntegration } from "./integrations/whatsapp.js";
+export type { WhatsAppIntegrationConfig, WhatsAppTools, WhatsAppIntegrationClient } from "./integrations/whatsapp.js";
+
+export { calcomIntegration } from "./integrations/calcom.js";
+export type { CalcomIntegrationConfig, CalcomTools, CalcomIntegrationClient } from "./integrations/calcom.js";
+
+export { rampIntegration } from "./integrations/ramp.js";
+export type { RampIntegrationConfig, RampTools, RampIntegrationClient } from "./integrations/ramp.js";
+
+export { onedriveIntegration } from "./integrations/onedrive.js";
+export type { OneDriveIntegrationConfig, OneDriveTools, OneDriveIntegrationClient } from "./integrations/onedrive.js";
+
+export { gworkspaceIntegration } from "./integrations/gworkspace.js";
+export type { GWorkspaceIntegrationConfig, GWorkspaceTools, GWorkspaceIntegrationClient } from "./integrations/gworkspace.js";
+
+export { polarIntegration } from "./integrations/polar.js";
+export type { PolarIntegrationConfig, PolarTools, PolarIntegrationClient } from "./integrations/polar.js";
+
+export { figmaIntegration } from "./integrations/figma.js";
+export type { FigmaIntegrationConfig, FigmaTools, FigmaIntegrationClient } from "./integrations/figma.js";
+
+export { intercomIntegration } from "./integrations/intercom.js";
+export type { IntercomIntegrationConfig, IntercomTools, IntercomIntegrationClient } from "./integrations/intercom.js";
+
+export { hubspotIntegration } from "./integrations/hubspot.js";
+export type { HubSpotIntegrationConfig, HubSpotTools, HubSpotIntegrationClient } from "./integrations/hubspot.js";
+
+export { youtubeIntegration } from "./integrations/youtube.js";
+export type { YouTubeIntegrationConfig, YouTubeTools, YouTubeIntegrationClient } from "./integrations/youtube.js";
+
+export { cursorIntegration } from "./integrations/cursor.js";
+export type { CursorIntegrationConfig, CursorTools, CursorIntegrationClient } from "./integrations/cursor.js";
+
 // Server client
 export type { ServerIntegrationClient } from "./integrations/server-client.js";
 

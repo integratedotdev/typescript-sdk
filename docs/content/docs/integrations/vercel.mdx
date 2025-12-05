@@ -1,0 +1,175 @@
+---
+title: Vercel
+description: Manage projects, deployments, and domains
+---
+
+The Vercel integration provides access to Vercel's API through the Integrate MCP server.
+
+## Installation
+
+The Vercel integration is included with the SDK:
+
+```typescript
+import { vercelIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Vercel Integration
+
+1. Go to [Vercel Integrations](https://vercel.com/dashboard/integrations)
+2. Create a new integration
+3. Configure OAuth settings
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Vercel integration to your server configuration. The integration automatically reads `VERCEL_CLIENT_ID` and `VERCEL_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, vercelIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    vercelIntegration({
+      // Vercel doesn't use traditional OAuth scopes
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+vercelIntegration({
+  clientId: process.env.CUSTOM_VERCEL_ID,
+  clientSecret: process.env.CUSTOM_VERCEL_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("vercel");
+const projects = await client.vercel.listProjects({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, vercelIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [vercelIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/vercel.ts"
+  name="VercelIntegrationConfig"
+/>
+
+## Available Tools
+
+### Projects
+
+- **`vercel_list_projects`** - List projects
+- **`vercel_get_project`** - Get a specific project
+
+### Deployments
+
+- **`vercel_list_deployments`** - List deployments
+- **`vercel_get_deployment`** - Get a specific deployment
+- **`vercel_create_deployment`** - Create a new deployment
+- **`vercel_cancel_deployment`** - Cancel a deployment
+- **`vercel_get_deployment_logs`** - Get deployment logs
+
+### Domains
+
+- **`vercel_list_domains`** - List domains
+
+### Environment Variables
+
+- **`vercel_list_env_vars`** - List environment variables
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available Vercel tools.
+
+## Examples
+
+### List Projects
+
+```typescript
+const result = await client.vercel.listProjects({
+  limit: 20,
+});
+
+console.log("Projects:", result);
+```
+
+### Get Deployment
+
+```typescript
+const result = await client.vercel.getDeployment({
+  deploymentId: "dpl_123",
+});
+
+console.log("Deployment:", result);
+```
+
+### Get Deployment Logs
+
+```typescript
+const result = await client.vercel.getDeploymentLogs({
+  deploymentId: "dpl_123",
+  limit: 100,
+});
+
+console.log("Logs:", result);
+```
+
+### List Domains
+
+```typescript
+const result = await client.vercel.listDomains({
+  limit: 50,
+});
+
+console.log("Domains:", result);
+```
+
+## OAuth Scopes
+
+Vercel doesn't use traditional OAuth scopes. Permissions are configured at the integration level when you create the integration in the Vercel dashboard.
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.vercel.getDeployment({
+    deploymentId: "dpl_123",
+  });
+} catch (error) {
+  if (error.message.includes("not found")) {
+    console.error("Deployment not found");
+  } else if (error.message.includes("authentication")) {
+    console.error("Authentication failed");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [GitHub Integration](/docs/integrations/github)
+- Explore the [Linear Integration](/docs/integrations/linear)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
