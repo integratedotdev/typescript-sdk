@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/cn';
-import { ThemeToggle } from 'fumadocs-ui/components/layout/theme-toggle';
 
 const layoutWidthClass = 'container mx-auto px-6 lg:px-12';
 
@@ -77,7 +76,7 @@ export function Footer() {
                     </div>
                 </div>
                 <div className="flex items-center justify-center border-t border-zinc-200 pt-8 dark:border-zinc-800">
-                    <ThemeToggle />
+                    {/* <ThemeToggle /> */}
                 </div>
             </div>
         </footer>
