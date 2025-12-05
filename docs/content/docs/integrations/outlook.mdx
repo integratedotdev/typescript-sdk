@@ -1,0 +1,196 @@
+---
+title: Outlook
+description: Manage emails, calendar, and contacts
+---
+
+The Outlook integration provides access to Microsoft Outlook's API through the Integrate MCP server.
+
+## Installation
+
+The Outlook integration is included with the SDK:
+
+```typescript
+import { outlookIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Microsoft App Registration
+
+1. Go to [Azure Portal - App Registrations](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps)
+2. Create a new registration
+3. Configure redirect URIs
+4. Create a client secret
+5. Note your Application (client) ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Outlook integration to your server configuration. The integration automatically reads `OUTLOOK_CLIENT_ID` and `OUTLOOK_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, outlookIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    outlookIntegration({
+      scopes: ["Mail.Read", "Mail.Send", "Calendars.ReadWrite", "Contacts.Read"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+outlookIntegration({
+  clientId: process.env.CUSTOM_OUTLOOK_ID,
+  clientSecret: process.env.CUSTOM_OUTLOOK_SECRET,
+  scopes: ["Mail.Read", "Mail.Send"],
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("outlook");
+const messages = await client.outlook.listMessages({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, outlookIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [outlookIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/outlook.ts"
+  name="OutlookIntegrationConfig"
+/>
+
+## Available Tools
+
+### Email
+
+- **`outlook_list_messages`** - List email messages
+- **`outlook_get_message`** - Get a specific message
+- **`outlook_send_message`** - Send an email
+- **`outlook_search`** - Search messages and events
+
+### Calendar
+
+- **`outlook_list_events`** - List calendar events
+- **`outlook_get_event`** - Get a specific event
+- **`outlook_create_event`** - Create a new event
+
+### Contacts
+
+- **`outlook_list_contacts`** - List contacts
+- **`outlook_get_contact`** - Get a specific contact
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available Outlook tools.
+
+## Examples
+
+### Send an Email
+
+```typescript
+const result = await client.outlook.sendMessage({
+  subject: "Meeting Follow-up",
+  body: {
+    contentType: "HTML",
+    content: "<p>Thanks for the great discussion today!</p>",
+  },
+  toRecipients: [
+    { emailAddress: { address: "colleague@example.com" } },
+  ],
+});
+
+console.log("Email sent:", result);
+```
+
+### List Messages
+
+```typescript
+const result = await client.outlook.listMessages({
+  filter: "isRead eq false",
+  top: 10,
+  orderby: "receivedDateTime desc",
+});
+
+console.log("Unread messages:", result);
+```
+
+### Create Calendar Event
+
+```typescript
+const result = await client.outlook.createEvent({
+  subject: "Team Standup",
+  start: {
+    dateTime: "2024-12-10T09:00:00",
+    timeZone: "Pacific Standard Time",
+  },
+  end: {
+    dateTime: "2024-12-10T09:30:00",
+    timeZone: "Pacific Standard Time",
+  },
+  attendees: [
+    {
+      emailAddress: { address: "team@example.com" },
+      type: "required",
+    },
+  ],
+});
+
+console.log("Event created:", result);
+```
+
+## OAuth Scopes
+
+The default scopes are `['Mail.Read', 'Mail.Send', 'Calendars.ReadWrite', 'Contacts.Read']`. You may need different scopes:
+
+- **`Mail.Read`** - Read user mail
+- **`Mail.Send`** - Send mail as user
+- **`Mail.ReadWrite`** - Read and write user mail
+- **`Calendars.Read`** - Read user calendars
+- **`Calendars.ReadWrite`** - Read and write user calendars
+- **`Contacts.Read`** - Read user contacts
+- **`Contacts.ReadWrite`** - Read and write user contacts
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.outlook.sendMessage({
+    subject: "Test",
+    body: { content: "Test message" },
+    toRecipients: [{ emailAddress: { address: "test@example.com" } }],
+  });
+} catch (error) {
+  if (error.message.includes("invalid recipient")) {
+    console.error("Invalid email address");
+  } else if (error.message.includes("authentication")) {
+    console.error("Authentication failed");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [Gmail Integration](/docs/integrations/gmail)
+- Explore the [Google Calendar Integration](/docs/integrations/gcal)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples

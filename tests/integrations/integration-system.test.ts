@@ -25,6 +25,7 @@ import { figmaIntegration } from "../../src/integrations/figma.js";
 import { intercomIntegration } from "../../src/integrations/intercom.js";
 import { hubspotIntegration } from "../../src/integrations/hubspot.js";
 import { youtubeIntegration } from "../../src/integrations/youtube.js";
+import { cursorIntegration } from "../../src/integrations/cursor.js";
 import { genericOAuthIntegration, createSimpleIntegration } from "../../src/integrations/generic.js";
 import { hasOAuthConfig } from "../../src/integrations/types.js";
 
@@ -1573,6 +1574,62 @@ describe("Integration System", () => {
       const integration = youtubeIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
+      });
+
+      await expect(integration.onInit?.(null as any)).resolves.toBeUndefined();
+      await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+  });
+
+  describe("Cursor Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = cursorIntegration({
+        apiKey: "test-api-key",
+      });
+
+      expect(integration.id).toBe("cursor");
+      expect(integration.tools).toBeArray();
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeUndefined();
+    });
+
+    test("does not include OAuth configuration (uses basic auth)", () => {
+      const integration = cursorIntegration({
+        apiKey: "test-api-key",
+      });
+
+      expect(integration.oauth).toBeUndefined();
+    });
+
+    test("includes expected tools", () => {
+      const integration = cursorIntegration({
+        apiKey: "test-api-key",
+      });
+
+      expect(integration.tools).toContain("cursor_list_agents");
+      expect(integration.tools).toContain("cursor_get_agent");
+      expect(integration.tools).toContain("cursor_get_conversation");
+      expect(integration.tools).toContain("cursor_launch_agent");
+      expect(integration.tools).toContain("cursor_followup_agent");
+      expect(integration.tools).toContain("cursor_stop_agent");
+      expect(integration.tools).toContain("cursor_delete_agent");
+      expect(integration.tools).toContain("cursor_get_me");
+      expect(integration.tools).toContain("cursor_list_models");
+      expect(integration.tools).toContain("cursor_list_repositories");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = cursorIntegration({
+        apiKey: "test-api-key",
+      });
+
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+
+    test("lifecycle hooks execute successfully", async () => {
+      const integration = cursorIntegration({
+        apiKey: "test-api-key",
       });
 
       await expect(integration.onInit?.(null as any)).resolves.toBeUndefined();

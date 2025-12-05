@@ -42,6 +42,7 @@ import type { FigmaIntegrationClient } from "./integrations/figma-client.js";
 import type { IntercomIntegrationClient } from "./integrations/intercom-client.js";
 import type { HubSpotIntegrationClient } from "./integrations/hubspot-client.js";
 import type { YouTubeIntegrationClient } from "./integrations/youtube-client.js";
+import type { CursorIntegrationClient } from "./integrations/cursor-client.js";
 import type { ServerIntegrationClient } from "./integrations/server-client.js";
 import { OAuthManager } from "./oauth/manager.js";
 import type {
@@ -182,6 +183,8 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   ? "hubspot"
   : K extends "youtube"
   ? "youtube"
+  : K extends "cursor"
+  ? "cursor"
   : never]:
   K extends "github" ? GitHubIntegrationClient :
   K extends "gmail" ? GmailIntegrationClient :
@@ -205,6 +208,7 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   K extends "intercom" ? IntercomIntegrationClient :
   K extends "hubspot" ? HubSpotIntegrationClient :
   K extends "youtube" ? YouTubeIntegrationClient :
+  K extends "cursor" ? CursorIntegrationClient :
   never;
 };
 

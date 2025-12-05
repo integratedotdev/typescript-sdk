@@ -1,0 +1,180 @@
+---
+title: Figma
+description: Access Figma files, comments, and projects
+---
+
+The Figma integration provides access to Figma's API through the Integrate MCP server.
+
+## Installation
+
+The Figma integration is included with the SDK:
+
+```typescript
+import { figmaIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Figma OAuth App
+
+1. Go to [Figma for Developers](https://www.figma.com/developers/apps)
+2. Create a new app
+3. Configure your OAuth settings and redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Figma integration to your server configuration. The integration automatically reads `FIGMA_CLIENT_ID` and `FIGMA_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, figmaIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    figmaIntegration({
+      scopes: ["files:read", "file_comments:write"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+figmaIntegration({
+  clientId: process.env.CUSTOM_FIGMA_ID,
+  clientSecret: process.env.CUSTOM_FIGMA_SECRET,
+  scopes: ["files:read", "file_comments:write"],
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("figma");
+const file = await client.figma.getFile({ fileKey: "abc123" });
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, figmaIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [figmaIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/figma.ts"
+  name="FigmaIntegrationConfig"
+/>
+
+## Available Tools
+
+### Files
+
+- **`figma_get_file`** - Get file contents
+- **`figma_get_file_nodes`** - Get specific nodes from a file
+- **`figma_get_images`** - Export images from a file
+- **`figma_get_file_versions`** - Get file version history
+
+### Comments
+
+- **`figma_get_comments`** - Get comments on a file
+- **`figma_post_comment`** - Post a comment
+
+### Projects
+
+- **`figma_list_projects`** - List team projects
+- **`figma_get_project_files`** - Get files in a project
+
+### Components
+
+- **`figma_get_team_components`** - Get team component library
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available Figma tools.
+
+## Examples
+
+### Get File
+
+```typescript
+const result = await client.figma.getFile({
+  fileKey: "abc123xyz",
+});
+
+console.log("File:", result);
+```
+
+### Post a Comment
+
+```typescript
+const result = await client.figma.postComment({
+  fileKey: "abc123xyz",
+  message: "This design looks great!",
+  clientMeta: {
+    x: 100,
+    y: 200,
+    node_id: "1:23",
+  },
+});
+
+console.log("Comment posted:", result);
+```
+
+### Export Images
+
+```typescript
+const result = await client.figma.getImages({
+  fileKey: "abc123xyz",
+  ids: ["1:23", "1:24"],
+  format: "png",
+  scale: 2,
+});
+
+console.log("Image URLs:", result);
+```
+
+## OAuth Scopes
+
+The default scopes are `['files:read', 'file_comments:write']`. You may need different scopes:
+
+- **`files:read`** - Read file contents and metadata
+- **`file_comments:write`** - Post comments on files
+- **`file_variables:read`** - Read file variables
+- **`file_variables:write`** - Modify file variables
+- **`webhooks:write`** - Manage webhooks
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.figma.getFile({
+    fileKey: "abc123xyz",
+  });
+} catch (error) {
+  if (error.message.includes("not found")) {
+    console.error("File not found or no access");
+  } else if (error.message.includes("authentication")) {
+    console.error("Authentication failed");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [Notion Integration](/docs/integrations/notion)
+- Explore the [Linear Integration](/docs/integrations/linear)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples

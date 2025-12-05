@@ -1,0 +1,199 @@
+---
+title: HubSpot
+description: Manage contacts, companies, deals, and tickets
+---
+
+The HubSpot integration provides access to HubSpot's CRM API through the Integrate MCP server.
+
+## Installation
+
+The HubSpot integration is included with the SDK:
+
+```typescript
+import { hubspotIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a HubSpot App
+
+1. Go to [HubSpot Developer Apps](https://app.hubspot.com/developers)
+2. Create a new app
+3. Configure OAuth settings and scopes
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the HubSpot integration to your server configuration. The integration automatically reads `HUBSPOT_CLIENT_ID` and `HUBSPOT_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, hubspotIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    hubspotIntegration({
+      scopes: [
+        "crm.objects.contacts.read",
+        "crm.objects.contacts.write",
+        "crm.objects.companies.read",
+        "crm.objects.companies.write",
+        "crm.objects.deals.read",
+        "crm.objects.deals.write",
+        "tickets",
+      ], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+hubspotIntegration({
+  clientId: process.env.CUSTOM_HUBSPOT_ID,
+  clientSecret: process.env.CUSTOM_HUBSPOT_SECRET,
+  scopes: ["crm.objects.contacts.read", "crm.objects.contacts.write"],
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("hubspot");
+const contacts = await client.hubspot.listContacts({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, hubspotIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [hubspotIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/hubspot.ts"
+  name="HubSpotIntegrationConfig"
+/>
+
+## Available Tools
+
+### Contacts
+
+- **`hubspot_list_contacts`** - List contacts
+- **`hubspot_get_contact`** - Get a specific contact
+- **`hubspot_create_contact`** - Create a new contact
+- **`hubspot_update_contact`** - Update a contact
+
+### Companies
+
+- **`hubspot_list_companies`** - List companies
+- **`hubspot_get_company`** - Get a specific company
+- **`hubspot_create_company`** - Create a new company
+
+### Deals
+
+- **`hubspot_list_deals`** - List deals
+- **`hubspot_get_deal`** - Get a specific deal
+- **`hubspot_create_deal`** - Create a new deal
+
+### Tickets
+
+- **`hubspot_list_tickets`** - List support tickets
+- **`hubspot_get_ticket`** - Get a specific ticket
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available HubSpot tools.
+
+## Examples
+
+### Create a Contact
+
+```typescript
+const result = await client.hubspot.createContact({
+  properties: {
+    email: "contact@example.com",
+    firstname: "Jane",
+    lastname: "Doe",
+    phone: "+1-555-0123",
+    company: "Acme Corp",
+  },
+});
+
+console.log("Contact created:", result);
+```
+
+### List Deals
+
+```typescript
+const result = await client.hubspot.listDeals({
+  limit: 50,
+  properties: ["dealname", "amount", "dealstage"],
+});
+
+console.log("Deals:", result);
+```
+
+### Create a Company
+
+```typescript
+const result = await client.hubspot.createCompany({
+  properties: {
+    name: "New Company Inc",
+    domain: "newcompany.com",
+    industry: "Technology",
+  },
+});
+
+console.log("Company created:", result);
+```
+
+## OAuth Scopes
+
+The default scopes provide CRM access. You may need different scopes:
+
+- **`crm.objects.contacts.read`** - Read contacts
+- **`crm.objects.contacts.write`** - Create and update contacts
+- **`crm.objects.companies.read`** - Read companies
+- **`crm.objects.companies.write`** - Create and update companies
+- **`crm.objects.deals.read`** - Read deals
+- **`crm.objects.deals.write`** - Create and update deals
+- **`tickets`** - Access support tickets
+- **`crm.objects.owners.read`** - Read owners
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.hubspot.createContact({
+    properties: {
+      email: "contact@example.com",
+      firstname: "Jane",
+    },
+  });
+} catch (error) {
+  if (error.message.includes("already exists")) {
+    console.error("Contact already exists");
+  } else if (error.message.includes("authentication")) {
+    console.error("Authentication failed");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [Zendesk Integration](/docs/integrations/zendesk)
+- Explore the [Intercom Integration](/docs/integrations/intercom)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples

@@ -1,0 +1,203 @@
+---
+title: Slack
+description: Send messages, manage channels, and search conversations
+---
+
+The Slack integration provides access to Slack's API through the Integrate MCP server.
+
+## Installation
+
+The Slack integration is included with the SDK:
+
+```typescript
+import { slackIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Slack App
+
+1. Go to [Slack API Apps](https://api.slack.com/apps)
+2. Create a new app
+3. Configure OAuth & Permissions
+4. Add Bot Token Scopes
+5. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Slack integration to your server configuration. The integration automatically reads `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, slackIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    slackIntegration({
+      scopes: ["chat:write", "channels:read", "users:read", "search:read", "files:write"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+slackIntegration({
+  clientId: process.env.CUSTOM_SLACK_ID,
+  clientSecret: process.env.CUSTOM_SLACK_SECRET,
+  scopes: ["chat:write", "channels:read"],
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("slack");
+const channels = await client.slack.listChannels({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, slackIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [slackIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/slack.ts"
+  name="SlackIntegrationConfig"
+/>
+
+## Available Tools
+
+### Messages
+
+- **`slack_send_message`** - Send a message to a channel or user
+- **`slack_list_messages`** - List messages in a channel
+- **`slack_add_reaction`** - Add emoji reaction to a message
+- **`slack_search_messages`** - Search messages
+
+### Channels
+
+- **`slack_list_channels`** - List channels
+- **`slack_get_channel`** - Get channel details
+
+### Users
+
+- **`slack_list_users`** - List workspace users
+- **`slack_get_user`** - Get user details
+
+### Files
+
+- **`slack_upload_file`** - Upload a file
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available Slack tools.
+
+## Examples
+
+### Send a Message
+
+```typescript
+const result = await client.slack.sendMessage({
+  channel: "C1234567890",
+  text: "Hello from Integrate SDK!",
+  blocks: [
+    {
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: "*Hello!* This is a rich message.",
+      },
+    },
+  ],
+});
+
+console.log("Message sent:", result);
+```
+
+### List Channels
+
+```typescript
+const result = await client.slack.listChannels({
+  excludeArchived: true,
+  types: "public_channel,private_channel",
+});
+
+console.log("Channels:", result);
+```
+
+### Search Messages
+
+```typescript
+const result = await client.slack.searchMessages({
+  query: "important announcement",
+  sort: "timestamp",
+  sortDir: "desc",
+});
+
+console.log("Search results:", result);
+```
+
+### Upload a File
+
+```typescript
+const result = await client.slack.uploadFile({
+  channels: "C1234567890",
+  content: fileBuffer,
+  filename: "report.pdf",
+  title: "Monthly Report",
+  initialComment: "Here's the monthly report",
+});
+
+console.log("File uploaded:", result);
+```
+
+## OAuth Scopes
+
+The default scopes are `['chat:write', 'channels:read', 'users:read', 'search:read', 'files:write']`. You may need different scopes:
+
+- **`chat:write`** - Send messages
+- **`chat:write.public`** - Send messages to any public channel
+- **`channels:read`** - View channels
+- **`channels:history`** - View messages in channels
+- **`users:read`** - View users
+- **`search:read`** - Search messages and files
+- **`files:write`** - Upload files
+- **`reactions:write`** - Add reactions
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.slack.sendMessage({
+    channel: "C1234567890",
+    text: "Hello!",
+  });
+} catch (error) {
+  if (error.message.includes("channel_not_found")) {
+    console.error("Channel not found");
+  } else if (error.message.includes("not_in_channel")) {
+    console.error("Bot not in channel");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [WhatsApp Integration](/docs/integrations/whatsapp)
+- Explore the [Intercom Integration](/docs/integrations/intercom)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples

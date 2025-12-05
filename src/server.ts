@@ -706,6 +706,7 @@ export { figmaIntegration } from './integrations/figma.js';
 export { intercomIntegration } from './integrations/intercom.js';
 export { hubspotIntegration } from './integrations/hubspot.js';
 export { youtubeIntegration } from './integrations/youtube.js';
+export { cursorIntegration } from './integrations/cursor.js';
 export { genericOAuthIntegration, createSimpleIntegration } from './integrations/generic.js';
 
 /**

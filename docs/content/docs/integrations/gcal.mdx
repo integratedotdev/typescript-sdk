@@ -1,0 +1,188 @@
+---
+title: Google Calendar
+description: Manage calendars, events, and attendees
+---
+
+The Google Calendar integration provides access to Google Calendar's API through the Integrate MCP server.
+
+## Installation
+
+The Google Calendar integration is included with the SDK:
+
+```typescript
+import { gcalIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create Google OAuth Credentials
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new project or select an existing one
+3. Enable the Google Calendar API
+4. Create OAuth 2.0 credentials
+5. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Calendar integration to your server configuration. The integration automatically reads `GCAL_CLIENT_ID` and `GCAL_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, gcalIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    gcalIntegration({
+      scopes: ["https://www.googleapis.com/auth/calendar"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+gcalIntegration({
+  clientId: process.env.CUSTOM_GCAL_ID,
+  clientSecret: process.env.CUSTOM_GCAL_SECRET,
+  scopes: ["https://www.googleapis.com/auth/calendar"],
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("gcal");
+const events = await client.gcal.listEvents({ calendarId: "primary" });
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, gcalIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [gcalIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/gcal.ts"
+  name="GcalIntegrationConfig"
+/>
+
+## Available Tools
+
+### Calendars
+
+- **`gcal_list_calendars`** - List all calendars
+- **`gcal_get_calendar`** - Get calendar details
+
+### Events
+
+- **`gcal_list_events`** - List events in a calendar
+- **`gcal_get_event`** - Get a specific event
+- **`gcal_create_event`** - Create a new event
+- **`gcal_update_event`** - Update an event
+- **`gcal_delete_event`** - Delete an event
+- **`gcal_quick_add`** - Quick add event from text
+
+### Attendees
+
+- **`gcal_list_attendees`** - List event attendees
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available Google Calendar tools.
+
+## Examples
+
+### Create an Event
+
+```typescript
+const result = await client.gcal.createEvent({
+  calendarId: "primary",
+  summary: "Team Meeting",
+  description: "Weekly sync with the team",
+  start: {
+    dateTime: "2024-12-10T10:00:00-08:00",
+    timeZone: "America/Los_Angeles",
+  },
+  end: {
+    dateTime: "2024-12-10T11:00:00-08:00",
+    timeZone: "America/Los_Angeles",
+  },
+  attendees: [
+    { email: "colleague@example.com" },
+  ],
+});
+
+console.log("Event created:", result);
+```
+
+### List Upcoming Events
+
+```typescript
+const result = await client.gcal.listEvents({
+  calendarId: "primary",
+  timeMin: new Date().toISOString(),
+  maxResults: 10,
+  orderBy: "startTime",
+  singleEvents: true,
+});
+
+console.log("Upcoming events:", result);
+```
+
+### Quick Add Event
+
+```typescript
+const result = await client.gcal.quickAdd({
+  calendarId: "primary",
+  text: "Lunch with Sarah tomorrow at 12pm",
+});
+
+console.log("Event created:", result);
+```
+
+## OAuth Scopes
+
+The default scope is `['https://www.googleapis.com/auth/calendar']`. You may need different scopes:
+
+- **`https://www.googleapis.com/auth/calendar`** - Full access to calendars
+- **`https://www.googleapis.com/auth/calendar.readonly`** - Read-only access
+- **`https://www.googleapis.com/auth/calendar.events`** - Access to events only
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.gcal.createEvent({
+    calendarId: "primary",
+    summary: "New Meeting",
+    start: { dateTime: "2024-12-10T10:00:00Z" },
+    end: { dateTime: "2024-12-10T11:00:00Z" },
+  });
+} catch (error) {
+  if (error.message.includes("not found")) {
+    console.error("Calendar not found");
+  } else if (error.message.includes("authentication")) {
+    console.error("Authentication failed");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [Gmail Integration](/docs/integrations/gmail)
+- Explore the [Google Workspace Integration](/docs/integrations/gworkspace)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples

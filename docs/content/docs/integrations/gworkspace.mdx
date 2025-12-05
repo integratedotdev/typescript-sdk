@@ -1,0 +1,186 @@
+---
+title: Google Workspace
+description: Manage Google Sheets, Docs, and Slides
+---
+
+The Google Workspace integration provides access to Google Sheets, Docs, and Slides APIs through the Integrate MCP server.
+
+## Installation
+
+The Google Workspace integration is included with the SDK:
+
+```typescript
+import { gworkspaceIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create Google OAuth Credentials
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new project or select an existing one
+3. Enable the Google Sheets, Docs, Slides, and Drive APIs
+4. Create OAuth 2.0 credentials
+5. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Workspace integration to your server configuration. The integration automatically reads `GWORKSPACE_CLIENT_ID` and `GWORKSPACE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, gworkspaceIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    gworkspaceIntegration({
+      scopes: [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/documents",
+        "https://www.googleapis.com/auth/presentations",
+        "https://www.googleapis.com/auth/drive.readonly",
+      ], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+gworkspaceIntegration({
+  clientId: process.env.CUSTOM_GWORKSPACE_ID,
+  clientSecret: process.env.CUSTOM_GWORKSPACE_SECRET,
+  scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("gworkspace");
+const sheets = await client.gworkspace.sheetsList({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, gworkspaceIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [gworkspaceIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/gworkspace.ts"
+  name="GWorkspaceIntegrationConfig"
+/>
+
+## Available Tools
+
+### Sheets
+
+- **`gworkspace_sheets_list`** - List spreadsheets
+- **`gworkspace_sheets_get`** - Get spreadsheet details
+- **`gworkspace_sheets_get_values`** - Get cell values
+- **`gworkspace_sheets_update_values`** - Update cell values
+- **`gworkspace_sheets_create`** - Create a new spreadsheet
+
+### Docs
+
+- **`gworkspace_docs_list`** - List documents
+- **`gworkspace_docs_get`** - Get document content
+- **`gworkspace_docs_create`** - Create a new document
+
+### Slides
+
+- **`gworkspace_slides_list`** - List presentations
+- **`gworkspace_slides_get`** - Get presentation details
+- **`gworkspace_slides_get_page`** - Get specific slide
+- **`gworkspace_slides_create`** - Create a new presentation
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available Google Workspace tools.
+
+## Examples
+
+### Update Spreadsheet Values
+
+```typescript
+const result = await client.gworkspace.sheetsUpdateValues({
+  spreadsheetId: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+  range: "Sheet1!A1:B2",
+  values: [
+    ["Name", "Value"],
+    ["Item 1", "100"],
+  ],
+});
+
+console.log("Updated cells:", result);
+```
+
+### Read Spreadsheet Values
+
+```typescript
+const result = await client.gworkspace.sheetsGetValues({
+  spreadsheetId: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+  range: "Sheet1!A1:B10",
+});
+
+console.log("Values:", result);
+```
+
+### Create a Document
+
+```typescript
+const result = await client.gworkspace.docsCreate({
+  title: "My New Document",
+});
+
+console.log("Document created:", result);
+```
+
+## OAuth Scopes
+
+The default scopes provide access to Sheets, Docs, Slides, and Drive. You may need different scopes:
+
+- **`https://www.googleapis.com/auth/spreadsheets`** - Read and write spreadsheets
+- **`https://www.googleapis.com/auth/spreadsheets.readonly`** - Read-only spreadsheets
+- **`https://www.googleapis.com/auth/documents`** - Read and write documents
+- **`https://www.googleapis.com/auth/documents.readonly`** - Read-only documents
+- **`https://www.googleapis.com/auth/presentations`** - Read and write presentations
+- **`https://www.googleapis.com/auth/drive.readonly`** - Read-only Drive access
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.gworkspace.sheetsUpdateValues({
+    spreadsheetId: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+    range: "Sheet1!A1",
+    values: [["Hello"]],
+  });
+} catch (error) {
+  if (error.message.includes("not found")) {
+    console.error("Spreadsheet not found");
+  } else if (error.message.includes("authentication")) {
+    console.error("Authentication failed");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [Google Calendar Integration](/docs/integrations/gcal)
+- Explore the [Gmail Integration](/docs/integrations/gmail)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples

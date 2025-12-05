@@ -146,6 +146,9 @@ export type { HubSpotIntegrationConfig, HubSpotTools, HubSpotIntegrationClient }
 export { youtubeIntegration } from "./integrations/youtube.js";
 export type { YouTubeIntegrationConfig, YouTubeTools, YouTubeIntegrationClient } from "./integrations/youtube.js";
 
+export { cursorIntegration } from "./integrations/cursor.js";
+export type { CursorIntegrationConfig, CursorTools, CursorIntegrationClient } from "./integrations/cursor.js";
+
 // Server client
 export type { ServerIntegrationClient } from "./integrations/server-client.js";
 

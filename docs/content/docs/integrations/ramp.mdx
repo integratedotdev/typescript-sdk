@@ -1,0 +1,182 @@
+---
+title: Ramp
+description: Manage transactions, cards, and users
+---
+
+The Ramp integration provides access to Ramp's API through the Integrate MCP server.
+
+## Installation
+
+The Ramp integration is included with the SDK:
+
+```typescript
+import { rampIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Ramp OAuth App
+
+1. Go to [Ramp Developer Portal](https://app.ramp.com/developer)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Ramp integration to your server configuration. The integration automatically reads `RAMP_CLIENT_ID` and `RAMP_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, rampIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    rampIntegration({
+      scopes: ["transactions:read", "cards:read", "users:read"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+rampIntegration({
+  clientId: process.env.CUSTOM_RAMP_ID,
+  clientSecret: process.env.CUSTOM_RAMP_SECRET,
+  scopes: ["transactions:read", "cards:read"],
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("ramp");
+const transactions = await client.ramp.listTransactions({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, rampIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [rampIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/ramp.ts"
+  name="RampIntegrationConfig"
+/>
+
+## Available Tools
+
+### Transactions
+
+- **`ramp_list_transactions`** - List transactions
+- **`ramp_get_transaction`** - Get a specific transaction
+
+### Cards
+
+- **`ramp_list_cards`** - List cards
+- **`ramp_get_card`** - Get a specific card
+
+### Users
+
+- **`ramp_list_users`** - List users
+- **`ramp_get_user`** - Get a specific user
+
+### Departments
+
+- **`ramp_list_departments`** - List departments
+
+### Reimbursements
+
+- **`ramp_list_reimbursements`** - List reimbursements
+
+### Spend Limits
+
+- **`ramp_get_spend_limits`** - Get spend limits
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available Ramp tools.
+
+## Examples
+
+### List Transactions
+
+```typescript
+const result = await client.ramp.listTransactions({
+  fromDate: "2024-01-01",
+  toDate: "2024-12-31",
+  limit: 100,
+});
+
+console.log("Transactions:", result);
+```
+
+### Get Card Details
+
+```typescript
+const result = await client.ramp.getCard({
+  cardId: "card_123",
+});
+
+console.log("Card:", result);
+```
+
+### List Users
+
+```typescript
+const result = await client.ramp.listUsers({
+  departmentId: "dept_123",
+});
+
+console.log("Users:", result);
+```
+
+## OAuth Scopes
+
+The default scopes are `['transactions:read', 'cards:read', 'users:read']`. You may need different scopes:
+
+- **`transactions:read`** - Read transaction data
+- **`transactions:write`** - Manage transactions
+- **`cards:read`** - Read card data
+- **`cards:write`** - Manage cards
+- **`users:read`** - Read user data
+- **`users:write`** - Manage users
+- **`reimbursements:read`** - Read reimbursements
+- **`reimbursements:write`** - Manage reimbursements
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.ramp.getTransaction({
+    transactionId: "txn_123",
+  });
+} catch (error) {
+  if (error.message.includes("not found")) {
+    console.error("Transaction not found");
+  } else if (error.message.includes("authentication")) {
+    console.error("Authentication failed");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [Stripe Integration](/docs/integrations/stripe)
+- Explore the [Polar Integration](/docs/integrations/polar)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples

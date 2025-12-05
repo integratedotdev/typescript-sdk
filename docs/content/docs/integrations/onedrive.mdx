@@ -1,0 +1,182 @@
+---
+title: OneDrive
+description: Manage files, folders, and Office documents
+---
+
+The OneDrive integration provides access to Microsoft OneDrive and Office files through the Integrate MCP server.
+
+## Installation
+
+The OneDrive integration is included with the SDK:
+
+```typescript
+import { onedriveIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Microsoft App Registration
+
+1. Go to [Azure Portal - App Registrations](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps)
+2. Create a new registration
+3. Configure redirect URIs
+4. Create a client secret
+5. Note your Application (client) ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the OneDrive integration to your server configuration. The integration automatically reads `ONEDRIVE_CLIENT_ID` and `ONEDRIVE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, onedriveIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    onedriveIntegration({
+      scopes: ["Files.Read", "Files.ReadWrite", "offline_access"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+onedriveIntegration({
+  clientId: process.env.CUSTOM_ONEDRIVE_ID,
+  clientSecret: process.env.CUSTOM_ONEDRIVE_SECRET,
+  scopes: ["Files.Read", "Files.ReadWrite"],
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("onedrive");
+const files = await client.onedrive.listFiles({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, onedriveIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [onedriveIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/onedrive.ts"
+  name="OneDriveIntegrationConfig"
+/>
+
+## Available Tools
+
+### Files
+
+- **`onedrive_list_files`** - List files and folders
+- **`onedrive_get_file`** - Get file metadata
+- **`onedrive_download_file`** - Download file content
+- **`onedrive_upload_file`** - Upload a file
+- **`onedrive_delete_file`** - Delete a file
+- **`onedrive_search_files`** - Search for files
+- **`onedrive_share_file`** - Create sharing link
+
+### Word Documents
+
+- **`onedrive_word_get_content`** - Get Word document content
+
+### Excel Spreadsheets
+
+- **`onedrive_excel_get_worksheets`** - List worksheets in an Excel file
+- **`onedrive_excel_get_range`** - Get cell range values
+- **`onedrive_excel_update_range`** - Update cell range values
+
+### PowerPoint Presentations
+
+- **`onedrive_powerpoint_get_slides`** - List slides in a presentation
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available OneDrive tools.
+
+## Examples
+
+### List Files
+
+```typescript
+const result = await client.onedrive.listFiles({
+  path: "/Documents",
+});
+
+console.log("Files:", result);
+```
+
+### Upload a File
+
+```typescript
+const result = await client.onedrive.uploadFile({
+  path: "/Documents/report.pdf",
+  content: fileBuffer,
+});
+
+console.log("File uploaded:", result);
+```
+
+### Update Excel Range
+
+```typescript
+const result = await client.onedrive.excelUpdateRange({
+  fileId: "01ABCDEF123456789",
+  worksheetId: "Sheet1",
+  range: "A1:B2",
+  values: [
+    ["Name", "Value"],
+    ["Item 1", "100"],
+  ],
+});
+
+console.log("Range updated:", result);
+```
+
+## OAuth Scopes
+
+The default scopes are `['Files.Read', 'Files.ReadWrite', 'offline_access']`. You may need different scopes:
+
+- **`Files.Read`** - Read user files
+- **`Files.Read.All`** - Read all files user can access
+- **`Files.ReadWrite`** - Read and write user files
+- **`Files.ReadWrite.All`** - Read and write all files user can access
+- **`offline_access`** - Maintain access without user presence
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.onedrive.getFile({
+    fileId: "01ABCDEF123456789",
+  });
+} catch (error) {
+  if (error.message.includes("not found")) {
+    console.error("File not found");
+  } else if (error.message.includes("authentication")) {
+    console.error("Authentication failed");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [Google Workspace Integration](/docs/integrations/gworkspace)
+- Explore the [Outlook Integration](/docs/integrations/outlook)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples

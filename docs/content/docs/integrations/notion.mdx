@@ -1,0 +1,162 @@
+---
+title: Notion
+description: Search pages and databases in Notion
+---
+
+The Notion integration provides access to Notion's API through the Integrate MCP server.
+
+## Installation
+
+The Notion integration is included with the SDK:
+
+```typescript
+import { notionIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Notion Integration
+
+1. Go to [Notion Integrations](https://www.notion.so/my-integrations)
+2. Create a new integration
+3. Note your OAuth Client ID and Client Secret
+4. Configure capabilities (read content, update content, etc.)
+
+### 2. Configure the Integration on Your Server
+
+Add the Notion integration to your server configuration. The integration automatically reads `NOTION_CLIENT_ID` and `NOTION_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, notionIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    notionIntegration({
+      owner: "user", // Optional: 'user' or 'workspace'
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+notionIntegration({
+  clientId: process.env.CUSTOM_NOTION_ID,
+  clientSecret: process.env.CUSTOM_NOTION_SECRET,
+  owner: "user",
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("notion");
+const results = await client.notion.search({ query: "project" });
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, notionIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [notionIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/notion.ts"
+  name="NotionIntegrationConfig"
+/>
+
+## Available Tools
+
+### Pages
+
+- **`notion_search`** - Search pages and databases
+- **`notion_get_page`** - Get page content
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available Notion tools.
+
+## Examples
+
+### Search Pages
+
+```typescript
+const result = await client.notion.search({
+  query: "meeting notes",
+  filter: {
+    property: "object",
+    value: "page",
+  },
+  sort: {
+    direction: "descending",
+    timestamp: "last_edited_time",
+  },
+});
+
+console.log("Search results:", result);
+```
+
+### Get Page
+
+```typescript
+const result = await client.notion.getPage({
+  pageId: "1234567890abcdef",
+});
+
+console.log("Page content:", result);
+```
+
+## OAuth Configuration
+
+Notion uses a unique OAuth flow that doesn't use traditional scopes. Instead, permissions are configured at the integration level:
+
+- **`owner`** - Set to `'user'` (default) for user-level access or `'workspace'` for workspace-level access
+
+The integration automatically handles Notion's custom OAuth endpoints:
+- Authorization: `https://api.notion.com/v1/oauth/authorize`
+- Token: `https://api.notion.com/v1/oauth/token`
+
+## Sharing Pages with Your Integration
+
+After connecting, users must explicitly share pages or databases with your integration:
+
+1. Open a page in Notion
+2. Click "Share" in the top right
+3. Invite your integration by name
+4. Grant appropriate permissions
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.notion.getPage({
+    pageId: "1234567890abcdef",
+  });
+} catch (error) {
+  if (error.message.includes("not found")) {
+    console.error("Page not found or not shared with integration");
+  } else if (error.message.includes("authentication")) {
+    console.error("Authentication failed");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [Airtable Integration](/docs/integrations/airtable)
+- Explore the [Linear Integration](/docs/integrations/linear)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples

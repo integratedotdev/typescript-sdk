@@ -1,0 +1,153 @@
+---
+title: Cursor
+description: Interact with Cursor AI agents and models
+---
+
+The Cursor integration provides access to Cursor's API through the Integrate MCP server.
+
+## Installation
+
+The Cursor integration is included with the SDK:
+
+```typescript
+import { cursorIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Get Your Cursor API Key
+
+1. Visit your [Cursor Account Settings](https://cursor.sh/settings)
+2. Generate an API key
+3. Store it securely as `CURSOR_API_KEY` environment variable
+
+### 2. Configure the Integration on Your Server
+
+Add the Cursor integration to your server configuration. The integration automatically reads `CURSOR_API_KEY` from your environment variables:
+
+```typescript
+import { createMCPServer, cursorIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    cursorIntegration({
+      apiKey: process.env.CURSOR_API_KEY, // Optional - auto-detected
+    }),
+  ],
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("cursor");
+const agents = await client.cursor.listAgents({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, cursorIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [cursorIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/cursor.ts"
+  name="CursorIntegrationConfig"
+/>
+
+## Available Tools
+
+### Agents
+
+- **`cursor_list_agents`** - List all AI agents
+- **`cursor_get_agent`** - Get details of a specific agent
+- **`cursor_launch_agent`** - Launch a new agent instance
+- **`cursor_followup_agent`** - Send a follow-up to an agent
+- **`cursor_stop_agent`** - Stop a running agent
+- **`cursor_delete_agent`** - Delete an agent
+
+### Conversations
+
+- **`cursor_get_conversation`** - Get conversation history
+
+### User & Models
+
+- **`cursor_get_me`** - Get current user information
+- **`cursor_list_models`** - List available AI models
+- **`cursor_list_repositories`** - List connected repositories
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available Cursor tools.
+
+## Examples
+
+### List Agents
+
+```typescript
+const result = await client.cursor.listAgents({});
+
+console.log("Agents:", result);
+```
+
+### Launch an Agent
+
+```typescript
+const result = await client.cursor.launchAgent({
+  modelId: "claude-3-5-sonnet",
+  prompt: "Help me refactor this component",
+  repositoryId: "repo-123",
+});
+
+console.log("Agent launched:", result);
+```
+
+### Get Conversation
+
+```typescript
+const result = await client.cursor.getConversation({
+  conversationId: "conv-123",
+});
+
+console.log("Conversation history:", result);
+```
+
+## Authentication
+
+Unlike most integrations, Cursor uses API key authentication instead of OAuth. Simply set the `CURSOR_API_KEY` environment variable or pass it directly to the integration config.
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.cursor.launchAgent({
+    modelId: "claude-3-5-sonnet",
+    prompt: "Help me debug this code",
+  });
+} catch (error) {
+  if (error.message.includes("invalid api key")) {
+    console.error("Invalid API key");
+  } else if (error.message.includes("rate limit")) {
+    console.error("Rate limit exceeded");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [GitHub Integration](/docs/integrations/github)
+- Explore the [Linear Integration](/docs/integrations/linear)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples

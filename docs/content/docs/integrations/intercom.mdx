@@ -1,0 +1,178 @@
+---
+title: Intercom
+description: Manage contacts, conversations, and companies
+---
+
+The Intercom integration provides access to Intercom's API through the Integrate MCP server.
+
+## Installation
+
+The Intercom integration is included with the SDK:
+
+```typescript
+import { intercomIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create an Intercom App
+
+1. Go to [Intercom Developer Hub](https://developers.intercom.com/)
+2. Create a new app
+3. Configure OAuth settings
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Intercom integration to your server configuration. The integration automatically reads `INTERCOM_CLIENT_ID` and `INTERCOM_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, intercomIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    intercomIntegration({
+      // Intercom uses app-level permissions
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+intercomIntegration({
+  clientId: process.env.CUSTOM_INTERCOM_ID,
+  clientSecret: process.env.CUSTOM_INTERCOM_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("intercom");
+const contacts = await client.intercom.listContacts({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, intercomIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [intercomIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/intercom.ts"
+  name="IntercomIntegrationConfig"
+/>
+
+## Available Tools
+
+### Contacts
+
+- **`intercom_list_contacts`** - List contacts
+- **`intercom_get_contact`** - Get a specific contact
+- **`intercom_create_contact`** - Create a new contact
+- **`intercom_search_contacts`** - Search contacts
+
+### Conversations
+
+- **`intercom_list_conversations`** - List conversations
+- **`intercom_get_conversation`** - Get a specific conversation
+- **`intercom_reply_conversation`** - Reply to a conversation
+
+### Companies
+
+- **`intercom_list_companies`** - List companies
+- **`intercom_get_company`** - Get a specific company
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available Intercom tools.
+
+## Examples
+
+### Create a Contact
+
+```typescript
+const result = await client.intercom.createContact({
+  email: "user@example.com",
+  name: "John Doe",
+  customAttributes: {
+    plan: "premium",
+    signup_date: "2024-01-15",
+  },
+});
+
+console.log("Contact created:", result);
+```
+
+### Reply to Conversation
+
+```typescript
+const result = await client.intercom.replyConversation({
+  conversationId: "12345",
+  type: "comment",
+  body: "Thanks for reaching out! I'll look into this for you.",
+});
+
+console.log("Reply sent:", result);
+```
+
+### Search Contacts
+
+```typescript
+const result = await client.intercom.searchContacts({
+  query: {
+    field: "email",
+    operator: "=",
+    value: "user@example.com",
+  },
+});
+
+console.log("Search results:", result);
+```
+
+## OAuth Scopes
+
+Intercom uses app-level permissions instead of traditional OAuth scopes. Configure permissions in your Intercom app settings:
+
+- Read and write contacts
+- Read and write conversations
+- Read and write companies
+- Access user data
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.intercom.createContact({
+    email: "user@example.com",
+    name: "John Doe",
+  });
+} catch (error) {
+  if (error.message.includes("already exists")) {
+    console.error("Contact already exists");
+  } else if (error.message.includes("authentication")) {
+    console.error("Authentication failed");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [HubSpot Integration](/docs/integrations/hubspot)
+- Explore the [Zendesk Integration](/docs/integrations/zendesk)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples

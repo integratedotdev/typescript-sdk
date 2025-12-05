@@ -1,0 +1,201 @@
+---
+title: YouTube
+description: Search videos, manage playlists, and access channels
+---
+
+The YouTube integration provides access to YouTube's Data API through the Integrate MCP server.
+
+## Installation
+
+The YouTube integration is included with the SDK:
+
+```typescript
+import { youtubeIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create Google OAuth Credentials
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new project or select an existing one
+3. Enable the YouTube Data API v3
+4. Create OAuth 2.0 credentials
+5. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the YouTube integration to your server configuration. The integration automatically reads `YOUTUBE_CLIENT_ID` and `YOUTUBE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, youtubeIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    youtubeIntegration({
+      scopes: ["https://www.googleapis.com/auth/youtube.readonly"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+youtubeIntegration({
+  clientId: process.env.CUSTOM_YOUTUBE_ID,
+  clientSecret: process.env.CUSTOM_YOUTUBE_SECRET,
+  scopes: ["https://www.googleapis.com/auth/youtube.readonly"],
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("youtube");
+const results = await client.youtube.search({ q: "coding tutorials" });
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, youtubeIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [youtubeIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/youtube.ts"
+  name="YouTubeIntegrationConfig"
+/>
+
+## Available Tools
+
+### Search
+
+- **`youtube_search`** - Search for videos, channels, and playlists
+
+### Videos
+
+- **`youtube_get_video`** - Get video details
+
+### Playlists
+
+- **`youtube_list_playlists`** - List playlists
+- **`youtube_get_playlist`** - Get playlist details
+- **`youtube_list_playlist_items`** - List videos in a playlist
+
+### Channels
+
+- **`youtube_get_channel`** - Get channel details
+
+### Subscriptions
+
+- **`youtube_list_subscriptions`** - List channel subscriptions
+
+### Comments
+
+- **`youtube_list_comments`** - List video comments
+
+### Captions
+
+- **`youtube_get_captions`** - Get video captions/subtitles
+
+### And More...
+
+Use `client.getEnabledTools()` to see all available YouTube tools.
+
+## Examples
+
+### Search Videos
+
+```typescript
+const result = await client.youtube.search({
+  q: "machine learning tutorial",
+  type: "video",
+  maxResults: 10,
+  order: "relevance",
+});
+
+console.log("Search results:", result);
+```
+
+### Get Video Details
+
+```typescript
+const result = await client.youtube.getVideo({
+  id: "dQw4w9WgXcQ",
+  part: ["snippet", "statistics", "contentDetails"],
+});
+
+console.log("Video details:", result);
+```
+
+### List Playlists
+
+```typescript
+const result = await client.youtube.listPlaylists({
+  mine: true,
+  part: ["snippet", "contentDetails"],
+  maxResults: 25,
+});
+
+console.log("My playlists:", result);
+```
+
+### Get Channel Info
+
+```typescript
+const result = await client.youtube.getChannel({
+  id: "UC_x5XG1OV2P6uZZ5FSM9Ttw",
+  part: ["snippet", "statistics", "brandingSettings"],
+});
+
+console.log("Channel info:", result);
+```
+
+## OAuth Scopes
+
+The default scope is `['https://www.googleapis.com/auth/youtube.readonly']`. You may need different scopes:
+
+- **`https://www.googleapis.com/auth/youtube.readonly`** - Read-only access (default)
+- **`https://www.googleapis.com/auth/youtube`** - Full access to account
+- **`https://www.googleapis.com/auth/youtube.upload`** - Upload videos
+- **`https://www.googleapis.com/auth/youtube.force-ssl`** - Manage account via secure connection
+
+## Quota Management
+
+The YouTube Data API has daily quota limits. Each API call consumes quota units. Monitor your usage in the Google Cloud Console to avoid hitting limits.
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.youtube.getVideo({
+    id: "dQw4w9WgXcQ",
+  });
+} catch (error) {
+  if (error.message.includes("not found")) {
+    console.error("Video not found");
+  } else if (error.message.includes("quota")) {
+    console.error("API quota exceeded");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [Google Workspace Integration](/docs/integrations/gworkspace)
+- Explore the [Gmail Integration](/docs/integrations/gmail)
+- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
