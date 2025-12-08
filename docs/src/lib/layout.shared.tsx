@@ -12,9 +12,14 @@ export function baseOptions(includeMainLinks: boolean = true): BaseLayoutProps {
       },
       {
         type: 'main',
+        url: '/integrations',
+        text: 'Integrations',
+      },
+      {
+        type: 'main',
         url: '/pricing',
         text: 'Pricing',
-      }
+      },
     );
   }
 
