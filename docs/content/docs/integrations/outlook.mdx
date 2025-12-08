@@ -34,7 +34,12 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     outlookIntegration({
-      scopes: ["Mail.Read", "Mail.Send", "Calendars.ReadWrite", "Contacts.Read"], // Optional
+      scopes: [
+        "Mail.Read",
+        "Mail.Send",
+        "Calendars.ReadWrite",
+        "Contacts.Read",
+      ], // Optional
     }),
   ],
 });
@@ -98,10 +103,6 @@ const customClient = createMCPClient({
 - **`outlook_list_contacts`** - List contacts
 - **`outlook_get_contact`** - Get a specific contact
 
-### And More...
-
-Use `client.getEnabledTools()` to see all available Outlook tools.
-
 ## Examples
 
 ### Send an Email
@@ -113,9 +114,7 @@ const result = await client.outlook.sendMessage({
     contentType: "HTML",
     content: "<p>Thanks for the great discussion today!</p>",
   },
-  toRecipients: [
-    { emailAddress: { address: "colleague@example.com" } },
-  ],
+  toRecipients: [{ emailAddress: { address: "colleague@example.com" } }],
 });
 
 console.log("Email sent:", result);

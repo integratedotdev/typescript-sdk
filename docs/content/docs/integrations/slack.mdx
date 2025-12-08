@@ -34,7 +34,13 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     slackIntegration({
-      scopes: ["chat:write", "channels:read", "users:read", "search:read", "files:write"], // Optional
+      scopes: [
+        "chat:write",
+        "channels:read",
+        "users:read",
+        "search:read",
+        "files:write",
+      ], // Optional
     }),
   ],
 });
@@ -100,10 +106,6 @@ const customClient = createMCPClient({
 ### Files
 
 - **`slack_upload_file`** - Upload a file
-
-### And More...
-
-Use `client.getEnabledTools()` to see all available Slack tools.
 
 ## Examples
 

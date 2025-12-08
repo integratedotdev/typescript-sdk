@@ -33,7 +33,12 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     calcomIntegration({
-      scopes: ["read:bookings", "write:bookings", "read:event-types", "read:schedules"], // Optional
+      scopes: [
+        "read:bookings",
+        "write:bookings",
+        "read:event-types",
+        "read:schedules",
+      ], // Optional
     }),
   ],
 });
@@ -99,10 +104,6 @@ const customClient = createMCPClient({
 ### User
 
 - **`calcom_get_me`** - Get current user information
-
-### And More...
-
-Use `client.getEnabledTools()` to see all available Cal.com tools.
 
 ## Examples
 

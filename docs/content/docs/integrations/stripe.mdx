@@ -100,10 +100,6 @@ const customClient = createMCPClient({
 - **`stripe_list_subscriptions`** - List subscriptions
 - **`stripe_create_subscription`** - Create a new subscription
 
-### And More...
-
-Use `client.getEnabledTools()` to see all available Stripe tools.
-
 ## Examples
 
 ### Create a Customer
@@ -137,9 +133,7 @@ console.log("Payments:", result);
 ```typescript
 const result = await client.stripe.createSubscription({
   customer: "cus_123",
-  items: [
-    { price: "price_123" },
-  ],
+  items: [{ price: "price_123" }],
 });
 
 console.log("Subscription created:", result);

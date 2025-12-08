@@ -98,10 +98,6 @@ const customClient = createMCPClient({
 
 - **`gcal_list_attendees`** - List event attendees
 
-### And More...
-
-Use `client.getEnabledTools()` to see all available Google Calendar tools.
-
 ## Examples
 
 ### Create an Event
@@ -119,9 +115,7 @@ const result = await client.gcal.createEvent({
     dateTime: "2024-12-10T11:00:00-08:00",
     timeZone: "America/Los_Angeles",
   },
-  attendees: [
-    { email: "colleague@example.com" },
-  ],
+  attendees: [{ email: "colleague@example.com" }],
 });
 
 console.log("Event created:", result);

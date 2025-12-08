@@ -1,6 +1,6 @@
 ---
 title: Gmail
-description: Send emails, manage labels, and search messages
+description: Send, list, and search Gmail messages
 ---
 
 The Gmail integration provides access to Gmail's API through the Integrate MCP server.
@@ -62,7 +62,7 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("gmail");
-const emails = await client.gmail.listEmails({});
+const messages = await client.gmail.listMessages({});
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -84,34 +84,19 @@ const customClient = createMCPClient({
 
 ## Available Tools
 
-### Email Management
+### Messages
 
-- **`gmail_send_email`** - Send an email
-- **`gmail_list_emails`** - List emails in your inbox
-- **`gmail_get_email`** - Get a specific email
-- **`gmail_delete_email`** - Delete an email
-- **`gmail_search_emails`** - Search emails by query
-
-### Email Status
-
-- **`gmail_mark_as_read`** - Mark email(s) as read
-- **`gmail_mark_as_unread`** - Mark email(s) as unread
-
-### Labels
-
-- **`gmail_list_labels`** - List all labels
-- **`gmail_create_label`** - Create a new label
-
-### And More...
-
-Use `client.getEnabledTools()` to see all available Gmail tools.
+- **`gmail_send_message`** - Send an email message
+- **`gmail_list_messages`** - List messages in your mailbox
+- **`gmail_get_message`** - Get a specific message
+- **`gmail_search_messages`** - Search messages with Gmail query syntax
 
 ## Examples
 
-### Send an Email
+### Send a Message
 
 ```typescript
-const result = await client.gmail.sendEmail({
+const result = await client.gmail.sendMessage({
   to: "recipient@example.com",
   subject: "Hello from Integrate SDK",
   body: "This email was sent using the Integrate SDK!",
@@ -122,10 +107,10 @@ const result = await client.gmail.sendEmail({
 console.log("Email sent:", result);
 ```
 
-### List Emails
+### List Messages
 
 ```typescript
-const result = await client.gmail.listEmails({
+const result = await client.gmail.listMessages({
   maxResults: 10,
   labelIds: ["INBOX"],
   includeSpamTrash: false,
@@ -134,37 +119,26 @@ const result = await client.gmail.listEmails({
 console.log("Emails:", result);
 ```
 
-### Search Emails
+### Get a Message
 
 ```typescript
-const result = await client.gmail.searchEmails({
+const result = await client.gmail.getMessage({
+  id: "message-id-1",
+  format: "full",
+});
+
+console.log("Message:", result);
+```
+
+### Search Messages
+
+```typescript
+const result = await client.gmail.searchMessages({
   query: "from:sender@example.com subject:important",
   maxResults: 20,
 });
 
 console.log("Search results:", result);
-```
-
-### Create a Label
-
-```typescript
-const result = await client.gmail.createLabel({
-  name: "Projects/My Project",
-  labelListVisibility: "labelShow",
-  messageListVisibility: "show",
-});
-
-console.log("Label created:", result);
-```
-
-### Mark as Read
-
-```typescript
-const result = await client.gmail.markAsRead({
-  messageIds: ["message-id-1", "message-id-2"],
-});
-
-console.log("Marked as read:", result);
 ```
 
 ## OAuth Scopes
@@ -179,13 +153,13 @@ The default scopes provide common Gmail access. You may need additional scopes:
 
 ## Gmail Search Queries
 
-The `gmail_search_emails` tool supports Gmail's search syntax:
+The `gmail_search_messages` tool supports Gmail's search syntax:
 
 - `from:sender@example.com` - From specific sender
 - `to:recipient@example.com` - To specific recipient
 - `subject:keyword` - Subject contains keyword
 - `has:attachment` - Has attachments
-- `is:unread` - Unread emails
+- `is:unread` - Unread messages
 - `after:2024/01/01` - After specific date
 - `newer_than:7d` - Newer than 7 days
 
@@ -198,7 +172,7 @@ Combine with operators:
 
 ```typescript
 try {
-  const result = await client.gmail.sendEmail({
+  const result = await client.gmail.sendMessage({
     to: "recipient@example.com",
     subject: "Test",
     body: "Test email",

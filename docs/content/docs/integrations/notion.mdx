@@ -84,10 +84,6 @@ const customClient = createMCPClient({
 - **`notion_search`** - Search pages and databases
 - **`notion_get_page`** - Get page content
 
-### And More...
-
-Use `client.getEnabledTools()` to see all available Notion tools.
-
 ## Examples
 
 ### Search Pages
@@ -125,6 +121,7 @@ Notion uses a unique OAuth flow that doesn't use traditional scopes. Instead, pe
 - **`owner`** - Set to `'user'` (default) for user-level access or `'workspace'` for workspace-level access
 
 The integration automatically handles Notion's custom OAuth endpoints:
+
 - Authorization: `https://api.notion.com/v1/oauth/authorize`
 - Token: `https://api.notion.com/v1/oauth/token`
 

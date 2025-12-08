@@ -101,9 +101,19 @@ const customClient = createMCPClient({
 - **`github_get_repo`** - Get repository details
 - **`github_create_repo`** - Create a new repository
 
-### And More...
+### Branches
 
-The integration provides access to many more GitHub tools. Use `client.getEnabledTools()` to see all available tools.
+- **`github_list_branches`** - List branches in a repository
+- **`github_create_branch`** - Create a branch from a commit
+
+### Commits
+
+- **`github_list_commits`** - List commits in a repository
+- **`github_get_commit`** - Get details for a specific commit
+
+### Users
+
+- **`github_get_user`** - Get the authenticated user profile
 
 ## Examples
 

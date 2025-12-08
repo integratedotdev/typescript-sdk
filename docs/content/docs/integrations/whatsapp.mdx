@@ -34,7 +34,11 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     whatsappIntegration({
-      scopes: ["business_management", "whatsapp_business_messaging", "whatsapp_business_management"], // Optional
+      scopes: [
+        "business_management",
+        "whatsapp_business_messaging",
+        "whatsapp_business_management",
+      ], // Optional
       businessAccountId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID,
     }),
   ],
@@ -101,10 +105,6 @@ const customClient = createMCPClient({
 ### Profile
 
 - **`whatsapp_get_profile`** - Get business profile
-
-### And More...
-
-Use `client.getEnabledTools()` to see all available WhatsApp tools.
 
 ## Examples
 
