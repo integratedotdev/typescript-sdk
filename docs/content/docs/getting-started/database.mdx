@@ -408,6 +408,97 @@ getProviderToken: async (provider, context) => {
 },
 ```
 
+## Multi-Account Support
+
+To store multiple accounts per provider per user, add an `email` column to your schema and handle it in the callbacks.
+
+### Database Schema (PostgreSQL)
+
+```sql
+CREATE TABLE oauth_tokens (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  provider VARCHAR(50) NOT NULL,
+  email VARCHAR(255) NOT NULL,  -- Email identifies the specific account
+  access_token TEXT NOT NULL,
+  refresh_token TEXT,
+  expires_at TIMESTAMP,
+  scopes TEXT[],
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id, provider, email)  -- Unique per user/provider/email combo
+);
+```
+
+### Callback Configuration
+
+```typescript
+export const { client } = createMCPServer({
+  integrations: [...],
+
+  getProviderToken: async (provider, email, context) => {
+    const userId = context?.userId;
+    if (!userId) return undefined;
+
+    // If email provided, get specific account
+    // If no email, get the default/first account
+    const token = await db.query(
+      `SELECT * FROM oauth_tokens 
+       WHERE user_id = ? AND provider = ? ${email ? 'AND email = ?' : ''}
+       ORDER BY created_at ASC LIMIT 1`,
+      email ? [userId, provider, email] : [userId, provider]
+    );
+    
+    return token ? formatTokenData(token) : undefined;
+  },
+
+  setProviderToken: async (provider, tokenData, email, context) => {
+    const userId = context?.userId;
+    if (!userId || !email) return;
+
+    await db.query(
+      `INSERT INTO oauth_tokens (user_id, provider, email, access_token, refresh_token, expires_at, scopes)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT (user_id, provider, email)
+       DO UPDATE SET 
+         access_token = EXCLUDED.access_token,
+         refresh_token = EXCLUDED.refresh_token,
+         expires_at = EXCLUDED.expires_at,
+         scopes = EXCLUDED.scopes,
+         updated_at = NOW()`,
+      [
+        userId,
+        provider,
+        email,
+        tokenData.accessToken,
+        tokenData.refreshToken,
+        tokenData.expiresAt ? new Date(tokenData.expiresAt) : null,
+        tokenData.scopes || [],
+      ]
+    );
+  },
+
+  removeProviderToken: async (provider, email, context) => {
+    const userId = context?.userId;
+    if (!userId) return;
+
+    if (email) {
+      // Delete specific account
+      await db.query(
+        'DELETE FROM oauth_tokens WHERE user_id = ? AND provider = ? AND email = ?',
+        [userId, provider, email]
+      );
+    } else {
+      // Delete all accounts for provider
+      await db.query(
+        'DELETE FROM oauth_tokens WHERE user_id = ? AND provider = ?',
+        [userId, provider]
+      );
+    }
+  },
+});
+```
+
 ## Complete Example
 
 Here's a complete example showing all three callbacks working together:

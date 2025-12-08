@@ -121,6 +121,54 @@ import { clearClientCache } from "integrate-sdk";
 await clearClientCache();
 ```
 
+## Multi-Account Support
+
+Connect and manage multiple accounts from the same OAuth provider (for example, multiple GitHub or Gmail accounts).
+
+### Listing Connected Accounts
+
+```typescript
+const accounts = await client.listAccounts("github");
+// [
+//   { email: "work@example.com", accountId: "github_abc123", ... },
+//   { email: "personal@gmail.com", accountId: "github_def456", ... }
+// ]
+```
+
+### Checking Authorization for Specific Account
+
+```typescript
+// Check if any account is authorized
+const hasAny = await client.isAuthorized("github");
+
+// Check if a specific account is authorized
+const hasWork = await client.isAuthorized("github", "work@example.com");
+```
+
+### Disconnecting a Specific Account
+
+```typescript
+// Disconnect a specific account by email
+await client.disconnectAccount("github", "work@example.com");
+
+// Disconnect all accounts for a provider
+await client.disconnectProvider("github");
+```
+
+### Setting Token for a Specific Account
+
+```typescript
+client.setProviderToken(
+  "github",
+  {
+    accessToken: "ghp_...",
+    tokenType: "Bearer",
+    expiresIn: 3600,
+  },
+  "work@example.com"
+);
+```
+
 ## Auto-Cleanup
 
 Control whether clients automatically disconnect on process exit.
