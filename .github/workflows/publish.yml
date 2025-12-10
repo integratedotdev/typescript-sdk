@@ -23,6 +23,9 @@ on:
         default: "Release"
         description: "Prefix for the release name"
     secrets:
+      NPM_TOKEN:
+        required: true
+        description: "NPM authentication token"
       DISCORD_WEBHOOK_URL:
         required: false
         description: "Discord webhook URL for notifications"
@@ -174,6 +177,8 @@ jobs:
 
       - name: Publish to npm with provenance
         run: npm publish --provenance --tag ${{ steps.npm-tag.outputs.tag }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create Git Tag
         run: |
