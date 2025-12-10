@@ -8,12 +8,12 @@
   "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/integratedotdev/integrate-sdk.git"
+    "url": "https://github.com/integratedotdev/typescript-sdk.git"
   },
   "bugs": {
-    "url": "https://github.com/integratedotdev/integrate-sdk/issues"
+    "url": "https://github.com/integratedotdev/typescript-sdk/issues"
   },
-  "homepage": "https://github.com/integratedotdev/integrate-sdk#readme",
+  "homepage": "https://github.com/integratedotdev/typescript-sdk#readme",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
