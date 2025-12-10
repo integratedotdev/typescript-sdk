@@ -11,9 +11,6 @@ on:
       - ".github/**"
       - "!.github/workflows/canary-release.yml"
 
-permissions:
-  contents: write # Required to create releases and tags
-
 jobs:
   generate-version:
     runs-on: ubuntu-latest
@@ -112,119 +109,14 @@ jobs:
 
   publish:
     needs: generate-version
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: Run tests
-        run: bun test
-
-      - name: Type check
-        run: bun run type-check
-
-      - name: Build
-        run: bun run build
-
-      - name: Update package.json version
-        run: |
-          CANARY_VERSION="${{ needs.generate-version.outputs.canary-version }}"
-          # Use node to update package.json version
-          node -e "
-            const fs = require('fs');
-            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            pkg.version = '$CANARY_VERSION';
-            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
-          "
-          echo "Updated package.json version to $CANARY_VERSION"
-
-      - name: Setup Node.js (for npm publish)
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          registry-url: "https://registry.npmjs.org"
-
-      - name: Publish to npm
-        run: npm publish --tag dev
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Create Git Tag
-        run: |
-          CANARY_VERSION="${{ needs.generate-version.outputs.canary-version }}"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a v$CANARY_VERSION -m "Canary release v$CANARY_VERSION"
-          git push origin v$CANARY_VERSION
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ needs.generate-version.outputs.canary-version }}
-          name: Canary Release v${{ needs.generate-version.outputs.canary-version }}
-          body: |
-            ## Canary Release v${{ needs.generate-version.outputs.canary-version }}
-
-            This is a canary release from the `dev` branch.
-
-            ### Installation
-            ```bash
-            # Install latest canary version
-            bun add integrate-sdk@dev
-            
-            # Or install specific canary version
-            bun add integrate-sdk@${{ needs.generate-version.outputs.canary-version }}
-            ```
-            
-            **Note:** Canary releases are published with the `dev` tag and will not affect the `latest` tag.
-          draft: false
-          prerelease: true
-
-      - name: Send Discord notification
-        run: |
-          if [ -z "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
-            echo "Discord webhook URL not set, skipping notification"
-            exit 0
-          fi
-          
-          CANARY_VERSION="${{ needs.generate-version.outputs.canary-version }}"
-          REPO="${{ github.repository }}"
-          RELEASE_URL="https://github.com/${REPO}/releases/tag/v${CANARY_VERSION}"
-          
-          # Use node to construct the JSON payload
-          PAYLOAD=$(node -e "
-            const version = process.argv[1];
-            const url = process.argv[2];
-            const payload = {
-              embeds: [{
-                title: 'Canary Release v' + version,
-                description: 'A new canary release has been published from the \`dev\` branch.',
-                url: url,
-                color: 1316451,
-                fields: [{
-                  name: 'Installation',
-                  value: '\`\`\`bash\nbun add integrate-sdk@dev\n\`\`\`',
-                  inline: false
-                }],
-                footer: {
-                  text: 'integrate.dev'
-                },
-                timestamp: new Date().toISOString()
-              }]
-            };
-            console.log(JSON.stringify(payload));
-          " "$CANARY_VERSION" "$RELEASE_URL")
-          
-          curl -X POST \
-            -H "Content-Type: application/json" \
-            -d "$PAYLOAD" \
-            "${{ secrets.DISCORD_WEBHOOK_URL }}"
-
+    uses: ./.github/workflows/publish.yml
+    with:
+      version: ${{ needs.generate-version.outputs.canary-version }}
+      npm-tag: "dev"
+      is-prerelease: true
+      release-name-prefix: "Canary Release"
+    secrets:
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+    permissions:
+      contents: write
+      id-token: write
