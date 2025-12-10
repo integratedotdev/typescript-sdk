@@ -389,6 +389,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
       try {
         const body = await webRequest.json();
         const authHeader = webRequest.headers.get('authorization');
+          const integrationsHeader = webRequest.headers.get('x-integrations');
 
         // Create OAuth handler with config that includes API key
         // The API key will be automatically sent as X-API-KEY header to the MCP server
@@ -402,7 +403,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
           getSessionContext: config.getSessionContext,
         });
 
-        const result = await oauthHandler.handleToolCall(body, authHeader);
+          const result = await oauthHandler.handleToolCall(body, authHeader, integrationsHeader);
         const response = Response.json(result);
 
         // Add X-Integrate-Use-Database header if database callbacks are configured

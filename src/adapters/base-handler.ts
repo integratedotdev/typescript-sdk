@@ -621,11 +621,16 @@ export class OAuthHandler {
    * 
    * @param request - Tool call request with name and arguments
    * @param authHeader - Authorization header from client (Bearer token)
+   * @param integrationsHeader - Comma-separated integration IDs configured on client
    * @returns Tool call response
    * 
    * @throws Error if MCP server request fails
    */
-  async handleToolCall(request: ToolCallRequest, authHeader: string | null): Promise<ToolCallResponse> {
+  async handleToolCall(
+    request: ToolCallRequest,
+    authHeader: string | null,
+    integrationsHeader?: string | null
+  ): Promise<ToolCallResponse> {
     // Use the MCP server URL directly (JSON-RPC method is in the body, not the path)
     const url = this.serverUrl;
 
@@ -638,6 +643,11 @@ export class OAuthHandler {
     // Add provider token from Authorization header if present
     if (authHeader && authHeader.startsWith('Bearer ')) {
       headers['Authorization'] = authHeader;
+    }
+
+    // Add client-configured integration IDs to allow server-side filtering
+    if (integrationsHeader) {
+      headers['X-Integrations'] = integrationsHeader;
     }
 
     // Forward to MCP server using JSON-RPC format

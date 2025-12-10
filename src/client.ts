@@ -320,6 +320,12 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
       }
     }
 
+    // Propagate configured integration IDs to server via header
+    const integrationHeaderValue = this.getIntegrationHeaderValue();
+    if (integrationHeaderValue && this.transport.setHeader) {
+      this.transport.setHeader('X-Integrations', integrationHeaderValue);
+    }
+
     // Get list of OAuth providers
     const providers = this.integrations
       .filter(p => p.oauth)
@@ -484,11 +490,32 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   }
 
   /**
+   * Get comma-separated integration IDs for header propagation
+   */
+  private getIntegrationHeaderValue(): string {
+    return this.integrations.map(integration => integration.id).join(',');
+  }
+
+  /**
    * Create a proxy for the server namespace that handles server-level tools
    */
   private createServerProxy(): any {
     return new Proxy({}, {
       get: (_target, methodName: string) => {
+        // Local-only helper to list configured integrations without server call
+        if (methodName === 'listConfiguredIntegrations') {
+          return async () => ({
+            integrations: this.integrations.map(integration => ({
+              id: integration.id,
+              name: (integration as any).name || integration.id,
+              tools: integration.tools,
+              hasOAuth: !!integration.oauth,
+              scopes: integration.oauth?.scopes,
+              provider: integration.oauth?.provider,
+            })),
+          });
+        }
+
         // Return a function that calls the server tool directly
         return async (args?: Record<string, unknown>, options?: ToolCallOptions) => {
           // When routing through API handlers, skip ensureConnected
@@ -708,6 +735,11 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
+
+    const integrationsHeader = this.getIntegrationHeaderValue();
+    if (integrationsHeader) {
+      headers['X-Integrations'] = integrationsHeader;
+    }
 
     // Add provider token if available
     if (provider) {
