@@ -11,6 +11,10 @@ on:
       - ".github/**"
       - "!.github/workflows/canary-release.yml"
 
+permissions:
+  contents: write
+  id-token: write
+
 jobs:
   generate-version:
     runs-on: ubuntu-latest

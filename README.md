@@ -14,6 +14,7 @@ A type-safe TypeScript SDK for connecting to the Integrate MCP (Model Context Pr
 - 💡 **IntelliSense Support** - Full TypeScript support with parameter hints
 - ⚡ **Automatic Connection Management** - Lazy connection, auto-cleanup, singleton pattern
 - 🔐 **Complete OAuth Flow** - Built-in OAuth 2.0 with PKCE (popup/redirect modes)
+- ⏰ **Scheduled Triggers** - Schedule tool executions with one-time or recurring triggers
 - 🌍 **Universal** - Works in browser and Node.js environments
 - 🛠️ **Extensible** - Configure integrations for any server-supported integration
 - 📦 **Zero Dependencies** - Lightweight implementation
@@ -262,6 +263,65 @@ For complete OAuth setup including:
 - Callback page setup
 
 See the [`/examples`](/examples) directory or [OAuth documentation](https://integrate.dev/docs/guides/oauth-flow).
+
+## Scheduled Triggers
+
+Schedule tool executions for specific times or recurring intervals. Perfect for sending scheduled emails, daily reports, automated reminders, and AI agents that need to schedule actions.
+
+**Key Features:**
+
+- ⏰ One-time triggers (specific date/time)
+- 🔄 Recurring triggers (cron expressions)
+- 📊 Execution tracking and history
+- ⏸️ Pause/resume capabilities
+- 🔧 Manual execution for testing
+
+**Quick Example:**
+
+```typescript
+// One-time trigger: Send email at specific time
+const trigger = await client.trigger.create({
+  name: "Follow-up Email",
+  toolName: "gmail_send_email",
+  toolArguments: {
+    to: "friend@example.com",
+    subject: "About the dog",
+    body: "Hey, just wanted to follow up...",
+  },
+  schedule: {
+    type: "once",
+    runAt: new Date("2024-12-13T22:00:00Z"),
+  },
+});
+
+// Recurring trigger: Daily standup reminder
+await client.trigger.create({
+  name: "Daily Standup",
+  toolName: "slack_send_message",
+  toolArguments: {
+    channel: "#engineering",
+    text: "Time for standup! 🚀",
+  },
+  schedule: {
+    type: "cron",
+    expression: "0 9 * * 1-5", // 9 AM weekdays
+  },
+});
+
+// Manage triggers
+const { triggers } = await client.trigger.list({ status: "active" });
+await client.trigger.pause("trig_abc123");
+await client.trigger.resume("trig_abc123");
+await client.trigger.run("trig_abc123"); // Execute immediately
+```
+
+**Setup Requirements:**
+
+1. Configure database callbacks in `createMCPServer()` to store triggers
+2. Triggers stored in your database, executed by MCP server scheduler
+3. Full TypeScript support with type-safe methods
+
+[→ Complete Triggers documentation](https://integrate.dev/docs/getting-started/triggers)
 
 ## Built-in Integrations
 

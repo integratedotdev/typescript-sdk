@@ -152,6 +152,21 @@ export type { CursorIntegrationConfig, CursorTools, CursorIntegrationClient } fr
 // Server client
 export type { ServerIntegrationClient } from "./integrations/server-client.js";
 
+// Triggers
+export { TriggerClient } from "./triggers/client.js";
+export type { TriggerClientConfig } from "./triggers/client.js";
+export type {
+  Trigger,
+  TriggerSchedule,
+  TriggerStatus,
+  CreateTriggerParams,
+  UpdateTriggerParams,
+  ListTriggersParams,
+  ListTriggersResponse,
+  TriggerExecutionResult,
+  TriggerCallbacks,
+} from "./triggers/types.js";
+
 export {
   genericOAuthIntegration,
   createSimpleIntegration,

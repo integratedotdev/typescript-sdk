@@ -44,6 +44,7 @@ import type { HubSpotIntegrationClient } from "./integrations/hubspot-client.js"
 import type { YouTubeIntegrationClient } from "./integrations/youtube-client.js";
 import type { CursorIntegrationClient } from "./integrations/cursor-client.js";
 import type { ServerIntegrationClient } from "./integrations/server-client.js";
+import { TriggerClient } from "./triggers/client.js";
 import { OAuthManager } from "./oauth/manager.js";
 import type {
   AuthStatus,
@@ -251,6 +252,9 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   // Server namespace - always available for server-level tools
   public readonly server!: ServerIntegrationClient;
 
+  // Trigger namespace - always available for scheduled tool executions
+  public readonly trigger!: TriggerClient;
+
   constructor(config: MCPClientConfig<TIntegrations>) {
     this.transport = new HttpSessionTransport({
       url: config.serverUrl || MCP_SERVER_URL,
@@ -424,6 +428,15 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
 
     // Server namespace is always available
     this.server = this.createServerProxy() as any;
+
+    // Trigger namespace is always available
+    this.trigger = new TriggerClient({
+      apiRouteBase: this.apiRouteBase,
+      apiBaseUrl: this.apiBaseUrl,
+      getHeaders: () => ({
+        'X-Integrations': this.getIntegrationHeaderValue(),
+      }),
+    });
 
     // Initialize integrations
     this.initializeIntegrations();
