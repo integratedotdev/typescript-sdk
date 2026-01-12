@@ -153,11 +153,9 @@ jobs:
       - name: Determine npm tag
         id: npm-tag
         run: |
-          if [ "${{ github.event_name }}" = "workflow_call" ]; then
-            NPM_TAG="${{ inputs.npm-tag }}"
-          else
-            NPM_TAG="latest"
-          fi
+          # inputs.npm-tag will be empty for direct push events
+          # and will contain the caller's value for workflow_call
+          NPM_TAG="${{ inputs.npm-tag || 'latest' }}"
           echo "tag=$NPM_TAG" >> $GITHUB_OUTPUT
           echo "Using npm tag: $NPM_TAG"
 

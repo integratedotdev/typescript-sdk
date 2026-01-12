@@ -35,4 +35,10 @@ export {
   type GoogleToolsOptions
 } from "./google.js";
 
+// Export trigger tools
+export {
+  createTriggerTools,
+  type TriggerToolsConfig
+} from "./trigger-tools.js";
+
 export type { AIToolsOptions } from "./utils.js";

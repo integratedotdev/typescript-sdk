@@ -6,7 +6,9 @@
 
 import type { MCPClient } from "../client.js";
 import type { MCPTool } from "../protocol/messages.js";
+import type { MCPContext } from "../config/types.js";
 import { executeToolWithToken, ensureClientConnected, getProviderTokens, type AIToolsOptions } from "./utils.js";
+import { createTriggerTools } from "./trigger-tools.js";
 import type { OpenAI } from "openai";
 
 /**
@@ -32,6 +34,8 @@ export interface OpenAIToolsOptions extends AIToolsOptions {
    * @default false
    */
   strict?: boolean;
+  /** User context for multi-tenant token storage */
+  context?: MCPContext;
 }
 
 /**
@@ -122,7 +126,60 @@ export async function getOpenAITools(
 
   const finalOptions = providerTokens ? { ...options, providerTokens } : options;
   const mcpTools = client.getEnabledTools();
-  return mcpTools.map(mcpTool => convertMCPToolToOpenAI(mcpTool, client, finalOptions));
+  const openaiTools: OpenAITool[] = mcpTools.map(mcpTool => convertMCPToolToOpenAI(mcpTool, client, finalOptions));
+
+  // Add trigger management tools if configured
+  const triggerConfig = (client as any).__triggerConfig;
+  if (triggerConfig) {
+    const triggerTools = createTriggerTools(triggerConfig, options?.context);
+    
+    // Convert trigger tools to OpenAI format
+    for (const [name, tool] of Object.entries(triggerTools)) {
+      // Convert Zod schema to JSON Schema for OpenAI
+      const zodSchema = (tool as any).inputSchema;
+      const jsonSchema = zodToJsonSchema(zodSchema);
+      
+      openaiTools.push({
+        type: 'function',
+        name,
+        parameters: jsonSchema as { [key: string]: unknown },
+        strict: options?.strict ?? null,
+        description: (tool as any).description || null,
+      });
+    }
+  }
+
+  return openaiTools;
+}
+
+/**
+ * Convert Zod schema to JSON Schema for OpenAI
+ * @internal
+ */
+function zodToJsonSchema(schema: any): Record<string, unknown> {
+  // Basic conversion - extract the shape from Zod
+  if (schema._def?.typeName === 'ZodObject') {
+    const shape = schema._def.shape();
+    const properties: Record<string, any> = {};
+    const required: string[] = [];
+    
+    for (const [key, value] of Object.entries(shape)) {
+      const fieldSchema: any = value;
+      properties[key] = { type: 'string' }; // Simplified - would need more logic for full conversion
+      
+      if (fieldSchema._def?.typeName !== 'ZodOptional') {
+        required.push(key);
+      }
+    }
+    
+    return {
+      type: 'object',
+      properties,
+      ...(required.length > 0 ? { required } : {}),
+    };
+  }
+  
+  return { type: 'object' };
 }
 
 /**
@@ -166,6 +223,10 @@ async function handleOpenAIToolCalls(
   options?: OpenAIToolsOptions
 ): Promise<OpenAI.Responses.ResponseInputItem.FunctionCallOutput[]> {
   const toolOutputs: OpenAI.Responses.ResponseInputItem.FunctionCallOutput[] = [];
+  
+  // Check if we have trigger tools
+  const triggerConfig = (client as any).__triggerConfig;
+  const triggerTools = triggerConfig ? createTriggerTools(triggerConfig, options?.context) : null;
 
   for (const output of toolCalls) {
     if (output.type === 'function_call') {
@@ -177,7 +238,15 @@ async function handleOpenAIToolCalls(
 
       try {
         const args = JSON.parse(toolCall.arguments);
-        const result = await executeToolWithToken(client, toolCall.name, args, options);
+        
+        // Check if this is a trigger tool
+        let result;
+        if (triggerTools && (triggerTools as any)[toolCall.name]) {
+          result = await (triggerTools as any)[toolCall.name].execute(args);
+        } else {
+          result = await executeToolWithToken(client, toolCall.name, args, options);
+        }
+        
         const resultString = JSON.stringify(result);
         toolOutputs.push({
           call_id: output.call_id ?? output.id ?? '',

@@ -278,6 +278,12 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
     removeProviderToken: config.removeProviderToken,
   };
 
+  // Attach trigger config to the client for AI tools access
+  (client as any).__triggerConfig = config.triggers ? {
+    callbacks: config.triggers,
+    getSessionContext: config.getSessionContext,
+  } : undefined;
+
   // Create route handlers with the provider configuration
   const { POST, GET } = createOAuthRouteHandlers({
     providers,

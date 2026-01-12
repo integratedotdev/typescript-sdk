@@ -15,6 +15,7 @@ import {
   executeToolWithToken,
   type AIToolsOptions
 } from "./utils.js";
+import { createTriggerTools } from "./trigger-tools.js";
 
 /**
  * Tool definition compatible with Vercel AI SDK v5
@@ -137,8 +138,16 @@ export async function getVercelAITools(
   const mcpTools = client.getEnabledTools();
   const vercelTools: Record<string, any> = {};
 
+  // Add MCP integration tools
   for (const mcpTool of mcpTools) {
     vercelTools[mcpTool.name] = convertMCPToolToVercelAI(mcpTool, client, finalOptions);
+  }
+
+  // Add trigger management tools if configured
+  const triggerConfig = (client as any).__triggerConfig;
+  if (triggerConfig) {
+    const triggerTools = createTriggerTools(triggerConfig, options?.context);
+    Object.assign(vercelTools, triggerTools);
   }
 
   return vercelTools;

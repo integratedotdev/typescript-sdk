@@ -6,7 +6,9 @@
 
 import type { MCPClient } from "../client.js";
 import type { MCPTool } from "../protocol/messages.js";
+import type { MCPContext } from "../config/types.js";
 import { executeToolWithToken, ensureClientConnected, getProviderTokens, type AIToolsOptions } from "./utils.js";
+import { createTriggerTools } from "./trigger-tools.js";
 import type Anthropic from "@anthropic-ai/sdk";
 
 /**
@@ -27,7 +29,10 @@ export interface AnthropicTool {
 /**
  * Options for converting MCP tools to Anthropic format
  */
-export interface AnthropicToolsOptions extends AIToolsOptions { }
+export interface AnthropicToolsOptions extends AIToolsOptions {
+  /** User context for multi-tenant token storage */
+  context?: MCPContext;
+}
 
 /**
  * Anthropic tool use block from message content
@@ -124,6 +129,10 @@ async function handleAnthropicToolCalls(
 ): Promise<AnthropicToolResultBlock[]> {
   const toolResults: AnthropicToolResultBlock[] = [];
 
+  // Check if we have trigger tools
+  const triggerConfig = (client as any).__triggerConfig;
+  const triggerTools = triggerConfig ? createTriggerTools(triggerConfig, options?.context) : null;
+
   // Filter for tool_use blocks
   const toolUseBlocks = messageContent.filter(
     (block): block is AnthropicToolUseBlock =>
@@ -136,7 +145,14 @@ async function handleAnthropicToolCalls(
   // Execute each tool call
   for (const toolUse of toolUseBlocks) {
     try {
-      const result = await executeToolWithToken(client, toolUse.name, toolUse.input, options);
+      // Check if this is a trigger tool
+      let result;
+      if (triggerTools && (triggerTools as any)[toolUse.name]) {
+        result = await (triggerTools as any)[toolUse.name].execute(toolUse.input);
+      } else {
+        result = await executeToolWithToken(client, toolUse.name, toolUse.input, options);
+      }
+      
       const resultString = JSON.stringify(result);
       toolResults.push({
         type: 'tool_result',
@@ -218,7 +234,58 @@ export async function getAnthropicTools(
 
   const finalOptions = providerTokens ? { ...options, providerTokens } : options;
   const mcpTools = client.getEnabledTools();
-  return mcpTools.map(mcpTool => convertMCPToolToAnthropic(mcpTool, client, finalOptions));
+  const anthropicTools: AnthropicTool[] = mcpTools.map(mcpTool => convertMCPToolToAnthropic(mcpTool, client, finalOptions));
+
+  // Add trigger management tools if configured
+  const triggerConfig = (client as any).__triggerConfig;
+  if (triggerConfig) {
+    const triggerTools = createTriggerTools(triggerConfig, options?.context);
+    
+    // Convert trigger tools to Anthropic format
+    for (const [name, tool] of Object.entries(triggerTools)) {
+      // Convert Zod schema to JSON Schema for Anthropic
+      const zodSchema = (tool as any).inputSchema;
+      const jsonSchema = zodToAnthropicSchema(zodSchema);
+      
+      anthropicTools.push({
+        name,
+        description: (tool as any).description || `Execute ${name}`,
+        input_schema: jsonSchema,
+      });
+    }
+  }
+
+  return anthropicTools;
+}
+
+/**
+ * Convert Zod schema to JSON Schema for Anthropic
+ * @internal
+ */
+function zodToAnthropicSchema(schema: any): { type: 'object'; properties?: Record<string, unknown>; required?: string[]; [key: string]: unknown } {
+  // Basic conversion - extract the shape from Zod
+  if (schema._def?.typeName === 'ZodObject') {
+    const shape = schema._def.shape();
+    const properties: Record<string, any> = {};
+    const required: string[] = [];
+    
+    for (const [key, value] of Object.entries(shape)) {
+      const fieldSchema: any = value;
+      properties[key] = { type: 'string' }; // Simplified - would need more logic for full conversion
+      
+      if (fieldSchema._def?.typeName !== 'ZodOptional') {
+        required.push(key);
+      }
+    }
+    
+    return {
+      type: 'object',
+      properties,
+      ...(required.length > 0 ? { required } : {}),
+    };
+  }
+  
+  return { type: 'object', properties: {}, required: [] };
 }
 
 /**

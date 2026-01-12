@@ -6,7 +6,9 @@
 
 import type { MCPClient } from "../client.js";
 import type { MCPTool } from "../protocol/messages.js";
+import type { MCPContext } from "../config/types.js";
 import { executeToolWithToken, ensureClientConnected, getProviderTokens, type AIToolsOptions } from "./utils.js";
+import { createTriggerTools } from "./trigger-tools.js";
 
 // Type-only imports from @google/genai
 // These will match exactly what the @google/genai SDK expects
@@ -46,7 +48,10 @@ async function getGoogleType(): Promise<typeof Type> {
 /**
  * Options for converting MCP tools to Google GenAI format
  */
-export interface GoogleToolsOptions extends AIToolsOptions { }
+export interface GoogleToolsOptions extends AIToolsOptions {
+  /** User context for multi-tenant token storage */
+  context?: MCPContext;
+}
 
 /**
  * Convert JSON Schema type string to Google GenAI Type enum
@@ -212,6 +217,10 @@ export async function executeGoogleFunctionCalls(
 
   const finalOptions = providerTokens ? { ...options, providerTokens } : options;
   
+  // Check if we have trigger tools
+  const triggerConfig = (client as any).__triggerConfig;
+  const triggerTools = triggerConfig ? createTriggerTools(triggerConfig, options?.context) : null;
+  
   const results = await Promise.all(
     functionCalls.map(async (call) => {
       if (!call?.name) {
@@ -221,12 +230,14 @@ export async function executeGoogleFunctionCalls(
       // Extract args - the actual GoogleFunctionCall type has args as a property
       const args = (call as any).args || {};
       
-      const result = await executeToolWithToken(
-        client, 
-        call.name, 
-        args, 
-        finalOptions
-      );
+      // Check if this is a trigger tool
+      let result;
+      if (triggerTools && (triggerTools as any)[call.name]) {
+        result = await (triggerTools as any)[call.name].execute(args);
+      } else {
+        result = await executeToolWithToken(client, call.name, args, finalOptions);
+      }
+      
       return JSON.stringify(result);
     })
   );
@@ -326,8 +337,60 @@ export async function getGoogleTools(
 
   const finalOptions = providerTokens ? { ...options, providerTokens } : options;
   const mcpTools = client.getEnabledTools();
-  return await Promise.all(
+  const googleTools: GoogleTool[] = await Promise.all(
     mcpTools.map(mcpTool => convertMCPToolToGoogle(mcpTool, client, finalOptions))
   );
+
+  // Add trigger management tools if configured
+  const triggerConfig = (client as any).__triggerConfig;
+  if (triggerConfig) {
+    const triggerTools = createTriggerTools(triggerConfig, options?.context);
+    const TypeEnum = await getGoogleType();
+    
+    // Convert trigger tools to Google format
+    for (const [name, tool] of Object.entries(triggerTools)) {
+      // Convert Zod schema to Google Schema
+      const zodSchema = (tool as any).inputSchema;
+      const jsonSchema = zodToGoogleSchema(zodSchema, TypeEnum);
+      
+      googleTools.push({
+        name,
+        description: (tool as any).description || `Execute ${name}`,
+        parameters: jsonSchema,
+      });
+    }
+  }
+
+  return googleTools;
+}
+
+/**
+ * Convert Zod schema to Google Schema
+ * @internal
+ */
+function zodToGoogleSchema(schema: any, TypeEnum: typeof Type): Schema {
+  // Basic conversion - extract the shape from Zod
+  if (schema._def?.typeName === 'ZodObject') {
+    const shape = schema._def.shape();
+    const properties: Record<string, Schema> = {};
+    const required: string[] = [];
+    
+    for (const [key, value] of Object.entries(shape)) {
+      const fieldSchema: any = value;
+      properties[key] = { type: TypeEnum.STRING }; // Simplified
+      
+      if (fieldSchema._def?.typeName !== 'ZodOptional') {
+        required.push(key);
+      }
+    }
+    
+    return {
+      type: TypeEnum.OBJECT,
+      properties,
+      ...(required.length > 0 ? { required } : {}),
+    };
+  }
+  
+  return { type: TypeEnum.OBJECT, properties: {} };
 }
 
