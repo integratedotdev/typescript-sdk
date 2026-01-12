@@ -9,6 +9,7 @@ import type { MCPTool } from "../protocol/messages.js";
 import type { MCPContext } from "../config/types.js";
 import { executeToolWithToken, ensureClientConnected, getProviderTokens, type AIToolsOptions } from "./utils.js";
 import { createTriggerTools } from "./trigger-tools.js";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import type { OpenAI } from "openai";
 
 /**
@@ -137,7 +138,10 @@ export async function getOpenAITools(
     for (const [name, tool] of Object.entries(triggerTools)) {
       // Convert Zod schema to JSON Schema for OpenAI
       const zodSchema = (tool as any).inputSchema;
-      const jsonSchema = zodToJsonSchema(zodSchema);
+      const jsonSchema = zodToJsonSchema(zodSchema, { 
+        target: 'openApi3',
+        $refStrategy: 'none'
+      });
       
       openaiTools.push({
         type: 'function',
@@ -150,36 +154,6 @@ export async function getOpenAITools(
   }
 
   return openaiTools;
-}
-
-/**
- * Convert Zod schema to JSON Schema for OpenAI
- * @internal
- */
-function zodToJsonSchema(schema: any): Record<string, unknown> {
-  // Basic conversion - extract the shape from Zod
-  if (schema._def?.typeName === 'ZodObject') {
-    const shape = schema._def.shape();
-    const properties: Record<string, any> = {};
-    const required: string[] = [];
-    
-    for (const [key, value] of Object.entries(shape)) {
-      const fieldSchema: any = value;
-      properties[key] = { type: 'string' }; // Simplified - would need more logic for full conversion
-      
-      if (fieldSchema._def?.typeName !== 'ZodOptional') {
-        required.push(key);
-      }
-    }
-    
-    return {
-      type: 'object',
-      properties,
-      ...(required.length > 0 ? { required } : {}),
-    };
-  }
-  
-  return { type: 'object' };
 }
 
 /**

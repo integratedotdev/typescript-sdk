@@ -9,6 +9,7 @@ import type { MCPTool } from "../protocol/messages.js";
 import type { MCPContext } from "../config/types.js";
 import { executeToolWithToken, ensureClientConnected, getProviderTokens, type AIToolsOptions } from "./utils.js";
 import { createTriggerTools } from "./trigger-tools.js";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import type Anthropic from "@anthropic-ai/sdk";
 
 /**
@@ -245,47 +246,20 @@ export async function getAnthropicTools(
     for (const [name, tool] of Object.entries(triggerTools)) {
       // Convert Zod schema to JSON Schema for Anthropic
       const zodSchema = (tool as any).inputSchema;
-      const jsonSchema = zodToAnthropicSchema(zodSchema);
+      const jsonSchema = zodToJsonSchema(zodSchema, { 
+        target: 'openApi3',
+        $refStrategy: 'none'
+      });
       
       anthropicTools.push({
         name,
         description: (tool as any).description || `Execute ${name}`,
-        input_schema: jsonSchema,
+        input_schema: jsonSchema as { type: 'object'; properties?: Record<string, unknown>; required?: string[]; [key: string]: unknown },
       });
     }
   }
 
   return anthropicTools;
-}
-
-/**
- * Convert Zod schema to JSON Schema for Anthropic
- * @internal
- */
-function zodToAnthropicSchema(schema: any): { type: 'object'; properties?: Record<string, unknown>; required?: string[]; [key: string]: unknown } {
-  // Basic conversion - extract the shape from Zod
-  if (schema._def?.typeName === 'ZodObject') {
-    const shape = schema._def.shape();
-    const properties: Record<string, any> = {};
-    const required: string[] = [];
-    
-    for (const [key, value] of Object.entries(shape)) {
-      const fieldSchema: any = value;
-      properties[key] = { type: 'string' }; // Simplified - would need more logic for full conversion
-      
-      if (fieldSchema._def?.typeName !== 'ZodOptional') {
-        required.push(key);
-      }
-    }
-    
-    return {
-      type: 'object',
-      properties,
-      ...(required.length > 0 ? { required } : {}),
-    };
-  }
-  
-  return { type: 'object', properties: {}, required: [] };
 }
 
 /**

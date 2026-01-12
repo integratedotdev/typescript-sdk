@@ -9,6 +9,7 @@ import type { MCPTool } from "../protocol/messages.js";
 import type { MCPContext } from "../config/types.js";
 import { executeToolWithToken, ensureClientConnected, getProviderTokens, type AIToolsOptions } from "./utils.js";
 import { createTriggerTools } from "./trigger-tools.js";
+import { zodToJsonSchema } from "zod-to-json-schema";
 
 // Type-only imports from @google/genai
 // These will match exactly what the @google/genai SDK expects
@@ -349,14 +350,20 @@ export async function getGoogleTools(
     
     // Convert trigger tools to Google format
     for (const [name, tool] of Object.entries(triggerTools)) {
-      // Convert Zod schema to Google Schema
+      // Convert Zod schema to JSON Schema first
       const zodSchema = (tool as any).inputSchema;
-      const jsonSchema = zodToGoogleSchema(zodSchema, TypeEnum);
+      const jsonSchema = zodToJsonSchema(zodSchema, { 
+        target: 'openApi3',
+        $refStrategy: 'none'
+      });
+      
+      // Convert JSON Schema to Google Schema format
+      const googleSchema = convertJsonSchemaToGoogleSchema(jsonSchema, TypeEnum);
       
       googleTools.push({
         name,
         description: (tool as any).description || `Execute ${name}`,
-        parameters: jsonSchema,
+        parameters: googleSchema,
       });
     }
   }
@@ -365,32 +372,71 @@ export async function getGoogleTools(
 }
 
 /**
- * Convert Zod schema to Google Schema
+ * Convert JSON Schema to Google Schema with Type enums
  * @internal
  */
-function zodToGoogleSchema(schema: any, TypeEnum: typeof Type): Schema {
-  // Basic conversion - extract the shape from Zod
-  if (schema._def?.typeName === 'ZodObject') {
-    const shape = schema._def.shape();
-    const properties: Record<string, Schema> = {};
-    const required: string[] = [];
+function convertJsonSchemaToGoogleSchema(jsonSchema: any, TypeEnum: typeof Type): Schema {
+  const result: Schema = {
+    type: TypeEnum.OBJECT,
+  };
+  
+  if (jsonSchema.properties) {
+    const googleProperties: Record<string, Schema> = {};
     
-    for (const [key, value] of Object.entries(shape)) {
-      const fieldSchema: any = value;
-      properties[key] = { type: TypeEnum.STRING }; // Simplified
+    for (const [key, prop] of Object.entries(jsonSchema.properties as Record<string, any>)) {
+      const googleProp: Schema = {};
       
-      if (fieldSchema._def?.typeName !== 'ZodOptional') {
-        required.push(key);
+      // Convert type
+      if (prop.type) {
+        switch (prop.type) {
+          case 'string':
+            googleProp.type = TypeEnum.STRING;
+            break;
+          case 'number':
+            googleProp.type = TypeEnum.NUMBER;
+            break;
+          case 'integer':
+            googleProp.type = TypeEnum.INTEGER;
+            break;
+          case 'boolean':
+            googleProp.type = TypeEnum.BOOLEAN;
+            break;
+          case 'array':
+            googleProp.type = TypeEnum.ARRAY;
+            if (prop.items) {
+              googleProp.items = convertJsonSchemaToGoogleSchema(prop.items, TypeEnum);
+            }
+            break;
+          case 'object':
+            googleProp.type = TypeEnum.OBJECT;
+            if (prop.properties) {
+              googleProp.properties = Object.fromEntries(
+                Object.entries(prop.properties).map(([k, v]) => [
+                  k,
+                  convertJsonSchemaToGoogleSchema(v as any, TypeEnum)
+                ])
+              );
+            }
+            break;
+          default:
+            googleProp.type = TypeEnum.STRING;
+        }
       }
+      
+      // Copy other properties
+      if (prop.description) googleProp.description = prop.description;
+      if (prop.enum) googleProp.enum = prop.enum;
+      
+      googleProperties[key] = googleProp;
     }
     
-    return {
-      type: TypeEnum.OBJECT,
-      properties,
-      ...(required.length > 0 ? { required } : {}),
-    };
+    result.properties = googleProperties;
   }
   
-  return { type: TypeEnum.OBJECT, properties: {} };
+  if (jsonSchema.required && Array.isArray(jsonSchema.required)) {
+    (result as any).required = jsonSchema.required;
+  }
+  
+  return result;
 }
 

@@ -139,7 +139,7 @@ jobs:
       - name: Build
         run: bun run build
 
-            - name: Determine version to publish
+      - name: Determine version to publish
         id: version
         run: |
           VERSION="${{ inputs.version || needs.check-version.outputs.version }}"
