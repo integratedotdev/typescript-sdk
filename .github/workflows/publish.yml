@@ -142,44 +142,35 @@ jobs:
       - name: Determine version to publish
         id: version
         run: |
-          if [ "${{ github.event_name }}" = "workflow_call" ]; then
-            VERSION="${{ inputs.version }}"
-          else
-            VERSION="${{ needs.check-version.outputs.version }}"
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          VERSION="${{ inputs.version || needs.check-version.outputs.version }}"
+          NPM_TAG="${{ inputs.npm-tag || 'latest' }}"
+          IS_PRERELEASE="${{ inputs.is-prerelease || 'false' }}"
+          PREFIX="${{ inputs.release-name-prefix || 'Release' }}"
           echo "Publishing version: $VERSION"
 
       - name: Determine npm tag
         id: npm-tag
         run: |
-          # inputs.npm-tag will be empty for direct push events
-          # and will contain the caller's value for workflow_call
+          VERSION="${{ inputs.version || needs.check-version.outputs.version }}"
           NPM_TAG="${{ inputs.npm-tag || 'latest' }}"
-          echo "tag=$NPM_TAG" >> $GITHUB_OUTPUT
-          echo "Using npm tag: $NPM_TAG"
+          IS_PRERELEASE="${{ inputs.is-prerelease || 'false' }}"
+          PREFIX="${{ inputs.release-name-prefix || 'Release' }}"
 
       - name: Determine if prerelease
         id: prerelease
         run: |
-          if [ "${{ github.event_name }}" = "workflow_call" ]; then
-            IS_PRERELEASE="${{ inputs.is-prerelease }}"
-          else
-            IS_PRERELEASE="false"
-          fi
-          echo "is-prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
-          echo "Is prerelease: $IS_PRERELEASE"
+          VERSION="${{ inputs.version || needs.check-version.outputs.version }}"
+          NPM_TAG="${{ inputs.npm-tag || 'latest' }}"
+          IS_PRERELEASE="${{ inputs.is-prerelease || 'false' }}"
+          PREFIX="${{ inputs.release-name-prefix || 'Release' }}"
 
       - name: Determine release name prefix
         id: release-prefix
         run: |
-          if [ "${{ github.event_name }}" = "workflow_call" ]; then
-            PREFIX="${{ inputs.release-name-prefix }}"
-          else
-            PREFIX="Release"
-          fi
-          echo "prefix=$PREFIX" >> $GITHUB_OUTPUT
-          echo "Release name prefix: $PREFIX"
+          VERSION="${{ inputs.version || needs.check-version.outputs.version }}"
+          NPM_TAG="${{ inputs.npm-tag || 'latest' }}"
+          IS_PRERELEASE="${{ inputs.is-prerelease || 'false' }}"
+          PREFIX="${{ inputs.release-name-prefix || 'Release' }}"
 
       - name: Update package.json version
         run: |
