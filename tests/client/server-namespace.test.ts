@@ -24,8 +24,9 @@ describe("Server Namespace", () => {
   });
 
   test("server methods work through API handler without initialization", async () => {
-    const mockFetch = mock(async (url: string) => {
+    const mockFetch = mock(async (url: string, options?: any) => {
       if (url.includes("/api/integrate/mcp")) {
+        expect(options?.headers?.["X-Integrations"]).toBe("github");
         return {
           ok: true,
           status: 200,
@@ -57,8 +58,9 @@ describe("Server Namespace", () => {
   });
 
   test("callServerTool method works through API handler without initialization", async () => {
-    const mockFetch = mock(async (url: string) => {
+    const mockFetch = mock(async (url: string, options?: any) => {
       if (url.includes("/api/integrate/mcp")) {
+        expect(options?.headers?.["X-Integrations"]).toBe("github");
         return {
           ok: true,
           status: 200,
@@ -92,8 +94,9 @@ describe("Server Namespace", () => {
   });
 
   test("listAllProviders method works through API handler without initialization", async () => {
-    const mockFetch = mock(async (url: string) => {
+    const mockFetch = mock(async (url: string, options?: any) => {
       if (url.includes("/api/integrate/mcp")) {
+        expect(options?.headers?.["X-Integrations"]).toBe("github");
         return {
           ok: true,
           status: 200,
@@ -122,6 +125,26 @@ describe("Server Namespace", () => {
     const result = await client.server.listAllProviders();
     expect(result.content).toHaveLength(1);
     expect(result.content[0].text).toBe("all tools result");
+  });
+
+  test("listConfiguredIntegrations returns local configuration", async () => {
+    const client = createMCPClient({
+      integrations: [
+        githubIntegration({
+          clientId: "test-id",
+          scopes: ["repo"],
+        }),
+      ],
+      connectionMode: 'manual',
+      singleton: false,
+    });
+
+    const result = await client.server.listConfiguredIntegrations();
+    expect(result.integrations).toHaveLength(1);
+    expect(result.integrations[0].id).toBe("github");
+    expect(result.integrations[0].hasOAuth).toBe(true);
+    expect(result.integrations[0].tools.length).toBeGreaterThan(0);
+    expect(result.integrations[0].scopes).toEqual(["repo"]);
   });
 });
 

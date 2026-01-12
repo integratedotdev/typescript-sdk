@@ -78,6 +78,7 @@ const tools = await serverClient.server.listToolsByIntegration({
 
 - **`listAllProviders`** - List all providers available on the MCP server
 - **`listToolsByIntegration`** - List all tools available for a specific integration
+- **`listConfiguredIntegrations`** - List integrations configured on this SDK client (local-only, no server call)
 
 ## Examples
 
@@ -118,6 +119,50 @@ const notionTools = await client.server.listToolsByIntegration({
 
 console.log("Gmail tools:", gmailTools);
 console.log("Notion tools:", notionTools);
+```
+
+### List Configured Integrations
+
+Get a list of all integrations configured on your SDK client. This is a local-only operation that doesn't make any server calls:
+
+```typescript
+// Get all configured integrations
+const { integrations } = await client.server.listConfiguredIntegrations();
+
+console.log(`Configured ${integrations.length} integrations:`);
+integrations.forEach((integration) => {
+  console.log(`- ${integration.name} (${integration.id})`);
+  console.log(`  Tools: ${integration.tools.length}`);
+  console.log(`  OAuth: ${integration.hasOAuth ? 'Yes' : 'No'}`);
+  if (integration.scopes) {
+    console.log(`  Scopes: ${integration.scopes.join(', ')}`);
+  }
+});
+```
+
+**Response format:**
+
+```typescript
+{
+  integrations: [
+    {
+      id: "github",
+      name: "GitHub",
+      tools: ["github_create_issue", "github_list_repos", ...],
+      hasOAuth: true,
+      scopes: ["repo", "user"],
+      provider: "github"
+    },
+    {
+      id: "gmail",
+      name: "Gmail",
+      tools: ["gmail_send_email", "gmail_list_messages", ...],
+      hasOAuth: true,
+      scopes: ["gmail.readonly"],
+      provider: "gmail"
+    }
+  ]
+}
 ```
 
 ### Dynamic Tool Discovery

@@ -278,6 +278,12 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
     removeProviderToken: config.removeProviderToken,
   };
 
+  // Attach trigger config to the client for AI tools access
+  (client as any).__triggerConfig = config.triggers ? {
+    callbacks: config.triggers,
+    getSessionContext: config.getSessionContext,
+  } : undefined;
+
   // Create route handlers with the provider configuration
   const { POST, GET } = createOAuthRouteHandlers({
     providers,
@@ -389,6 +395,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
       try {
         const body = await webRequest.json();
         const authHeader = webRequest.headers.get('authorization');
+          const integrationsHeader = webRequest.headers.get('x-integrations');
 
         // Create OAuth handler with config that includes API key
         // The API key will be automatically sent as X-API-KEY header to the MCP server
@@ -402,7 +409,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
           getSessionContext: config.getSessionContext,
         });
 
-        const result = await oauthHandler.handleToolCall(body, authHeader);
+          const result = await oauthHandler.handleToolCall(body, authHeader, integrationsHeader);
         const response = Response.json(result);
 
         // Add X-Integrate-Use-Database header if database callbacks are configured
@@ -420,11 +427,450 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
       }
     }
 
+    // Handle /triggers routes
+    // Route structure: /api/integrate/triggers or /api/integrate/triggers/:id or /api/integrate/triggers/:id/:action
+    if (segments.length >= 1 && segments[0] === 'triggers') {
+      // Only proceed if triggers config is provided
+      if (!config.triggers) {
+        return Response.json(
+          { error: 'Triggers not configured. Add triggers callbacks to createMCPServer config.' },
+          { status: 501 }
+        );
+      }
+
+      try {
+        // Get session context for multi-tenant support
+        const context = config.getSessionContext ? await config.getSessionContext(webRequest) : undefined;
+
+        // Parse trigger routes
+        if (segments.length === 1) {
+          // /api/integrate/triggers - list or create
+          if (method === 'GET') {
+            // List triggers
+            const url = new URL(webRequest.url);
+            const params = {
+              status: url.searchParams.get('status') as any,
+              toolName: url.searchParams.get('toolName') || undefined,
+              limit: url.searchParams.get('limit') ? parseInt(url.searchParams.get('limit')!) : undefined,
+              offset: url.searchParams.get('offset') ? parseInt(url.searchParams.get('offset')!) : undefined,
+            };
+            
+            // Get triggers and total from callback
+            const callbackResult = await config.triggers.list(params, context);
+            
+            // Import calculation utility
+            const { calculateHasMore } = await import('./triggers/utils.js');
+            
+            // Calculate hasMore
+            const offset = params.offset || 0;
+            const hasMore = calculateHasMore(offset, callbackResult.triggers.length, callbackResult.total);
+            
+            // Return complete response with hasMore
+            return Response.json({
+              triggers: callbackResult.triggers,
+              total: callbackResult.total,
+              hasMore,
+            });
+          } else if (method === 'POST') {
+            // Create trigger
+            const body = await webRequest.json();
+            
+            // Import trigger utilities
+            const { generateTriggerId, extractProviderFromToolName } = await import('./triggers/utils.js');
+            
+            // Generate ID and extract provider from toolName
+            const triggerId = generateTriggerId();
+            const provider = body.toolName ? extractProviderFromToolName(body.toolName) : undefined;
+            
+            const trigger = {
+              id: triggerId,
+              ...body,
+              provider,
+              status: body.status || 'active',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              runCount: 0,
+            };
+
+            // Store in database
+            const created = await config.triggers.create(trigger, context);
+
+            // Register with MCP server scheduler
+            const schedulerUrl = config.schedulerUrl || config.serverUrl || 'https://mcp.integrate.dev';
+            const callbackBaseUrl = process.env.INTEGRATE_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+            
+            try {
+              await fetch(`${schedulerUrl}/scheduler/register`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-API-KEY': config.apiKey || '',
+                },
+                body: JSON.stringify({
+                  triggerId: created.id,
+                  schedule: created.schedule,
+                  callbackUrl: `${callbackBaseUrl}/api/integrate/triggers/${created.id}/execute`,
+                  completeUrl: `${callbackBaseUrl}/api/integrate/triggers/${created.id}/complete`,
+                  metadata: {
+                    userId: context?.userId,
+                    provider: created.provider,
+                  },
+                }),
+              });
+            } catch (scheduleError) {
+              console.error('[Trigger] Failed to register with scheduler:', scheduleError);
+              // Continue anyway - trigger is in DB, can be manually registered later
+            }
+
+            return Response.json(created, { status: 201 });
+          }
+        } else if (segments.length >= 2) {
+          // /api/integrate/triggers/:id or /api/integrate/triggers/:id/:action
+          const triggerId = segments[1];
+          if (!triggerId) {
+            return Response.json({ error: 'Trigger ID is required' }, { status: 400 });
+          }
+
+          const subAction = segments.length > 2 ? segments[2] : undefined;
+
+          if (subAction === 'pause' && method === 'POST') {
+            // Pause trigger
+            // Get current trigger to validate status transition
+            const trigger = await config.triggers.get(triggerId, context);
+            if (!trigger) {
+              return Response.json({ error: 'Trigger not found' }, { status: 404 });
+            }
+            
+            // Import validation utility
+            const { validateStatusTransition } = await import('./triggers/utils.js');
+            
+            // Validate status transition
+            const validation = validateStatusTransition(trigger.status, 'paused');
+            if (!validation.valid) {
+              return Response.json({ error: validation.error }, { status: 400 });
+            }
+            
+            const updated = await config.triggers.update(
+              triggerId, 
+              { 
+                status: 'paused',
+                updatedAt: new Date().toISOString(),
+              }, 
+              context
+            );
+            
+            // Notify scheduler
+            const schedulerUrl = config.schedulerUrl || config.serverUrl || 'https://mcp.integrate.dev';
+            try {
+              await fetch(`${schedulerUrl}/scheduler/pause`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-API-KEY': config.apiKey || '',
+                },
+                body: JSON.stringify({ triggerId }),
+              });
+            } catch (error) {
+              console.error('[Trigger] Failed to pause in scheduler:', error);
+            }
+
+            return Response.json(updated);
+          } else if (subAction === 'resume' && method === 'POST') {
+            // Resume trigger
+            // Get current trigger to validate status transition
+            const trigger = await config.triggers.get(triggerId, context);
+            if (!trigger) {
+              return Response.json({ error: 'Trigger not found' }, { status: 404 });
+            }
+            
+            // Import validation utility
+            const { validateStatusTransition } = await import('./triggers/utils.js');
+            
+            // Validate status transition
+            const validation = validateStatusTransition(trigger.status, 'active');
+            if (!validation.valid) {
+              return Response.json({ error: validation.error }, { status: 400 });
+            }
+            
+            const updated = await config.triggers.update(
+              triggerId, 
+              { 
+                status: 'active',
+                updatedAt: new Date().toISOString(),
+              }, 
+              context
+            );
+            
+            // Notify scheduler
+            const schedulerUrl = config.schedulerUrl || config.serverUrl || 'https://mcp.integrate.dev';
+            try {
+              await fetch(`${schedulerUrl}/scheduler/resume`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-API-KEY': config.apiKey || '',
+                },
+                body: JSON.stringify({ triggerId }),
+              });
+            } catch (error) {
+              console.error('[Trigger] Failed to resume in scheduler:', error);
+            }
+
+            return Response.json(updated);
+          } else if (subAction === 'run' && method === 'POST') {
+            // Execute trigger immediately
+            const trigger = await config.triggers.get(triggerId, context);
+            if (!trigger) {
+              return Response.json({ error: 'Trigger not found' }, { status: 404 });
+            }
+
+            // Check if provider exists
+            if (!trigger.provider) {
+              return Response.json(
+                { error: 'Trigger has no provider configured' },
+                { status: 400 }
+              );
+            }
+
+            // Get provider token
+            const providerToken = config.getProviderToken 
+              ? await config.getProviderToken(trigger.provider, undefined, context)
+              : undefined;
+
+            if (!providerToken) {
+              return Response.json(
+                { error: 'No OAuth token available for this trigger' },
+                { status: 401 }
+              );
+            }
+
+            // Execute tool via MCP server
+            const { OAuthHandler } = await import('./adapters/base-handler.js');
+            const oauthHandler = new OAuthHandler({
+              providers,
+              serverUrl: config.serverUrl,
+              apiKey: config.apiKey,
+              setProviderToken: config.setProviderToken,
+              removeProviderToken: config.removeProviderToken,
+              getSessionContext: config.getSessionContext,
+            });
+
+            const startTime = Date.now();
+            try {
+              const result = await oauthHandler.handleToolCall(
+                { name: trigger.toolName, arguments: trigger.toolArguments },
+                `Bearer ${providerToken.accessToken}`,
+                null
+              );
+
+              const duration = Date.now() - startTime;
+              const executionResult = {
+                success: true,
+                result,
+                executedAt: new Date().toISOString(),
+                duration,
+              };
+
+              // Update trigger with execution result
+              await config.triggers.update(
+                triggerId,
+                {
+                  lastRunAt: executionResult.executedAt,
+                  runCount: (trigger.runCount || 0) + 1,
+                  lastResult: result as unknown as Record<string, unknown>,
+                  lastError: undefined,
+                },
+                context
+              );
+
+              return Response.json(executionResult);
+            } catch (error: any) {
+              const duration = Date.now() - startTime;
+              const executionResult = {
+                success: false,
+                error: error.message || 'Tool execution failed',
+                executedAt: new Date().toISOString(),
+                duration,
+              };
+
+              // Update trigger with error
+              await config.triggers.update(
+                triggerId,
+                {
+                  lastRunAt: executionResult.executedAt,
+                  runCount: (trigger.runCount || 0) + 1,
+                  lastError: error.message,
+                  status: 'failed',
+                },
+                context
+              );
+
+              return Response.json(executionResult, { status: 500 });
+            }
+          } else if (subAction === 'execute' && method === 'GET') {
+            // MCP server callback to get trigger details + token
+            // Validate API key from MCP server
+            const apiKey = webRequest.headers.get('x-api-key');
+            if (!apiKey || apiKey !== config.apiKey) {
+              return Response.json({ error: 'Unauthorized' }, { status: 401 });
+            }
+
+            const trigger = await config.triggers.get(triggerId, context);
+            if (!trigger) {
+              return Response.json({ error: 'Trigger not found' }, { status: 404 });
+            }
+
+            // Check if provider exists
+            if (!trigger.provider) {
+              return Response.json(
+                { error: 'Trigger has no provider configured' },
+                { status: 400 }
+              );
+            }
+
+            // Get OAuth token for provider
+            const providerToken = config.getProviderToken
+              ? await config.getProviderToken(trigger.provider, undefined, context)
+              : undefined;
+
+            if (!providerToken) {
+              return Response.json(
+                { error: 'No OAuth token available for this trigger' },
+                { status: 401 }
+              );
+            }
+
+            return Response.json({
+              trigger: {
+                id: trigger.id,
+                toolName: trigger.toolName,
+                toolArguments: trigger.toolArguments,
+                provider: trigger.provider,
+              },
+              accessToken: providerToken.accessToken,
+              tokenType: providerToken.tokenType || 'Bearer',
+            });
+          } else if (subAction === 'complete' && method === 'POST') {
+            // MCP server callback to report execution result
+            // Validate API key from MCP server
+            const apiKey = webRequest.headers.get('x-api-key');
+            if (!apiKey || apiKey !== config.apiKey) {
+              return Response.json({ error: 'Unauthorized' }, { status: 401 });
+            }
+
+            const body = await webRequest.json();
+            const trigger = await config.triggers.get(triggerId, context);
+            
+            if (!trigger) {
+              return Response.json({ error: 'Trigger not found' }, { status: 404 });
+            }
+
+            // Update trigger with execution result
+            const updates: any = {
+              lastRunAt: body.executedAt,
+              runCount: (trigger.runCount || 0) + 1,
+            };
+
+            if (body.success) {
+              updates.lastResult = body.result;
+              updates.lastError = undefined;
+              // Mark one-time triggers as completed
+              if (trigger.schedule.type === 'once') {
+                updates.status = 'completed';
+              }
+            } else {
+              updates.lastError = body.error;
+              updates.status = 'failed';
+            }
+
+            await config.triggers.update(triggerId, updates, context);
+
+            return Response.json({ success: true });
+          } else if (!subAction && method === 'GET') {
+            // Get trigger
+            const trigger = await config.triggers.get(triggerId, context);
+            if (!trigger) {
+              return Response.json({ error: 'Trigger not found' }, { status: 404 });
+            }
+            return Response.json(trigger);
+          } else if (!subAction && method === 'PATCH') {
+            // Update trigger
+            const body = await webRequest.json();
+            const trigger = await config.triggers.get(triggerId, context);
+            
+            if (!trigger) {
+              return Response.json({ error: 'Trigger not found' }, { status: 404 });
+            }
+
+            const updates = {
+              ...body,
+              updatedAt: new Date().toISOString(),
+            };
+
+            const updated = await config.triggers.update(triggerId, updates, context);
+
+            // If schedule was updated, notify scheduler
+            if (body.schedule) {
+              const schedulerUrl = config.schedulerUrl || config.serverUrl || 'https://mcp.integrate.dev';
+              try {
+                await fetch(`${schedulerUrl}/scheduler/update`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-KEY': config.apiKey || '',
+                  },
+                  body: JSON.stringify({
+                    triggerId,
+                    schedule: body.schedule,
+                  }),
+                });
+              } catch (error) {
+                console.error('[Trigger] Failed to update scheduler:', error);
+              }
+            }
+
+            return Response.json(updated);
+          } else if (!subAction && method === 'DELETE') {
+            // Delete trigger
+            await config.triggers.delete(triggerId, context);
+
+            // Unregister from scheduler
+            const schedulerUrl = config.schedulerUrl || config.serverUrl || 'https://mcp.integrate.dev';
+            try {
+              await fetch(`${schedulerUrl}/scheduler/unregister`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-API-KEY': config.apiKey || '',
+                },
+                body: JSON.stringify({ triggerId }),
+              });
+            } catch (error) {
+              console.error('[Trigger] Failed to unregister from scheduler:', error);
+            }
+
+            return new Response(null, { status: 204 });
+          }
+        }
+
+        return Response.json(
+          { error: 'Invalid trigger route or method' },
+          { status: 404 }
+        );
+      } catch (error: any) {
+        console.error('[Trigger] Error:', error);
+        return Response.json(
+          { error: error.message || 'Failed to process trigger request' },
+          { status: error.statusCode || 500 }
+        );
+      }
+    }
+
     // Validate route structure for catch-all routes
-    // Must be /api/integrate/oauth/[action] or /api/integrate/mcp
+    // Must be /api/integrate/oauth/[action] or /api/integrate/mcp or /api/integrate/triggers/*
     if (segments.length > 0) {
-      // For catch-all routes, expect ['oauth', 'action'] format or ['mcp']
-      if (segments.length === 2 && segments[0] !== 'oauth') {
+      // For catch-all routes, expect ['oauth', 'action'] format or ['mcp'] or ['triggers', ...]
+      if (segments.length === 2 && segments[0] !== 'oauth' && segments[0] !== 'triggers') {
         return Response.json(
           { error: `Invalid route: /${segments.join('/')}` },
           { status: 404 }
@@ -436,6 +882,14 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
         return Response.json(
           { error: `Method ${method} not allowed for /mcp route. Use POST.` },
           { status: 405 }
+        );
+      }
+      // Triggers route is already handled above
+      if (segments.length >= 1 && segments[0] === 'triggers') {
+        // Already handled above
+        return Response.json(
+          { error: `Invalid trigger route or method` },
+          { status: 404 }
         );
       }
     }

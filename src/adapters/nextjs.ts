@@ -467,7 +467,8 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
       try {
         const body = await req.json();
         const authHeader = req.headers.get('authorization');
-        const result = await handler.handleToolCall(body, authHeader);
+        const integrationsHeader = req.headers.get('x-integrations');
+        const result = await handler.handleToolCall(body, authHeader, integrationsHeader);
         return Response.json(result);
       } catch (error: any) {
         console.error('[MCP Tool Call] Error:', error);

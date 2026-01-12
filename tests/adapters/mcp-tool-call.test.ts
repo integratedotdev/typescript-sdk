@@ -34,6 +34,7 @@ describe("OAuthHandler - handleToolCall", () => {
       expect(options?.headers?.["X-API-KEY"]).toBe("test-api-key-123");
       expect(options?.headers?.["Authorization"]).toBe("Bearer github-token-123");
       expect(options?.headers?.["Content-Type"]).toBe("application/json");
+      expect(options?.headers?.["X-Integrations"]).toBe("github");
 
       const body = JSON.parse(options?.body);
       expect(body.jsonrpc).toBe("2.0");
@@ -66,7 +67,7 @@ describe("OAuthHandler - handleToolCall", () => {
       arguments: {},
     };
 
-    const result = await handler.handleToolCall(request, "Bearer github-token-123");
+    const result = await handler.handleToolCall(request, "Bearer github-token-123", "github");
 
     expect(result.content).toHaveLength(1);
     expect(result.content[0].type).toBe("text");
@@ -99,7 +100,7 @@ describe("OAuthHandler - handleToolCall", () => {
       arguments: { param: "value" },
     };
 
-    const result = await handler.handleToolCall(request, null);
+    const result = await handler.handleToolCall(request, null, undefined);
 
     expect(result.content).toHaveLength(1);
     expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -135,7 +136,7 @@ describe("OAuthHandler - handleToolCall", () => {
       },
     };
 
-    await handler.handleToolCall(request, "Bearer token");
+    await handler.handleToolCall(request, "Bearer token", undefined);
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
@@ -164,11 +165,11 @@ describe("OAuthHandler - handleToolCall", () => {
     };
 
     await expect(
-      handler.handleToolCall(request, "Bearer token")
+      handler.handleToolCall(request, "Bearer token", undefined)
     ).rejects.toThrow("Internal error");
 
     const error = await handler
-      .handleToolCall(request, "Bearer token")
+      .handleToolCall(request, "Bearer token", undefined)
       .catch((e) => e);
 
     expect((error as any).code).toBe(-32603);
@@ -193,7 +194,7 @@ describe("OAuthHandler - handleToolCall", () => {
     };
 
     await expect(
-      handler.handleToolCall(request, "Bearer token")
+      handler.handleToolCall(request, "Bearer token", undefined)
     ).rejects.toThrow("MCP server failed to execute tool call");
   });
 
@@ -231,7 +232,7 @@ describe("OAuthHandler - handleToolCall", () => {
       arguments: {},
     };
 
-    await handlerWithoutApiKey.handleToolCall(request, "Bearer token-123");
+    await handlerWithoutApiKey.handleToolCall(request, "Bearer token-123", undefined);
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
@@ -259,7 +260,7 @@ describe("OAuthHandler - handleToolCall", () => {
       name: "github_list_own_repos",
     };
 
-    await handler.handleToolCall(request, "Bearer token");
+    await handler.handleToolCall(request, "Bearer token", undefined);
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
@@ -292,7 +293,7 @@ describe("OAuthHandler - handleToolCall", () => {
       arguments: {},
     };
 
-    const result = await handler.handleToolCall(request, "Bearer token");
+    const result = await handler.handleToolCall(request, "Bearer token", undefined);
 
     expect(result.content).toHaveLength(3);
     expect(result.content[0].type).toBe("text");

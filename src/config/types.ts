@@ -237,6 +237,70 @@ export interface MCPServerConfig<TIntegrations extends readonly MCPIntegration[]
    * ```
    */
   removeProviderToken?: (provider: string, email?: string, context?: MCPContext) => Promise<void> | void;
+
+  /**
+   * Trigger storage callbacks (required for trigger support)
+   * Implement these to store triggers in your database
+   * 
+   * @example
+   * ```typescript
+   * import { createMCPServer } from 'integrate-sdk/server';
+   * import type { TriggerCallbacks } from 'integrate-sdk/server';
+   * 
+   * createMCPServer({
+   *   integrations: [...],
+   *   triggers: {
+   *     create: async (trigger, context) => {
+   *       return db.trigger.create({
+   *         data: { ...trigger, userId: context?.userId },
+   *       });
+   *     },
+   *     get: async (triggerId, context) => {
+   *       return db.trigger.findFirst({
+   *         where: { id: triggerId, userId: context?.userId },
+   *       });
+   *     },
+   *     list: async (params, context) => {
+   *       const triggers = await db.trigger.findMany({
+   *         where: { userId: context?.userId, status: params.status },
+   *         take: params.limit || 20,
+   *         skip: params.offset || 0,
+   *       });
+   *       return { triggers, total: triggers.length, hasMore: false };
+   *     },
+   *     update: async (triggerId, updates, context) => {
+   *       return db.trigger.update({
+   *         where: { id: triggerId, userId: context?.userId },
+   *         data: updates,
+   *       });
+   *     },
+   *     delete: async (triggerId, context) => {
+   *       await db.trigger.delete({
+   *         where: { id: triggerId, userId: context?.userId },
+   *       });
+   *     },
+   *   },
+   * });
+   * ```
+   */
+  triggers?: import('../triggers/types.js').TriggerCallbacks;
+
+  /**
+   * MCP server URL for scheduler registration
+   * Default: 'https://mcp.integrate.dev' (same as serverUrl)
+   * 
+   * When triggers are created/updated/deleted, the SDK will register them
+   * with the scheduler at this URL.
+   * 
+   * @example
+   * ```typescript
+   * createMCPServer({
+   *   schedulerUrl: 'https://mcp.integrate.dev',
+   *   triggers: { ... }
+   * });
+   * ```
+   */
+  schedulerUrl?: string;
 }
 
 /**

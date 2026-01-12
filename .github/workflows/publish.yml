@@ -1,6 +1,35 @@
 name: Publish to npm
 
 on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+        description: "The version to publish"
+      npm-tag:
+        required: false
+        type: string
+        default: "latest"
+        description: "The npm dist-tag (e.g., 'latest' or 'dev')"
+      is-prerelease:
+        required: false
+        type: boolean
+        default: false
+        description: "Whether this is a prerelease"
+      release-name-prefix:
+        required: false
+        type: string
+        default: "Release"
+        description: "Prefix for the release name"
+    secrets:
+      NPM_TOKEN:
+        required: true
+        description: "NPM authentication token"
+      DISCORD_WEBHOOK_URL:
+        required: false
+        description: "Discord webhook URL for notifications"
+  
   push:
     branches:
       - main
@@ -13,9 +42,12 @@ on:
 
 permissions:
   contents: write # Required to create releases and tags
+  id-token: write # Required for NPM Trusted Publishing (OIDC)
 
 jobs:
   check-version:
+    # Only run version check for push events (not workflow_call)
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     outputs:
       version-changed: ${{ steps.check.outputs.changed }}
@@ -54,9 +86,13 @@ jobs:
             echo "❌ Version not changed, skipping publish"
           fi
 
-  publish:
+  test:
+    # Always evaluate, but check-version might be skipped for workflow_call
+    if: |
+      always() && 
+      (github.event_name == 'workflow_call' || 
+      (needs.check-version.result == 'success' && needs.check-version.outputs.version-changed == 'true'))
     needs: check-version
-    if: needs.check-version.outputs.version-changed == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -70,14 +106,77 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Run tests
-        run: bun test
-
       - name: Type check
         run: bun run type-check
 
+      - name: Run tests
+        run: bun test
+
       - name: Build
         run: bun run build
+
+  publish:
+    needs: [check-version, test]
+    # Run after tests pass
+    if: |
+      always() &&
+      needs.test.result == 'success' &&
+      (github.event_name == 'workflow_call' || 
+      (needs.check-version.result == 'success' && needs.check-version.outputs.version-changed == 'true'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build
+        run: bun run build
+
+      - name: Determine version to publish
+        id: version
+        run: |
+          VERSION="${{ inputs.version || needs.check-version.outputs.version }}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Publishing version: $VERSION"
+
+      - name: Determine npm tag
+        id: npm-tag
+        run: |
+          NPM_TAG="${{ inputs.npm-tag || 'latest' }}"
+          echo "tag=$NPM_TAG" >> $GITHUB_OUTPUT
+          echo "Using npm tag: $NPM_TAG"
+
+      - name: Determine if prerelease
+        id: prerelease
+        run: |
+          IS_PRERELEASE="${{ inputs.is-prerelease || 'false' }}"
+          echo "is-prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+          echo "Is prerelease: $IS_PRERELEASE"
+
+      - name: Determine release name prefix
+        id: release-prefix
+        run: |
+          PREFIX="${{ inputs.release-name-prefix || 'Release' }}"
+          echo "prefix=$PREFIX" >> $GITHUB_OUTPUT
+          echo "Release name prefix: $PREFIX"
+
+      - name: Update package.json version
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = '$VERSION';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          echo "Updated package.json version to $VERSION"
 
       - name: Setup Node.js (for npm publish)
         uses: actions/setup-node@v4
@@ -85,34 +184,37 @@ jobs:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
 
-      - name: Publish to npm
-        run: npm publish
+      - name: Publish to npm with provenance
+        run: npm publish --provenance --tag ${{ steps.npm-tag.outputs.tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create Git Tag
         run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          PREFIX="${{ steps.release-prefix.outputs.prefix }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a v${{ needs.check-version.outputs.version }} -m "Release v${{ needs.check-version.outputs.version }}"
-          git push origin v${{ needs.check-version.outputs.version }}
+          git tag -a v$VERSION -m "$PREFIX v$VERSION"
+          git push origin v$VERSION
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ needs.check-version.outputs.version }}
-          name: Release v${{ needs.check-version.outputs.version }}
+          tag_name: v${{ steps.version.outputs.version }}
+          name: ${{ steps.release-prefix.outputs.prefix }} v${{ steps.version.outputs.version }}
           body: |
-            ## Changes in v${{ needs.check-version.outputs.version }}
+            ## ${{ steps.release-prefix.outputs.prefix }} v${{ steps.version.outputs.version }}
 
-            See [CHANGELOG.md](https://github.com/integratedotdev/typescript-sdk/blob/main/CHANGELOG.md) for details.
+            ${{ steps.prerelease.outputs.is-prerelease == 'true' && 'This is a prerelease from the `dev` branch.' || 'See [CHANGELOG.md](https://github.com/integratedotdev/typescript-sdk/blob/main/CHANGELOG.md) for details.' }}
 
             ### Installation
             ```bash
-            bun add integrate-sdk@${{ needs.check-version.outputs.version }}
+            ${{ steps.npm-tag.outputs.tag == 'latest' && format('bun add integrate-sdk@{0}', steps.version.outputs.version) || format('# Install latest {0} version\nbun add integrate-sdk@{1}\n\n# Or install specific version\nbun add integrate-sdk@{2}', steps.npm-tag.outputs.tag, steps.npm-tag.outputs.tag, steps.version.outputs.version) }}
             ```
+            ${{ steps.prerelease.outputs.is-prerelease == 'true' && format('\n**Note:** Prerelease versions are published with the `{0}` tag and will not affect the `latest` tag.', steps.npm-tag.outputs.tag) || '' }}
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.prerelease.outputs.is-prerelease == 'true' }}
 
       - name: Send Discord notification
         run: |
@@ -121,23 +223,34 @@ jobs:
             exit 0
           fi
           
-          VERSION="${{ needs.check-version.outputs.version }}"
+          VERSION="${{ steps.version.outputs.version }}"
+          PREFIX="${{ steps.release-prefix.outputs.prefix }}"
+          NPM_TAG="${{ steps.npm-tag.outputs.tag }}"
           REPO="${{ github.repository }}"
           RELEASE_URL="https://github.com/${REPO}/releases/tag/v${VERSION}"
+          
+          # Determine installation command
+          if [ "$NPM_TAG" = "latest" ]; then
+            INSTALL_CMD="bun add integrate-sdk@$VERSION"
+          else
+            INSTALL_CMD="bun add integrate-sdk@$NPM_TAG"
+          fi
           
           # Use node to construct the JSON payload
           PAYLOAD=$(node -e "
             const version = process.argv[1];
-            const url = process.argv[2];
+            const prefix = process.argv[2];
+            const url = process.argv[3];
+            const installCmd = process.argv[4];
             const payload = {
               embeds: [{
-                title: 'Release v' + version,
-                description: 'A new stable release has been published!',
+                title: prefix + ' v' + version,
+                description: prefix === 'Release' ? 'A new stable release has been published!' : 'A new prerelease has been published from the \`dev\` branch.',
                 url: url,
                 color: 1316451,
                 fields: [{
                   name: 'Installation',
-                  value: '\`\`\`bash\nbun add integrate-sdk@' + version + '\n\`\`\`',
+                  value: '\`\`\`bash\n' + installCmd + '\n\`\`\`',
                   inline: false
                 }],
                 footer: {
@@ -147,7 +260,7 @@ jobs:
               }]
             };
             console.log(JSON.stringify(payload));
-          " "$VERSION" "$RELEASE_URL")
+          " "$VERSION" "$PREFIX" "$RELEASE_URL" "$INSTALL_CMD")
           
           curl -X POST \
             -H "Content-Type: application/json" \

@@ -1,0 +1,769 @@
+---
+title: Triggers
+description: Schedule tool executions with one-time and recurring triggers
+---
+
+Triggers allow you to schedule tool executions for a specific time or on a recurring schedule. This enables use cases like sending scheduled emails, daily reports, automated reminders, and AI agents that schedule actions for later.
+
+## Overview
+
+Triggers are stored in your database and executed by the MCP server scheduler. When a trigger fires, the MCP server calls your Next.js API to get the trigger details and OAuth token, executes the tool, and reports the result back.
+
+### Architecture
+
+```
+Browser → Next.js API → Your Database (trigger storage)
+                     ↓
+                     MCP Server Scheduler (execution)
+```
+
+## Setup
+
+### 1. Configure Database Callbacks
+
+Add trigger storage callbacks to your server configuration. The SDK pre-processes trigger data before calling your callbacks, so you only need to handle database operations:
+
+```typescript
+// lib/integrate-server.ts
+import { createMCPServer, githubIntegration, gmailIntegration } from "integrate-sdk/server";
+import { db } from "./db"; // Your database client
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    githubIntegration({
+      clientId: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    }),
+    gmailIntegration({
+      clientId: process.env.GMAIL_CLIENT_ID,
+      clientSecret: process.env.GMAIL_CLIENT_SECRET,
+    }),
+  ],
+  
+  // Trigger storage callbacks
+  triggers: {
+    // SDK pre-processes: generates ID (trig_xxx), extracts provider, sets status='active', timestamps
+    create: async (trigger, context) => {
+      // trigger already has: id, provider, status, createdAt, updatedAt
+      return db.trigger.create({
+        data: { ...trigger, userId: context?.userId },
+      });
+    },
+    get: async (triggerId, context) => {
+      return db.trigger.findFirst({
+        where: { id: triggerId, userId: context?.userId },
+      });
+    },
+    // SDK calculates hasMore from your response
+    list: async (params, context) => {
+      const [triggers, total] = await Promise.all([
+        db.trigger.findMany({
+          where: {
+            userId: context?.userId,
+            status: params.status,
+            toolName: params.toolName,
+          },
+          take: params.limit || 20,
+          skip: params.offset || 0,
+        }),
+        db.trigger.count({
+          where: {
+            userId: context?.userId,
+            status: params.status,
+            toolName: params.toolName,
+          },
+        }),
+      ]);
+      
+      // Return triggers and total - SDK calculates hasMore automatically
+      return {
+        triggers,
+        total,
+      };
+    },
+    // SDK sets updatedAt automatically on updates
+    update: async (triggerId, updates, context) => {
+      return db.trigger.update({
+        where: { id: triggerId, userId: context?.userId },
+        data: updates,
+      });
+    },
+    delete: async (triggerId, context) => {
+      await db.trigger.delete({
+        where: { id: triggerId, userId: context?.userId },
+      });
+    },
+  },
+});
+```
+
+### SDK Pre-processing
+
+The SDK automatically handles the following before calling your callbacks:
+
+- **ID Generation**: Generates unique IDs in format `trig_{12-character-nanoid}` (e.g., `trig_abc123xyz789`)
+- **Provider Extraction**: Extracts provider from tool name (e.g., `gmail_send_email` → `gmail`)
+- **Status Defaults**: Sets `status: 'active'` if not provided
+- **Timestamps**: Sets `createdAt` and `updatedAt` on create, `updatedAt` on update/pause/resume
+- **Status Validation**: Validates pause/resume transitions (only active → paused, paused → active)
+- **Pagination**: Calculates `hasMore` flag from your `{triggers, total}` response
+
+Your callbacks are thin database wrappers - just insert/update/query your database.
+
+### 2. Database Schema
+
+Create a triggers table in your database with the following fields:
+
+```sql
+CREATE TABLE triggers (
+  id VARCHAR(255) PRIMARY KEY,
+  name VARCHAR(255),
+  description TEXT,
+  tool_name VARCHAR(255) NOT NULL,
+  tool_arguments JSON NOT NULL,
+  schedule_type VARCHAR(50) NOT NULL,
+  schedule_value TEXT NOT NULL,
+  status VARCHAR(50) DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  last_run_at TIMESTAMP,
+  next_run_at TIMESTAMP,
+  run_count INT DEFAULT 0,
+  last_error TEXT,
+  last_result JSON,
+  user_id VARCHAR(255),
+  provider VARCHAR(50)
+);
+
+CREATE INDEX idx_triggers_user ON triggers(user_id);
+CREATE INDEX idx_triggers_status ON triggers(status);
+```
+
+For Prisma:
+
+```prisma
+model Trigger {
+  id             String    @id
+  name           String?
+  description    String?
+  toolName       String    @map("tool_name")
+  toolArguments  Json      @map("tool_arguments")
+  scheduleType   String    @map("schedule_type")
+  scheduleValue  String    @map("schedule_value")
+  status         String    @default("active")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  lastRunAt      DateTime? @map("last_run_at")
+  nextRunAt      DateTime? @map("next_run_at")
+  runCount       Int       @default(0) @map("run_count")
+  lastError      String?   @map("last_error")
+  lastResult     Json?     @map("last_result")
+  userId         String?   @map("user_id")
+  provider       String?
+
+  @@index([userId])
+  @@index([status])
+  @@map("triggers")
+}
+```
+
+## Usage
+
+### Creating Triggers
+
+#### One-Time Trigger
+
+Schedule a tool execution for a specific date and time:
+
+```typescript
+import { client } from "integrate-sdk";
+
+// Send an email at a specific time
+const trigger = await client.trigger.create({
+  name: "Follow-up Email",
+  toolName: "gmail_send_email",
+  toolArguments: {
+    to: "friend@example.com",
+    subject: "About the dog",
+    body: "Hey, just wanted to follow up about the dog...",
+  },
+  schedule: {
+    type: "once",
+    runAt: new Date("2024-12-13T22:00:00Z"),
+  },
+});
+
+console.log("Trigger created:", trigger.id);
+```
+
+#### Recurring Trigger
+
+Schedule a tool execution on a recurring basis using cron expressions:
+
+```typescript
+// Daily standup reminder at 9 AM on weekdays
+const standup = await client.trigger.create({
+  name: "Daily Standup Reminder",
+  description: "Remind team about daily standup",
+  toolName: "slack_send_message",
+  toolArguments: {
+    channel: "#engineering",
+    text: "Time for standup! 🚀",
+  },
+  schedule: {
+    type: "cron",
+    expression: "0 9 * * 1-5", // 9 AM Monday-Friday
+  },
+});
+```
+
+Common cron expressions:
+
+- `0 9 * * *` - Every day at 9:00 AM
+- `0 9 * * 1-5` - Weekdays at 9:00 AM
+- `0 */2 * * *` - Every 2 hours
+- `0 0 1 * *` - First day of every month at midnight
+- `0 0 * * 0` - Every Sunday at midnight
+
+### Listing Triggers
+
+Get all triggers or filter by status. The SDK automatically calculates `hasMore` for pagination:
+
+```typescript
+// Get all active triggers
+const { triggers, total, hasMore } = await client.trigger.list({
+  status: "active",
+  limit: 20,
+  offset: 0,
+});
+
+console.log(`Found ${total} active triggers`);
+console.log(`Has more: ${hasMore}`); // SDK calculates this automatically
+
+triggers.forEach((trigger) => {
+  console.log(`- ${trigger.name}: ${trigger.status}`);
+});
+
+// Filter by tool name
+const emailTriggers = await client.trigger.list({
+  toolName: "gmail_send_email",
+});
+
+// Pagination example
+let offset = 0;
+const limit = 20;
+let hasMore = true;
+
+while (hasMore) {
+  const result = await client.trigger.list({ offset, limit });
+  console.log(`Page ${offset / limit + 1}: ${result.triggers.length} triggers`);
+  
+  hasMore = result.hasMore;
+  offset += limit;
+}
+```
+
+**Note**: Your `list` callback should return `{triggers, total}` - the SDK calculates `hasMore` automatically from the offset, returned count, and total.
+
+### Getting a Trigger
+
+Retrieve a specific trigger by ID:
+
+```typescript
+const trigger = await client.trigger.get("trig_abc123");
+
+console.log("Trigger:", trigger.name);
+console.log("Status:", trigger.status);
+console.log("Next run:", trigger.nextRunAt);
+console.log("Run count:", trigger.runCount);
+```
+
+### Updating Triggers
+
+Update trigger properties like arguments or schedule:
+
+```typescript
+// Update the schedule
+await client.trigger.update("trig_abc123", {
+  schedule: {
+    type: "cron",
+    expression: "0 10 * * 1-5", // Changed to 10 AM
+  },
+});
+
+// Update the tool arguments
+await client.trigger.update("trig_abc123", {
+  toolArguments: {
+    channel: "#general",
+    text: "Updated message",
+  },
+});
+
+// Update name and description
+await client.trigger.update("trig_abc123", {
+  name: "Updated Name",
+  description: "New description",
+});
+```
+
+### Pausing and Resuming
+
+Temporarily stop a trigger without deleting it. The SDK validates status transitions automatically:
+
+```typescript
+// Pause a trigger (stops future executions)
+// Only works if trigger status is 'active'
+await client.trigger.pause("trig_abc123");
+
+// Resume a paused trigger
+// Only works if trigger status is 'paused'
+await client.trigger.resume("trig_abc123");
+
+// Invalid transitions return an error:
+// - Cannot pause a trigger that's already paused, completed, or failed
+// - Cannot resume a trigger that's not paused
+```
+
+The SDK automatically:
+- Validates the current status before allowing pause/resume
+- Sets `updatedAt` timestamp on status changes
+- Returns descriptive error messages for invalid transitions
+
+### Manual Execution
+
+Execute a trigger immediately, bypassing the schedule:
+
+```typescript
+const result = await client.trigger.run("trig_abc123");
+
+if (result.success) {
+  console.log("Execution successful:", result.result);
+} else {
+  console.error("Execution failed:", result.error);
+}
+
+console.log("Duration:", result.duration, "ms");
+```
+
+### Deleting Triggers
+
+Permanently delete a trigger:
+
+```typescript
+await client.trigger.delete("trig_abc123");
+```
+
+## AI Agent Integration
+
+Triggers are perfect for AI agents that need to schedule actions based on natural language requests:
+
+```typescript
+async function handleAIRequest(userMessage: string) {
+  // AI processes: "Send an email about the dog on December 13 at 10 PM"
+  const parsed = await ai.parse(userMessage);
+  
+  if (parsed.intent === "schedule_email") {
+    const trigger = await client.trigger.create({
+      toolName: "gmail_send_email",
+      toolArguments: {
+        to: parsed.recipient,
+        subject: parsed.subject,
+        body: parsed.body,
+      },
+      schedule: {
+        type: "once",
+        runAt: parsed.scheduledTime, // "2024-12-13T22:00:00Z"
+      },
+    });
+    
+    return `I've scheduled the email to be sent on ${parsed.scheduledTime}`;
+  }
+}
+```
+
+## Advanced Usage
+
+### Multi-Tenant Support
+
+Use the context parameter to isolate triggers by user:
+
+```typescript
+// Server configuration with user context
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [...],
+  
+  // Extract user ID from session
+  getSessionContext: async (request) => {
+    const session = await getSession(request);
+    return { userId: session.userId };
+  },
+  
+  triggers: {
+    create: async (trigger, context) => {
+      // context.userId is automatically provided
+      return db.trigger.create({
+        data: { ...trigger, userId: context?.userId },
+      });
+    },
+    // ... other callbacks
+  },
+});
+```
+
+### Error Handling
+
+Handle trigger execution errors:
+
+```typescript
+const { triggers } = await client.trigger.list({ status: "failed" });
+
+for (const trigger of triggers) {
+  console.log(`Trigger ${trigger.name} failed:`);
+  console.log(`Error: ${trigger.lastError}`);
+  console.log(`Last attempt: ${trigger.lastRunAt}`);
+  
+  // Optionally retry
+  try {
+    await client.trigger.run(trigger.id);
+  } catch (error) {
+    console.error("Retry failed:", error);
+  }
+}
+```
+
+### Monitoring
+
+Track trigger execution history:
+
+```typescript
+const trigger = await client.trigger.get("trig_abc123");
+
+console.log("Execution stats:");
+console.log(`- Total runs: ${trigger.runCount}`);
+console.log(`- Last run: ${trigger.lastRunAt}`);
+console.log(`- Next run: ${trigger.nextRunAt}`);
+console.log(`- Status: ${trigger.status}`);
+
+if (trigger.lastResult) {
+  console.log("Last result:", trigger.lastResult);
+}
+
+if (trigger.lastError) {
+  console.error("Last error:", trigger.lastError);
+}
+```
+
+## Type Definitions
+
+### Trigger
+
+```typescript
+interface Trigger {
+  id: string;
+  name?: string;
+  description?: string;
+  toolName: string;
+  toolArguments: Record<string, unknown>;
+  schedule: TriggerSchedule;
+  status: "active" | "paused" | "completed" | "failed";
+  createdAt: string;
+  updatedAt: string;
+  lastRunAt?: string;
+  nextRunAt?: string;
+  runCount?: number;
+  lastError?: string;
+  lastResult?: Record<string, unknown>;
+  userId?: string;
+  provider?: string;
+}
+```
+
+### TriggerSchedule
+
+```typescript
+type TriggerSchedule =
+  | { type: "once"; runAt: string | Date }
+  | { type: "cron"; expression: string };
+```
+
+### CreateTriggerInput
+
+```typescript
+interface CreateTriggerInput {
+  name?: string;
+  description?: string;
+  toolName: string;
+  toolArguments: Record<string, unknown>;
+  schedule: TriggerSchedule;
+  status?: "active" | "paused" | "completed" | "failed"; // Optional, defaults to 'active'
+}
+```
+
+**Note**: The SDK pre-processes this input before calling your `create` callback. Your callback receives a fully processed `Trigger` object with:
+- Generated `id` (format: `trig_{nanoid}`)
+- Extracted `provider` from `toolName`
+- Default `status: 'active'` if not provided
+- `createdAt` and `updatedAt` timestamps
+
+### TriggerExecutionResult
+
+```typescript
+interface TriggerExecutionResult {
+  success: boolean;
+  result?: Record<string, unknown>;
+  error?: string;
+  executedAt: string;
+  duration?: number;
+}
+```
+
+## SDK Pre-processing Details
+
+The SDK handles all trigger data pre-processing, making your callbacks simple database operations:
+
+### What the SDK Pre-processes
+
+**On Create:**
+- Generates unique ID: `trig_{12-character-nanoid}` (e.g., `trig_abc123xyz789`)
+- Extracts provider from tool name: `gmail_send_email` → `gmail`
+- Sets default status: `'active'` if not provided
+- Sets timestamps: `createdAt` and `updatedAt` to current time
+
+**On Update:**
+- Automatically sets `updatedAt` timestamp
+
+**On Pause/Resume:**
+- Validates status transitions:
+  - Pause: Only allows `active` → `paused`
+  - Resume: Only allows `paused` → `active`
+- Sets `updatedAt` timestamp
+- Returns descriptive errors for invalid transitions
+
+**On List:**
+- Calculates `hasMore` flag: `(offset + triggers.length) < total`
+- Your callback only needs to return `{triggers, total}`
+
+### Benefits
+
+- **Consistent IDs**: All triggers use the same nanoid-based format
+- **Less Code**: No need to generate IDs or extract providers in your callbacks
+- **Type Safety**: Fully typed trigger objects throughout
+- **Validation**: Status transitions validated before database calls
+- **Simpler Callbacks**: Focus on database operations only
+
+## Best Practices
+
+### Use Descriptive Names
+
+Give your triggers meaningful names for easier management:
+
+```typescript
+await client.trigger.create({
+  name: "Weekly Sales Report - Mondays 9 AM",
+  description: "Send sales report to team@company.com",
+  // ...
+});
+```
+
+### Handle Timezone Differences
+
+When creating one-time triggers, ensure you're using the correct timezone:
+
+```typescript
+// Use UTC timestamps
+const utcTime = new Date("2024-12-13T22:00:00Z");
+
+// Or convert from local time
+const localTime = new Date("2024-12-13T14:00:00"); // 2 PM local
+const utcTime = new Date(localTime.toISOString());
+
+await client.trigger.create({
+  schedule: { type: "once", runAt: utcTime },
+  // ...
+});
+```
+
+### Clean Up Completed Triggers
+
+Remove one-time triggers after they complete:
+
+```typescript
+const { triggers } = await client.trigger.list({ status: "completed" });
+
+for (const trigger of triggers) {
+  // Keep for audit or delete immediately
+  await client.trigger.delete(trigger.id);
+}
+```
+
+### Test Before Scheduling
+
+Use manual execution to test triggers before scheduling:
+
+```typescript
+// Create trigger with paused status (SDK accepts custom status)
+const trigger = await client.trigger.create({
+  name: "Test Email",
+  toolName: "gmail_send_email",
+  toolArguments: { /* ... */ },
+  schedule: { type: "cron", expression: "0 9 * * *" },
+  status: "paused", // Create as paused to prevent automatic execution
+});
+
+// Test execution
+const result = await client.trigger.run(trigger.id);
+
+if (result.success) {
+  // Resume if test passed (SDK validates status transition)
+  await client.trigger.resume(trigger.id);
+} else {
+  console.error("Test failed:", result.error);
+  // Keep paused or delete
+}
+```
+
+**Note**: The SDK validates that you can only resume triggers with status `'paused'`. If you create a trigger with a different status, you'll need to handle transitions appropriately.
+
+## Troubleshooting
+
+### Trigger Not Executing
+
+1. **Check trigger status**: Ensure it's `active`, not `paused`
+2. **Verify schedule**: Check `nextRunAt` to see when it will execute
+3. **Check OAuth token**: Ensure the provider is authorized
+4. **Review errors**: Check `lastError` for execution failures
+
+```typescript
+const trigger = await client.trigger.get("trig_abc123");
+
+if (trigger.status === "paused") {
+  // SDK validates status - only resumes if status is 'paused'
+  await client.trigger.resume(trigger.id);
+} else if (trigger.status === "failed") {
+  // Failed triggers cannot be resumed directly
+  // You may need to update status or create a new trigger
+  console.error("Trigger failed:", trigger.lastError);
+}
+
+if (trigger.lastError) {
+  console.error("Last error:", trigger.lastError);
+}
+```
+
+### Status Transition Errors
+
+If you get errors when pausing or resuming, check the trigger's current status:
+
+```typescript
+try {
+  await client.trigger.pause("trig_abc123");
+} catch (error) {
+  // Error message will indicate why pause failed:
+  // - "Cannot pause trigger with status 'paused'"
+  // - "Cannot pause trigger with status 'completed'"
+  // - etc.
+  console.error("Pause failed:", error.message);
+  
+  const trigger = await client.trigger.get("trig_abc123");
+  console.log("Current status:", trigger.status);
+}
+```
+
+### OAuth Token Expired
+
+If a trigger fails due to expired tokens, the user needs to re-authorize:
+
+```typescript
+const trigger = await client.trigger.get("trig_abc123");
+
+if (trigger.provider) {
+  const isAuthorized = await client.isAuthorized(trigger.provider);
+  
+  if (!isAuthorized) {
+    console.log("Re-authorization required for", trigger.provider);
+    await client.authorize(trigger.provider);
+  }
+}
+```
+
+### Invalid Cron Expression
+
+Validate cron expressions before creating triggers:
+
+```typescript
+function isValidCron(expression: string): boolean {
+  // Basic validation - 5 parts (minute, hour, day, month, weekday)
+  const parts = expression.split(" ");
+  return parts.length === 5;
+}
+
+const cronExpression = "0 9 * * 1-5";
+
+if (!isValidCron(cronExpression)) {
+  throw new Error("Invalid cron expression");
+}
+
+await client.trigger.create({
+  schedule: { type: "cron", expression: cronExpression },
+  // ...
+});
+```
+
+## Examples
+
+### Daily Summary Email
+
+```typescript
+await client.trigger.create({
+  name: "Daily Summary Email",
+  description: "Send daily summary at 6 PM",
+  toolName: "gmail_send_email",
+  toolArguments: {
+    to: "team@company.com",
+    subject: "Daily Summary - {{date}}",
+    body: "Today's summary...",
+  },
+  schedule: {
+    type: "cron",
+    expression: "0 18 * * *", // 6 PM daily
+  },
+});
+```
+
+### Weekly GitHub Issue Reminder
+
+```typescript
+await client.trigger.create({
+  name: "Weekly Issue Review",
+  description: "Remind team to review open issues",
+  toolName: "slack_send_message",
+  toolArguments: {
+    channel: "#engineering",
+    text: "📋 Time to review open GitHub issues!",
+  },
+  schedule: {
+    type: "cron",
+    expression: "0 10 * * 1", // Mondays at 10 AM
+  },
+});
+```
+
+### Birthday Email
+
+```typescript
+await client.trigger.create({
+  name: "Birthday Email for John",
+  toolName: "gmail_send_email",
+  toolArguments: {
+    to: "john@company.com",
+    subject: "Happy Birthday! 🎉",
+    body: "Wishing you a wonderful birthday!",
+  },
+  schedule: {
+    type: "once",
+    runAt: new Date("2024-06-15T09:00:00Z"),
+  },
+});
+```

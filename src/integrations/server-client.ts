@@ -21,5 +21,25 @@ export interface ServerIntegrationClient {
    * List all tools available on the MCP server
    */
   listAllProviders(): Promise<MCPToolCallResponse>;
+
+  /**
+   * List integrations configured on this SDK client
+   * Returns local configuration only (no server call)
+   */
+  listConfiguredIntegrations(): Promise<{
+    integrations: ConfiguredIntegration[];
+  }>;
+}
+
+/**
+ * Local integration metadata returned by listConfiguredIntegrations
+ */
+export interface ConfiguredIntegration {
+  id: string;
+  name: string;
+  tools: readonly string[];
+  hasOAuth: boolean;
+  scopes?: readonly string[];
+  provider?: string;
 }
 

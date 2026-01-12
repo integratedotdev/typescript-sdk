@@ -6,7 +6,10 @@
 
 import type { MCPClient } from "../client.js";
 import type { MCPTool } from "../protocol/messages.js";
+import type { MCPContext } from "../config/types.js";
 import { executeToolWithToken, ensureClientConnected, getProviderTokens, type AIToolsOptions } from "./utils.js";
+import { createTriggerTools } from "./trigger-tools.js";
+import { zodToJsonSchema } from "zod-to-json-schema";
 
 // Type-only imports from @google/genai
 // These will match exactly what the @google/genai SDK expects
@@ -46,7 +49,10 @@ async function getGoogleType(): Promise<typeof Type> {
 /**
  * Options for converting MCP tools to Google GenAI format
  */
-export interface GoogleToolsOptions extends AIToolsOptions { }
+export interface GoogleToolsOptions extends AIToolsOptions {
+  /** User context for multi-tenant token storage */
+  context?: MCPContext;
+}
 
 /**
  * Convert JSON Schema type string to Google GenAI Type enum
@@ -212,6 +218,10 @@ export async function executeGoogleFunctionCalls(
 
   const finalOptions = providerTokens ? { ...options, providerTokens } : options;
   
+  // Check if we have trigger tools
+  const triggerConfig = (client as any).__triggerConfig;
+  const triggerTools = triggerConfig ? createTriggerTools(triggerConfig, options?.context) : null;
+  
   const results = await Promise.all(
     functionCalls.map(async (call) => {
       if (!call?.name) {
@@ -221,12 +231,14 @@ export async function executeGoogleFunctionCalls(
       // Extract args - the actual GoogleFunctionCall type has args as a property
       const args = (call as any).args || {};
       
-      const result = await executeToolWithToken(
-        client, 
-        call.name, 
-        args, 
-        finalOptions
-      );
+      // Check if this is a trigger tool
+      let result;
+      if (triggerTools && (triggerTools as any)[call.name]) {
+        result = await (triggerTools as any)[call.name].execute(args);
+      } else {
+        result = await executeToolWithToken(client, call.name, args, finalOptions);
+      }
+      
       return JSON.stringify(result);
     })
   );
@@ -326,8 +338,105 @@ export async function getGoogleTools(
 
   const finalOptions = providerTokens ? { ...options, providerTokens } : options;
   const mcpTools = client.getEnabledTools();
-  return await Promise.all(
+  const googleTools: GoogleTool[] = await Promise.all(
     mcpTools.map(mcpTool => convertMCPToolToGoogle(mcpTool, client, finalOptions))
   );
+
+  // Add trigger management tools if configured
+  const triggerConfig = (client as any).__triggerConfig;
+  if (triggerConfig) {
+    const triggerTools = createTriggerTools(triggerConfig, options?.context);
+    const TypeEnum = await getGoogleType();
+    
+    // Convert trigger tools to Google format
+    for (const [name, tool] of Object.entries(triggerTools)) {
+      // Convert Zod schema to JSON Schema first
+      const zodSchema = (tool as any).inputSchema;
+      const jsonSchema = zodToJsonSchema(zodSchema, { 
+        target: 'openApi3',
+        $refStrategy: 'none'
+      });
+      
+      // Convert JSON Schema to Google Schema format
+      const googleSchema = convertJsonSchemaToGoogleSchema(jsonSchema, TypeEnum);
+      
+      googleTools.push({
+        name,
+        description: (tool as any).description || `Execute ${name}`,
+        parameters: googleSchema,
+      });
+    }
+  }
+
+  return googleTools;
+}
+
+/**
+ * Convert JSON Schema to Google Schema with Type enums
+ * @internal
+ */
+function convertJsonSchemaToGoogleSchema(jsonSchema: any, TypeEnum: typeof Type): Schema {
+  const result: Schema = {
+    type: TypeEnum.OBJECT,
+  };
+  
+  if (jsonSchema.properties) {
+    const googleProperties: Record<string, Schema> = {};
+    
+    for (const [key, prop] of Object.entries(jsonSchema.properties as Record<string, any>)) {
+      const googleProp: Schema = {};
+      
+      // Convert type
+      if (prop.type) {
+        switch (prop.type) {
+          case 'string':
+            googleProp.type = TypeEnum.STRING;
+            break;
+          case 'number':
+            googleProp.type = TypeEnum.NUMBER;
+            break;
+          case 'integer':
+            googleProp.type = TypeEnum.INTEGER;
+            break;
+          case 'boolean':
+            googleProp.type = TypeEnum.BOOLEAN;
+            break;
+          case 'array':
+            googleProp.type = TypeEnum.ARRAY;
+            if (prop.items) {
+              googleProp.items = convertJsonSchemaToGoogleSchema(prop.items, TypeEnum);
+            }
+            break;
+          case 'object':
+            googleProp.type = TypeEnum.OBJECT;
+            if (prop.properties) {
+              googleProp.properties = Object.fromEntries(
+                Object.entries(prop.properties).map(([k, v]) => [
+                  k,
+                  convertJsonSchemaToGoogleSchema(v as any, TypeEnum)
+                ])
+              );
+            }
+            break;
+          default:
+            googleProp.type = TypeEnum.STRING;
+        }
+      }
+      
+      // Copy other properties
+      if (prop.description) googleProp.description = prop.description;
+      if (prop.enum) googleProp.enum = prop.enum;
+      
+      googleProperties[key] = googleProp;
+    }
+    
+    result.properties = googleProperties;
+  }
+  
+  if (jsonSchema.required && Array.isArray(jsonSchema.required)) {
+    (result as any).required = jsonSchema.required;
+  }
+  
+  return result;
 }
 

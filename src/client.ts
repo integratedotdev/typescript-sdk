@@ -44,6 +44,7 @@ import type { HubSpotIntegrationClient } from "./integrations/hubspot-client.js"
 import type { YouTubeIntegrationClient } from "./integrations/youtube-client.js";
 import type { CursorIntegrationClient } from "./integrations/cursor-client.js";
 import type { ServerIntegrationClient } from "./integrations/server-client.js";
+import { TriggerClient } from "./triggers/client.js";
 import { OAuthManager } from "./oauth/manager.js";
 import type {
   AuthStatus,
@@ -251,6 +252,9 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   // Server namespace - always available for server-level tools
   public readonly server!: ServerIntegrationClient;
 
+  // Trigger namespace - always available for scheduled tool executions
+  public readonly trigger!: TriggerClient;
+
   constructor(config: MCPClientConfig<TIntegrations>) {
     this.transport = new HttpSessionTransport({
       url: config.serverUrl || MCP_SERVER_URL,
@@ -318,6 +322,12 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
         const provider = integration.oauth.provider;
         this.authState.set(provider, { authenticated: false });
       }
+    }
+
+    // Propagate configured integration IDs to server via header
+    const integrationHeaderValue = this.getIntegrationHeaderValue();
+    if (integrationHeaderValue && this.transport.setHeader) {
+      this.transport.setHeader('X-Integrations', integrationHeaderValue);
     }
 
     // Get list of OAuth providers
@@ -419,6 +429,15 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     // Server namespace is always available
     this.server = this.createServerProxy() as any;
 
+    // Trigger namespace is always available
+    this.trigger = new TriggerClient({
+      apiRouteBase: this.apiRouteBase,
+      apiBaseUrl: this.apiBaseUrl,
+      getHeaders: () => ({
+        'X-Integrations': this.getIntegrationHeaderValue(),
+      }),
+    });
+
     // Initialize integrations
     this.initializeIntegrations();
   }
@@ -484,11 +503,32 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   }
 
   /**
+   * Get comma-separated integration IDs for header propagation
+   */
+  private getIntegrationHeaderValue(): string {
+    return this.integrations.map(integration => integration.id).join(',');
+  }
+
+  /**
    * Create a proxy for the server namespace that handles server-level tools
    */
   private createServerProxy(): any {
     return new Proxy({}, {
       get: (_target, methodName: string) => {
+        // Local-only helper to list configured integrations without server call
+        if (methodName === 'listConfiguredIntegrations') {
+          return async () => ({
+            integrations: this.integrations.map(integration => ({
+              id: integration.id,
+              name: (integration as any).name || integration.id,
+              tools: integration.tools,
+              hasOAuth: !!integration.oauth,
+              scopes: integration.oauth?.scopes,
+              provider: integration.oauth?.provider,
+            })),
+          });
+        }
+
         // Return a function that calls the server tool directly
         return async (args?: Record<string, unknown>, options?: ToolCallOptions) => {
           // When routing through API handlers, skip ensureConnected
@@ -708,6 +748,11 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
+
+    const integrationsHeader = this.getIntegrationHeaderValue();
+    if (integrationsHeader) {
+      headers['X-Integrations'] = integrationsHeader;
+    }
 
     // Add provider token if available
     if (provider) {
