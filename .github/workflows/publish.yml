@@ -139,38 +139,33 @@ jobs:
       - name: Build
         run: bun run build
 
-      - name: Determine version to publish
+            - name: Determine version to publish
         id: version
         run: |
           VERSION="${{ inputs.version || needs.check-version.outputs.version }}"
-          NPM_TAG="${{ inputs.npm-tag || 'latest' }}"
-          IS_PRERELEASE="${{ inputs.is-prerelease || 'false' }}"
-          PREFIX="${{ inputs.release-name-prefix || 'Release' }}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Publishing version: $VERSION"
 
       - name: Determine npm tag
         id: npm-tag
         run: |
-          VERSION="${{ inputs.version || needs.check-version.outputs.version }}"
           NPM_TAG="${{ inputs.npm-tag || 'latest' }}"
-          IS_PRERELEASE="${{ inputs.is-prerelease || 'false' }}"
-          PREFIX="${{ inputs.release-name-prefix || 'Release' }}"
+          echo "tag=$NPM_TAG" >> $GITHUB_OUTPUT
+          echo "Using npm tag: $NPM_TAG"
 
       - name: Determine if prerelease
         id: prerelease
         run: |
-          VERSION="${{ inputs.version || needs.check-version.outputs.version }}"
-          NPM_TAG="${{ inputs.npm-tag || 'latest' }}"
           IS_PRERELEASE="${{ inputs.is-prerelease || 'false' }}"
-          PREFIX="${{ inputs.release-name-prefix || 'Release' }}"
+          echo "is-prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+          echo "Is prerelease: $IS_PRERELEASE"
 
       - name: Determine release name prefix
         id: release-prefix
         run: |
-          VERSION="${{ inputs.version || needs.check-version.outputs.version }}"
-          NPM_TAG="${{ inputs.npm-tag || 'latest' }}"
-          IS_PRERELEASE="${{ inputs.is-prerelease || 'false' }}"
           PREFIX="${{ inputs.release-name-prefix || 'Release' }}"
+          echo "prefix=$PREFIX" >> $GITHUB_OUTPUT
+          echo "Release name prefix: $PREFIX"
 
       - name: Update package.json version
         run: |
