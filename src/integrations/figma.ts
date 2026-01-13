@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Figma');
 
 /**
  * Figma integration configuration
@@ -59,11 +62,11 @@ export function figmaIntegration(config: FigmaIntegrationConfig = {}): MCPIntegr
     oauth,
 
     async onInit(_client) {
-      console.log("Figma integration initialized");
+      logger.debug("Figma integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Figma integration connected");
+      logger.debug("Figma integration connected");
     },
   };
 }

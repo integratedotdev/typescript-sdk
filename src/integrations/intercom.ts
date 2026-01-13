@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Intercom');
 
 /**
  * Intercom integration configuration
@@ -59,11 +62,11 @@ export function intercomIntegration(config: IntercomIntegrationConfig = {}): MCP
     oauth,
 
     async onInit(_client) {
-      console.log("Intercom integration initialized");
+      logger.debug("Intercom integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Intercom integration connected");
+      logger.debug("Intercom integration connected");
     },
   };
 }

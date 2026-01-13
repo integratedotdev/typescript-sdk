@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Google Workspace');
 
 /**
  * Google Workspace integration configuration
@@ -70,11 +73,11 @@ export function gworkspaceIntegration(config: GWorkspaceIntegrationConfig = {}):
     oauth,
 
     async onInit(_client) {
-      console.log("Google Workspace integration initialized");
+      logger.debug("Google Workspace integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Google Workspace integration connected");
+      logger.debug("Google Workspace integration connected");
     },
   };
 }

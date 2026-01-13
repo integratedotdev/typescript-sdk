@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Todoist');
 
 /**
  * Todoist integration configuration
@@ -59,11 +62,11 @@ export function todoistIntegration(config: TodoistIntegrationConfig = {}): MCPIn
     oauth,
 
     async onInit(_client) {
-      console.log("Todoist integration initialized");
+      logger.debug("Todoist integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Todoist integration connected");
+      logger.debug("Todoist integration connected");
     },
   };
 }

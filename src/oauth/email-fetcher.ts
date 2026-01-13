@@ -4,6 +4,12 @@
  */
 
 import type { ProviderTokenData } from "./types.js";
+import { createLogger } from "../utils/logger.js";
+
+/**
+ * Logger instance
+ */
+const logger = createLogger('EmailFetcher');
 
 /**
  * Fetch user email from OAuth provider
@@ -30,7 +36,7 @@ export async function fetchUserEmail(
         return tokenData.email;
     }
   } catch (error) {
-    console.error(`Failed to fetch email for ${provider}:`, error);
+    logger.error(`Failed to fetch email for ${provider}:`, error);
     return undefined;
   }
 }
@@ -91,7 +97,7 @@ async function fetchGitHubEmail(accessToken: string): Promise<string | undefined
 
     return undefined;
   } catch (error) {
-    console.error("Failed to fetch GitHub email:", error);
+    logger.error("Failed to fetch GitHub email:", error);
     return undefined;
   }
 }
@@ -114,7 +120,7 @@ async function fetchGoogleEmail(accessToken: string): Promise<string | undefined
     const user = await response.json() as { email?: string };
     return user.email;
   } catch (error) {
-    console.error("Failed to fetch Google email:", error);
+    logger.error("Failed to fetch Google email:", error);
     return undefined;
   }
 }
@@ -138,7 +144,7 @@ async function fetchNotionEmail(accessToken: string): Promise<string | undefined
     const user = await response.json() as { person?: { email?: string } };
     return user.person?.email;
   } catch (error) {
-    console.error("Failed to fetch Notion email:", error);
+    logger.error("Failed to fetch Notion email:", error);
     return undefined;
   }
 }

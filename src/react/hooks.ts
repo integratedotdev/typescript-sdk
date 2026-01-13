@@ -6,6 +6,12 @@
 
 import { useState, useEffect } from "react";
 import type { MCPClient } from "../client.js";
+import { createLogger } from "../utils/logger.js";
+
+/**
+ * Logger instance
+ */
+const logger = createLogger('ReactHooks');
 
 /**
  * Return type for useIntegrateTokens hook
@@ -102,7 +108,7 @@ export function useIntegrateTokens(
   // Guard 1: Check if React hooks are available
   // This handles SSR, Suspense boundaries, and initialization timing issues
   if (!isReactHooksAvailable()) {
-    console.warn(
+    logger.warn(
       '[useIntegrateTokens] React hooks are not available. ' +
       'This can happen during SSR, before React initialization, or in Suspense boundaries. ' +
       'Returning safe fallback values.'
@@ -132,7 +138,7 @@ export function useIntegrateTokens(
           setTokens(currentTokens);
           setIsLoading(false);
         } catch (error) {
-          console.error('[useIntegrateTokens] Failed to get provider tokens:', error);
+          logger.error('[useIntegrateTokens] Failed to get provider tokens:', error);
           setIsLoading(false);
         }
       };
@@ -164,7 +170,7 @@ export function useIntegrateTokens(
         client.off('auth:logout', handleAuthLogout);
       };
     } catch (error) {
-      console.error('[useIntegrateTokens] Error setting up hook:', error);
+      logger.error('[useIntegrateTokens] Error setting up hook:', error);
       setIsLoading(false);
       return;
     }
@@ -254,7 +260,7 @@ export function useIntegrateAI(
     // Skip if no client or not in browser
     if (!client || typeof window === 'undefined') {
       if (debug && !client) {
-        console.warn('[useIntegrateAI] No client provided, skipping interceptor setup');
+        logger.warn('[useIntegrateAI] No client provided, skipping interceptor setup');
       }
       return;
     }
@@ -267,10 +273,10 @@ export function useIntegrateAI(
     try {
       currentTokens = client.getAllProviderTokens();
       if (debug) {
-        console.log('[useIntegrateAI] Initial tokens loaded:', Object.keys(currentTokens));
+        logger.debug('[useIntegrateAI] Initial tokens loaded:', Object.keys(currentTokens));
       }
     } catch (error) {
-      console.error('[useIntegrateAI] Failed to get initial tokens:', error);
+      logger.error('[useIntegrateAI] Failed to get initial tokens:', error);
     }
 
     // Update tokens on auth events
@@ -278,17 +284,17 @@ export function useIntegrateAI(
       try {
         currentTokens = client.getAllProviderTokens();
         if (debug) {
-          console.log('[useIntegrateAI] Tokens updated:', Object.keys(currentTokens));
+          logger.debug('[useIntegrateAI] Tokens updated:', Object.keys(currentTokens));
         }
       } catch (error) {
-        console.error('[useIntegrateAI] Failed to update tokens:', error);
+        logger.error('[useIntegrateAI] Failed to update tokens:', error);
       }
     };
 
     const handleLogout = () => {
       currentTokens = {};
       if (debug) {
-        console.log('[useIntegrateAI] Tokens cleared (logout)');
+        logger.debug('[useIntegrateAI] Tokens cleared (logout)');
       }
     };
 
@@ -318,8 +324,8 @@ export function useIntegrateAI(
 
       if (shouldIntercept && Object.keys(currentTokens).length > 0) {
         if (debug) {
-          console.log('[useIntegrateAI] Intercepting request to:', url);
-          console.log('[useIntegrateAI] Injecting tokens:', Object.keys(currentTokens));
+          logger.debug('[useIntegrateAI] Intercepting request to:', url);
+          logger.debug('[useIntegrateAI] Injecting tokens:', Object.keys(currentTokens));
         }
 
         // Clone init and add tokens header
@@ -340,8 +346,8 @@ export function useIntegrateAI(
     window.fetch = interceptedFetch as typeof window.fetch;
 
     if (debug) {
-      console.log('[useIntegrateAI] Global fetch interceptor installed');
-      console.log('[useIntegrateAI] Pattern:', apiPattern);
+      logger.debug('[useIntegrateAI] Global fetch interceptor installed');
+      logger.debug('[useIntegrateAI] Pattern:', apiPattern);
     }
 
     // Cleanup: restore original fetch and remove listeners
@@ -352,7 +358,7 @@ export function useIntegrateAI(
       client.off('auth:logout', handleLogout);
 
       if (debug) {
-        console.log('[useIntegrateAI] Global fetch interceptor removed');
+        logger.debug('[useIntegrateAI] Global fetch interceptor removed');
       }
     };
   }, [client, apiPattern, debug]);

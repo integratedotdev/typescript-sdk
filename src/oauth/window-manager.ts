@@ -4,6 +4,12 @@
  */
 
 import type { PopupOptions, OAuthCallbackParams } from "./types.js";
+import { createLogger } from "../utils/logger.js";
+
+/**
+ * Logger instance
+ */
+const logger = createLogger('OAuthWindowManager');
 
 /**
  * Check if we're in a browser environment
@@ -72,7 +78,7 @@ export class OAuthWindowManager {
     this.popupWindow = window.open(url, windowName, features);
     
     if (!this.popupWindow) {
-      console.warn('Popup was blocked by the browser. Please allow popups for this site.');
+      logger.warn('Popup was blocked by the browser. Please allow popups for this site.');
       return null;
     }
     
@@ -98,7 +104,7 @@ export class OAuthWindowManager {
       throw new Error('OAuthWindowManager.openRedirect() can only be used in browser environments');
     }
     
-    console.log('[OAuthWindowManager] Redirecting to:', url.substring(0, 100) + (url.length > 100 ? '...' : ''));
+    logger.debug('[OAuthWindowManager] Redirecting to:', url.substring(0, 100) + (url.length > 100 ? '...' : ''));
     window.location.href = url;
   }
 
@@ -233,7 +239,7 @@ export class OAuthWindowManager {
             window.history.replaceState(null, '', window.location.pathname + window.location.search);
           }
         } catch (e) {
-          console.error('Failed to parse OAuth callback params from hash:', e);
+          logger.error('Failed to parse OAuth callback params from hash:', e);
         }
       }
       
@@ -249,7 +255,7 @@ export class OAuthWindowManager {
             sessionStorage.removeItem('oauth_callback_params');
           }
         } catch (e) {
-          console.error('Failed to parse OAuth callback params from sessionStorage:', e);
+          logger.error('Failed to parse OAuth callback params from sessionStorage:', e);
         }
       }
       
@@ -322,12 +328,12 @@ export function sendCallbackToOpener(params: {
   error?: string | null;
 }): void {
   if (!isBrowser()) {
-    console.error('sendCallbackToOpener() can only be used in browser environments');
+    logger.error('sendCallbackToOpener() can only be used in browser environments');
     return;
   }
   
   if (!window.opener) {
-    console.error('No opener window found. This function should only be called from a popup window.');
+    logger.error('No opener window found. This function should only be called from a popup window.');
     return;
   }
   

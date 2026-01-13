@@ -7,6 +7,12 @@
  */
 
 import { OAuthHandler, type OAuthHandlerConfig } from './base-handler.js';
+import { createLogger } from '../utils/logger.js';
+
+/**
+ * Logger instance
+ */
+const logger = createLogger('NextJSOAuth');
 
 // Type-only imports to avoid requiring Next.js at build time
 type NextRequest = any;
@@ -122,7 +128,7 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
         
         return response;
       } catch (error: any) {
-        console.error('[OAuth Authorize] Error:', error);
+        logger.error('[OAuth Authorize] Error:', error);
         return Response.json(
           { error: error.message || 'Failed to get authorization URL' },
           { status: 500 }
@@ -192,7 +198,7 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
         
         return response;
       } catch (error: any) {
-        console.error('[OAuth Callback] Error:', error);
+        logger.error('[OAuth Callback] Error:', error);
         return Response.json(
           { error: error.message || 'Failed to exchange authorization code' },
           { status: 500 }
@@ -267,7 +273,7 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
         
         return response;
       } catch (error: any) {
-        console.error('[OAuth Status] Error:', error);
+        logger.error('[OAuth Status] Error:', error);
         return Response.json(
           { error: error.message || 'Failed to check authorization status' },
           { status: 500 }
@@ -348,7 +354,7 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
         
         return response;
       } catch (error: any) {
-        console.error('[OAuth Disconnect] Error:', error);
+        logger.error('[OAuth Disconnect] Error:', error);
         return Response.json(
           { error: error.message || 'Failed to disconnect provider' },
           { status: 500 }
@@ -471,7 +477,7 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
         const result = await handler.handleToolCall(body, authHeader, integrationsHeader);
         return Response.json(result);
       } catch (error: any) {
-        console.error('[MCP Tool Call] Error:', error);
+        logger.error('[MCP Tool Call] Error:', error);
         return Response.json(
           { error: error.message || 'Failed to execute tool call' },
           { status: error.statusCode || 500 }
@@ -601,7 +607,7 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
               // Handle OAuth error
               if (error) {
                 const errorMsg = errorDescription || error;
-                console.error('[OAuth Redirect] Error:', errorMsg);
+                logger.error('[OAuth Redirect] Error:', errorMsg);
 
                 return Response.redirect(
                   new URL(`${errorRedirectUrl}?error=${encodeURIComponent(errorMsg)}`, req.url)
@@ -610,7 +616,7 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
 
               // Validate required parameters
               if (!code || !state) {
-                console.error('[OAuth Redirect] Missing code or state parameter');
+                logger.error('[OAuth Redirect] Missing code or state parameter');
 
                 return Response.redirect(
                   new URL(`${errorRedirectUrl}?error=${encodeURIComponent('Invalid OAuth callback')}`, req.url)

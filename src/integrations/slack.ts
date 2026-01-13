@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Slack');
 
 /**
  * Slack integration configuration
@@ -59,11 +62,11 @@ export function slackIntegration(config: SlackIntegrationConfig = {}): MCPIntegr
     oauth,
 
     async onInit(_client) {
-      console.log("Slack integration initialized");
+      logger.debug("Slack integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Slack integration connected");
+      logger.debug("Slack integration connected");
     },
   };
 }

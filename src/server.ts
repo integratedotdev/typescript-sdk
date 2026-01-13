@@ -10,7 +10,13 @@ import type { MCPIntegration } from './integrations/types.js';
 import { createNextOAuthHandler } from './adapters/nextjs.js';
 import { getEnv } from './utils/env.js';
 import { toWebRequest, sendWebResponse } from './adapters/node.js';
+import { setLogLevel, createLogger } from './utils/logger.js';
 import type { IncomingMessage, ServerResponse } from 'http';
+
+/**
+ * Logger instances
+ */
+const logger = createLogger('MCPServer');
 
 /**
  * Server client with attached handler, POST, and GET route handlers
@@ -196,6 +202,9 @@ function getDefaultRedirectUri(): string {
 export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>(
   config: MCPServerConfig<TIntegrations>
 ) {
+  // Initialize logger based on debug flag
+  setLogLevel(config.debug ? 'debug' : 'error');
+  
   // Validate we're on the server
   if (typeof window !== 'undefined') {
     throw new Error(
@@ -218,7 +227,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
       const { clientId, clientSecret, redirectUri: integrationRedirectUri, config: oauthConfig } = integration.oauth;
 
       if (!clientId || !clientSecret) {
-        console.warn(
+        logger.warn(
           `Warning: Integration "${integration.id}" is missing OAuth credentials. ` +
           `Provide clientId and clientSecret in the integration configuration.`
         );
@@ -419,7 +428,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
 
         return response;
       } catch (error: any) {
-        console.error('[MCP Tool Call] Error:', error);
+        logger.error('[MCP Tool Call] Error:', error);
         return Response.json(
           { error: error.message || 'Failed to execute tool call' },
           { status: error.statusCode || 500 }
@@ -518,7 +527,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
                 }),
               });
             } catch (scheduleError) {
-              console.error('[Trigger] Failed to register with scheduler:', scheduleError);
+              logger.error('[Trigger] Failed to register with scheduler:', scheduleError);
               // Continue anyway - trigger is in DB, can be manually registered later
             }
 
@@ -571,7 +580,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
                 body: JSON.stringify({ triggerId }),
               });
             } catch (error) {
-              console.error('[Trigger] Failed to pause in scheduler:', error);
+              logger.error('[Trigger] Failed to pause in scheduler:', error);
             }
 
             return Response.json(updated);
@@ -613,7 +622,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
                 body: JSON.stringify({ triggerId }),
               });
             } catch (error) {
-              console.error('[Trigger] Failed to resume in scheduler:', error);
+              logger.error('[Trigger] Failed to resume in scheduler:', error);
             }
 
             return Response.json(updated);
@@ -825,7 +834,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
                   }),
                 });
               } catch (error) {
-                console.error('[Trigger] Failed to update scheduler:', error);
+                logger.error('[Trigger] Failed to update scheduler:', error);
               }
             }
 
@@ -846,7 +855,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
                 body: JSON.stringify({ triggerId }),
               });
             } catch (error) {
-              console.error('[Trigger] Failed to unregister from scheduler:', error);
+              logger.error('[Trigger] Failed to unregister from scheduler:', error);
             }
 
             return new Response(null, { status: 204 });
@@ -858,7 +867,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
           { status: 404 }
         );
       } catch (error: any) {
-        console.error('[Trigger] Error:', error);
+        logger.error('[Trigger] Error:', error);
         return Response.json(
           { error: error.message || 'Failed to process trigger request' },
           { status: error.statusCode || 500 }
@@ -911,7 +920,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
       // Handle OAuth error
       if (error) {
         const errorMsg = errorDescription || error;
-        console.error('[OAuth Redirect] Error:', errorMsg);
+        logger.error('[OAuth Redirect] Error:', errorMsg);
 
         return Response.redirect(
           new URL(`${errorRedirectUrl}?error=${encodeURIComponent(errorMsg)}`, webRequest.url)
@@ -920,7 +929,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
 
       // Validate required parameters
       if (!code || !state) {
-        console.error('[OAuth Redirect] Missing code or state parameter');
+        logger.error('[OAuth Redirect] Missing code or state parameter');
 
         return Response.redirect(
           new URL(`${errorRedirectUrl}?error=${encodeURIComponent('Invalid OAuth callback')}`, webRequest.url)
@@ -1030,7 +1039,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
 
           return Response.redirect(frontendUrl);
         } catch (error: any) {
-          console.error('[OAuth Backend Callback] Error:', error);
+          logger.error('[OAuth Backend Callback] Error:', error);
           // Fall back to error redirect
           return Response.redirect(
             new URL(`${errorRedirectUrl}?error=${encodeURIComponent(error.message || 'Failed to exchange token')}`, webRequest.url)

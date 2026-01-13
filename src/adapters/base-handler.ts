@@ -5,6 +5,12 @@
 
 import type { MCPContext } from '../config/types.js';
 import type { ProviderTokenData } from '../oauth/types.js';
+import { createLogger } from '../utils/logger.js';
+
+/**
+ * Logger instance
+ */
+const logger = createLogger('OAuthHandler');
 
 /**
  * MCP Server URL - managed by Integrate
@@ -579,12 +585,12 @@ export class OAuthHandler {
             await this.config.removeProviderToken(request.provider, undefined, context);
           } catch (error) {
             // Log error but don't fail the request - MCP server revocation will still happen
-            console.error(`Failed to delete token for ${request.provider} from database via removeProviderToken:`, error);
+            logger.error(`Failed to delete token for ${request.provider} from database via removeProviderToken:`, error);
           }
         }
       } catch (error) {
         // Log error but continue - context extraction failure shouldn't block disconnect
-        console.error(`Failed to extract context for disconnect:`, error);
+        logger.error(`Failed to extract context for disconnect:`, error);
       }
     }
 

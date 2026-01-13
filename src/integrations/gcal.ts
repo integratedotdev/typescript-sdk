@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Google Calendar');
 
 /**
  * Google Calendar integration configuration
@@ -59,11 +62,11 @@ export function gcalIntegration(config: GcalIntegrationConfig = {}): MCPIntegrat
     oauth,
 
     async onInit(_client) {
-      console.log("Google Calendar integration initialized");
+      logger.debug("Google Calendar integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Google Calendar integration connected");
+      logger.debug("Google Calendar integration connected");
     },
   };
 }

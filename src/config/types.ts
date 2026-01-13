@@ -375,6 +375,22 @@ export interface MCPClientConfig<TIntegrations extends readonly MCPIntegration[]
   };
 
   /**
+   * Enable debug logging
+   * When true, enables debug and info level logs. When false (default), only errors and warnings are shown.
+   * 
+   * @default false
+   * 
+   * @example
+   * ```typescript
+   * const client = createMCPClient({
+   *   integrations: [githubIntegration({ ... })],
+   *   debug: true, // Shows all logs including debug messages
+   * });
+   * ```
+   */
+  debug?: boolean;
+
+  /**
    * Handler called when authentication fails and re-authentication is needed
    * This is typically called when OAuth tokens expire or become invalid
    * 

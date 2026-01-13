@@ -18,6 +18,12 @@ import { generateCodeVerifier, generateCodeChallenge, generateStateWithReturnUrl
 import { OAuthWindowManager } from "./window-manager.js";
 import { IndexedDBStorage } from "./indexeddb-storage.js";
 import { fetchUserEmail } from "./email-fetcher.js";
+import { createLogger } from "../utils/logger.js";
+
+/**
+ * Logger instance
+ */
+const logger = createLogger('OAuth');
 
 /**
  * OAuth Manager
@@ -246,7 +252,7 @@ export class OAuthManager {
       try {
         await this.flowConfig.onAuthCallback(pendingAuth.provider, code, state);
       } catch (error) {
-        console.error('Custom OAuth callback handler failed:', error);
+        logger.error('Custom OAuth callback handler failed:', error);
       }
     }
 
@@ -346,13 +352,13 @@ export class OAuthManager {
       try {
         await this.removeTokenCallback(provider, email, context);
       } catch (error) {
-        console.error(`Failed to delete token for ${provider} (${email}) from database:`, error);
+        logger.error(`Failed to delete token for ${provider} (${email}) from database:`, error);
       }
     } else if (this.setTokenCallback) {
       try {
         await this.setTokenCallback(provider, null, email, context);
       } catch (error) {
-        console.error(`Failed to delete token for ${provider} (${email}) from database:`, error);
+        logger.error(`Failed to delete token for ${provider} (${email}) from database:`, error);
       }
     }
 
@@ -361,7 +367,7 @@ export class OAuthManager {
       try {
         await this.indexedDBStorage.deleteToken(provider, email);
       } catch (error) {
-        console.error(`Failed to delete token from IndexedDB for ${provider} (${email}):`, error);
+        logger.error(`Failed to delete token from IndexedDB for ${provider} (${email}):`, error);
       }
     }
 
@@ -403,13 +409,13 @@ export class OAuthManager {
       try {
         await this.removeTokenCallback(provider, undefined, context);
       } catch (error) {
-        console.error(`Failed to delete tokens for ${provider} from database:`, error);
+        logger.error(`Failed to delete tokens for ${provider} from database:`, error);
       }
     } else if (this.setTokenCallback) {
       try {
         await this.setTokenCallback(provider, null, undefined, context);
       } catch (error) {
-        console.error(`Failed to delete tokens for ${provider} from database:`, error);
+        logger.error(`Failed to delete tokens for ${provider} from database:`, error);
       }
     }
 
@@ -467,7 +473,7 @@ export class OAuthManager {
       try {
         return await this.indexedDBStorage.listAccounts(provider);
       } catch (error) {
-        console.error(`Failed to list accounts for ${provider}:`, error);
+        logger.error(`Failed to list accounts for ${provider}:`, error);
         return [];
       }
     }
@@ -498,7 +504,7 @@ export class OAuthManager {
         }
         return tokenData;
       } catch (error) {
-        console.error(`Failed to get token for ${provider} via callback:`, error);
+        logger.error(`Failed to get token for ${provider} via callback:`, error);
         return undefined;
       }
     }
@@ -512,7 +518,7 @@ export class OAuthManager {
         }
         return tokenData;
       } catch (error) {
-        console.error(`Failed to get token from IndexedDB for ${provider}:`, error);
+        logger.error(`Failed to get token from IndexedDB for ${provider}:`, error);
       }
     }
 
@@ -582,7 +588,7 @@ export class OAuthManager {
     // Clear from IndexedDB if not using server-side database storage and not skipping localStorage
     if (!this.setTokenCallback && !this.removeTokenCallback && !this.skipLocalStorage) {
       this.indexedDBStorage.deleteTokensByProvider(provider).catch((error) => {
-        console.error(`Failed to clear tokens for ${provider} from IndexedDB:`, error);
+        logger.error(`Failed to clear tokens for ${provider} from IndexedDB:`, error);
       });
     }
   }
@@ -614,7 +620,7 @@ export class OAuthManager {
         }
       }
       this.indexedDBStorage.clearAll().catch((error) => {
-        console.error('Failed to clear all tokens from IndexedDB:', error);
+        logger.error('Failed to clear all tokens from IndexedDB:', error);
       });
     }
   }
@@ -642,7 +648,7 @@ export class OAuthManager {
 
         keysToRemove.forEach(key => window.localStorage.removeItem(key));
       } catch (error) {
-        console.error('Failed to clear pending auths from localStorage:', error);
+        logger.error('Failed to clear pending auths from localStorage:', error);
       }
     }
   }
@@ -667,7 +673,7 @@ export class OAuthManager {
       try {
         await this.setTokenCallback(provider, tokenData, email, context);
       } catch (error) {
-        console.error(`Failed to ${tokenData === null ? 'delete' : 'save'} token for ${provider} via callback:`, error);
+        logger.error(`Failed to ${tokenData === null ? 'delete' : 'save'} token for ${provider} via callback:`, error);
         throw error;
       }
       // Return early - callbacks are exclusive, no IndexedDB when callbacks are configured
@@ -727,10 +733,10 @@ export class OAuthManager {
             const key = `integrate_token_${provider}`;
             window.localStorage.setItem(key, JSON.stringify(tokenData));
           } catch (localStorageError) {
-            console.error(`Failed to save token for ${provider} to localStorage:`, localStorageError);
+            logger.error(`Failed to save token for ${provider} to localStorage:`, localStorageError);
           }
         } else {
-          console.error(`Failed to save token for ${provider} to IndexedDB:`, error);
+          logger.error(`Failed to save token for ${provider} to IndexedDB:`, error);
         }
       }
     } else {
@@ -740,7 +746,7 @@ export class OAuthManager {
           const key = `integrate_token_${provider}`;
           window.localStorage.setItem(key, JSON.stringify(tokenData));
         } catch (localStorageError) {
-          console.error(`Failed to save token for ${provider} to localStorage:`, localStorageError);
+          logger.error(`Failed to save token for ${provider} to localStorage:`, localStorageError);
         }
       }
     }
@@ -765,7 +771,7 @@ export class OAuthManager {
       try {
         return await this.getTokenCallback(provider, email, context);
       } catch (error) {
-        console.error(`Failed to load token for ${provider} via callback:`, error);
+        logger.error(`Failed to load token for ${provider} via callback:`, error);
         return undefined;
       }
     }
@@ -890,7 +896,7 @@ export class OAuthManager {
         const key = `integrate_oauth_pending_${state}`;
         window.localStorage.setItem(key, JSON.stringify(pendingAuth));
       } catch (error) {
-        console.error('Failed to save pending auth to localStorage:', error);
+        logger.error('Failed to save pending auth to localStorage:', error);
       }
     }
   }
@@ -911,7 +917,7 @@ export class OAuthManager {
           return JSON.parse(stored) as PendingAuth;
         }
       } catch (error) {
-        console.error('Failed to load pending auth from localStorage:', error);
+        logger.error('Failed to load pending auth from localStorage:', error);
       }
     }
     return undefined;
@@ -929,7 +935,7 @@ export class OAuthManager {
         const key = `integrate_oauth_pending_${state}`;
         window.localStorage.removeItem(key);
       } catch (error) {
-        console.error('Failed to remove pending auth from localStorage:', error);
+        logger.error('Failed to remove pending auth from localStorage:', error);
       }
     }
   }
@@ -972,7 +978,7 @@ export class OAuthManager {
         // Remove expired entries
         keysToRemove.forEach(key => window.localStorage.removeItem(key));
       } catch (error) {
-        console.error('Failed to cleanup expired pending auths:', error);
+        logger.error('Failed to cleanup expired pending auths:', error);
       }
     }
   }

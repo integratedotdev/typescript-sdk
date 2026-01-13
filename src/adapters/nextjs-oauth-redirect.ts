@@ -4,6 +4,12 @@
  */
 
 import { parseState } from '../oauth/pkce.js';
+import { createLogger } from '../utils/logger.js';
+
+/**
+ * Logger instance
+ */
+const logger = createLogger('OAuthRedirect');
 
 // Type-only imports to avoid requiring Next.js at build time
 type NextRequest = any;
@@ -54,19 +60,19 @@ export function createOAuthRedirectHandler(config?: OAuthRedirectConfig) {
     const error = searchParams.get('error');
     const errorDescription = searchParams.get('error_description');
 
-    // Handle OAuth error
-    if (error) {
-      const errorMsg = errorDescription || error;
-      console.error('[OAuth Redirect] Error:', errorMsg);
+      // Handle OAuth error
+      if (error) {
+        const errorMsg = errorDescription || error;
+        logger.error('[OAuth Redirect] Error:', errorMsg);
       
       return Response.redirect(
         new URL(`${errorRedirectUrl}?error=${encodeURIComponent(errorMsg)}`, req.url)
       );
     }
 
-    // Validate required parameters
-    if (!code || !state) {
-      console.error('[OAuth Redirect] Missing code or state parameter');
+      // Validate required parameters
+      if (!code || !state) {
+        logger.error('[OAuth Redirect] Missing code or state parameter');
       
       return Response.redirect(
         new URL(`${errorRedirectUrl}?error=${encodeURIComponent('Invalid OAuth callback')}`, req.url)

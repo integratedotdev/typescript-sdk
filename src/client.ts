@@ -20,6 +20,7 @@ import {
   type AuthenticationError,
 } from "./errors.js";
 import { methodToToolName } from "./utils/naming.js";
+import { setLogLevel, createLogger } from "./utils/logger.js";
 import type { GitHubIntegrationClient } from "./integrations/github-client.js";
 import type { GmailIntegrationClient } from "./integrations/gmail-client.js";
 import type { NotionIntegrationClient } from "./integrations/notion-client.js";
@@ -84,7 +85,7 @@ class SimpleEventEmitter {
         try {
           handler(payload);
         } catch (error) {
-          console.error(`Error in event handler for ${event}:`, error);
+          logger.error(`Error in event handler for ${event}:`, error);
         }
       });
     }
@@ -103,6 +104,11 @@ class SimpleEventEmitter {
  * MCP server URL
  */
 const MCP_SERVER_URL = "https://mcp.integrate.dev/api/v1/mcp";
+
+/**
+ * Logger instances
+ */
+const logger = createLogger('MCPClient');
 
 /**
  * Client instance cache for singleton pattern
@@ -356,7 +362,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
                 this.authState.set(provider, { authenticated: !!tokenData });
               }
             } catch (error) {
-              console.error(`Failed to check token for ${provider}:`, error);
+              logger.error(`Failed to check token for ${provider}:`, error);
               // Only set to false if state hasn't been modified
               const currentState = this.authState.get(provider);
               if (currentState && !currentState.authenticated && !currentState.lastError) {
@@ -366,7 +372,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
           }
         }
       }).catch(error => {
-        console.error('Failed to load provider tokens:', error);
+        logger.error('Failed to load provider tokens:', error);
       });
     } else {
       // IndexedDB: Load tokens asynchronously (IndexedDB operations are async)
@@ -639,7 +645,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
       this.enabledToolNames.has(tool.name)
     );
 
-    console.log(
+    logger.debug(
       `Discovered ${response.tools.length} tools, ${enabledTools.length} enabled by integrations`
     );
   }
@@ -1632,7 +1638,7 @@ function registerCleanupHandlers() {
             await client.disconnect();
           }
         } catch (error) {
-          console.error('Error disconnecting client:', error);
+          logger.error('Error disconnecting client:', error);
         }
       })
     );
@@ -1721,6 +1727,9 @@ function generateCacheKey<TIntegrations extends readonly MCPIntegration[]>(
 export function createMCPClient<TIntegrations extends readonly MCPIntegration[]>(
   config: MCPClientConfig<TIntegrations>
 ): MCPClient<TIntegrations> {
+  // Initialize logger based on debug flag
+  setLogLevel(config.debug ? 'debug' : 'error');
+  
   const useSingleton = config.singleton ?? true;
   const connectionMode = config.connectionMode ?? 'lazy';
   const autoCleanup = config.autoCleanup ?? true;
@@ -1753,7 +1762,7 @@ export function createMCPClient<TIntegrations extends readonly MCPIntegration[]>
     if (connectionMode === 'eager') {
       // Connect asynchronously, don't block
       client.connect().catch((error) => {
-        console.error('Failed to connect client:', error);
+        logger.error('Failed to connect client:', error);
       });
     }
 
@@ -1775,7 +1784,7 @@ export function createMCPClient<TIntegrations extends readonly MCPIntegration[]>
     // Eager connection if requested
     if (connectionMode === 'eager') {
       client.connect().catch((error) => {
-        console.error('Failed to connect client:', error);
+        logger.error('Failed to connect client:', error);
       });
     }
 
@@ -1832,7 +1841,7 @@ function processOAuthCallbackFromHash(
           }).catch((error) => {
             // Handle error based on configured behavior
             if (mode === 'console') {
-              console.error('Failed to process OAuth callback:', error);
+              logger.error('Failed to process OAuth callback:', error);
             } else if (mode === 'redirect' && errorBehavior?.redirectUrl) {
               // Redirect to error page
               window.location.href = errorBehavior.redirectUrl;
@@ -1849,7 +1858,7 @@ function processOAuthCallbackFromHash(
   } catch (error) {
     // Handle parsing errors based on configured behavior
     if (mode === 'console') {
-      console.error('Failed to process OAuth callback from hash:', error);
+      logger.error('Failed to process OAuth callback from hash:', error);
     } else if (mode === 'redirect' && errorBehavior?.redirectUrl) {
       window.location.href = errorBehavior.redirectUrl;
       return null;
@@ -1892,7 +1901,7 @@ export async function clearClientCache(): Promise<void> {
           await client.disconnect();
         }
       } catch (error) {
-        console.error('Error disconnecting client during cache clear:', error);
+        logger.error('Error disconnecting client during cache clear:', error);
       }
     })
   );

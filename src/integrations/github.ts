@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('GitHub');
 
 /**
  * GitHub integration configuration
@@ -71,11 +74,11 @@ export function githubIntegration(config: GitHubIntegrationConfig = {}): MCPInte
     oauth,
 
     async onInit(_client) {
-      console.log("GitHub integration initialized");
+      logger.debug("GitHub integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("GitHub integration connected");
+      logger.debug("GitHub integration connected");
     },
   };
 }

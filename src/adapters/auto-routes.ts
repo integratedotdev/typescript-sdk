@@ -4,6 +4,12 @@
  */
 
 import { OAuthHandler, type OAuthHandlerConfig } from './base-handler.js';
+import { createLogger } from '../utils/logger.js';
+
+/**
+ * Logger instance
+ */
+const logger = createLogger('AutoRoutes');
 
 /**
  * Global OAuth configuration
@@ -128,7 +134,7 @@ export async function POST(
 
     return createErrorResponse(`Unknown action: ${action}`, 404);
   } catch (error: any) {
-    console.error(`[OAuth ${action}] Error:`, error);
+    logger.error(`[OAuth ${action}] Error:`, error);
     return createErrorResponse(error.message, 500);
   }
 }
@@ -173,7 +179,7 @@ export async function GET(
 
     return createErrorResponse(`Unknown action: ${action}`, 404);
   } catch (error: any) {
-    console.error(`[OAuth ${action}] Error:`, error);
+    logger.error(`[OAuth ${action}] Error:`, error);
     return createErrorResponse(error.message, 500);
   }
 }

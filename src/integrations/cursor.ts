@@ -4,6 +4,9 @@
  */
 
 import type { MCPIntegration } from "./types.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Cursor');
 
 /**
  * Cursor integration configuration
@@ -41,11 +44,11 @@ export function cursorIntegration(_config: CursorIntegrationConfig = {}): MCPInt
     // No OAuth - Cursor uses basic authentication with API key
 
     async onInit(_client) {
-      console.log("Cursor integration initialized");
+      logger.debug("Cursor integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Cursor integration connected");
+      logger.debug("Cursor integration connected");
     },
   };
 }
