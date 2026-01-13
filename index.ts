@@ -5,6 +5,15 @@
  * 
  * @example
  * ```typescript
+ * // Use default client (no integrations pre-configured)
+ * import { client } from 'integrate-sdk';
+ * 
+ * // Use server methods without integrations
+ * const providers = await client.server.listAllProviders();
+ * ```
+ * 
+ * @example
+ * ```typescript
  * // Create a client with explicitly configured integrations
  * import { createMCPClient, githubIntegration } from 'integrate-sdk';
  * 
@@ -44,4 +53,12 @@
  */
 
 export * from './src/index.js';
+
+// Default client export with no integrations pre-configured
+// Users can use this for server methods or configure integrations themselves
+import { createMCPClient } from './src/index.js';
+
+export const client = createMCPClient({
+  integrations: [],
+});
 
