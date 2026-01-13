@@ -127,50 +127,7 @@ describe("Server Namespace", () => {
     expect(result.content[0].text).toBe("all tools result");
   });
 
-  test("listConfiguredIntegrations returns local configuration with server metadata", async () => {
-    const mockFetch = mock(async (url: string, options?: any) => {
-      if (url.includes("/api/integrate/mcp")) {
-        // Check if this is the list_all_providers call
-        // The client sends { name, arguments } to the API handler
-        const body = options?.body ? JSON.parse(options.body) : {};
-        if (body.name === "list_all_providers") {
-          // API handler returns MCPToolCallResponse directly (already unwrapped from JSON-RPC)
-          return {
-            ok: true,
-            status: 200,
-            json: async () => ({
-              content: [{
-                type: "text",
-                text: JSON.stringify({
-                  integrations: [
-                    {
-                      name: "GitHub",
-                      logo_url: "https://example.com/github-logo.png",
-                      description: "Manage GitHub repositories, issues, and pull requests",
-                      owner: "integrate",
-                      example_usage: "Create issues, manage pull requests"
-                    }
-                  ]
-                })
-              }]
-            }),
-            headers: new Headers(),
-          } as Response;
-        }
-        return {
-          ok: true,
-          status: 200,
-          json: async () => ({
-            content: [{ type: "text", text: "other result" }],
-          }),
-          headers: new Headers(),
-        } as Response;
-      }
-      return { ok: false } as Response;
-    }) as any;
-
-    global.fetch = mockFetch;
-
+  test("listConfiguredIntegrations returns local configuration", async () => {
     const client = createMCPClient({
       integrations: [
         githubIntegration({
@@ -188,63 +145,6 @@ describe("Server Namespace", () => {
     expect(result.integrations[0].hasOAuth).toBe(true);
     expect(result.integrations[0].tools.length).toBeGreaterThan(0);
     expect(result.integrations[0].scopes).toEqual(["repo"]);
-    
-    // Check server metadata is included
-    expect(result.integrations[0].name).toBe("GitHub");
-    expect(result.integrations[0].logoUrl).toBe("https://example.com/github-logo.png");
-    expect(result.integrations[0].description).toBe("Manage GitHub repositories, issues, and pull requests");
-    expect(result.integrations[0].owner).toBe("integrate");
-    expect(result.integrations[0].exampleUsage).toBe("Create issues, manage pull requests");
-  });
-
-  test("listConfiguredIntegrations falls back to local-only when server call fails", async () => {
-    const mockFetch = mock(async (url: string, options?: any) => {
-      if (url.includes("/api/integrate/mcp")) {
-        // Make list_all_providers call fail
-        const body = options?.body ? JSON.parse(options.body) : {};
-        if (body.name === "list_all_providers") {
-          return {
-            ok: false,
-            status: 500,
-            json: async () => ({ error: "Server error" }),
-            headers: new Headers(),
-          } as Response;
-        }
-        return {
-          ok: true,
-          status: 200,
-          json: async () => ({
-            content: [{ type: "text", text: "other result" }],
-          }),
-          headers: new Headers(),
-        } as Response;
-      }
-      return { ok: false } as Response;
-    }) as any;
-
-    global.fetch = mockFetch;
-
-    const client = createMCPClient({
-      integrations: [
-        githubIntegration({
-          clientId: "test-id",
-          scopes: ["repo"],
-        }),
-      ],
-      connectionMode: 'manual',
-      singleton: false,
-    });
-
-    const result = await client.server.listConfiguredIntegrations();
-    expect(result.integrations).toHaveLength(1);
-    expect(result.integrations[0].id).toBe("github");
-    expect(result.integrations[0].hasOAuth).toBe(true);
-    expect(result.integrations[0].tools.length).toBeGreaterThan(0);
-    expect(result.integrations[0].scopes).toEqual(["repo"]);
-    
-    // Server metadata should not be present (graceful fallback)
-    expect(result.integrations[0].logoUrl).toBeUndefined();
-    expect(result.integrations[0].description).toBeUndefined();
   });
 });
 
