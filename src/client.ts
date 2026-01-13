@@ -521,18 +521,76 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   private createServerProxy(): any {
     return new Proxy({}, {
       get: (_target, methodName: string) => {
-        // Local-only helper to list configured integrations without server call
+        // Helper to list configured integrations with server metadata
         if (methodName === 'listConfiguredIntegrations') {
-          return async () => ({
-            integrations: this.integrations.map(integration => ({
+          return async () => {
+            // Build local integration config
+            const localIntegrations = this.integrations.map(integration => ({
               id: integration.id,
               name: (integration as any).name || integration.id,
               tools: integration.tools,
               hasOAuth: !!integration.oauth,
               scopes: integration.oauth?.scopes,
               provider: integration.oauth?.provider,
-            })),
-          });
+            }));
+
+            // Try to fetch server metadata
+            let serverMetadataMap: Map<string, any> = new Map();
+            try {
+              const serverResponse = await this.callServerToolInternal('list_all_providers');
+              
+              // Parse JSON from response content
+              if (serverResponse.content && serverResponse.content.length > 0) {
+                const textContent = serverResponse.content[0]?.text;
+                if (textContent) {
+                  try {
+                    const parsed = JSON.parse(textContent);
+                    const integrations: Array<{ name: string; logo_url?: string; description?: string; owner?: string; example_usage?: string }> = parsed.integrations || [];
+                    
+                    // Create a map keyed by integration name (case-insensitive)
+                    for (const metadata of integrations) {
+                      const key = metadata.name.toLowerCase();
+                      serverMetadataMap.set(key, metadata);
+                    }
+                  } catch (parseError) {
+                    logger.debug('Failed to parse server metadata response:', parseError);
+                  }
+                }
+              }
+            } catch (error) {
+              // Graceful fallback: if server call fails, return local-only data
+              logger.debug('Failed to fetch server metadata, returning local-only data:', error);
+              return { integrations: localIntegrations };
+            }
+
+            // Merge server metadata with local config
+            const mergedIntegrations = localIntegrations.map(local => {
+              // Try to match by name (case-insensitive)
+              const metadataKey = local.name.toLowerCase();
+              const serverMetadata = serverMetadataMap.get(metadataKey);
+              
+              // Also try matching by ID (case-insensitive) in case name doesn't match
+              const idKey = local.id.toLowerCase();
+              const serverMetadataById = serverMetadataMap.get(idKey) || serverMetadata;
+
+              if (serverMetadataById) {
+                return {
+                  ...local,
+                  // Use server name if available, otherwise keep local name
+                  name: serverMetadataById.name || local.name,
+                  logoUrl: serverMetadataById.logo_url,
+                  description: serverMetadataById.description,
+                  owner: serverMetadataById.owner,
+                  exampleUsage: serverMetadataById.example_usage,
+                };
+              }
+
+              // No server metadata found, return local-only
+              return local;
+            });
+
+            return { integrations: mergedIntegrations };
+          };
         }
 
         // Return a function that calls the server tool directly

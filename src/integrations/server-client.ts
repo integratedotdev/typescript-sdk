@@ -24,11 +24,22 @@ export interface ServerIntegrationClient {
 
   /**
    * List integrations configured on this SDK client
-   * Returns local configuration only (no server call)
+   * Merges local configuration with server-provided metadata (name, description, logo, etc.)
    */
   listConfiguredIntegrations(): Promise<{
     integrations: ConfiguredIntegration[];
   }>;
+}
+
+/**
+ * Server-provided integration metadata from list_all_providers
+ */
+export interface IntegrationMetadata {
+  name: string;
+  logo_url?: string;
+  description?: string;
+  owner?: string;
+  example_usage?: string;
 }
 
 /**
@@ -41,5 +52,10 @@ export interface ConfiguredIntegration {
   hasOAuth: boolean;
   scopes?: readonly string[];
   provider?: string;
+  // Server metadata (from list_all_providers)
+  logoUrl?: string;
+  description?: string;
+  owner?: string;
+  exampleUsage?: string;
 }
 
