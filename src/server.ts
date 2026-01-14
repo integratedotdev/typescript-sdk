@@ -44,6 +44,7 @@ let globalServerConfig: {
   }>;
   serverUrl?: string;
   apiKey?: string;
+  integrations?: readonly MCPIntegration[];
 } | null = null;
 
 /**
@@ -261,6 +262,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
     providers,
     serverUrl: config.serverUrl,
     apiKey: config.apiKey,
+    integrations: updatedIntegrations,
   };
 
   // Create the client instance with lazy connection (same as client-side)
@@ -282,6 +284,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
     providers,
     serverUrl: config.serverUrl,
     apiKey: config.apiKey,
+    integrations: updatedIntegrations,
     getSessionContext: config.getSessionContext,
     setProviderToken: config.setProviderToken,
     removeProviderToken: config.removeProviderToken,

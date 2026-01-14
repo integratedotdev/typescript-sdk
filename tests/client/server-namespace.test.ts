@@ -146,5 +146,45 @@ describe("Server Namespace", () => {
     expect(result.integrations[0].tools.length).toBeGreaterThan(0);
     expect(result.integrations[0].scopes).toEqual(["repo"]);
   });
+
+  test("listConfiguredIntegrations uses server config when available", async () => {
+    const client = createMCPClient({
+      integrations: [
+        githubIntegration({
+          clientId: "test-id",
+          scopes: ["repo"],
+        }),
+      ],
+      connectionMode: 'manual',
+      singleton: false,
+    });
+
+    // Simulate server config (as set by createMCPServer)
+    // This represents a different set of integrations configured on the server
+    const serverIntegration = {
+      id: "linear",
+      tools: ["linear_list_issues", "linear_create_issue"],
+      oauth: {
+        provider: "linear",
+        clientId: "server-linear-id",
+        clientSecret: "server-linear-secret",
+        scopes: ["read", "write"],
+      },
+    };
+    
+    (client as any).__oauthConfig = {
+      providers: {},
+      integrations: [serverIntegration],
+    };
+
+    const result = await client.server.listConfiguredIntegrations();
+    
+    // Should return server-configured integrations, not client integrations
+    expect(result.integrations).toHaveLength(1);
+    expect(result.integrations[0].id).toBe("linear");
+    expect(result.integrations[0].hasOAuth).toBe(true);
+    expect(result.integrations[0].tools).toEqual(["linear_list_issues", "linear_create_issue"]);
+    expect(result.integrations[0].scopes).toEqual(["read", "write"]);
+  });
 });
 

@@ -522,17 +522,24 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     return new Proxy({}, {
       get: (_target, methodName: string) => {
         // Local-only helper to list configured integrations without server call
+        // Uses server-configured integrations (from createMCPServer) when available
         if (methodName === 'listConfiguredIntegrations') {
-          return async () => ({
-            integrations: this.integrations.map(integration => ({
-              id: integration.id,
-              name: (integration as any).name || integration.id,
-              tools: integration.tools,
-              hasOAuth: !!integration.oauth,
-              scopes: integration.oauth?.scopes,
-              provider: integration.oauth?.provider,
-            })),
-          });
+          return async () => {
+            // Prefer server-configured integrations from createMCPServer config
+            const serverConfig = (this as any).__oauthConfig;
+            const configuredIntegrations = serverConfig?.integrations || this.integrations;
+            
+            return {
+              integrations: configuredIntegrations.map((integration: MCPIntegration) => ({
+                id: integration.id,
+                name: (integration as any).name || integration.id,
+                tools: integration.tools,
+                hasOAuth: !!integration.oauth,
+                scopes: integration.oauth?.scopes,
+                provider: integration.oauth?.provider,
+              })),
+            };
+          };
         }
 
         // Return a function that calls the server tool directly

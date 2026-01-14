@@ -44,6 +44,17 @@ import { gcalIntegration } from './src/integrations/gcal.js';
 import { outlookIntegration } from './src/integrations/outlook.js';
 import { airtableIntegration } from './src/integrations/airtable.js';
 import { todoistIntegration } from './src/integrations/todoist.js';
+import { whatsappIntegration } from './src/integrations/whatsapp.js';
+import { calcomIntegration } from './src/integrations/calcom.js';
+import { rampIntegration } from './src/integrations/ramp.js';
+import { onedriveIntegration } from './src/integrations/onedrive.js';
+import { gworkspaceIntegration } from './src/integrations/gworkspace.js';
+import { polarIntegration } from './src/integrations/polar.js';
+import { figmaIntegration } from './src/integrations/figma.js';
+import { intercomIntegration } from './src/integrations/intercom.js';
+import { hubspotIntegration } from './src/integrations/hubspot.js';
+import { youtubeIntegration } from './src/integrations/youtube.js';
+import { cursorIntegration } from './src/integrations/cursor.js';
 
 /**
  * Default MCP Client with all integrations pre-configured
@@ -94,6 +105,17 @@ export const client = createMCPClient({
     outlookIntegration(),
     airtableIntegration(),
     todoistIntegration(),
+    whatsappIntegration(),
+    calcomIntegration(),
+    rampIntegration(),
+    onedriveIntegration(),
+    gworkspaceIntegration(),
+    polarIntegration(),
+    figmaIntegration(),
+    intercomIntegration(),
+    hubspotIntegration(),
+    youtubeIntegration(),
+    cursorIntegration(),
   ],
 });
 
