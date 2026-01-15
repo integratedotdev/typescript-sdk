@@ -250,6 +250,13 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   private databaseDetected: boolean = false;
 
   /**
+   * Explicitly configured integrations passed to createMCPClient
+   * Used by listConfiguredIntegrations to return only configured integrations
+   * @internal
+   */
+  private __configuredIntegrations: TIntegrations;
+
+  /**
    * Promise that resolves when OAuth callback processing is complete
    * @internal Used by createMCPClient to store callback promise
    */
@@ -296,6 +303,10 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
       }
       return integration;
     }) as unknown as TIntegrations;
+
+    // Store configured integrations explicitly for listConfiguredIntegrations
+    // This ensures only integrations passed to createMCPClient are returned
+    this.__configuredIntegrations = this.integrations;
 
     this.clientInfo = config.clientInfo || {
       name: "integrate-sdk",
@@ -522,13 +533,82 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     return new Proxy({}, {
       get: (_target, methodName: string) => {
         // Local-only helper to list configured integrations without server call
-        // Uses server-configured integrations (from createMCPServer) when available
+        // Returns only the integrations explicitly configured in createMCPClient/createMCPServer
+        // Optionally fetches full tool metadata from server when includeToolMetadata is true
         if (methodName === 'listConfiguredIntegrations') {
-          return async () => {
-            // Prefer server-configured integrations from createMCPServer config
+          return async (options?: { includeToolMetadata?: boolean }) => {
+            // Use __configuredIntegrations which stores only explicitly configured integrations
+            // For serverClient, __oauthConfig.integrations takes precedence (set by createMCPServer)
             const serverConfig = (this as any).__oauthConfig;
-            const configuredIntegrations = serverConfig?.integrations || this.integrations;
+            const configuredIntegrations = serverConfig?.integrations || this.__configuredIntegrations;
             
+            // If includeToolMetadata is true, fetch tool metadata for all integrations
+            if (options?.includeToolMetadata) {
+              const { parallelWithLimit } = await import('./utils/concurrency.js');
+              
+              // Fetch metadata for each integration in parallel with concurrency limit
+              const integrationsWithMetadata = await parallelWithLimit(
+                configuredIntegrations,
+                async (integration: MCPIntegration) => {
+                  try {
+                    // Call listToolsByIntegration to get full tool metadata
+                    const response = await this.callServerToolInternal('list_tools_by_integration', {
+                      integration: integration.id,
+                    });
+                    
+                    // Extract tool metadata from response
+                    // Response format: { content: [{ type: "text", text: "..." }] }
+                    let toolMetadata: any[] = [];
+                    if (response.content && Array.isArray(response.content)) {
+                      for (const item of response.content) {
+                        if (item.type === 'text' && item.text) {
+                          try {
+                            // Try to parse as JSON if it's a JSON string
+                            const parsed = JSON.parse(item.text);
+                            if (Array.isArray(parsed)) {
+                              toolMetadata = parsed;
+                            } else if (parsed.tools && Array.isArray(parsed.tools)) {
+                              toolMetadata = parsed.tools;
+                            }
+                          } catch {
+                            // Not JSON, skip
+                          }
+                        }
+                      }
+                    }
+                    
+                    return {
+                      id: integration.id,
+                      name: (integration as any).name || integration.id,
+                      tools: integration.tools,
+                      hasOAuth: !!integration.oauth,
+                      scopes: integration.oauth?.scopes,
+                      provider: integration.oauth?.provider,
+                      toolMetadata,
+                    };
+                  } catch (error) {
+                    // If metadata fetch fails, return without metadata
+                    logger.error(`Failed to fetch tool metadata for ${integration.id}:`, error);
+                    return {
+                      id: integration.id,
+                      name: (integration as any).name || integration.id,
+                      tools: integration.tools,
+                      hasOAuth: !!integration.oauth,
+                      scopes: integration.oauth?.scopes,
+                      provider: integration.oauth?.provider,
+                      toolMetadata: [],
+                    };
+                  }
+                },
+                3 // Concurrency limit: 3 parallel requests at a time
+              );
+              
+              return {
+                integrations: integrationsWithMetadata,
+              };
+            }
+            
+            // Default behavior: return local data only (no server call)
             return {
               integrations: configuredIntegrations.map((integration: MCPIntegration) => ({
                 id: integration.id,

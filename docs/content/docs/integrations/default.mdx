@@ -123,10 +123,10 @@ console.log("Notion tools:", notionTools);
 
 ### List Configured Integrations
 
-Get a list of all integrations configured on your SDK client. This is a local-only operation that doesn't make any server calls:
+Get a list of all integrations configured on your SDK client. By default, this is a local-only operation that doesn't make any server calls. Optionally, you can fetch full tool metadata for all configured integrations:
 
 ```typescript
-// Get all configured integrations
+// Fast: Get configured integrations (local only, no server calls)
 const { integrations } = await client.server.listConfiguredIntegrations();
 
 console.log(`Configured ${integrations.length} integrations:`);
@@ -140,7 +140,28 @@ integrations.forEach((integration) => {
 });
 ```
 
-**Response format:**
+**With full tool metadata:**
+
+If you need tool descriptions and input schemas, use the `includeToolMetadata` option. This fetches metadata for all integrations using batched requests with concurrency control to avoid rate limiting:
+
+```typescript
+// Complete: Get configured integrations with full tool metadata
+const { integrations } = await client.server.listConfiguredIntegrations({
+  includeToolMetadata: true,
+});
+
+integrations.forEach((integration) => {
+  console.log(`${integration.name}:`);
+  integration.toolMetadata?.forEach((tool) => {
+    console.log(`  - ${tool.name}: ${tool.description}`);
+    if (tool.inputSchema?.required) {
+      console.log(`    Required fields: ${tool.inputSchema.required.join(', ')}`);
+    }
+  });
+});
+```
+
+**Response format (basic):**
 
 ```typescript
 {
@@ -160,6 +181,39 @@ integrations.forEach((integration) => {
       hasOAuth: true,
       scopes: ["gmail.readonly"],
       provider: "gmail"
+    }
+  ]
+}
+```
+
+**Response format (with metadata):**
+
+```typescript
+{
+  integrations: [
+    {
+      id: "github",
+      name: "GitHub",
+      tools: ["github_create_issue", "github_list_repos", ...],
+      hasOAuth: true,
+      scopes: ["repo", "user"],
+      provider: "github",
+      toolMetadata: [
+        {
+          name: "github_create_issue",
+          description: "Create a new issue in a GitHub repository",
+          inputSchema: {
+            type: "object",
+            properties: {
+              title: { type: "string" },
+              body: { type: "string" },
+              labels: { type: "array" }
+            },
+            required: ["title"]
+          }
+        },
+        // ... more tools
+      ]
     }
   ]
 }

@@ -24,11 +24,25 @@ export interface ServerIntegrationClient {
 
   /**
    * List integrations configured on this SDK client
-   * Returns local configuration only (no server call)
+   * Returns local configuration only by default (no server call)
+   * 
+   * @param options - Optional configuration
+   * @param options.includeToolMetadata - If true, fetches full tool metadata from server for all configured integrations
    */
-  listConfiguredIntegrations(): Promise<{
+  listConfiguredIntegrations(options?: {
+    includeToolMetadata?: boolean;
+  }): Promise<{
     integrations: ConfiguredIntegration[];
   }>;
+}
+
+/**
+ * Tool metadata with description and input schema
+ */
+export interface ToolMetadata {
+  name: string;
+  description?: string;
+  inputSchema?: Record<string, unknown>;
 }
 
 /**
@@ -41,5 +55,10 @@ export interface ConfiguredIntegration {
   hasOAuth: boolean;
   scopes?: readonly string[];
   provider?: string;
+  /**
+   * Full tool metadata (descriptions, schemas) when includeToolMetadata option is true
+   * Only populated if includeToolMetadata: true is passed to listConfiguredIntegrations()
+   */
+  toolMetadata?: ToolMetadata[];
 }
 

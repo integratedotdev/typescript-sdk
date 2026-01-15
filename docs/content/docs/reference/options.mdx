@@ -460,13 +460,20 @@ console.log("GitHub tools:", result);
 
 ### client.server.listConfiguredIntegrations()
 
-List integrations configured on this SDK client. This is a local-only operation that doesn't make any server calls.
+List integrations configured on this SDK client. By default, this is a local-only operation that doesn't make any server calls. Optionally, you can fetch full tool metadata (descriptions, input schemas) for all configured integrations.
 
 ```typescript
-async listConfiguredIntegrations(): Promise<{
+async listConfiguredIntegrations(options?: {
+  includeToolMetadata?: boolean;
+}): Promise<{
   integrations: ConfiguredIntegration[];
 }>
 ```
+
+**Parameters:**
+
+- `options` (optional) - Configuration options
+  - `includeToolMetadata` (boolean, default: false) - If true, fetches full tool metadata from the server for all configured integrations. Uses batched requests with concurrency control to avoid rate limiting.
 
 **Returns:**
 
@@ -477,11 +484,12 @@ async listConfiguredIntegrations(): Promise<{
   - `hasOAuth` (boolean) - Whether the integration requires OAuth
   - `scopes` (readonly string[] | undefined) - OAuth scopes if applicable
   - `provider` (string | undefined) - OAuth provider name if applicable
+  - `toolMetadata` (ToolMetadata[] | undefined) - Full tool metadata when `includeToolMetadata: true` is passed
 
-**Example:**
+**Example (local only - fast):**
 
 ```typescript
-// Get all configured integrations
+// Get all configured integrations (no server call)
 const { integrations } = await client.server.listConfiguredIntegrations();
 
 console.log(`Configured ${integrations.length} integrations:`);
@@ -495,7 +503,30 @@ integrations.forEach((integration) => {
 });
 ```
 
-**Note:** This method returns only the integrations configured on your local client instance. It does not query the MCP server, making it fast and suitable for checking client configuration.
+**Example (with metadata - includes server calls):**
+
+```typescript
+// Get configured integrations with full tool metadata
+const { integrations } = await client.server.listConfiguredIntegrations({
+  includeToolMetadata: true,
+});
+
+integrations.forEach((integration) => {
+  console.log(`${integration.name}:`);
+  integration.toolMetadata?.forEach((tool) => {
+    console.log(`  - ${tool.name}`);
+    console.log(`    ${tool.description}`);
+    if (tool.inputSchema) {
+      console.log(`    Required: ${tool.inputSchema.required?.join(', ') || 'none'}`);
+    }
+  });
+});
+```
+
+**Note:** 
+- Without `includeToolMetadata`, this method returns only local configuration data (no server calls).
+- With `includeToolMetadata: true`, it fetches tool metadata for all integrations using batched requests with concurrency control (3 parallel requests at a time) to avoid rate limiting.
+- If metadata fetching fails for an integration, it returns an empty array for that integration's `toolMetadata` rather than failing the entire operation.
 
 ## Type Definitions
 
