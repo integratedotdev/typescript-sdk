@@ -39,7 +39,7 @@ export function baseOptions(includeMainLinks: boolean = true): BaseLayoutProps {
   );
 
   return {
-    githubUrl: 'https://github.com/integratedotdev/typescript-sdk',
+    ...(!includeMainLinks ? { githubUrl: 'https://github.com/integratedotdev/typescript-sdk' } : {}),
     links,
     nav: {
       title: 'Integrate',

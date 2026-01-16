@@ -38,3 +38,34 @@ pre code {
   padding: 0;
   margin: 0;
 }
+
+/* Make Sign In and Get Started buttons rounded-full with more padding */
+nav a[href="https://app.integrate.dev"],
+nav a[href="https://app.integrate.dev/signup"] {
+  border-radius: 9999px !important;
+  padding-left: 1.5rem !important;
+  padding-right: 1.5rem !important;
+}
+
+/* Style Get Started button like hero section (inverted colors) */
+nav a[href="https://app.integrate.dev/signup"] {
+  background-color: rgb(24 24 27) !important; /* bg-zinc-900 */
+  color: rgb(255 255 255) !important; /* text-white */
+  transition-property: background-color !important;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition-duration: 150ms !important;
+}
+
+nav a[href="https://app.integrate.dev/signup"]:hover {
+  background-color: rgb(39 39 42) !important; /* hover:bg-zinc-800 */
+}
+
+/* Dark mode: white background with dark text */
+.dark nav a[href="https://app.integrate.dev/signup"] {
+  background-color: rgb(255 255 255) !important; /* dark:bg-white */
+  color: rgb(24 24 27) !important; /* dark:text-zinc-900 */
+}
+
+.dark nav a[href="https://app.integrate.dev/signup"]:hover {
+  background-color: rgb(244 244 245) !important; /* dark:hover:bg-zinc-100 */
+}

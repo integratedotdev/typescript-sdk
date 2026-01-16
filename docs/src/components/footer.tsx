@@ -1,86 +1,85 @@
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
-import { cn } from '@/lib/cn';
 import { ThemeToggle } from './ui/theme-toggle';
 
-const layoutWidthClass = 'container mx-auto px-6 lg:px-12';
-
 export function Footer() {
-    return (
-        <footer className="mt-auto border-t border-zinc-200 bg-white/80 py-12 dark:border-zinc-800 dark:bg-zinc-950/60">
-            <div className={cn(layoutWidthClass, 'space-y-8')}>
-                <div className="grid gap-10 text-sm text-zinc-600 dark:text-zinc-300 sm:grid-cols-2 lg:grid-cols-4">
-                    <div className="space-y-3">
-                        <p className="text-base font-semibold text-zinc-900 dark:text-white">Integrate SDK</p>
-                        <p className="max-w-xs text-sm">
-                            A type-safe TypeScript SDK for connecting AI systems to the Integrate MCP server.
-                        </p>
-                        <Link href="/docs" className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-500 dark:text-blue-400">
-                            Read the documentation
-                            <ArrowRight className="size-4" aria-hidden />
-                        </Link>
-                    </div>
-                    <div className="space-y-2">
-                        <p className="font-semibold text-zinc-900 dark:text-white">Getting started</p>
-                        <ul className="space-y-1">
-                            <li>
-                                <Link href="/docs/getting-started/installation" className="hover:text-blue-600 dark:hover:text-blue-400">
-                                    Installation
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/docs/getting-started/quick-start" className="hover:text-blue-600 dark:hover:text-blue-400">
-                                    Quick Start
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/docs/reference/api-reference" className="hover:text-blue-600 dark:hover:text-blue-400">
-                                    API Reference
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
-                    <div className="space-y-2">
-                        <p className="font-semibold text-zinc-900 dark:text-white">Integrations</p>
-                        <ul className="space-y-1">
-                            <li>
-                                <Link href="/docs/integrations" className="hover:text-blue-600 dark:hover:text-blue-400">
-                                    Built-in Integrations
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/docs/artificial-intelligence/vercel-ai-sdk" className="hover:text-blue-600 dark:hover:text-blue-400">
-                                    Vercel AI SDK
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
-                    <div className="space-y-2">
-                        <p className="font-semibold text-zinc-900 dark:text-white">Resources</p>
-                        <ul className="space-y-1">
-                            <li>
-                                <Link href="https://discord.gg/7bAnb7CGGm" target='_blank' className="hover:text-blue-600 dark:hover:text-blue-400">
-                                    Community
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="https://github.com/integratedotdev/examples" target='_blank' className="hover:text-blue-600 dark:hover:text-blue-400">
-                                    Examples
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/pricing" className="hover:text-blue-600 dark:hover:text-blue-400">
-                                    Pricing
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div className="flex items-center justify-center border-t border-zinc-200 pt-8 dark:border-zinc-800">
-                    <ThemeToggle />
-                </div>
-            </div>
-        </footer>
-    );
+  return (
+    <footer className="border-t border-zinc-200 bg-white py-12 dark:border-zinc-800 dark:bg-zinc-950">
+      <div className="container mx-auto px-6">
+        <div className="grid gap-8 text-sm sm:grid-cols-2 lg:grid-cols-4">
+          <div className="space-y-3">
+            <p className="font-semibold text-zinc-900 dark:text-white">Integrate</p>
+            <p className="max-w-xs text-zinc-600 dark:text-zinc-400">
+              The fastest gateway to any third party API for AI agents and apps.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <p className="font-semibold text-zinc-900 dark:text-white">Product</p>
+            <ul className="space-y-2 text-zinc-600 dark:text-zinc-400">
+              <li>
+                <Link href="/docs" className="hover:text-zinc-900 dark:hover:text-white">
+                  Documentation
+                </Link>
+              </li>
+              <li>
+                <Link href="/integrations" className="hover:text-zinc-900 dark:hover:text-white">
+                  Integrations
+                </Link>
+              </li>
+              <li>
+                <Link href="/pricing" className="hover:text-zinc-900 dark:hover:text-white">
+                  Pricing
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div className="space-y-3">
+            <p className="font-semibold text-zinc-900 dark:text-white">Developers</p>
+            <ul className="space-y-2 text-zinc-600 dark:text-zinc-400">
+              <li>
+                <Link href="/docs/getting-started/quick-start" className="hover:text-zinc-900 dark:hover:text-white">
+                  Quick Start
+                </Link>
+              </li>
+              <li>
+                <Link href="/docs/reference/api-reference" className="hover:text-zinc-900 dark:hover:text-white">
+                  API Reference
+                </Link>
+              </li>
+              <li>
+                <a href="https://github.com/integratedotdev/examples" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-900 dark:hover:text-white">
+                  Examples
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div className="space-y-3">
+            <p className="font-semibold text-zinc-900 dark:text-white">Community</p>
+            <ul className="space-y-2 text-zinc-600 dark:text-zinc-400">
+              <li>
+                <a href="https://github.com/integrate-dev" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-900 dark:hover:text-white">
+                  GitHub
+                </a>
+              </li>
+              <li>
+                <a href="https://discord.gg/7bAnb7CGGm" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-900 dark:hover:text-white">
+                  Discord
+                </a>
+              </li>
+              <li>
+                <a href="https://twitter.com/integratedev" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-900 dark:hover:text-white">
+                  Twitter
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div className="mt-12 flex items-center justify-between border-t border-zinc-200 pt-8 dark:border-zinc-800">
+          <p className="text-sm text-zinc-500">
+            © {new Date().getFullYear()} Integrate. All rights reserved.
+          </p>
+          <ThemeToggle />
+        </div>
+      </div>
+    </footer>
+  );
 }
-

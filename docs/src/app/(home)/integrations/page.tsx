@@ -1,149 +1,111 @@
 import Link from 'next/link';
-import { ArrowRight, Plug, Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 import { IntegrationsGrid, type IntegrationCard } from './integrations-grid';
-import { buttonVariants } from '@/components/ui/button';
-import { cn } from '@/lib/cn';
 import { Footer } from '@/components/footer';
 
-const layoutWidthClass = 'container mx-auto ';
-
-const primaryCtaClass = cn(
-    buttonVariants({ variant: 'primary', size: 'sm' }),
-    'h-10 rounded-lg px-4 text-sm font-semibold shadow-sm hover:shadow-md',
-);
-
-const secondaryCtaClass = cn(
-    buttonVariants({ variant: 'outline', size: 'sm' }),
-    'h-10 rounded-lg px-4 text-sm font-semibold backdrop-blur-sm',
-);
-
 type IntegrationResponse = {
-    integrations: {
-        name: string;
-        logo_url: string;
-        description: string;
-        owner?: string;
-    }[];
+  integrations: {
+    name: string;
+    logo_url: string;
+    description: string;
+    owner?: string;
+  }[];
 };
 
 function slugifyName(name: string) {
-    const normalized = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    return normalized || 'default';
+  const normalized = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  return normalized || 'default';
 }
 
 async function getIntegrations(): Promise<IntegrationCard[]> {
-    try {
-        const response = await fetch('https://mcp.integrate.dev/api/v1/integrations', {
-            // Revalidate periodically to keep the list fresh without slowing down page loads.
-            next: { revalidate: 60 * 60 },
-        });
+  try {
+    const response = await fetch('https://mcp.integrate.dev/api/v1/integrations', {
+      next: { revalidate: 60 * 60 },
+    });
 
-        if (!response.ok) {
-            throw new Error('Failed to fetch integrations');
-        }
-
-        const data = (await response.json()) as IntegrationResponse;
-
-        return data.integrations
-            .map((integration) => ({
-                name: integration.name,
-                slug: slugifyName(integration.name),
-                description: integration.description,
-                logoUrl: integration.logo_url,
-                owner: integration.owner,
-            }))
-            .filter(Boolean);
-    } catch {
-        return [];
+    if (!response.ok) {
+      throw new Error('Failed to fetch integrations');
     }
+
+    const data = (await response.json()) as IntegrationResponse;
+
+    return data.integrations
+      .map((integration) => ({
+        name: integration.name,
+        slug: slugifyName(integration.name),
+        description: integration.description,
+        logoUrl: integration.logo_url,
+        owner: integration.owner,
+      }))
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
 }
 
 export default async function IntegrationsPage() {
-    const integrations = await getIntegrations();
+  const integrations = await getIntegrations();
 
-    return (
-        <div className="flex min-h-screen flex-col">
-            <main className="flex flex-1 flex-col gap-20 pb-24">
-                <section className="relative overflow-hidden border-b border-zinc-200 bg-white/80 py-24 dark:border-zinc-800 dark:bg-zinc-950/60">
-                    <div className="absolute inset-0 -z-10 bg-linear-to-br from-blue-500/15 via-transparent to-fuchsia-500/20 dark:from-blue-500/30 dark:to-fuchsia-600/30" />
-                    <div className="absolute -right-24 -top-32 size-64 rounded-full bg-fuchsia-500/15 blur-3xl dark:bg-fuchsia-500/25" aria-hidden />
-                    <div className="absolute -left-20 bottom-0 size-88 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-500/30" aria-hidden />
-                    <div className={cn(layoutWidthClass, 'relative space-y-7 text-center')}>
-                        <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/80 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-300">
-                            <Sparkles className="size-3.5" aria-hidden />
-                            Integrations directory
-                        </span>
-                        <h1 className="text-pretty text-4xl font-semibold leading-tight text-zinc-900 dark:text-white sm:text-5xl lg:text-6xl">
-                            Find the integration you need
-                        </h1>
-                        <p className="mx-auto max-w-2xl text-lg text-zinc-600 dark:text-zinc-300">
-                            Browse Integrate’s MCP-ready integrations. Jump into the docs for setup and tools without rewriting backend glue code.
-                        </p>
-                        <div className="flex flex-wrap justify-center gap-3">
-                            <a href="https://app.integrate.dev" className={primaryCtaClass}>
-                                Get started
-                                <ArrowRight className="size-4" aria-hidden />
-                            </a>
-                            <Link href="/docs" className={secondaryCtaClass}>
-                                Explore the docs
-                                <ArrowRight className="size-4" aria-hidden />
-                            </Link>
-                        </div>
-                    </div>
-                </section>
+  return (
+    <div className="flex min-h-screen flex-col bg-white dark:bg-zinc-950">
+      <main className="flex flex-1 flex-col">
+        {/* Hero Section */}
+        <section className="py-20">
+          <div className="container mx-auto px-6 text-center">
+            <h1 className="text-4xl font-semibold tracking-tight text-zinc-900 dark:text-white sm:text-5xl">
+              Integrations
+            </h1>
+            <p className="mx-auto mt-4 max-w-lg text-lg text-zinc-600 dark:text-zinc-400">
+              Browse Integrate's MCP-ready integrations. Jump into the docs for setup and tools.
+            </p>
+            <div className="mt-8 flex justify-center gap-3">
+              <Link href="/docs" className="inline-flex h-10 items-center rounded-full border border-zinc-300 bg-zinc-100 px-6 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700">
+                View Docs
+              </Link>
+              <a href="https://app.integrate.dev" className="inline-flex h-10 items-center gap-1 rounded-full bg-zinc-900 px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100">
+                Get Started
+                <ArrowRight className="size-4" aria-hidden />
+              </a>
+            </div>
+          </div>
+        </section>
 
-                <section className={cn(layoutWidthClass, 'space-y-10')}>
-                    <div className="md:rounded-3xl border border-zinc-200 bg-white/70 p-6 dark:border-zinc-800 dark:bg-zinc-900/60">
-                        <div className="flex flex-wrap items-center justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                                <div>
-                                    <div className="text-xl font-semibold text-zinc-900 dark:text-white">
-                                        {integrations.length > 0 ? `${integrations.length} integrations` : 'Integrations'}
-                                    </div>
-                                </div>
-                            </div>
+        {/* Grid Section */}
+        <section className="border-t border-zinc-200 bg-zinc-50 py-16 dark:border-zinc-800 dark:bg-zinc-900/50">
+          <div className="container mx-auto px-6">
+            <div className="mb-6 flex items-center justify-between">
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                {integrations.length > 0 ? `${integrations.length} integrations available` : 'Loading integrations...'}
+              </p>
+            </div>
+            <IntegrationsGrid integrations={integrations} />
+          </div>
+        </section>
 
-                        </div>
-                        <p className="mt-1 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-                            Each integration links to a focused docs page with credentials, tool details, and usage examples. Click any card to jump straight to its guide.
-                        </p>
-                        <div className="mt-6">
-                            <IntegrationsGrid integrations={integrations} />
-                        </div>
-                    </div>
-                </section>
+        {/* CTA Section */}
+        <section className="border-t border-zinc-200 bg-zinc-900 py-20 dark:border-zinc-800 dark:bg-black">
+          <div className="container mx-auto px-6 text-center">
+            <h2 className="text-3xl font-semibold tracking-tight text-white">
+              Ready to ship your integration?
+            </h2>
+            <p className="mx-auto mt-4 max-w-lg text-zinc-400">
+              Configure credentials once, stream MCP tool calls, and keep OAuth on the server.
+            </p>
+            <div className="mt-8 flex justify-center gap-3">
+              <Link href="/docs" className="inline-flex h-10 items-center rounded-full border border-zinc-700 px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-800">
+                View Docs
+              </Link>
+              <a href="https://app.integrate.dev" className="inline-flex h-10 items-center gap-1 rounded-full bg-white px-6 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-100">
+                Get Started
+                <ArrowRight className="size-4" aria-hidden />
+              </a>
+            </div>
+          </div>
+        </section>
+      </main>
 
-                <section
-                    className={cn(
-                        layoutWidthClass,
-                        'relative overflow-hidden md:rounded-[32px] border border-zinc-200 bg-white/80 p-12 text-center dark:border-zinc-800 dark:bg-zinc-900/70',
-                    )}
-                >
-                    <div className="absolute inset-0 -z-10 bg-linear-to-br from-fuchsia-500/20 via-transparent to-blue-500/20 dark:from-fuchsia-500/25 dark:to-blue-500/25" />
-                    <div className="space-y-6">
-                        <h2 className="text-3xl font-semibold text-zinc-900 dark:text-white sm:text-4xl">
-                            Ready to ship your integration?
-                        </h2>
-                        <p className="mx-auto max-w-2xl text-base text-zinc-600 dark:text-zinc-300">
-                            Configure credentials once, stream MCP tool calls, and keep OAuth on the server. Let agents act safely across every SaaS you use.
-                        </p>
-                        <div className="flex flex-wrap justify-center gap-3">
-                            <a href="https://app.integrate.dev" className={primaryCtaClass}>
-                                Get started
-                                <ArrowRight className="size-4" aria-hidden />
-                            </a>
-                            <Link href="/docs" className={secondaryCtaClass}>
-                                Read the docs
-                                <ArrowRight className="size-4" aria-hidden />
-                            </Link>
-                        </div>
-                    </div>
-                </section>
-            </main>
-
-            <Footer />
-        </div>
-    );
+      <Footer />
+    </div>
+  );
 }
-
