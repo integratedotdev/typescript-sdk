@@ -58,6 +58,8 @@ export function stripeIntegration(config: StripeIntegrationConfig = {}): MCPInte
 
   return {
     id: "stripe",
+    name: "Stripe",
+    logoUrl: "https://cdn.simpleicons.org/stripe",
     tools: [...STRIPE_TOOLS],
     oauth,
 

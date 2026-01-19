@@ -58,6 +58,8 @@ export function figmaIntegration(config: FigmaIntegrationConfig = {}): MCPIntegr
 
   return {
     id: "figma",
+    name: "Figma",
+    logoUrl: "https://cdn.simpleicons.org/figma",
     tools: [...FIGMA_TOOLS],
     oauth,
 

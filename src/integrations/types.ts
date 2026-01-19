@@ -51,6 +51,12 @@ export interface MCPIntegration<TId extends string = string> {
   /** Unique integration identifier */
   id: TId;
 
+  /** Display name for the integration (defaults to id if not provided) */
+  name?: string;
+
+  /** URL to the integration's logo image */
+  logoUrl?: string;
+
   /** List of tool names this integration enables */
   tools: string[];
 

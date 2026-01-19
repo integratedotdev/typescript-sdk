@@ -61,6 +61,8 @@ export function rampIntegration(config: RampIntegrationConfig = {}): MCPIntegrat
 
   return {
     id: "ramp",
+    name: "Ramp",
+    logoUrl: "https://cdn.simpleicons.org/ramp",
     tools: [...RAMP_TOOLS],
     oauth,
 

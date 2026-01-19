@@ -58,6 +58,8 @@ export function slackIntegration(config: SlackIntegrationConfig = {}): MCPIntegr
 
   return {
     id: "slack",
+    name: "Slack",
+    logoUrl: "https://cdn.simpleicons.org/slack",
     tools: [...SLACK_TOOLS],
     oauth,
 

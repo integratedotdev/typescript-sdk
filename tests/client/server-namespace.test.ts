@@ -142,6 +142,8 @@ describe("Server Namespace", () => {
     const result = await client.server.listConfiguredIntegrations();
     expect(result.integrations).toHaveLength(1);
     expect(result.integrations[0].id).toBe("github");
+    expect(result.integrations[0].name).toBe("GitHub");
+    expect(result.integrations[0].logoUrl).toBe("https://cdn.simpleicons.org/github");
     expect(result.integrations[0].hasOAuth).toBe(true);
     expect(result.integrations[0].tools.length).toBeGreaterThan(0);
     expect(result.integrations[0].scopes).toEqual(["repo"]);
@@ -323,6 +325,27 @@ describe("Server Namespace", () => {
     expect(result.integrations[0].id).toBe("github");
     expect(result.integrations[0].toolMetadata).toBeUndefined();
     expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  test("listConfiguredIntegrations returns logoUrl when available", async () => {
+    const client = createMCPClient({
+      integrations: [
+        githubIntegration({
+          clientId: "test-id",
+        }),
+      ],
+      connectionMode: 'manual',
+      singleton: false,
+    });
+
+    const result = await client.server.listConfiguredIntegrations();
+    
+    expect(result.integrations).toHaveLength(1);
+    expect(result.integrations[0].id).toBe("github");
+    expect(result.integrations[0].name).toBe("GitHub");
+    expect(result.integrations[0].logoUrl).toBe("https://cdn.simpleicons.org/github");
+    expect(result.integrations[0].logoUrl).toBeDefined();
+    expect(typeof result.integrations[0].logoUrl).toBe("string");
   });
 });
 

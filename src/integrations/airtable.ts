@@ -58,6 +58,8 @@ export function airtableIntegration(config: AirtableIntegrationConfig = {}): MCP
 
   return {
     id: "airtable",
+    name: "Airtable",
+    logoUrl: "https://cdn.simpleicons.org/airtable",
     tools: [...AIRTABLE_TOOLS],
     oauth,
 

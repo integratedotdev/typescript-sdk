@@ -61,6 +61,8 @@ export function onedriveIntegration(config: OneDriveIntegrationConfig = {}): MCP
 
   return {
     id: "onedrive",
+    name: "OneDrive",
+    logoUrl: "https://cdn.simpleicons.org/onedrive",
     tools: [...ONEDRIVE_TOOLS],
     oauth,
 

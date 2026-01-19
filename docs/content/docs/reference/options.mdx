@@ -480,6 +480,7 @@ async listConfiguredIntegrations(options?: {
 - Object with `integrations` array containing:
   - `id` (string) - Integration identifier
   - `name` (string) - Integration display name
+  - `logoUrl` (string | undefined) - URL to the integration's logo image
   - `tools` (readonly string[]) - Array of tool names available for this integration
   - `hasOAuth` (boolean) - Whether the integration requires OAuth
   - `scopes` (readonly string[] | undefined) - OAuth scopes if applicable

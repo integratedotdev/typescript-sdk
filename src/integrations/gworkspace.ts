@@ -69,6 +69,8 @@ export function gworkspaceIntegration(config: GWorkspaceIntegrationConfig = {}):
 
   return {
     id: "gworkspace",
+    name: "Google Workspace",
+    logoUrl: "https://cdn.simpleicons.org/google",
     tools: [...GWORKSPACE_TOOLS],
     oauth,
 

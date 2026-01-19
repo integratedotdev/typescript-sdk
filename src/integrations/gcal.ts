@@ -58,6 +58,8 @@ export function gcalIntegration(config: GcalIntegrationConfig = {}): MCPIntegrat
 
   return {
     id: "gcal",
+    name: "Google Calendar",
+    logoUrl: "https://cdn.simpleicons.org/googlecalendar",
     tools: [...GCAL_TOOLS],
     oauth,
 

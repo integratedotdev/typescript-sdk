@@ -61,6 +61,8 @@ export function polarIntegration(config: PolarIntegrationConfig = {}): MCPIntegr
 
   return {
     id: "polar",
+    name: "Polar",
+    logoUrl: "https://cdn.simpleicons.org/polar",
     tools: [...POLAR_TOOLS],
     oauth,
 

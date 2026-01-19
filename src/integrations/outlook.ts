@@ -58,6 +58,8 @@ export function outlookIntegration(config: OutlookIntegrationConfig = {}): MCPIn
 
   return {
     id: "outlook",
+    name: "Outlook",
+    logoUrl: "https://cdn.simpleicons.org/microsoftoutlook",
     tools: [...OUTLOOK_TOOLS],
     oauth,
 

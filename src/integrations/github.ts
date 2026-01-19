@@ -70,6 +70,8 @@ export function githubIntegration(config: GitHubIntegrationConfig = {}): MCPInte
 
   return {
     id: "github",
+    name: "GitHub",
+    logoUrl: "https://cdn.simpleicons.org/github",
     tools: [...GITHUB_TOOLS],
     oauth,
 

@@ -58,6 +58,8 @@ export function todoistIntegration(config: TodoistIntegrationConfig = {}): MCPIn
 
   return {
     id: "todoist",
+    name: "Todoist",
+    logoUrl: "https://cdn.simpleicons.org/todoist",
     tools: [...TODOIST_TOOLS],
     oauth,
 

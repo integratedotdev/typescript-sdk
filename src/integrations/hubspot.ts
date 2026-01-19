@@ -69,6 +69,8 @@ export function hubspotIntegration(config: HubSpotIntegrationConfig = {}): MCPIn
 
   return {
     id: "hubspot",
+    name: "HubSpot",
+    logoUrl: "https://cdn.simpleicons.org/hubspot",
     tools: [...HUBSPOT_TOOLS],
     oauth,
 

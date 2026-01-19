@@ -58,6 +58,8 @@ export function youtubeIntegration(config: YouTubeIntegrationConfig = {}): MCPIn
 
   return {
     id: "youtube",
+    name: "YouTube",
+    logoUrl: "https://cdn.simpleicons.org/youtube",
     tools: [...YOUTUBE_TOOLS],
     oauth,
 

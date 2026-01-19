@@ -61,6 +61,8 @@ export function zendeskIntegration(config: ZendeskIntegrationConfig = {}): MCPIn
 
   return {
     id: "zendesk",
+    name: "Zendesk",
+    logoUrl: "https://cdn.simpleicons.org/zendesk",
     tools: [...ZENDESK_TOOLS],
     oauth,
 

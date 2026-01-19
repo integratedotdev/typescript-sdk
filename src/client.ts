@@ -580,6 +580,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
                     return {
                       id: integration.id,
                       name: (integration as any).name || integration.id,
+                      logoUrl: (integration as any).logoUrl,
                       tools: integration.tools,
                       hasOAuth: !!integration.oauth,
                       scopes: integration.oauth?.scopes,
@@ -592,6 +593,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
                     return {
                       id: integration.id,
                       name: (integration as any).name || integration.id,
+                      logoUrl: (integration as any).logoUrl,
                       tools: integration.tools,
                       hasOAuth: !!integration.oauth,
                       scopes: integration.oauth?.scopes,
@@ -613,6 +615,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
               integrations: configuredIntegrations.map((integration: MCPIntegration) => ({
                 id: integration.id,
                 name: (integration as any).name || integration.id,
+                logoUrl: (integration as any).logoUrl,
                 tools: integration.tools,
                 hasOAuth: !!integration.oauth,
                 scopes: integration.oauth?.scopes,

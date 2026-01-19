@@ -12,6 +12,10 @@ import { getEnv } from "../utils/env.js";
 export interface GenericOAuthIntegrationConfig {
   /** Integration unique identifier (must match the integration ID on the server) */
   id: string;
+  /** Display name for the integration (defaults to id if not provided) */
+  name?: string;
+  /** URL to the integration's logo image */
+  logoUrl?: string;
   /** OAuth provider name */
   provider: string;
   /** OAuth client ID (defaults to {PROVIDER}_CLIENT_ID env var) */
@@ -94,6 +98,8 @@ export function genericOAuthIntegration(
 
   return {
     id: config.id,
+    name: config.name,
+    logoUrl: config.logoUrl,
     tools: config.tools,
     oauth,
 

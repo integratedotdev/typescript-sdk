@@ -61,6 +61,8 @@ export function calcomIntegration(config: CalcomIntegrationConfig = {}): MCPInte
 
   return {
     id: "calcom",
+    name: "Cal.com",
+    logoUrl: "https://cdn.simpleicons.org/calendly",
     tools: [...CALCOM_TOOLS],
     oauth,
 

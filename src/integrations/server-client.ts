@@ -51,6 +51,8 @@ export interface ToolMetadata {
 export interface ConfiguredIntegration {
   id: string;
   name: string;
+  /** URL to the integration's logo image */
+  logoUrl?: string;
   tools: readonly string[];
   hasOAuth: boolean;
   scopes?: readonly string[];

@@ -40,6 +40,8 @@ const CURSOR_TOOLS = [
 export function cursorIntegration(_config: CursorIntegrationConfig = {}): MCPIntegration<"cursor"> {
   return {
     id: "cursor",
+    name: "Cursor",
+    logoUrl: "https://cdn.simpleicons.org/cursor",
     tools: [...CURSOR_TOOLS],
     // No OAuth - Cursor uses basic authentication with API key
 
