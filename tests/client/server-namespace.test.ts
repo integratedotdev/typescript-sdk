@@ -143,7 +143,7 @@ describe("Server Namespace", () => {
     expect(result.integrations).toHaveLength(1);
     expect(result.integrations[0].id).toBe("github");
     expect(result.integrations[0].name).toBe("GitHub");
-    expect(result.integrations[0].logoUrl).toBe("https://cdn.simpleicons.org/github");
+    expect(result.integrations[0].logoUrl).toBe("https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/github.png");
     expect(result.integrations[0].hasOAuth).toBe(true);
     expect(result.integrations[0].tools.length).toBeGreaterThan(0);
     expect(result.integrations[0].scopes).toEqual(["repo"]);
@@ -343,7 +343,7 @@ describe("Server Namespace", () => {
     expect(result.integrations).toHaveLength(1);
     expect(result.integrations[0].id).toBe("github");
     expect(result.integrations[0].name).toBe("GitHub");
-    expect(result.integrations[0].logoUrl).toBe("https://cdn.simpleicons.org/github");
+    expect(result.integrations[0].logoUrl).toBe("https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/github.png");
     expect(result.integrations[0].logoUrl).toBeDefined();
     expect(typeof result.integrations[0].logoUrl).toBe("string");
   });
