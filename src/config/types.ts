@@ -603,6 +603,39 @@ export interface MCPClientConfig<TIntegrations extends readonly MCPIntegration[]
    * ```
    */
   redirectUri?: string;
+
+  /**
+   * Whether to fetch configured integrations from server
+   * 
+   * When true, `listConfiguredIntegrations()` queries the server to get the list of
+   * integrations that are actually configured with OAuth credentials on the server-side.
+   * 
+   * When false (default), returns the local integrations passed to createMCPClient.
+   * 
+   * The default exported client (`import { client } from 'integrate-sdk'`) sets this to true
+   * since it has all integrations pre-configured but only some may be configured on the server.
+   * Custom clients created via `createMCPClient({ integrations: [...] })` default to false
+   * since the developer explicitly chose which integrations to use.
+   * 
+   * @default false
+   * 
+   * @example
+   * ```typescript
+   * // Default client behavior - fetch from server
+   * import { client } from 'integrate-sdk';
+   * const { integrations } = await client.server.listConfiguredIntegrations();
+   * // Returns integrations configured on the server via createMCPServer()
+   * 
+   * // Custom client behavior - use local config
+   * const customClient = createMCPClient({
+   *   integrations: [githubIntegration()],
+   *   useServerConfig: false, // default
+   * });
+   * const { integrations } = await customClient.server.listConfiguredIntegrations();
+   * // Returns [{ id: 'github', ... }] - the local config
+   * ```
+   */
+  useServerConfig?: boolean;
 }
 
 /**

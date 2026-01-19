@@ -78,7 +78,7 @@ const tools = await serverClient.server.listToolsByIntegration({
 
 - **`listAllProviders`** - List all providers available on the MCP server
 - **`listToolsByIntegration`** - List all tools available for a specific integration
-- **`listConfiguredIntegrations`** - List integrations configured on this SDK client (local-only, no server call)
+- **`listConfiguredIntegrations`** - List integrations configured for this application
 
 ## Examples
 
@@ -123,21 +123,55 @@ console.log("Notion tools:", notionTools);
 
 ### List Configured Integrations
 
-Get a list of all integrations configured on your SDK client. By default, this is a local-only operation that doesn't make any server calls. Optionally, you can fetch full tool metadata for all configured integrations:
+Get a list of integrations configured for your application. The behavior depends on how you created your client:
+
+**Default Client** - Fetches from server:
+
+When using the default exported client (`import { client } from 'integrate-sdk'`), this method queries the server to get the list of integrations actually configured with OAuth credentials via `createMCPServer()`:
 
 ```typescript
-// Fast: Get configured integrations (local only, no server calls)
+import { client } from "integrate-sdk";
+
+// Fetches from server to get what's actually configured
 const { integrations } = await client.server.listConfiguredIntegrations();
 
-console.log(`Configured ${integrations.length} integrations:`);
+console.log(`Server has ${integrations.length} integrations configured:`);
 integrations.forEach((integration) => {
   console.log(`- ${integration.name} (${integration.id})`);
-  console.log(`  Tools: ${integration.tools.length}`);
   console.log(`  OAuth: ${integration.hasOAuth ? 'Yes' : 'No'}`);
-  if (integration.scopes) {
-    console.log(`  Scopes: ${integration.scopes.join(', ')}`);
-  }
 });
+```
+
+**Custom Client** - Uses local config:
+
+When using a custom client created via `createMCPClient()`, this method returns the integrations you explicitly configured (no server call):
+
+```typescript
+import { createMCPClient, githubIntegration, gmailIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [githubIntegration(), gmailIntegration()],
+});
+
+// Returns local config - no server call
+const { integrations } = await customClient.server.listConfiguredIntegrations();
+// Returns github and gmail (what you configured)
+```
+
+**Server Client** - Uses local config:
+
+Server clients always return their local configuration (they ARE the server):
+
+```typescript
+import { createMCPServer, githubIntegration } from "integrate-sdk/server";
+
+const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [githubIntegration({ clientId: "...", clientSecret: "..." })],
+});
+
+// Returns local config
+const { integrations } = await serverClient.server.listConfiguredIntegrations();
 ```
 
 **With full tool metadata:**

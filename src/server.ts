@@ -439,6 +439,21 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
       }
     }
 
+    // Handle /integrations route - returns server-configured integrations
+    // Used by the default client (useServerConfig: true) to fetch what's actually configured
+    if (action === 'integrations' && method === 'GET') {
+      const integrations = updatedIntegrations.map((integration) => ({
+        id: integration.id,
+        name: (integration as any).name || integration.id,
+        logoUrl: (integration as any).logoUrl,
+        tools: integration.tools,
+        hasOAuth: !!integration.oauth,
+        scopes: integration.oauth?.scopes,
+        provider: integration.oauth?.provider,
+      }));
+      return Response.json({ integrations });
+    }
+
     // Handle /triggers routes
     // Route structure: /api/integrate/triggers or /api/integrate/triggers/:id or /api/integrate/triggers/:id/:action
     if (segments.length >= 1 && segments[0] === 'triggers') {

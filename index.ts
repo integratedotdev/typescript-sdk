@@ -117,5 +117,8 @@ export const client = createMCPClient({
     youtubeIntegration(),
     cursorIntegration(),
   ],
+  // Fetch configured integrations from server since default client has all integrations
+  // but only some may be configured on the server with OAuth credentials
+  useServerConfig: true,
 });
 

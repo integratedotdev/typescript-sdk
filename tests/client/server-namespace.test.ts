@@ -127,7 +127,7 @@ describe("Server Namespace", () => {
     expect(result.content[0].text).toBe("all tools result");
   });
 
-  test("listConfiguredIntegrations returns local configuration", async () => {
+  test("listConfiguredIntegrations returns local configuration for custom client (useServerConfig: false)", async () => {
     const client = createMCPClient({
       integrations: [
         githubIntegration({
@@ -137,6 +137,7 @@ describe("Server Namespace", () => {
       ],
       connectionMode: 'manual',
       singleton: false,
+      // useServerConfig defaults to false for custom clients
     });
 
     const result = await client.server.listConfiguredIntegrations();
@@ -147,6 +148,88 @@ describe("Server Namespace", () => {
     expect(result.integrations[0].hasOAuth).toBe(true);
     expect(result.integrations[0].tools.length).toBeGreaterThan(0);
     expect(result.integrations[0].scopes).toEqual(["repo"]);
+  });
+
+  test("listConfiguredIntegrations fetches from server when useServerConfig is true", async () => {
+    const mockFetch = mock(async (url: string) => {
+      if (url.includes("/api/integrate/integrations")) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            integrations: [
+              {
+                id: "linear",
+                name: "Linear",
+                tools: ["linear_list_issues", "linear_create_issue"],
+                hasOAuth: true,
+                scopes: ["read", "write"],
+                provider: "linear",
+              },
+            ],
+          }),
+          headers: new Headers(),
+        } as Response;
+      }
+      return { ok: false } as Response;
+    }) as any;
+
+    global.fetch = mockFetch;
+
+    const client = createMCPClient({
+      integrations: [
+        githubIntegration({
+          clientId: "test-id",
+          scopes: ["repo"],
+        }),
+      ],
+      connectionMode: 'manual',
+      singleton: false,
+      useServerConfig: true, // Should fetch from server
+    });
+
+    const result = await client.server.listConfiguredIntegrations();
+    
+    // Should return server-configured integrations, not local integrations
+    expect(mockFetch).toHaveBeenCalled();
+    expect(result.integrations).toHaveLength(1);
+    expect(result.integrations[0].id).toBe("linear");
+    expect(result.integrations[0].hasOAuth).toBe(true);
+    expect(result.integrations[0].scopes).toEqual(["read", "write"]);
+  });
+
+  test("listConfiguredIntegrations falls back to local config when server request fails", async () => {
+    const mockFetch = mock(async (url: string) => {
+      if (url.includes("/api/integrate/integrations")) {
+        return {
+          ok: false,
+          status: 500,
+          json: async () => ({ error: "Server error" }),
+          headers: new Headers(),
+        } as Response;
+      }
+      return { ok: false } as Response;
+    }) as any;
+
+    global.fetch = mockFetch;
+
+    const client = createMCPClient({
+      integrations: [
+        githubIntegration({
+          clientId: "test-id",
+          scopes: ["repo"],
+        }),
+      ],
+      connectionMode: 'manual',
+      singleton: false,
+      useServerConfig: true,
+    });
+
+    const result = await client.server.listConfiguredIntegrations();
+    
+    // Should fall back to local integrations when server fails
+    expect(result.integrations).toHaveLength(1);
+    expect(result.integrations[0].id).toBe("github");
   });
 
   test("listConfiguredIntegrations uses server config when available", async () => {
@@ -300,7 +383,7 @@ describe("Server Namespace", () => {
     expect(result.integrations[0].toolMetadata).toEqual([]);
   });
 
-  test("listConfiguredIntegrations without includeToolMetadata does not make server calls", async () => {
+  test("listConfiguredIntegrations for custom client (useServerConfig: false) does not make server calls", async () => {
     const mockFetch = mock(async () => {
       throw new Error("Fetch should not be called");
     }) as any;
@@ -316,9 +399,10 @@ describe("Server Namespace", () => {
       ],
       connectionMode: 'manual',
       singleton: false,
+      // useServerConfig defaults to false for custom clients
     });
 
-    // Should not make any server calls
+    // Should not make any server calls for custom clients
     const result = await client.server.listConfiguredIntegrations();
     
     expect(result.integrations).toHaveLength(1);

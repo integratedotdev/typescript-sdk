@@ -257,6 +257,13 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   private __configuredIntegrations: TIntegrations;
 
   /**
+   * Whether to fetch configured integrations from server
+   * When true, listConfiguredIntegrations() queries the server
+   * @internal
+   */
+  private __useServerConfig: boolean;
+
+  /**
    * Promise that resolves when OAuth callback processing is complete
    * @internal Used by createMCPClient to store callback promise
    */
@@ -307,6 +314,10 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     // Store configured integrations explicitly for listConfiguredIntegrations
     // This ensures only integrations passed to createMCPClient are returned
     this.__configuredIntegrations = this.integrations;
+
+    // Store useServerConfig flag (default: false)
+    // When true, listConfiguredIntegrations() fetches from server instead of local config
+    this.__useServerConfig = config.useServerConfig ?? false;
 
     this.clientInfo = config.clientInfo || {
       name: "integrate-sdk",
@@ -532,87 +543,26 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   private createServerProxy(): any {
     return new Proxy({}, {
       get: (_target, methodName: string) => {
-        // Local-only helper to list configured integrations without server call
-        // Returns only the integrations explicitly configured in createMCPClient/createMCPServer
+        // List configured integrations
+        // Behavior depends on useServerConfig flag:
+        // - useServerConfig: true (default client) → fetch from server
+        // - useServerConfig: false (custom client) → return local config
+        // - Server client (has API key) → always return local config
         // Optionally fetches full tool metadata from server when includeToolMetadata is true
         if (methodName === 'listConfiguredIntegrations') {
           return async (options?: { includeToolMetadata?: boolean }) => {
+            // Check if this is a server-side client (has API key in transport)
+            const transportHeaders = (this.transport as any).headers || {};
+            const hasApiKey = !!transportHeaders['X-API-KEY'];
+
             // Use __configuredIntegrations which stores only explicitly configured integrations
             // For serverClient, __oauthConfig.integrations takes precedence (set by createMCPServer)
             const serverConfig = (this as any).__oauthConfig;
-            const configuredIntegrations = serverConfig?.integrations || this.__configuredIntegrations;
-            
-            // If includeToolMetadata is true, fetch tool metadata for all integrations
-            if (options?.includeToolMetadata) {
-              const { parallelWithLimit } = await import('./utils/concurrency.js');
-              
-              // Fetch metadata for each integration in parallel with concurrency limit
-              const integrationsWithMetadata = await parallelWithLimit(
-                configuredIntegrations,
-                async (integration: MCPIntegration) => {
-                  try {
-                    // Call listToolsByIntegration to get full tool metadata
-                    const response = await this.callServerToolInternal('list_tools_by_integration', {
-                      integration: integration.id,
-                    });
-                    
-                    // Extract tool metadata from response
-                    // Response format: { content: [{ type: "text", text: "..." }] }
-                    let toolMetadata: any[] = [];
-                    if (response.content && Array.isArray(response.content)) {
-                      for (const item of response.content) {
-                        if (item.type === 'text' && item.text) {
-                          try {
-                            // Try to parse as JSON if it's a JSON string
-                            const parsed = JSON.parse(item.text);
-                            if (Array.isArray(parsed)) {
-                              toolMetadata = parsed;
-                            } else if (parsed.tools && Array.isArray(parsed.tools)) {
-                              toolMetadata = parsed.tools;
-                            }
-                          } catch {
-                            // Not JSON, skip
-                          }
-                        }
-                      }
-                    }
-                    
-                    return {
-                      id: integration.id,
-                      name: (integration as any).name || integration.id,
-                      logoUrl: (integration as any).logoUrl,
-                      tools: integration.tools,
-                      hasOAuth: !!integration.oauth,
-                      scopes: integration.oauth?.scopes,
-                      provider: integration.oauth?.provider,
-                      toolMetadata,
-                    };
-                  } catch (error) {
-                    // If metadata fetch fails, return without metadata
-                    logger.error(`Failed to fetch tool metadata for ${integration.id}:`, error);
-                    return {
-                      id: integration.id,
-                      name: (integration as any).name || integration.id,
-                      logoUrl: (integration as any).logoUrl,
-                      tools: integration.tools,
-                      hasOAuth: !!integration.oauth,
-                      scopes: integration.oauth?.scopes,
-                      provider: integration.oauth?.provider,
-                      toolMetadata: [],
-                    };
-                  }
-                },
-                3 // Concurrency limit: 3 parallel requests at a time
-              );
-              
-              return {
-                integrations: integrationsWithMetadata,
-              };
-            }
-            
-            // Default behavior: return local data only (no server call)
-            return {
-              integrations: configuredIntegrations.map((integration: MCPIntegration) => ({
+            const localIntegrations = serverConfig?.integrations || this.__configuredIntegrations;
+
+            // Helper to format local integrations
+            const formatLocalIntegrations = (integrations: readonly MCPIntegration[]) => ({
+              integrations: integrations.map((integration: MCPIntegration) => ({
                 id: integration.id,
                 name: (integration as any).name || integration.id,
                 logoUrl: (integration as any).logoUrl,
@@ -621,7 +571,159 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
                 scopes: integration.oauth?.scopes,
                 provider: integration.oauth?.provider,
               })),
-            };
+            });
+
+            // Server clients always use local config (they ARE the server)
+            // Custom clients (useServerConfig: false) also use local config
+            if (hasApiKey || !this.__useServerConfig) {
+              // If includeToolMetadata is true, fetch tool metadata for all local integrations
+              if (options?.includeToolMetadata) {
+                const { parallelWithLimit } = await import('./utils/concurrency.js');
+                
+                // Fetch metadata for each integration in parallel with concurrency limit
+                const integrationsWithMetadata = await parallelWithLimit(
+                  localIntegrations,
+                  async (integration: MCPIntegration) => {
+                    try {
+                      // Call listToolsByIntegration to get full tool metadata
+                      const response = await this.callServerToolInternal('list_tools_by_integration', {
+                        integration: integration.id,
+                      });
+                      
+                      // Extract tool metadata from response
+                      // Response format: { content: [{ type: "text", text: "..." }] }
+                      let toolMetadata: any[] = [];
+                      if (response.content && Array.isArray(response.content)) {
+                        for (const item of response.content) {
+                          if (item.type === 'text' && item.text) {
+                            try {
+                              // Try to parse as JSON if it's a JSON string
+                              const parsed = JSON.parse(item.text);
+                              if (Array.isArray(parsed)) {
+                                toolMetadata = parsed;
+                              } else if (parsed.tools && Array.isArray(parsed.tools)) {
+                                toolMetadata = parsed.tools;
+                              }
+                            } catch {
+                              // Not JSON, skip
+                            }
+                          }
+                        }
+                      }
+                      
+                      return {
+                        id: integration.id,
+                        name: (integration as any).name || integration.id,
+                        logoUrl: (integration as any).logoUrl,
+                        tools: integration.tools,
+                        hasOAuth: !!integration.oauth,
+                        scopes: integration.oauth?.scopes,
+                        provider: integration.oauth?.provider,
+                        toolMetadata,
+                      };
+                    } catch (error) {
+                      // If metadata fetch fails, return without metadata
+                      logger.error(`Failed to fetch tool metadata for ${integration.id}:`, error);
+                      return {
+                        id: integration.id,
+                        name: (integration as any).name || integration.id,
+                        logoUrl: (integration as any).logoUrl,
+                        tools: integration.tools,
+                        hasOAuth: !!integration.oauth,
+                        scopes: integration.oauth?.scopes,
+                        provider: integration.oauth?.provider,
+                        toolMetadata: [],
+                      };
+                    }
+                  },
+                  3 // Concurrency limit: 3 parallel requests at a time
+                );
+                
+                return {
+                  integrations: integrationsWithMetadata,
+                };
+              }
+              
+              // Return local data only (no server call)
+              return formatLocalIntegrations(localIntegrations);
+            }
+
+            // Default client (useServerConfig: true) - fetch from server
+            // This allows the default client to know what's actually configured server-side
+            const url = this.apiBaseUrl
+              ? `${this.apiBaseUrl}${this.apiRouteBase}/integrations`
+              : `${this.apiRouteBase}/integrations`;
+
+            try {
+              const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
+
+              if (!response.ok) {
+                // If server request fails, fall back to local config
+                logger.error('Failed to fetch integrations from server, falling back to local config');
+                return formatLocalIntegrations(localIntegrations);
+              }
+
+              const result = await response.json();
+              
+              // If includeToolMetadata is true, enrich with tool metadata
+              if (options?.includeToolMetadata && result.integrations) {
+                const { parallelWithLimit } = await import('./utils/concurrency.js');
+                
+                const integrationsWithMetadata = await parallelWithLimit(
+                  result.integrations,
+                  async (integration: any) => {
+                    try {
+                      const metadataResponse = await this.callServerToolInternal('list_tools_by_integration', {
+                        integration: integration.id,
+                      });
+                      
+                      let toolMetadata: any[] = [];
+                      if (metadataResponse.content && Array.isArray(metadataResponse.content)) {
+                        for (const item of metadataResponse.content) {
+                          if (item.type === 'text' && item.text) {
+                            try {
+                              const parsed = JSON.parse(item.text);
+                              if (Array.isArray(parsed)) {
+                                toolMetadata = parsed;
+                              } else if (parsed.tools && Array.isArray(parsed.tools)) {
+                                toolMetadata = parsed.tools;
+                              }
+                            } catch {
+                              // Not JSON, skip
+                            }
+                          }
+                        }
+                      }
+                      
+                      return {
+                        ...integration,
+                        toolMetadata,
+                      };
+                    } catch (error) {
+                      logger.error(`Failed to fetch tool metadata for ${integration.id}:`, error);
+                      return {
+                        ...integration,
+                        toolMetadata: [],
+                      };
+                    }
+                  },
+                  3
+                );
+                
+                return { integrations: integrationsWithMetadata };
+              }
+
+              return result;
+            } catch (error) {
+              // If fetch fails entirely, fall back to local config
+              logger.error('Failed to fetch integrations from server, falling back to local config:', error);
+              return formatLocalIntegrations(localIntegrations);
+            }
           };
         }
 
