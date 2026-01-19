@@ -205,7 +205,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
 ) {
   // Initialize logger based on debug flag
   setLogLevel(config.debug ? 'debug' : 'error');
-  
+
   // Validate we're on the server
   if (typeof window !== 'undefined') {
     throw new Error(
@@ -407,7 +407,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
       try {
         const body = await webRequest.json();
         const authHeader = webRequest.headers.get('authorization');
-          const integrationsHeader = webRequest.headers.get('x-integrations');
+        const integrationsHeader = webRequest.headers.get('x-integrations');
 
         // Create OAuth handler with config that includes API key
         // The API key will be automatically sent as X-API-KEY header to the MCP server
@@ -421,7 +421,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
           getSessionContext: config.getSessionContext,
         });
 
-          const result = await oauthHandler.handleToolCall(body, authHeader, integrationsHeader);
+        const result = await oauthHandler.handleToolCall(body, authHeader, integrationsHeader);
         const response = Response.json(result);
 
         // Add X-Integrate-Use-Database header if database callbacks are configured
@@ -481,17 +481,17 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
               limit: url.searchParams.get('limit') ? parseInt(url.searchParams.get('limit')!) : undefined,
               offset: url.searchParams.get('offset') ? parseInt(url.searchParams.get('offset')!) : undefined,
             };
-            
+
             // Get triggers and total from callback
             const callbackResult = await config.triggers.list(params, context);
-            
+
             // Import calculation utility
             const { calculateHasMore } = await import('./triggers/utils.js');
-            
+
             // Calculate hasMore
             const offset = params.offset || 0;
             const hasMore = calculateHasMore(offset, callbackResult.triggers.length, callbackResult.total);
-            
+
             // Return complete response with hasMore
             return Response.json({
               triggers: callbackResult.triggers,
@@ -501,14 +501,14 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
           } else if (method === 'POST') {
             // Create trigger
             const body = await webRequest.json();
-            
+
             // Import trigger utilities
             const { generateTriggerId, extractProviderFromToolName } = await import('./triggers/utils.js');
-            
+
             // Generate ID and extract provider from toolName
             const triggerId = generateTriggerId();
             const provider = body.toolName ? extractProviderFromToolName(body.toolName) : undefined;
-            
+
             const trigger = {
               id: triggerId,
               ...body,
@@ -525,7 +525,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
             // Register with MCP server scheduler
             const schedulerUrl = config.schedulerUrl || config.serverUrl || 'https://mcp.integrate.dev';
             const callbackBaseUrl = process.env.INTEGRATE_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
-            
+
             try {
               await fetch(`${schedulerUrl}/scheduler/register`, {
                 method: 'POST',
@@ -567,25 +567,25 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
             if (!trigger) {
               return Response.json({ error: 'Trigger not found' }, { status: 404 });
             }
-            
+
             // Import validation utility
             const { validateStatusTransition } = await import('./triggers/utils.js');
-            
+
             // Validate status transition
             const validation = validateStatusTransition(trigger.status, 'paused');
             if (!validation.valid) {
               return Response.json({ error: validation.error }, { status: 400 });
             }
-            
+
             const updated = await config.triggers.update(
-              triggerId, 
-              { 
+              triggerId,
+              {
                 status: 'paused',
                 updatedAt: new Date().toISOString(),
-              }, 
+              },
               context
             );
-            
+
             // Notify scheduler
             const schedulerUrl = config.schedulerUrl || config.serverUrl || 'https://mcp.integrate.dev';
             try {
@@ -609,25 +609,25 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
             if (!trigger) {
               return Response.json({ error: 'Trigger not found' }, { status: 404 });
             }
-            
+
             // Import validation utility
             const { validateStatusTransition } = await import('./triggers/utils.js');
-            
+
             // Validate status transition
             const validation = validateStatusTransition(trigger.status, 'active');
             if (!validation.valid) {
               return Response.json({ error: validation.error }, { status: 400 });
             }
-            
+
             const updated = await config.triggers.update(
-              triggerId, 
-              { 
+              triggerId,
+              {
                 status: 'active',
                 updatedAt: new Date().toISOString(),
-              }, 
+              },
               context
             );
-            
+
             // Notify scheduler
             const schedulerUrl = config.schedulerUrl || config.serverUrl || 'https://mcp.integrate.dev';
             try {
@@ -660,7 +660,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
             }
 
             // Get provider token
-            const providerToken = config.getProviderToken 
+            const providerToken = config.getProviderToken
               ? await config.getProviderToken(trigger.provider, undefined, context)
               : undefined;
 
@@ -787,7 +787,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
 
             const body = await webRequest.json();
             const trigger = await config.triggers.get(triggerId, context);
-            
+
             if (!trigger) {
               return Response.json({ error: 'Trigger not found' }, { status: 404 });
             }
@@ -824,7 +824,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
             // Update trigger
             const body = await webRequest.json();
             const trigger = await config.triggers.get(triggerId, context);
-            
+
             if (!trigger) {
               return Response.json({ error: 'Trigger not found' }, { status: 404 });
             }
