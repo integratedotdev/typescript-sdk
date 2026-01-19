@@ -64,7 +64,7 @@ export function notionIntegration(config: NotionIntegrationConfig = {}): MCPInte
   return {
     id: "notion",
     name: "Notion",
-    logoUrl: "https://cdn.simpleicons.org/notion",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/notion.jpeg",
     tools: [...NOTION_TOOLS],
     oauth,
 

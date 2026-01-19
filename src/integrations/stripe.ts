@@ -59,7 +59,7 @@ export function stripeIntegration(config: StripeIntegrationConfig = {}): MCPInte
   return {
     id: "stripe",
     name: "Stripe",
-    logoUrl: "https://cdn.simpleicons.org/stripe",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/stripe.jpeg",
     tools: [...STRIPE_TOOLS],
     oauth,
 

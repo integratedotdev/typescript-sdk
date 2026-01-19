@@ -70,7 +70,7 @@ export function gworkspaceIntegration(config: GWorkspaceIntegrationConfig = {}):
   return {
     id: "gworkspace",
     name: "Google Workspace",
-    logoUrl: "https://cdn.simpleicons.org/google",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/google_workspace.jpeg",
     tools: [...GWORKSPACE_TOOLS],
     oauth,
 

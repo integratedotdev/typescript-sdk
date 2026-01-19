@@ -62,7 +62,7 @@ export function onedriveIntegration(config: OneDriveIntegrationConfig = {}): MCP
   return {
     id: "onedrive",
     name: "OneDrive",
-    logoUrl: "https://cdn.simpleicons.org/onedrive",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/onedrive.webp",
     tools: [...ONEDRIVE_TOOLS],
     oauth,
 

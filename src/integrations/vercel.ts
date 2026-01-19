@@ -59,7 +59,7 @@ export function vercelIntegration(config: VercelIntegrationConfig = {}): MCPInte
   return {
     id: "vercel",
     name: "Vercel",
-    logoUrl: "https://cdn.simpleicons.org/vercel",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/vercel.png",
     tools: [...VERCEL_TOOLS],
     oauth,
 

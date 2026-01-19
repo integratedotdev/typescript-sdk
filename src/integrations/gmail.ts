@@ -106,7 +106,7 @@ export function gmailIntegration(config: GmailIntegrationConfig = {}): MCPIntegr
   return {
     id: "gmail",
     name: "Gmail",
-    logoUrl: "https://cdn.simpleicons.org/gmail",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/gmail.jpeg",
     tools: [...GMAIL_TOOLS],
     oauth,
 

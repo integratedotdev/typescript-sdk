@@ -59,7 +59,7 @@ export function intercomIntegration(config: IntercomIntegrationConfig = {}): MCP
   return {
     id: "intercom",
     name: "Intercom",
-    logoUrl: "https://cdn.simpleicons.org/intercom",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/intercom.png",
     tools: [...INTERCOM_TOOLS],
     oauth,
 

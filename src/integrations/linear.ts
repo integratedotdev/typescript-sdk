@@ -59,7 +59,7 @@ export function linearIntegration(config: LinearIntegrationConfig = {}): MCPInte
   return {
     id: "linear",
     name: "Linear",
-    logoUrl: "https://cdn.simpleicons.org/linear",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/linear.jpeg",
     tools: [...LINEAR_TOOLS],
     oauth,
 

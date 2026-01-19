@@ -41,7 +41,7 @@ export function cursorIntegration(_config: CursorIntegrationConfig = {}): MCPInt
   return {
     id: "cursor",
     name: "Cursor",
-    logoUrl: "https://cdn.simpleicons.org/cursor",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/cursor.jpeg",
     tools: [...CURSOR_TOOLS],
     // No OAuth - Cursor uses basic authentication with API key
 

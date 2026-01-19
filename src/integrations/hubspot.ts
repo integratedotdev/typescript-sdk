@@ -70,7 +70,7 @@ export function hubspotIntegration(config: HubSpotIntegrationConfig = {}): MCPIn
   return {
     id: "hubspot",
     name: "HubSpot",
-    logoUrl: "https://cdn.simpleicons.org/hubspot",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/hubspot.jpeg",
     tools: [...HUBSPOT_TOOLS],
     oauth,
 

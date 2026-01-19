@@ -61,7 +61,7 @@ export function whatsappIntegration(config: WhatsAppIntegrationConfig = {}): MCP
   return {
     id: "whatsapp",
     name: "WhatsApp Business",
-    logoUrl: "https://cdn.simpleicons.org/whatsapp",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/whatsapp.png",
     tools: [...WHATSAPP_TOOLS],
     oauth,
 

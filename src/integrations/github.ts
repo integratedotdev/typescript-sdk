@@ -71,7 +71,7 @@ export function githubIntegration(config: GitHubIntegrationConfig = {}): MCPInte
   return {
     id: "github",
     name: "GitHub",
-    logoUrl: "https://cdn.simpleicons.org/github",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/github.png",
     tools: [...GITHUB_TOOLS],
     oauth,
 
