@@ -20,7 +20,12 @@ import {
   type AuthenticationError,
 } from "./errors.js";
 import { methodToToolName } from "./utils/naming.js";
-import { setLogLevel, createLogger } from "./utils/logger.js";
+import { setLogLevel, createLogger, type LogContext } from "./utils/logger.js";
+
+/**
+ * Logger context for client-side logging
+ */
+const CLIENT_LOG_CONTEXT: LogContext = 'client';
 import type { GitHubIntegrationClient } from "./integrations/github-client.js";
 import type { GmailIntegrationClient } from "./integrations/gmail-client.js";
 import type { NotionIntegrationClient } from "./integrations/notion-client.js";
@@ -108,7 +113,7 @@ const MCP_SERVER_URL = "https://mcp.integrate.dev/api/v1/mcp";
 /**
  * Logger instances
  */
-const logger = createLogger('MCPClient');
+const logger = createLogger('MCPClient', CLIENT_LOG_CONTEXT);
 
 /**
  * Client instance cache for singleton pattern
@@ -579,7 +584,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
               // If includeToolMetadata is true, fetch tool metadata for all local integrations
               if (options?.includeToolMetadata) {
                 const { parallelWithLimit } = await import('./utils/concurrency.js');
-                
+
                 // Fetch metadata for each integration in parallel with concurrency limit
                 const integrationsWithMetadata = await parallelWithLimit(
                   localIntegrations,
@@ -589,7 +594,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
                       const response = await this.callServerToolInternal('list_tools_by_integration', {
                         integration: integration.id,
                       });
-                      
+
                       // Extract tool metadata from response
                       // Response format: { content: [{ type: "text", text: "..." }] }
                       let toolMetadata: any[] = [];
@@ -610,7 +615,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
                           }
                         }
                       }
-                      
+
                       return {
                         id: integration.id,
                         name: (integration as any).name || integration.id,
@@ -638,12 +643,12 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
                   },
                   3 // Concurrency limit: 3 parallel requests at a time
                 );
-                
+
                 return {
                   integrations: integrationsWithMetadata,
                 };
               }
-              
+
               // Return local data only (no server call)
               return formatLocalIntegrations(localIntegrations);
             }
@@ -669,11 +674,11 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
               }
 
               const result = await response.json();
-              
+
               // If includeToolMetadata is true, enrich with tool metadata
               if (options?.includeToolMetadata && result.integrations) {
                 const { parallelWithLimit } = await import('./utils/concurrency.js');
-                
+
                 const integrationsWithMetadata = await parallelWithLimit(
                   result.integrations,
                   async (integration: any) => {
@@ -681,7 +686,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
                       const metadataResponse = await this.callServerToolInternal('list_tools_by_integration', {
                         integration: integration.id,
                       });
-                      
+
                       let toolMetadata: any[] = [];
                       if (metadataResponse.content && Array.isArray(metadataResponse.content)) {
                         for (const item of metadataResponse.content) {
@@ -699,7 +704,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
                           }
                         }
                       }
-                      
+
                       return {
                         ...integration,
                         toolMetadata,
@@ -714,7 +719,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
                   },
                   3
                 );
-                
+
                 return { integrations: integrationsWithMetadata };
               }
 
@@ -1919,9 +1924,9 @@ function generateCacheKey<TIntegrations extends readonly MCPIntegration[]>(
 export function createMCPClient<TIntegrations extends readonly MCPIntegration[]>(
   config: MCPClientConfig<TIntegrations>
 ): MCPClient<TIntegrations> {
-  // Initialize logger based on debug flag
-  setLogLevel(config.debug ? 'debug' : 'error');
-  
+  // Initialize logger based on debug flag (client context only)
+  setLogLevel(config.debug ? 'debug' : 'error', CLIENT_LOG_CONTEXT);
+
   const useSingleton = config.singleton ?? true;
   const connectionMode = config.connectionMode ?? 'lazy';
   const autoCleanup = config.autoCleanup ?? true;

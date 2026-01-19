@@ -10,13 +10,18 @@ import type { MCPIntegration } from './integrations/types.js';
 import { createNextOAuthHandler } from './adapters/nextjs.js';
 import { getEnv } from './utils/env.js';
 import { toWebRequest, sendWebResponse } from './adapters/node.js';
-import { setLogLevel, createLogger } from './utils/logger.js';
+import { setLogLevel, createLogger, type LogContext } from './utils/logger.js';
+
+/**
+ * Logger context for server-side logging
+ */
+const SERVER_LOG_CONTEXT: LogContext = 'server';
 import type { IncomingMessage, ServerResponse } from 'http';
 
 /**
  * Logger instances
  */
-const logger = createLogger('MCPServer');
+const logger = createLogger('MCPServer', SERVER_LOG_CONTEXT);
 
 /**
  * Server client with attached handler, POST, and GET route handlers
@@ -203,8 +208,8 @@ function getDefaultRedirectUri(): string {
 export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>(
   config: MCPServerConfig<TIntegrations>
 ) {
-  // Initialize logger based on debug flag
-  setLogLevel(config.debug ? 'debug' : 'error');
+  // Initialize logger based on debug flag (server context only)
+  setLogLevel(config.debug ? 'debug' : 'error', SERVER_LOG_CONTEXT);
 
   // Validate we're on the server
   if (typeof window !== 'undefined') {

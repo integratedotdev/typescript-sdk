@@ -5,12 +5,13 @@
 
 import type { MCPContext } from '../config/types.js';
 import type { ProviderTokenData } from '../oauth/types.js';
-import { createLogger } from '../utils/logger.js';
+import { createLogger, type LogContext } from '../utils/logger.js';
 
 /**
- * Logger instance
+ * Logger instance (server-side handler)
  */
-const logger = createLogger('OAuthHandler');
+const SERVER_LOG_CONTEXT: LogContext = 'server';
+const logger = createLogger('OAuthHandler', SERVER_LOG_CONTEXT);
 
 /**
  * MCP Server URL - managed by Integrate

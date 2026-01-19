@@ -7,12 +7,13 @@
  */
 
 import { OAuthHandler, type OAuthHandlerConfig } from './base-handler.js';
-import { createLogger } from '../utils/logger.js';
+import { createLogger, type LogContext } from '../utils/logger.js';
 
 /**
- * Logger instance
+ * Logger instance (server-side adapter)
  */
-const logger = createLogger('NextJSOAuth');
+const SERVER_LOG_CONTEXT: LogContext = 'server';
+const logger = createLogger('NextJSOAuth', SERVER_LOG_CONTEXT);
 
 // Type-only imports to avoid requiring Next.js at build time
 type NextRequest = any;
@@ -112,20 +113,20 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
       try {
         // Pass full Request object to handler for context detection
         const result = await handler.handleAuthorize(req);
-        
+
         // Create response with result
         const response = Response.json(result);
-        
+
         // Add Set-Cookie header if context cookie was created
         if (result.setCookie) {
           response.headers.set('Set-Cookie', result.setCookie);
         }
-        
+
         // Add X-Integrate-Use-Database header if database callbacks are configured
         if (handler.hasDatabaseCallbacks()) {
           response.headers.set('X-Integrate-Use-Database', 'true');
         }
-        
+
         return response;
       } catch (error: any) {
         logger.error('[OAuth Authorize] Error:', error);
@@ -182,20 +183,20 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
       try {
         // Pass full Request object to handler for context restoration
         const result = await handler.handleCallback(req);
-        
+
         // Create response with result
         const response = Response.json(result);
-        
+
         // Add Set-Cookie header to clear context cookie
         if (result.clearCookie) {
           response.headers.set('Set-Cookie', result.clearCookie);
         }
-        
+
         // Add X-Integrate-Use-Database header if database callbacks are configured
         if (handler.hasDatabaseCallbacks()) {
           response.headers.set('X-Integrate-Use-Database', 'true');
         }
-        
+
         return response;
       } catch (error: any) {
         logger.error('[OAuth Callback] Error:', error);
@@ -265,12 +266,12 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
         const accessToken = authHeader.substring(7); // Remove 'Bearer ' prefix
         const result = await handler.handleStatus(provider, accessToken);
         const response = Response.json(result);
-        
+
         // Add X-Integrate-Use-Database header if database callbacks are configured
         if (handler.hasDatabaseCallbacks()) {
           response.headers.set('X-Integrate-Use-Database', 'true');
         }
-        
+
         return response;
       } catch (error: any) {
         logger.error('[OAuth Status] Error:', error);
@@ -346,12 +347,12 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
         // Pass the request object for context extraction
         const result = await handler.handleDisconnect({ provider }, accessToken, req);
         const response = Response.json(result);
-        
+
         // Add X-Integrate-Use-Database header if database callbacks are configured
         if (handler.hasDatabaseCallbacks()) {
           response.headers.set('X-Integrate-Use-Database', 'true');
         }
-        
+
         return response;
       } catch (error: any) {
         logger.error('[OAuth Disconnect] Error:', error);
