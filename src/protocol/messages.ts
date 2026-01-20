@@ -52,17 +52,30 @@ export type JSONRPCResponse<T = unknown> =
   | JSONRPCErrorResponse;
 
 /**
+ * JSON Schema for tool input parameters
+ * Used by MCPTool and ToolMetadata for consistent typing
+ */
+export interface ToolInputSchema {
+  type: "object";
+  properties?: Record<string, {
+    type?: string;
+    description?: string;
+    default?: unknown;
+    enum?: unknown[];
+    items?: unknown;
+    [key: string]: unknown;
+  }>;
+  required?: string[];
+  [key: string]: unknown;
+}
+
+/**
  * MCP Tool Definition
  */
 export interface MCPTool {
   name: string;
   description?: string;
-  inputSchema: {
-    type: "object";
-    properties?: Record<string, unknown>;
-    required?: string[];
-    [key: string]: unknown;
-  };
+  inputSchema: ToolInputSchema;
 }
 
 /**

@@ -60,9 +60,9 @@ describe('Vercel AI SDK Context Passing', () => {
 
       const client = new MCPClientBase(config);
 
-      // Mock getEnabledTools to return our mock tool object
-      vi.spyOn(client, 'getEnabledTools').mockReturnValue([mockToolObject]);
-      
+      // Mock getEnabledToolsAsync to return our mock tool object
+      vi.spyOn(client, 'getEnabledToolsAsync').mockResolvedValue([mockToolObject as any]);
+
       // Mock ensureClientConnected (which calls connect)
       // @ts-ignore - mocking internal/private method or related logic
       vi.spyOn(client, 'isConnected').mockReturnValue(true);
@@ -102,8 +102,8 @@ describe('Vercel AI SDK Context Passing', () => {
 
       const client = new MCPClientBase(config);
 
-      // Mock getEnabledTools to return our mock tool object
-      vi.spyOn(client, 'getEnabledTools').mockReturnValue([mockToolObject]);
+      // Mock getEnabledToolsAsync to return our mock tool object
+      vi.spyOn(client, 'getEnabledToolsAsync').mockResolvedValue([mockToolObject as any]);
       // @ts-ignore
       vi.spyOn(client, 'isConnected').mockReturnValue(true);
 
@@ -156,8 +156,8 @@ describe('Vercel AI SDK Context Passing', () => {
       // @ts-ignore
       vi.spyOn(client, 'isConnected').mockReturnValue(true);
 
-      // Mock getEnabledTools to return our mock tool object
-      vi.spyOn(client, 'getEnabledTools').mockReturnValue([mockToolObject]);
+      // Mock getEnabledToolsAsync to return our mock tool object
+      vi.spyOn(client, 'getEnabledToolsAsync').mockResolvedValue([mockToolObject as any]);
 
       const context: MCPContext = {
         userId: 'user123',
@@ -211,8 +211,8 @@ describe('Vercel AI SDK Context Passing', () => {
       // @ts-ignore
       vi.spyOn(client, 'isConnected').mockReturnValue(true);
 
-      // Mock getEnabledTools to return our mock tool object
-      vi.spyOn(client, 'getEnabledTools').mockReturnValue([mockToolObject]);
+      // Mock getEnabledToolsAsync to return our mock tool object
+      vi.spyOn(client, 'getEnabledToolsAsync').mockResolvedValue([mockToolObject as any]);
 
       // Create tools for user1
       const toolsUser1 = await getVercelAITools(client, {
@@ -248,7 +248,7 @@ describe('Vercel AI SDK Context Passing', () => {
       const client = new MCPClientBase(config);
 
       // Mock getEnabledTools to return our mock tool object
-      vi.spyOn(client, 'getEnabledTools').mockReturnValue([mockToolObject]);
+      vi.spyOn(client, 'getEnabledToolsAsync').mockResolvedValue([mockToolObject as any]);
       // @ts-ignore
       vi.spyOn(client, 'isConnected').mockReturnValue(true);
 
@@ -302,7 +302,7 @@ describe('Vercel AI SDK Context Passing', () => {
       vi.spyOn(client, 'isConnected').mockReturnValue(true);
 
       // Mock getEnabledTools to return our mock tool object
-      vi.spyOn(client, 'getEnabledTools').mockReturnValue([mockToolObject]);
+      vi.spyOn(client, 'getEnabledToolsAsync').mockResolvedValue([mockToolObject as any]);
 
       const context: MCPContext = {
         userId: 'user123',
@@ -354,7 +354,7 @@ describe('Vercel AI SDK Context Passing', () => {
       vi.spyOn(client, 'isConnected').mockReturnValue(true);
 
       // Mock getEnabledTools to return our mock tool object
-      vi.spyOn(client, 'getEnabledTools').mockReturnValue([mockToolObject]);
+      vi.spyOn(client, 'getEnabledToolsAsync').mockResolvedValue([mockToolObject as any]);
 
       // Simulate API route handler
       const userId = 'user-from-session';
@@ -406,7 +406,7 @@ describe('Vercel AI SDK Context Passing', () => {
       vi.spyOn(client, 'isConnected').mockReturnValue(true);
 
       // Mock getEnabledTools to return our mock tool object
-      vi.spyOn(client, 'getEnabledTools').mockReturnValue([mockToolObject]);
+      vi.spyOn(client, 'getEnabledToolsAsync').mockResolvedValue([mockToolObject as any]);
 
       // Simulate multi-org scenario
       const context: MCPContext = {

@@ -3,7 +3,7 @@
  * Fully typed interface for server-level tools that don't belong to a specific integration
  */
 
-import type { MCPToolCallResponse } from "../protocol/messages.js";
+import type { MCPToolCallResponse, ToolInputSchema } from "../protocol/messages.js";
 
 /**
  * Server Integration Client Interface
@@ -38,11 +38,19 @@ export interface ServerIntegrationClient {
 
 /**
  * Tool metadata with description and input schema
+ * Provides full type information for AI tool integrations
  */
 export interface ToolMetadata {
+  /** Tool name (e.g., "github_create_issue") */
   name: string;
+  /** Human-readable description of what the tool does */
   description?: string;
-  inputSchema?: Record<string, unknown>;
+  /** 
+   * JSON Schema defining the tool's input parameters
+   * Populated when fetched via listConfiguredIntegrations({ includeToolMetadata: true })
+   * or via getEnabledToolsAsync()
+   */
+  inputSchema?: ToolInputSchema;
 }
 
 /**

@@ -1115,11 +1115,125 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
 
   /**
    * Get all enabled tools (filtered by integrations)
+   * 
+   * Note: This returns tools from the local cache, which is only populated
+   * after calling connect(). For tools with schemas without requiring connection,
+   * use getEnabledToolsAsync() instead.
+   * 
+   * @returns Array of enabled tools (may be empty if not connected)
    */
   getEnabledTools(): MCPTool[] {
     return Array.from(this.availableTools.values()).filter((tool) =>
       this.enabledToolNames.has(tool.name)
     );
+  }
+
+  /**
+   * Get all enabled tools with full schemas (async version)
+   * 
+   * This method ensures tools always have their inputSchema populated:
+   * - If connected and tools are cached, returns from cache
+   * - If not connected, fetches tools from server via API route
+   * 
+   * Use this method for AI integrations that need tool schemas.
+   * 
+   * @returns Promise resolving to array of enabled tools with schemas
+   * 
+   * @example
+   * ```typescript
+   * // Get tools for AI SDK integration
+   * const tools = await client.getEnabledToolsAsync();
+   * // tools[0].inputSchema is guaranteed to be populated
+   * ```
+   */
+  async getEnabledToolsAsync(): Promise<MCPTool[]> {
+    // If connected and tools are cached, return from cache
+    if (this.isConnected() && this.availableTools.size > 0) {
+      return this.getEnabledTools();
+    }
+
+    // If we have cached tools from a previous fetch, return them
+    if (this.availableTools.size > 0) {
+      return this.getEnabledTools();
+    }
+
+    // Fetch tools from server via API for each enabled integration
+    const tools: MCPTool[] = [];
+
+    // Get unique integration IDs from enabled tool names
+    const integrationIds = new Set<string>();
+    for (const integration of this.integrations) {
+      integrationIds.add(integration.id);
+    }
+
+    // Use parallelWithLimit to fetch tools for all integrations concurrently
+    const { parallelWithLimit } = await import('./utils/concurrency.js');
+
+    const integrationToolsResults = await parallelWithLimit(
+      Array.from(integrationIds),
+      async (integrationId: string) => {
+        try {
+          const response = await this.callServerToolInternal('list_tools_by_integration', {
+            integration: integrationId,
+          });
+
+          // Parse tools from response
+          const integrationTools: MCPTool[] = [];
+          if (response.content && Array.isArray(response.content)) {
+            for (const item of response.content) {
+              if (item.type === 'text' && item.text) {
+                try {
+                  const parsed = JSON.parse(item.text);
+                  if (Array.isArray(parsed)) {
+                    // Response is array of tools
+                    for (const tool of parsed) {
+                      if (tool.name && tool.inputSchema) {
+                        integrationTools.push({
+                          name: tool.name,
+                          description: tool.description,
+                          inputSchema: tool.inputSchema,
+                        });
+                      }
+                    }
+                  } else if (parsed.tools && Array.isArray(parsed.tools)) {
+                    // Response has tools property
+                    for (const tool of parsed.tools) {
+                      if (tool.name && tool.inputSchema) {
+                        integrationTools.push({
+                          name: tool.name,
+                          description: tool.description,
+                          inputSchema: tool.inputSchema,
+                        });
+                      }
+                    }
+                  }
+                } catch {
+                  // Not JSON, skip
+                }
+              }
+            }
+          }
+          return integrationTools;
+        } catch (error) {
+          logger.error(`Failed to fetch tools for integration ${integrationId}:`, error);
+          return [];
+        }
+      },
+      3 // Concurrency limit
+    );
+
+    // Flatten results and add to tools array
+    for (const integrationTools of integrationToolsResults) {
+      tools.push(...integrationTools);
+    }
+
+    // Cache the fetched tools
+    for (const tool of tools) {
+      this.availableTools.set(tool.name, tool);
+    }
+
+    // Filter to only enabled tools and return
+    return tools.filter((tool) => this.enabledToolNames.has(tool.name));
   }
 
   /**

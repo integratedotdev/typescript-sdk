@@ -10,7 +10,6 @@ import type { MCPTool } from "../protocol/messages.js";
 import type { MCPContext } from "../config/types.js";
 import {
   jsonSchemaToZod,
-  ensureClientConnected,
   getProviderTokens,
   executeToolWithToken,
   type AIToolsOptions
@@ -120,9 +119,6 @@ export async function getVercelAITools(
   client: MCPClient<any>,
   options?: VercelAIToolsOptions
 ) {
-  // Auto-connect if not connected (lazy connection)
-  await ensureClientConnected(client);
-
   // Auto-extract tokens if not provided
   let providerTokens = options?.providerTokens;
   if (!providerTokens) {
@@ -135,7 +131,10 @@ export async function getVercelAITools(
   }
 
   const finalOptions = providerTokens ? { ...options, providerTokens } : options;
-  const mcpTools = client.getEnabledTools();
+  
+  // Use getEnabledToolsAsync to ensure schemas are always populated
+  // This fetches from server if not connected, otherwise uses cached tools
+  const mcpTools = await client.getEnabledToolsAsync();
   const vercelTools: Record<string, any> = {};
 
   // Add MCP integration tools
