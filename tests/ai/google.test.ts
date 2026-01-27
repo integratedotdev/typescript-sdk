@@ -279,9 +279,10 @@ describe("Google GenAI Integration", () => {
 
       // Verify that tools are fetched even when client is not connected
       // This is done via getEnabledToolsAsync which fetches from server
-      (client as any).transport = {
-        isConnected: () => false,
-      };
+      (client as any).transport = { isConnected: () => false };
+      
+      // Mock connect to be a no-op (auto-connect will call this)
+      (client as any).connect = async () => {};
 
       // Since tools are already cached in availableTools from beforeAll,
       // getEnabledToolsAsync will use the cache
