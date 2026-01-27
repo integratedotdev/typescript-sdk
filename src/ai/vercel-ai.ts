@@ -12,6 +12,7 @@ import {
   jsonSchemaToZod,
   getProviderTokens,
   executeToolWithToken,
+  ensureClientConnected,
   type AIToolsOptions
 } from "./utils.js";
 import { createTriggerTools } from "./trigger-tools.js";
@@ -131,6 +132,9 @@ export async function getVercelAITools(
   }
 
   const finalOptions = providerTokens ? { ...options, providerTokens } : options;
+
+  // Auto-connect if needed (handles server actions/functions where connect() wasn't called)
+  await ensureClientConnected(client);
   
   // Use getEnabledToolsAsync to ensure schemas are always populated
   // This fetches from server if not connected, otherwise uses cached tools

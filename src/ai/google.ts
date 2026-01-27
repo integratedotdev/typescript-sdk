@@ -7,7 +7,7 @@
 import type { MCPClient } from "../client.js";
 import type { MCPTool } from "../protocol/messages.js";
 import type { MCPContext } from "../config/types.js";
-import { executeToolWithToken, getProviderTokens, type AIToolsOptions } from "./utils.js";
+import { executeToolWithToken, getProviderTokens, ensureClientConnected, type AIToolsOptions } from "./utils.js";
 import { createTriggerTools } from "./trigger-tools.js";
 import { zodToJsonSchema } from "zod-to-json-schema";
 
@@ -335,6 +335,9 @@ export async function getGoogleTools(
   }
 
   const finalOptions = providerTokens ? { ...options, providerTokens } : options;
+
+  // Auto-connect if needed (handles server actions/functions where connect() wasn't called)
+  await ensureClientConnected(client);
   
   // Use getEnabledToolsAsync to ensure schemas are always populated
   // This fetches from server if not connected, otherwise uses cached tools
