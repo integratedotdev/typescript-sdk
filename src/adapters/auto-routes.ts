@@ -4,6 +4,13 @@
  */
 
 import { OAuthHandler, type OAuthHandlerConfig } from './base-handler.js';
+import { createLogger, type LogContext } from '../utils/logger.js';
+
+/**
+ * Logger instance (server-side routes)
+ */
+const SERVER_LOG_CONTEXT: LogContext = 'server';
+const logger = createLogger('AutoRoutes', SERVER_LOG_CONTEXT);
 
 /**
  * Global OAuth configuration
@@ -87,12 +94,12 @@ export async function POST(
       // Pass full Request object for context detection
       const result = await handler.handleAuthorize(req);
       const response = createSuccessResponse(result);
-      
+
       // Add Set-Cookie header if context cookie was created
       if (result.setCookie) {
         response.headers?.set?.('Set-Cookie', result.setCookie);
       }
-      
+
       return response;
     }
 
@@ -100,27 +107,27 @@ export async function POST(
       // Pass full Request object for context restoration
       const result = await handler.handleCallback(req);
       const response = createSuccessResponse(result);
-      
+
       // Add Set-Cookie header to clear context cookie
       if (result.clearCookie) {
         response.headers?.set?.('Set-Cookie', result.clearCookie);
       }
-      
+
       return response;
     }
 
     if (action === 'disconnect') {
       const body = await parseRequestBody(req);
       const accessToken = extractAccessToken(req);
-      
+
       if (!accessToken) {
         return createErrorResponse('Missing or invalid Authorization header', 400);
       }
-      
+
       if (!body.provider) {
         return createErrorResponse('Missing provider in request body', 400);
       }
-      
+
       // Pass the request object for context extraction
       const result = await handler.handleDisconnect({ provider: body.provider }, accessToken, req);
       return createSuccessResponse(result);
@@ -128,7 +135,7 @@ export async function POST(
 
     return createErrorResponse(`Unknown action: ${action}`, 404);
   } catch (error: any) {
-    console.error(`[OAuth ${action}] Error:`, error);
+    logger.error(`[OAuth ${action}] Error:`, error);
     return createErrorResponse(error.message, 500);
   }
 }
@@ -173,7 +180,7 @@ export async function GET(
 
     return createErrorResponse(`Unknown action: ${action}`, 404);
   } catch (error: any) {
-    console.error(`[OAuth ${action}] Error:`, error);
+    logger.error(`[OAuth ${action}] Error:`, error);
     return createErrorResponse(error.message, 500);
   }
 }

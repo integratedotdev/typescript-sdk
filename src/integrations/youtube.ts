@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('YouTube');
 
 /**
  * YouTube integration configuration
@@ -55,15 +58,17 @@ export function youtubeIntegration(config: YouTubeIntegrationConfig = {}): MCPIn
 
   return {
     id: "youtube",
+    name: "YouTube",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/youtube.jpeg",
     tools: [...YOUTUBE_TOOLS],
     oauth,
 
     async onInit(_client) {
-      console.log("YouTube integration initialized");
+      logger.debug("YouTube integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("YouTube integration connected");
+      logger.debug("YouTube integration connected");
     },
   };
 }

@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Google Calendar');
 
 /**
  * Google Calendar integration configuration
@@ -55,15 +58,17 @@ export function gcalIntegration(config: GcalIntegrationConfig = {}): MCPIntegrat
 
   return {
     id: "gcal",
+    name: "Google Calendar",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/google_calendar.webp",
     tools: [...GCAL_TOOLS],
     oauth,
 
     async onInit(_client) {
-      console.log("Google Calendar integration initialized");
+      logger.debug("Google Calendar integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Google Calendar integration connected");
+      logger.debug("Google Calendar integration connected");
     },
   };
 }

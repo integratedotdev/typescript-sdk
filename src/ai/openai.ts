@@ -7,7 +7,7 @@
 import type { MCPClient } from "../client.js";
 import type { MCPTool } from "../protocol/messages.js";
 import type { MCPContext } from "../config/types.js";
-import { executeToolWithToken, ensureClientConnected, getProviderTokens, type AIToolsOptions } from "./utils.js";
+import { executeToolWithToken, getProviderTokens, ensureClientConnected, type AIToolsOptions } from "./utils.js";
 import { createTriggerTools } from "./trigger-tools.js";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import type { OpenAI } from "openai";
@@ -113,8 +113,6 @@ export async function getOpenAITools(
   client: MCPClient<any>,
   options?: OpenAIToolsOptions
 ): Promise<OpenAITool[]> {
-  await ensureClientConnected(client);
-
   // Auto-extract tokens if not provided
   let providerTokens = options?.providerTokens;
   if (!providerTokens) {
@@ -126,7 +124,13 @@ export async function getOpenAITools(
   }
 
   const finalOptions = providerTokens ? { ...options, providerTokens } : options;
-  const mcpTools = client.getEnabledTools();
+
+  // Auto-connect if needed (handles server actions/functions where connect() wasn't called)
+  await ensureClientConnected(client);
+  
+  // Use getEnabledToolsAsync to ensure schemas are always populated
+  // This fetches from server if not connected, otherwise uses cached tools
+  const mcpTools = await client.getEnabledToolsAsync();
   const openaiTools: OpenAITool[] = mcpTools.map(mcpTool => convertMCPToolToOpenAI(mcpTool, client, finalOptions));
 
   // Add trigger management tools if configured

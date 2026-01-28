@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('HubSpot');
 
 /**
  * HubSpot integration configuration
@@ -66,15 +69,17 @@ export function hubspotIntegration(config: HubSpotIntegrationConfig = {}): MCPIn
 
   return {
     id: "hubspot",
+    name: "HubSpot",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/hubspot.jpeg",
     tools: [...HUBSPOT_TOOLS],
     oauth,
 
     async onInit(_client) {
-      console.log("HubSpot integration initialized");
+      logger.debug("HubSpot integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("HubSpot integration connected");
+      logger.debug("HubSpot integration connected");
     },
   };
 }

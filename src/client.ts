@@ -20,6 +20,12 @@ import {
   type AuthenticationError,
 } from "./errors.js";
 import { methodToToolName } from "./utils/naming.js";
+import { setLogLevel, createLogger, type LogContext } from "./utils/logger.js";
+
+/**
+ * Logger context for client-side logging
+ */
+const CLIENT_LOG_CONTEXT: LogContext = 'client';
 import type { GitHubIntegrationClient } from "./integrations/github-client.js";
 import type { GmailIntegrationClient } from "./integrations/gmail-client.js";
 import type { NotionIntegrationClient } from "./integrations/notion-client.js";
@@ -84,7 +90,7 @@ class SimpleEventEmitter {
         try {
           handler(payload);
         } catch (error) {
-          console.error(`Error in event handler for ${event}:`, error);
+          logger.error(`Error in event handler for ${event}:`, error);
         }
       });
     }
@@ -103,6 +109,11 @@ class SimpleEventEmitter {
  * MCP server URL
  */
 const MCP_SERVER_URL = "https://mcp.integrate.dev/api/v1/mcp";
+
+/**
+ * Logger instances
+ */
+const logger = createLogger('MCPClient', CLIENT_LOG_CONTEXT);
 
 /**
  * Client instance cache for singleton pattern
@@ -244,6 +255,20 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   private databaseDetected: boolean = false;
 
   /**
+   * Explicitly configured integrations passed to createMCPClient
+   * Used by listConfiguredIntegrations to return only configured integrations
+   * @internal
+   */
+  private __configuredIntegrations: TIntegrations;
+
+  /**
+   * Whether to fetch configured integrations from server
+   * When true, listConfiguredIntegrations() queries the server
+   * @internal
+   */
+  private __useServerConfig: boolean;
+
+  /**
    * Promise that resolves when OAuth callback processing is complete
    * @internal Used by createMCPClient to store callback promise
    */
@@ -290,6 +315,14 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
       }
       return integration;
     }) as unknown as TIntegrations;
+
+    // Store configured integrations explicitly for listConfiguredIntegrations
+    // This ensures only integrations passed to createMCPClient are returned
+    this.__configuredIntegrations = this.integrations;
+
+    // Store useServerConfig flag (default: false)
+    // When true, listConfiguredIntegrations() fetches from server instead of local config
+    this.__useServerConfig = config.useServerConfig ?? false;
 
     this.clientInfo = config.clientInfo || {
       name: "integrate-sdk",
@@ -356,7 +389,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
                 this.authState.set(provider, { authenticated: !!tokenData });
               }
             } catch (error) {
-              console.error(`Failed to check token for ${provider}:`, error);
+              logger.error(`Failed to check token for ${provider}:`, error);
               // Only set to false if state hasn't been modified
               const currentState = this.authState.get(provider);
               if (currentState && !currentState.authenticated && !currentState.lastError) {
@@ -366,7 +399,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
           }
         }
       }).catch(error => {
-        console.error('Failed to load provider tokens:', error);
+        logger.error('Failed to load provider tokens:', error);
       });
     } else {
       // IndexedDB: Load tokens asynchronously (IndexedDB operations are async)
@@ -515,18 +548,188 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   private createServerProxy(): any {
     return new Proxy({}, {
       get: (_target, methodName: string) => {
-        // Local-only helper to list configured integrations without server call
+        // List configured integrations
+        // Behavior depends on useServerConfig flag:
+        // - useServerConfig: true (default client) → fetch from server
+        // - useServerConfig: false (custom client) → return local config
+        // - Server client (has API key) → always return local config
+        // Optionally fetches full tool metadata from server when includeToolMetadata is true
         if (methodName === 'listConfiguredIntegrations') {
-          return async () => ({
-            integrations: this.integrations.map(integration => ({
-              id: integration.id,
-              name: (integration as any).name || integration.id,
-              tools: integration.tools,
-              hasOAuth: !!integration.oauth,
-              scopes: integration.oauth?.scopes,
-              provider: integration.oauth?.provider,
-            })),
-          });
+          return async (options?: { includeToolMetadata?: boolean }) => {
+            // Check if this is a server-side client (has API key in transport)
+            const transportHeaders = (this.transport as any).headers || {};
+            const hasApiKey = !!transportHeaders['X-API-KEY'];
+
+            // Use __configuredIntegrations which stores only explicitly configured integrations
+            // For serverClient, __oauthConfig.integrations takes precedence (set by createMCPServer)
+            const serverConfig = (this as any).__oauthConfig;
+            const localIntegrations = serverConfig?.integrations || this.__configuredIntegrations;
+
+            // Helper to format local integrations
+            const formatLocalIntegrations = (integrations: readonly MCPIntegration[]) => ({
+              integrations: integrations.map((integration: MCPIntegration) => ({
+                id: integration.id,
+                name: (integration as any).name || integration.id,
+                logoUrl: (integration as any).logoUrl,
+                tools: integration.tools,
+                hasOAuth: !!integration.oauth,
+                scopes: integration.oauth?.scopes,
+                provider: integration.oauth?.provider,
+              })),
+            });
+
+            // Server clients always use local config (they ARE the server)
+            // Custom clients (useServerConfig: false) also use local config
+            if (hasApiKey || !this.__useServerConfig) {
+              // If includeToolMetadata is true, fetch tool metadata for all local integrations
+              if (options?.includeToolMetadata) {
+                const { parallelWithLimit } = await import('./utils/concurrency.js');
+
+                // Fetch metadata for each integration in parallel with concurrency limit
+                const integrationsWithMetadata = await parallelWithLimit(
+                  localIntegrations,
+                  async (integration: MCPIntegration) => {
+                    try {
+                      // Call listToolsByIntegration to get full tool metadata
+                      const response = await this.callServerToolInternal('list_tools_by_integration', {
+                        integration: integration.id,
+                      });
+
+                      // Extract tool metadata from response
+                      // Response format: { content: [{ type: "text", text: "..." }] }
+                      let toolMetadata: any[] = [];
+                      if (response.content && Array.isArray(response.content)) {
+                        for (const item of response.content) {
+                          if (item.type === 'text' && item.text) {
+                            try {
+                              // Try to parse as JSON if it's a JSON string
+                              const parsed = JSON.parse(item.text);
+                              if (Array.isArray(parsed)) {
+                                toolMetadata = parsed;
+                              } else if (parsed.tools && Array.isArray(parsed.tools)) {
+                                toolMetadata = parsed.tools;
+                              }
+                            } catch {
+                              // Not JSON, skip
+                            }
+                          }
+                        }
+                      }
+
+                      return {
+                        id: integration.id,
+                        name: (integration as any).name || integration.id,
+                        logoUrl: (integration as any).logoUrl,
+                        tools: integration.tools,
+                        hasOAuth: !!integration.oauth,
+                        scopes: integration.oauth?.scopes,
+                        provider: integration.oauth?.provider,
+                        toolMetadata,
+                      };
+                    } catch (error) {
+                      // If metadata fetch fails, return without metadata
+                      logger.error(`Failed to fetch tool metadata for ${integration.id}:`, error);
+                      return {
+                        id: integration.id,
+                        name: (integration as any).name || integration.id,
+                        logoUrl: (integration as any).logoUrl,
+                        tools: integration.tools,
+                        hasOAuth: !!integration.oauth,
+                        scopes: integration.oauth?.scopes,
+                        provider: integration.oauth?.provider,
+                        toolMetadata: [],
+                      };
+                    }
+                  },
+                  3 // Concurrency limit: 3 parallel requests at a time
+                );
+
+                return {
+                  integrations: integrationsWithMetadata,
+                };
+              }
+
+              // Return local data only (no server call)
+              return formatLocalIntegrations(localIntegrations);
+            }
+
+            // Default client (useServerConfig: true) - fetch from server
+            // This allows the default client to know what's actually configured server-side
+            const url = this.apiBaseUrl
+              ? `${this.apiBaseUrl}${this.apiRouteBase}/integrations`
+              : `${this.apiRouteBase}/integrations`;
+
+            try {
+              const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
+
+              if (!response.ok) {
+                // If server request fails, fall back to local config
+                logger.error('Failed to fetch integrations from server, falling back to local config');
+                return formatLocalIntegrations(localIntegrations);
+              }
+
+              const result = await response.json();
+
+              // If includeToolMetadata is true, enrich with tool metadata
+              if (options?.includeToolMetadata && result.integrations) {
+                const { parallelWithLimit } = await import('./utils/concurrency.js');
+
+                const integrationsWithMetadata = await parallelWithLimit(
+                  result.integrations,
+                  async (integration: any) => {
+                    try {
+                      const metadataResponse = await this.callServerToolInternal('list_tools_by_integration', {
+                        integration: integration.id,
+                      });
+
+                      let toolMetadata: any[] = [];
+                      if (metadataResponse.content && Array.isArray(metadataResponse.content)) {
+                        for (const item of metadataResponse.content) {
+                          if (item.type === 'text' && item.text) {
+                            try {
+                              const parsed = JSON.parse(item.text);
+                              if (Array.isArray(parsed)) {
+                                toolMetadata = parsed;
+                              } else if (parsed.tools && Array.isArray(parsed.tools)) {
+                                toolMetadata = parsed.tools;
+                              }
+                            } catch {
+                              // Not JSON, skip
+                            }
+                          }
+                        }
+                      }
+
+                      return {
+                        ...integration,
+                        toolMetadata,
+                      };
+                    } catch (error) {
+                      logger.error(`Failed to fetch tool metadata for ${integration.id}:`, error);
+                      return {
+                        ...integration,
+                        toolMetadata: [],
+                      };
+                    }
+                  },
+                  3
+                );
+
+                return { integrations: integrationsWithMetadata };
+              }
+
+              return result;
+            } catch (error) {
+              // If fetch fails entirely, fall back to local config
+              logger.error('Failed to fetch integrations from server, falling back to local config:', error);
+              return formatLocalIntegrations(localIntegrations);
+            }
+          };
         }
 
         // Return a function that calls the server tool directly
@@ -639,7 +842,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
       this.enabledToolNames.has(tool.name)
     );
 
-    console.log(
+    logger.debug(
       `Discovered ${response.tools.length} tools, ${enabledTools.length} enabled by integrations`
     );
   }
@@ -912,11 +1115,125 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
 
   /**
    * Get all enabled tools (filtered by integrations)
+   * 
+   * Note: This returns tools from the local cache, which is only populated
+   * after calling connect(). For tools with schemas without requiring connection,
+   * use getEnabledToolsAsync() instead.
+   * 
+   * @returns Array of enabled tools (may be empty if not connected)
    */
   getEnabledTools(): MCPTool[] {
     return Array.from(this.availableTools.values()).filter((tool) =>
       this.enabledToolNames.has(tool.name)
     );
+  }
+
+  /**
+   * Get all enabled tools with full schemas (async version)
+   * 
+   * This method ensures tools always have their inputSchema populated:
+   * - If connected and tools are cached, returns from cache
+   * - If not connected, fetches tools from server via API route
+   * 
+   * Use this method for AI integrations that need tool schemas.
+   * 
+   * @returns Promise resolving to array of enabled tools with schemas
+   * 
+   * @example
+   * ```typescript
+   * // Get tools for AI SDK integration
+   * const tools = await client.getEnabledToolsAsync();
+   * // tools[0].inputSchema is guaranteed to be populated
+   * ```
+   */
+  async getEnabledToolsAsync(): Promise<MCPTool[]> {
+    // If connected and tools are cached, return from cache
+    if (this.isConnected() && this.availableTools.size > 0) {
+      return this.getEnabledTools();
+    }
+
+    // If we have cached tools from a previous fetch, return them
+    if (this.availableTools.size > 0) {
+      return this.getEnabledTools();
+    }
+
+    // Fetch tools from server via API for each enabled integration
+    const tools: MCPTool[] = [];
+
+    // Get unique integration IDs from enabled tool names
+    const integrationIds = new Set<string>();
+    for (const integration of this.integrations) {
+      integrationIds.add(integration.id);
+    }
+
+    // Use parallelWithLimit to fetch tools for all integrations concurrently
+    const { parallelWithLimit } = await import('./utils/concurrency.js');
+
+    const integrationToolsResults = await parallelWithLimit(
+      Array.from(integrationIds),
+      async (integrationId: string) => {
+        try {
+          const response = await this.callServerToolInternal('list_tools_by_integration', {
+            integration: integrationId,
+          });
+
+          // Parse tools from response
+          const integrationTools: MCPTool[] = [];
+          if (response.content && Array.isArray(response.content)) {
+            for (const item of response.content) {
+              if (item.type === 'text' && item.text) {
+                try {
+                  const parsed = JSON.parse(item.text);
+                  if (Array.isArray(parsed)) {
+                    // Response is array of tools
+                    for (const tool of parsed) {
+                      if (tool.name && tool.inputSchema) {
+                        integrationTools.push({
+                          name: tool.name,
+                          description: tool.description,
+                          inputSchema: tool.inputSchema,
+                        });
+                      }
+                    }
+                  } else if (parsed.tools && Array.isArray(parsed.tools)) {
+                    // Response has tools property
+                    for (const tool of parsed.tools) {
+                      if (tool.name && tool.inputSchema) {
+                        integrationTools.push({
+                          name: tool.name,
+                          description: tool.description,
+                          inputSchema: tool.inputSchema,
+                        });
+                      }
+                    }
+                  }
+                } catch {
+                  // Not JSON, skip
+                }
+              }
+            }
+          }
+          return integrationTools;
+        } catch (error) {
+          logger.error(`Failed to fetch tools for integration ${integrationId}:`, error);
+          return [];
+        }
+      },
+      3 // Concurrency limit
+    );
+
+    // Flatten results and add to tools array
+    for (const integrationTools of integrationToolsResults) {
+      tools.push(...integrationTools);
+    }
+
+    // Cache the fetched tools
+    for (const tool of tools) {
+      this.availableTools.set(tool.name, tool);
+    }
+
+    // Filter to only enabled tools and return
+    return tools.filter((tool) => this.enabledToolNames.has(tool.name));
   }
 
   /**
@@ -1632,7 +1949,7 @@ function registerCleanupHandlers() {
             await client.disconnect();
           }
         } catch (error) {
-          console.error('Error disconnecting client:', error);
+          logger.error('Error disconnecting client:', error);
         }
       })
     );
@@ -1721,6 +2038,9 @@ function generateCacheKey<TIntegrations extends readonly MCPIntegration[]>(
 export function createMCPClient<TIntegrations extends readonly MCPIntegration[]>(
   config: MCPClientConfig<TIntegrations>
 ): MCPClient<TIntegrations> {
+  // Initialize logger based on debug flag (client context only)
+  setLogLevel(config.debug ? 'debug' : 'error', CLIENT_LOG_CONTEXT);
+
   const useSingleton = config.singleton ?? true;
   const connectionMode = config.connectionMode ?? 'lazy';
   const autoCleanup = config.autoCleanup ?? true;
@@ -1753,7 +2073,7 @@ export function createMCPClient<TIntegrations extends readonly MCPIntegration[]>
     if (connectionMode === 'eager') {
       // Connect asynchronously, don't block
       client.connect().catch((error) => {
-        console.error('Failed to connect client:', error);
+        logger.error('Failed to connect client:', error);
       });
     }
 
@@ -1775,7 +2095,7 @@ export function createMCPClient<TIntegrations extends readonly MCPIntegration[]>
     // Eager connection if requested
     if (connectionMode === 'eager') {
       client.connect().catch((error) => {
-        console.error('Failed to connect client:', error);
+        logger.error('Failed to connect client:', error);
       });
     }
 
@@ -1832,7 +2152,7 @@ function processOAuthCallbackFromHash(
           }).catch((error) => {
             // Handle error based on configured behavior
             if (mode === 'console') {
-              console.error('Failed to process OAuth callback:', error);
+              logger.error('Failed to process OAuth callback:', error);
             } else if (mode === 'redirect' && errorBehavior?.redirectUrl) {
               // Redirect to error page
               window.location.href = errorBehavior.redirectUrl;
@@ -1849,7 +2169,7 @@ function processOAuthCallbackFromHash(
   } catch (error) {
     // Handle parsing errors based on configured behavior
     if (mode === 'console') {
-      console.error('Failed to process OAuth callback from hash:', error);
+      logger.error('Failed to process OAuth callback from hash:', error);
     } else if (mode === 'redirect' && errorBehavior?.redirectUrl) {
       window.location.href = errorBehavior.redirectUrl;
       return null;
@@ -1892,7 +2212,7 @@ export async function clearClientCache(): Promise<void> {
           await client.disconnect();
         }
       } catch (error) {
-        console.error('Error disconnecting client during cache clear:', error);
+        logger.error('Error disconnecting client during cache clear:', error);
       }
     })
   );

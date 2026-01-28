@@ -156,6 +156,7 @@ describe("Server Configuration Coverage Tests", () => {
 
       const { client } = createMCPServer({
         integrations: [integrationWithBadOAuth as any],
+        debug: true, // Enable warn-level logging so console.warn is called
       });
 
       // Should warn about missing credentials

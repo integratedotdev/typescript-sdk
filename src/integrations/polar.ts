@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Polar');
 
 /**
  * Polar integration configuration
@@ -58,15 +61,17 @@ export function polarIntegration(config: PolarIntegrationConfig = {}): MCPIntegr
 
   return {
     id: "polar",
+    name: "Polar",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/polar.png",
     tools: [...POLAR_TOOLS],
     oauth,
 
     async onInit(_client) {
-      console.log("Polar integration initialized");
+      logger.debug("Polar integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Polar integration connected");
+      logger.debug("Polar integration connected");
     },
   };
 }

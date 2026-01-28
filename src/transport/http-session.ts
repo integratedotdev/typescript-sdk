@@ -10,6 +10,12 @@ import type {
   JSONRPCNotification,
 } from "../protocol/messages.js";
 import { parseMessage } from "../protocol/jsonrpc.js";
+import { createLogger } from "../utils/logger.js";
+
+/**
+ * Logger instance
+ */
+const logger = createLogger('HTTPSession');
 
 export type MessageHandler = (
   message: JSONRPCResponse | JSONRPCNotification
@@ -109,7 +115,7 @@ export class HttpSessionTransport {
         const sid = response.headers.get("mcp-session-id");
         if (sid) {
           this.sessionId = sid;
-          console.log("Session established:", sid);
+          logger.debug("Session established:", sid);
           
           // Start SSE listener for notifications
           this.startSSEListener();
@@ -180,7 +186,7 @@ export class HttpSessionTransport {
         // Connection was intentionally closed
         return;
       }
-      console.error("SSE connection error:", error);
+      logger.error("SSE connection error:", error);
     }
   }
 
@@ -214,7 +220,7 @@ export class HttpSessionTransport {
       if (error instanceof Error && error.name === "AbortError") {
         return;
       }
-      console.error("SSE stream error:", error);
+      logger.error("SSE stream error:", error);
     } finally {
       reader.releaseLock();
     }
@@ -232,11 +238,11 @@ export class HttpSessionTransport {
         try {
           handler(message);
         } catch (error) {
-          console.error("Error in message handler:", error);
+          logger.error("Error in message handler:", error);
         }
       });
     } catch (error) {
-      console.error("Failed to parse notification:", error);
+      logger.error("Failed to parse notification:", error);
     }
   }
 

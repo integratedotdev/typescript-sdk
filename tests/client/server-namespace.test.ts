@@ -127,7 +127,112 @@ describe("Server Namespace", () => {
     expect(result.content[0].text).toBe("all tools result");
   });
 
-  test("listConfiguredIntegrations returns local configuration", async () => {
+  test("listConfiguredIntegrations returns local configuration for custom client (useServerConfig: false)", async () => {
+    const client = createMCPClient({
+      integrations: [
+        githubIntegration({
+          clientId: "test-id",
+          scopes: ["repo"],
+        }),
+      ],
+      connectionMode: 'manual',
+      singleton: false,
+      // useServerConfig defaults to false for custom clients
+    });
+
+    const result = await client.server.listConfiguredIntegrations();
+    expect(result.integrations).toHaveLength(1);
+    expect(result.integrations[0].id).toBe("github");
+    expect(result.integrations[0].name).toBe("GitHub");
+    expect(result.integrations[0].logoUrl).toBe("https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/github.png");
+    expect(result.integrations[0].hasOAuth).toBe(true);
+    expect(result.integrations[0].tools.length).toBeGreaterThan(0);
+    expect(result.integrations[0].scopes).toEqual(["repo"]);
+  });
+
+  test("listConfiguredIntegrations fetches from server when useServerConfig is true", async () => {
+    const mockFetch = mock(async (url: string) => {
+      if (url.includes("/api/integrate/integrations")) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            integrations: [
+              {
+                id: "linear",
+                name: "Linear",
+                tools: ["linear_list_issues", "linear_create_issue"],
+                hasOAuth: true,
+                scopes: ["read", "write"],
+                provider: "linear",
+              },
+            ],
+          }),
+          headers: new Headers(),
+        } as Response;
+      }
+      return { ok: false } as Response;
+    }) as any;
+
+    global.fetch = mockFetch;
+
+    const client = createMCPClient({
+      integrations: [
+        githubIntegration({
+          clientId: "test-id",
+          scopes: ["repo"],
+        }),
+      ],
+      connectionMode: 'manual',
+      singleton: false,
+      useServerConfig: true, // Should fetch from server
+    });
+
+    const result = await client.server.listConfiguredIntegrations();
+    
+    // Should return server-configured integrations, not local integrations
+    expect(mockFetch).toHaveBeenCalled();
+    expect(result.integrations).toHaveLength(1);
+    expect(result.integrations[0].id).toBe("linear");
+    expect(result.integrations[0].hasOAuth).toBe(true);
+    expect(result.integrations[0].scopes).toEqual(["read", "write"]);
+  });
+
+  test("listConfiguredIntegrations falls back to local config when server request fails", async () => {
+    const mockFetch = mock(async (url: string) => {
+      if (url.includes("/api/integrate/integrations")) {
+        return {
+          ok: false,
+          status: 500,
+          json: async () => ({ error: "Server error" }),
+          headers: new Headers(),
+        } as Response;
+      }
+      return { ok: false } as Response;
+    }) as any;
+
+    global.fetch = mockFetch;
+
+    const client = createMCPClient({
+      integrations: [
+        githubIntegration({
+          clientId: "test-id",
+          scopes: ["repo"],
+        }),
+      ],
+      connectionMode: 'manual',
+      singleton: false,
+      useServerConfig: true,
+    });
+
+    const result = await client.server.listConfiguredIntegrations();
+    
+    // Should fall back to local integrations when server fails
+    expect(result.integrations).toHaveLength(1);
+    expect(result.integrations[0].id).toBe("github");
+  });
+
+  test("listConfiguredIntegrations uses server config when available", async () => {
     const client = createMCPClient({
       integrations: [
         githubIntegration({
@@ -139,12 +244,192 @@ describe("Server Namespace", () => {
       singleton: false,
     });
 
+    // Simulate server config (as set by createMCPServer)
+    // This represents a different set of integrations configured on the server
+    const serverIntegration = {
+      id: "linear",
+      tools: ["linear_list_issues", "linear_create_issue"],
+      oauth: {
+        provider: "linear",
+        clientId: "server-linear-id",
+        clientSecret: "server-linear-secret",
+        scopes: ["read", "write"],
+      },
+    };
+    
+    (client as any).__oauthConfig = {
+      providers: {},
+      integrations: [serverIntegration],
+    };
+
     const result = await client.server.listConfiguredIntegrations();
+    
+    // Should return server-configured integrations, not client integrations
+    expect(result.integrations).toHaveLength(1);
+    expect(result.integrations[0].id).toBe("linear");
+    expect(result.integrations[0].hasOAuth).toBe(true);
+    expect(result.integrations[0].tools).toEqual(["linear_list_issues", "linear_create_issue"]);
+    expect(result.integrations[0].scopes).toEqual(["read", "write"]);
+  });
+
+  test("listConfiguredIntegrations with includeToolMetadata fetches metadata", async () => {
+    const mockFetch = mock(async (url: string, options?: any) => {
+      if (url.includes("/api/integrate/mcp")) {
+        const body = JSON.parse(options?.body || "{}");
+        
+        // Mock response for list_tools_by_integration
+        if (body.name === "list_tools_by_integration") {
+          const integration = body.arguments?.integration;
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({
+              content: [{
+                type: "text",
+                text: JSON.stringify([
+                  {
+                    name: `${integration}_create_issue`,
+                    description: `Create an issue in ${integration}`,
+                    inputSchema: {
+                      type: "object",
+                      properties: {
+                        title: { type: "string" },
+                        body: { type: "string" },
+                      },
+                      required: ["title"],
+                    },
+                  },
+                  {
+                    name: `${integration}_list_issues`,
+                    description: `List issues in ${integration}`,
+                    inputSchema: {
+                      type: "object",
+                      properties: {
+                        state: { type: "string" },
+                      },
+                    },
+                  },
+                ]),
+              }],
+            }),
+            headers: new Headers(),
+          } as Response;
+        }
+      }
+      return { ok: false } as Response;
+    }) as any;
+
+    global.fetch = mockFetch;
+
+    const client = createMCPClient({
+      integrations: [
+        githubIntegration({
+          clientId: "test-id",
+          scopes: ["repo"],
+        }),
+      ],
+      connectionMode: 'manual',
+      singleton: false,
+    });
+
+    const result = await client.server.listConfiguredIntegrations({
+      includeToolMetadata: true,
+    });
+
     expect(result.integrations).toHaveLength(1);
     expect(result.integrations[0].id).toBe("github");
-    expect(result.integrations[0].hasOAuth).toBe(true);
-    expect(result.integrations[0].tools.length).toBeGreaterThan(0);
-    expect(result.integrations[0].scopes).toEqual(["repo"]);
+    expect(result.integrations[0].toolMetadata).toBeDefined();
+    expect(result.integrations[0].toolMetadata?.length).toBe(2);
+    expect(result.integrations[0].toolMetadata?.[0].name).toBe("github_create_issue");
+    expect(result.integrations[0].toolMetadata?.[0].description).toBe("Create an issue in github");
+    expect(result.integrations[0].toolMetadata?.[0].inputSchema).toBeDefined();
+    expect(result.integrations[0].toolMetadata?.[1].name).toBe("github_list_issues");
+  });
+
+  test("listConfiguredIntegrations with includeToolMetadata handles errors gracefully", async () => {
+    const mockFetch = mock(async (url: string, options?: any) => {
+      if (url.includes("/api/integrate/mcp")) {
+        // Simulate server error
+        return {
+          ok: false,
+          status: 500,
+          text: async () => "Internal Server Error",
+          headers: new Headers(),
+        } as Response;
+      }
+      return { ok: false } as Response;
+    }) as any;
+
+    global.fetch = mockFetch;
+
+    const client = createMCPClient({
+      integrations: [
+        githubIntegration({
+          clientId: "test-id",
+          scopes: ["repo"],
+        }),
+      ],
+      connectionMode: 'manual',
+      singleton: false,
+    });
+
+    const result = await client.server.listConfiguredIntegrations({
+      includeToolMetadata: true,
+    });
+
+    // Should still return integration info even if metadata fetch fails
+    expect(result.integrations).toHaveLength(1);
+    expect(result.integrations[0].id).toBe("github");
+    expect(result.integrations[0].toolMetadata).toEqual([]);
+  });
+
+  test("listConfiguredIntegrations for custom client (useServerConfig: false) does not make server calls", async () => {
+    const mockFetch = mock(async () => {
+      throw new Error("Fetch should not be called");
+    }) as any;
+
+    global.fetch = mockFetch;
+
+    const client = createMCPClient({
+      integrations: [
+        githubIntegration({
+          clientId: "test-id",
+          scopes: ["repo"],
+        }),
+      ],
+      connectionMode: 'manual',
+      singleton: false,
+      // useServerConfig defaults to false for custom clients
+    });
+
+    // Should not make any server calls for custom clients
+    const result = await client.server.listConfiguredIntegrations();
+    
+    expect(result.integrations).toHaveLength(1);
+    expect(result.integrations[0].id).toBe("github");
+    expect(result.integrations[0].toolMetadata).toBeUndefined();
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  test("listConfiguredIntegrations returns logoUrl when available", async () => {
+    const client = createMCPClient({
+      integrations: [
+        githubIntegration({
+          clientId: "test-id",
+        }),
+      ],
+      connectionMode: 'manual',
+      singleton: false,
+    });
+
+    const result = await client.server.listConfiguredIntegrations();
+    
+    expect(result.integrations).toHaveLength(1);
+    expect(result.integrations[0].id).toBe("github");
+    expect(result.integrations[0].name).toBe("GitHub");
+    expect(result.integrations[0].logoUrl).toBe("https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/github.png");
+    expect(result.integrations[0].logoUrl).toBeDefined();
+    expect(typeof result.integrations[0].logoUrl).toBe("string");
   });
 });
 

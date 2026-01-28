@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Google Workspace');
 
 /**
  * Google Workspace integration configuration
@@ -66,15 +69,17 @@ export function gworkspaceIntegration(config: GWorkspaceIntegrationConfig = {}):
 
   return {
     id: "gworkspace",
+    name: "Google Workspace",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/google_workspace.jpeg",
     tools: [...GWORKSPACE_TOOLS],
     oauth,
 
     async onInit(_client) {
-      console.log("Google Workspace integration initialized");
+      logger.debug("Google Workspace integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Google Workspace integration connected");
+      logger.debug("Google Workspace integration connected");
     },
   };
 }

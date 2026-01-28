@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Stripe');
 
 /**
  * Stripe integration configuration
@@ -55,15 +58,17 @@ export function stripeIntegration(config: StripeIntegrationConfig = {}): MCPInte
 
   return {
     id: "stripe",
+    name: "Stripe",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/stripe.jpeg",
     tools: [...STRIPE_TOOLS],
     oauth,
 
     async onInit(_client) {
-      console.log("Stripe integration initialized");
+      logger.debug("Stripe integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Stripe integration connected");
+      logger.debug("Stripe integration connected");
     },
   };
 }

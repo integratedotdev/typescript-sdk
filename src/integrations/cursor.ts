@@ -4,6 +4,9 @@
  */
 
 import type { MCPIntegration } from "./types.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Cursor');
 
 /**
  * Cursor integration configuration
@@ -37,15 +40,17 @@ const CURSOR_TOOLS = [
 export function cursorIntegration(_config: CursorIntegrationConfig = {}): MCPIntegration<"cursor"> {
   return {
     id: "cursor",
+    name: "Cursor",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/cursor.jpeg",
     tools: [...CURSOR_TOOLS],
     // No OAuth - Cursor uses basic authentication with API key
 
     async onInit(_client) {
-      console.log("Cursor integration initialized");
+      logger.debug("Cursor integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Cursor integration connected");
+      logger.debug("Cursor integration connected");
     },
   };
 }

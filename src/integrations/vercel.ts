@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Vercel');
 
 /**
  * Vercel integration configuration
@@ -55,15 +58,17 @@ export function vercelIntegration(config: VercelIntegrationConfig = {}): MCPInte
 
   return {
     id: "vercel",
+    name: "Vercel",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/vercel.png",
     tools: [...VERCEL_TOOLS],
     oauth,
 
     async onInit(_client) {
-      console.log("Vercel integration initialized");
+      logger.debug("Vercel integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Vercel integration connected");
+      logger.debug("Vercel integration connected");
     },
   };
 }

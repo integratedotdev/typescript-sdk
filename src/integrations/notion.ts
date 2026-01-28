@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Notion');
 export interface NotionIntegrationConfig {
   /** Notion OAuth client ID (defaults to NOTION_CLIENT_ID env var) */
   clientId?: string;
@@ -60,15 +63,17 @@ export function notionIntegration(config: NotionIntegrationConfig = {}): MCPInte
 
   return {
     id: "notion",
+    name: "Notion",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/notion.jpeg",
     tools: [...NOTION_TOOLS],
     oauth,
 
     async onInit(_client) {
-      console.log("Notion integration initialized");
+      logger.debug("Notion integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Notion integration connected");
+      logger.debug("Notion integration connected");
     },
   };
 }
