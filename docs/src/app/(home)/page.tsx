@@ -1,10 +1,8 @@
-import Link from 'next/link';
-import { codeToHtml } from 'shiki';
-import { ArrowRight } from 'lucide-react';
-
-import { cn } from '@/lib/cn';
-import { Footer } from '@/components/footer';
-import { FloatingLogos, type LogoItem } from './floating-logos';
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { codeToHtml } from "shiki";
+import { Footer } from "@/components/footer";
+import { FloatingLogos, type LogoItem } from "./floating-logos";
 
 const codeSample = `import {
   createMCPServer,
@@ -88,12 +86,15 @@ type IntegrationResponse = {
 
 async function getIntegrationLogos(): Promise<LogoItem[]> {
   try {
-    const response = await fetch('https://mcp.integrate.dev/api/v1/integrations', {
-      next: { revalidate: 60 * 60 },
-    });
+    const response = await fetch(
+      "https://mcp.integrate.dev/api/v1/integrations",
+      {
+        next: { revalidate: 60 * 60 },
+      },
+    );
 
     if (!response.ok) {
-      throw new Error('Failed to fetch integrations');
+      throw new Error("Failed to fetch integrations");
     }
 
     const data = (await response.json()) as IntegrationResponse;
@@ -108,30 +109,38 @@ async function getIntegrationLogos(): Promise<LogoItem[]> {
 }
 
 export default async function HomePage() {
-  const [lightCodeHtml, darkCodeHtml, lightVercelAICodeHtml, darkVercelAICodeHtml, lightTriggersCodeHtml, darkTriggersCodeHtml, logos] = await Promise.all([
+  const [
+    lightCodeHtml,
+    darkCodeHtml,
+    lightVercelAICodeHtml,
+    darkVercelAICodeHtml,
+    lightTriggersCodeHtml,
+    darkTriggersCodeHtml,
+    logos,
+  ] = await Promise.all([
     codeToHtml(codeSample, {
-      lang: 'ts',
-      theme: 'github-light-default',
+      lang: "ts",
+      theme: "github-light-default",
     }),
     codeToHtml(codeSample, {
-      lang: 'ts',
-      theme: 'github-dark',
+      lang: "ts",
+      theme: "github-dark",
     }),
     codeToHtml(vercelAICodeSample, {
-      lang: 'ts',
-      theme: 'github-light-default',
+      lang: "ts",
+      theme: "github-light-default",
     }),
     codeToHtml(vercelAICodeSample, {
-      lang: 'ts',
-      theme: 'github-dark',
+      lang: "ts",
+      theme: "github-dark",
     }),
     codeToHtml(triggersCodeSample, {
-      lang: 'ts',
-      theme: 'github-light-default',
+      lang: "ts",
+      theme: "github-light-default",
     }),
     codeToHtml(triggersCodeSample, {
-      lang: 'ts',
-      theme: 'github-dark',
+      lang: "ts",
+      theme: "github-dark",
     }),
     getIntegrationLogos(),
   ]);
@@ -148,13 +157,20 @@ export default async function HomePage() {
               Integrate other apps in your app
             </h1>
             <p className="mt-4 max-w-md text-base text-zinc-600 dark:text-zinc-400">
-              The fastest gateway to any third party API, get started with less than 20 lines of code.
+              The fastest gateway to any third party API, get started with less
+              than 20 lines of code.
             </p>
             <div className="mt-8 flex gap-3">
-              <Link href="/docs" className="inline-flex h-10 items-center rounded-full border border-zinc-300 bg-zinc-100 px-6 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700">
+              <Link
+                href="/docs"
+                className="inline-flex h-10 items-center rounded-full border border-zinc-300 bg-zinc-100 px-6 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
+              >
                 View Docs
               </Link>
-              <a href="https://app.integrate.dev" className="inline-flex h-10 items-center gap-1 rounded-full bg-zinc-900 px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100">
+              <a
+                href="https://app.integrate.dev"
+                className="inline-flex h-10 items-center gap-1 rounded-full bg-zinc-900 px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
+              >
                 Get Started
                 <ArrowRight className="size-4" aria-hidden />
               </a>
@@ -186,13 +202,21 @@ export default async function HomePage() {
                 No config setup with your AI SDK
               </h2>
               <p className="text-lg text-zinc-600 dark:text-zinc-400">
-                Integrate supports a wide variety of AI SDKs and handles most of the code behind the scenes for you so its only a matter of calling the function in your tools object.
+                Integrate supports a wide variety of AI SDKs and handles most of
+                the code behind the scenes for you so its only a matter of
+                calling the function in your tools object.
               </p>
               <div className="flex gap-3 pt-2">
-                <Link href="/docs" className="inline-flex h-10 items-center rounded-full border border-zinc-300 bg-zinc-100 px-6 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700">
+                <Link
+                  href="/docs"
+                  className="inline-flex h-10 items-center rounded-full border border-zinc-300 bg-zinc-100 px-6 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
+                >
                   View Docs
                 </Link>
-                <a href="https://app.integrate.dev" className="inline-flex h-10 items-center gap-1 rounded-full bg-zinc-900 px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100">
+                <a
+                  href="https://app.integrate.dev"
+                  className="inline-flex h-10 items-center gap-1 rounded-full bg-zinc-900 px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
+                >
                   Get Started
                   <ArrowRight className="size-4" aria-hidden />
                 </a>
@@ -233,13 +257,22 @@ export default async function HomePage() {
                 Schedule actions with Triggers
               </h2>
               <p className="text-lg text-zinc-600 dark:text-zinc-400">
-                Schedule tool executions for a specific time or on a recurring schedule. Perfect for sending scheduled emails, daily reports, automated reminders, and AI agents that schedule actions for later.
+                Schedule tool executions for a specific time or on a recurring
+                schedule. Perfect for sending scheduled emails, daily reports,
+                automated reminders, and AI agents that schedule actions for
+                later.
               </p>
               <div className="flex gap-3 pt-2">
-                <Link href="/docs/getting-started/triggers" className="inline-flex h-10 items-center rounded-full border border-zinc-300 bg-zinc-100 px-6 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700">
+                <Link
+                  href="/docs/getting-started/triggers"
+                  className="inline-flex h-10 items-center rounded-full border border-zinc-300 bg-zinc-100 px-6 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
+                >
                   View Docs
                 </Link>
-                <a href="https://app.integrate.dev" className="inline-flex h-10 items-center gap-1 rounded-full bg-zinc-900 px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100">
+                <a
+                  href="https://app.integrate.dev"
+                  className="inline-flex h-10 items-center gap-1 rounded-full bg-zinc-900 px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
+                >
                   Get Started
                   <ArrowRight className="size-4" aria-hidden />
                 </a>
@@ -255,13 +288,20 @@ export default async function HomePage() {
               Ready to integrate?
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-lg text-zinc-400">
-              Start building with Integrate SDK today. Wire up credentials in minutes and empower your agents.
+              Start building with Integrate SDK today. Wire up credentials in
+              minutes and empower your agents.
             </p>
             <div className="mt-8 flex justify-center gap-3">
-              <Link href="/docs" className="inline-flex h-10 items-center rounded-full border border-zinc-700 px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-800">
+              <Link
+                href="/docs"
+                className="inline-flex h-10 items-center rounded-full border border-zinc-700 px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-800"
+              >
                 View Docs
               </Link>
-              <a href="https://app.integrate.dev" className="inline-flex h-10 items-center gap-1 rounded-full bg-white px-6 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-100">
+              <a
+                href="https://app.integrate.dev"
+                className="inline-flex h-10 items-center gap-1 rounded-full bg-white px-6 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-100"
+              >
                 Get Started
                 <ArrowRight className="size-4" aria-hidden />
               </a>

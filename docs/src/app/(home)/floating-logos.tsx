@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { motion } from 'motion/react';
+import { motion } from "motion/react";
+import { useEffect, useState } from "react";
 
 export type LogoItem = {
   name: string;
@@ -13,19 +13,19 @@ type FloatingLogosProps = {
 };
 
 const positions = [
-  { top: '12%', left: '4%', rotate: 0 },
-  { top: '18%', left: '16%', rotate: -8 },
-  { top: '12%', left: '24%', rotate: 5 },
-  { top: '16%', right: '32%', rotate: 0 },
-  { top: '10%', right: '16%', rotate: 6 },
-  { top: '14%', right: '3%', rotate: -4 },
-  { top: '45%', left: '3%', rotate: 3 },
-  { top: '55%', left: '12%', rotate: -6 },
-  { top: '70%', left: '5%', rotate: 0 },
-  { top: '42%', right: '4%', rotate: -5 },
-  { top: '58%', right: '14%', rotate: 4 },
-  { top: '72%', right: '6%', rotate: 0 },
-  { top: '78%', right: '22%', rotate: -3 },
+  { top: "12%", left: "4%", rotate: 0 },
+  { top: "18%", left: "16%", rotate: -8 },
+  { top: "12%", left: "24%", rotate: 5 },
+  { top: "16%", right: "32%", rotate: 0 },
+  { top: "10%", right: "16%", rotate: 6 },
+  { top: "14%", right: "3%", rotate: -4 },
+  { top: "45%", left: "3%", rotate: 3 },
+  { top: "55%", left: "12%", rotate: -6 },
+  { top: "70%", left: "5%", rotate: 0 },
+  { top: "42%", right: "4%", rotate: -5 },
+  { top: "58%", right: "14%", rotate: 4 },
+  { top: "72%", right: "6%", rotate: 0 },
+  { top: "78%", right: "22%", rotate: -3 },
 ];
 
 export function FloatingLogos({ logos }: FloatingLogosProps) {
@@ -54,8 +54,8 @@ export function FloatingLogos({ logos }: FloatingLogosProps) {
             className="absolute"
             style={{
               top: pos.top,
-              left: 'left' in pos ? pos.left : undefined,
-              right: 'right' in pos ? pos.right : undefined,
+              left: "left" in pos ? pos.left : undefined,
+              right: "right" in pos ? pos.right : undefined,
             }}
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1, rotate: pos.rotate }}

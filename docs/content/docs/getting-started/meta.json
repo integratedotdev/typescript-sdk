@@ -1,9 +1,9 @@
 {
-    "pages": [
-        "installation",
-        "basic-usage",
-        "database",
-        "triggers",
-        "advanced-usage"
-    ]
+  "pages": [
+    "installation",
+    "basic-usage",
+    "database",
+    "triggers",
+    "advanced-usage"
+  ]
 }

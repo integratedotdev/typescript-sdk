@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useMemo, useState, useEffect } from 'react';
-import Link from 'next/link';
-import { ArrowRight, Search } from 'lucide-react';
-import { motion } from 'motion/react';
+import { ArrowRight, Search } from "lucide-react";
+import { motion } from "motion/react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 
-import { cn } from '@/lib/cn';
+import { cn } from "@/lib/cn";
 
 export type IntegrationCard = {
   name: string;
@@ -29,14 +29,14 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export function IntegrationsGrid({ integrations }: IntegrationsGridProps) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [mounted, setMounted] = useState(false);
   const [animationOrder, setAnimationOrder] = useState<number[]>([]);
 
   useEffect(() => {
     setMounted(true);
     setAnimationOrder(shuffleArray(integrations.map((_, i) => i)));
-  }, [integrations.length]);
+  }, [integrations.map]);
 
   const filtered = useMemo(() => {
     const value = query.trim().toLowerCase();
@@ -45,9 +45,13 @@ export function IntegrationsGrid({ integrations }: IntegrationsGridProps) {
     return integrations.filter((integration) => {
       const name = integration.name.toLowerCase();
       const description = integration.description.toLowerCase();
-      const owner = integration.owner?.toLowerCase() ?? '';
+      const owner = integration.owner?.toLowerCase() ?? "";
 
-      return name.includes(value) || description.includes(value) || owner.includes(value);
+      return (
+        name.includes(value) ||
+        description.includes(value) ||
+        owner.includes(value)
+      );
     });
   }, [integrations, query]);
 
@@ -80,9 +84,11 @@ export function IntegrationsGrid({ integrations }: IntegrationsGridProps) {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {filtered.map((integration, index) => {
-            const originalIndex = integrations.findIndex((i) => i.slug === integration.slug);
-            
+          {filtered.map((integration, _index) => {
+            const originalIndex = integrations.findIndex(
+              (i) => i.slug === integration.slug,
+            );
+
             return (
               <motion.div
                 key={integration.slug}
@@ -100,7 +106,7 @@ export function IntegrationsGrid({ integrations }: IntegrationsGridProps) {
                 >
                   <div
                     className={cn(
-                      'flex aspect-square size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-800',
+                      "flex aspect-square size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-800",
                     )}
                   >
                     <img
@@ -115,9 +121,14 @@ export function IntegrationsGrid({ integrations }: IntegrationsGridProps) {
                       <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
                         {integration.name}
                       </h3>
-                      <ArrowRight className="size-3.5 text-zinc-400 transition group-hover:translate-x-0.5 group-hover:text-zinc-900 dark:text-zinc-500 dark:group-hover:text-white" aria-hidden />
+                      <ArrowRight
+                        className="size-3.5 text-zinc-400 transition group-hover:translate-x-0.5 group-hover:text-zinc-900 dark:text-zinc-500 dark:group-hover:text-white"
+                        aria-hidden
+                      />
                     </div>
-                    <p className="line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">{integration.description}</p>
+                    <p className="line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">
+                      {integration.description}
+                    </p>
                   </div>
                 </Link>
               </motion.div>
@@ -126,19 +137,28 @@ export function IntegrationsGrid({ integrations }: IntegrationsGridProps) {
         </div>
       )}
       <div className="text-xs text-zinc-500 dark:text-zinc-500">
-        Missing an integration? Suggest on{' '}
-        <a href="https://github.com/integrate-dev" className="font-medium text-zinc-900 hover:underline dark:text-white">
+        Missing an integration? Suggest on{" "}
+        <a
+          href="https://github.com/integrate-dev"
+          className="font-medium text-zinc-900 hover:underline dark:text-white"
+        >
           GitHub
         </a>
-        ,{' '}
-        <a href="https://discord.gg/integrate" className="font-medium text-zinc-900 hover:underline dark:text-white">
+        ,{" "}
+        <a
+          href="https://discord.gg/integrate"
+          className="font-medium text-zinc-900 hover:underline dark:text-white"
+        >
           Discord
-        </a>{' '}
-        or{' '}
-        <a href="mailto:support@integrate.dev" className="font-medium text-zinc-900 hover:underline dark:text-white">
+        </a>{" "}
+        or{" "}
+        <a
+          href="mailto:support@integrate.dev"
+          className="font-medium text-zinc-900 hover:underline dark:text-white"
+        >
           email
-        </a>{' '}
-        and we will reply {'<'}48h.
+        </a>{" "}
+        and we will reply {"<"}48h.
       </div>
     </div>
   );

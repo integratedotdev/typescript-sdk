@@ -1,32 +1,32 @@
-@import 'tailwindcss';
-@import 'fumadocs-ui/css/black.css';
-@import 'fumadocs-ui/css/preset.css';
+@import "tailwindcss";
+@import "fumadocs-ui/css/black.css";
+@import "fumadocs-ui/css/preset.css";
 
 /* Fix Shiki code block styling - prevent nested blocks and add padding */
 /* Target Shiki's pre elements - they typically have inline styles or shiki class */
 pre.shiki,
-pre[class*='shiki'],
-pre[style*='background'] {
-  margin: 0 !important;
-  padding: 1rem !important;
-  border-radius: 0 !important;
-  border: none !important;
-  overflow: visible !important;
+pre[class*="shiki"],
+pre[style*="background"] {
+  margin: 0;
+  padding: 1rem;
+  border-radius: 0;
+  border: none;
+  overflow: visible;
 }
 
 /* Apply black background only in dark mode */
 .dark pre.shiki,
-.dark pre[class*='shiki'],
-.dark pre[style*='background'] {
-  background: #000 !important;
+.dark pre[class*="shiki"],
+.dark pre[style*="background"] {
+  background: #000;
 }
 
 pre.shiki code,
-pre[class*='shiki'] code,
-pre[style*='background'] code {
-  padding: 0 !important;
-  background: transparent !important;
-  border: none !important;
+pre[class*="shiki"] code,
+pre[style*="background"] code {
+  padding: 0;
+  background: transparent;
+  border: none;
   display: block;
   font-size: inherit;
   line-height: inherit;
@@ -42,30 +42,30 @@ pre code {
 /* Make Sign In and Get Started buttons rounded-full with more padding */
 nav a[href="https://app.integrate.dev"],
 nav a[href="https://app.integrate.dev/signup"] {
-  border-radius: 9999px !important;
-  padding-left: 1.5rem !important;
-  padding-right: 1.5rem !important;
+  border-radius: 9999px;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 }
 
 /* Style Get Started button like hero section (inverted colors) */
 nav a[href="https://app.integrate.dev/signup"] {
-  background-color: rgb(24 24 27) !important; /* bg-zinc-900 */
-  color: rgb(255 255 255) !important; /* text-white */
-  transition-property: background-color !important;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
-  transition-duration: 150ms !important;
+  background-color: rgb(24 24 27); /* bg-zinc-900 */
+  color: rgb(255 255 255); /* text-white */
+  transition-property: background-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
 }
 
 nav a[href="https://app.integrate.dev/signup"]:hover {
-  background-color: rgb(39 39 42) !important; /* hover:bg-zinc-800 */
+  background-color: rgb(39 39 42); /* hover:bg-zinc-800 */
 }
 
 /* Dark mode: white background with dark text */
 .dark nav a[href="https://app.integrate.dev/signup"] {
-  background-color: rgb(255 255 255) !important; /* dark:bg-white */
-  color: rgb(24 24 27) !important; /* dark:text-zinc-900 */
+  background-color: rgb(255 255 255); /* dark:bg-white */
+  color: rgb(24 24 27); /* dark:text-zinc-900 */
 }
 
 .dark nav a[href="https://app.integrate.dev/signup"]:hover {
-  background-color: rgb(244 244 245) !important; /* dark:hover:bg-zinc-100 */
+  background-color: rgb(244 244 245); /* dark:hover:bg-zinc-100 */
 }

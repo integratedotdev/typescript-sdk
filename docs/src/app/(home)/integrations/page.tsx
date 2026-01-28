@@ -1,8 +1,7 @@
-import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
-
-import { IntegrationsGrid, type IntegrationCard } from './integrations-grid';
-import { Footer } from '@/components/footer';
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { Footer } from "@/components/footer";
+import { type IntegrationCard, IntegrationsGrid } from "./integrations-grid";
 
 type IntegrationResponse = {
   integrations: {
@@ -14,18 +13,24 @@ type IntegrationResponse = {
 };
 
 function slugifyName(name: string) {
-  const normalized = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  return normalized || 'default';
+  const normalized = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+  return normalized || "default";
 }
 
 async function getIntegrations(): Promise<IntegrationCard[]> {
   try {
-    const response = await fetch('https://mcp.integrate.dev/api/v1/integrations', {
-      next: { revalidate: 60 * 60 },
-    });
+    const response = await fetch(
+      "https://mcp.integrate.dev/api/v1/integrations",
+      {
+        next: { revalidate: 60 * 60 },
+      },
+    );
 
     if (!response.ok) {
-      throw new Error('Failed to fetch integrations');
+      throw new Error("Failed to fetch integrations");
     }
 
     const data = (await response.json()) as IntegrationResponse;
@@ -57,13 +62,20 @@ export default async function IntegrationsPage() {
               Integrations
             </h1>
             <p className="mx-auto mt-4 max-w-lg text-lg text-zinc-600 dark:text-zinc-400">
-              Browse Integrate's MCP-ready integrations. Jump into the docs for setup and tools.
+              Browse Integrate's MCP-ready integrations. Jump into the docs for
+              setup and tools.
             </p>
             <div className="mt-8 flex justify-center gap-3">
-              <Link href="/docs" className="inline-flex h-10 items-center rounded-full border border-zinc-300 bg-zinc-100 px-6 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700">
+              <Link
+                href="/docs"
+                className="inline-flex h-10 items-center rounded-full border border-zinc-300 bg-zinc-100 px-6 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
+              >
                 View Docs
               </Link>
-              <a href="https://app.integrate.dev" className="inline-flex h-10 items-center gap-1 rounded-full bg-zinc-900 px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100">
+              <a
+                href="https://app.integrate.dev"
+                className="inline-flex h-10 items-center gap-1 rounded-full bg-zinc-900 px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
+              >
                 Get Started
                 <ArrowRight className="size-4" aria-hidden />
               </a>
@@ -76,7 +88,9 @@ export default async function IntegrationsPage() {
           <div className="container mx-auto px-6">
             <div className="mb-6 flex items-center justify-between">
               <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                {integrations.length > 0 ? `${integrations.length} integrations available` : 'Loading integrations...'}
+                {integrations.length > 0
+                  ? `${integrations.length} integrations available`
+                  : "Loading integrations..."}
               </p>
             </div>
             <IntegrationsGrid integrations={integrations} />
@@ -90,13 +104,20 @@ export default async function IntegrationsPage() {
               Ready to ship your integration?
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-zinc-400">
-              Configure credentials once, stream MCP tool calls, and keep OAuth on the server.
+              Configure credentials once, stream MCP tool calls, and keep OAuth
+              on the server.
             </p>
             <div className="mt-8 flex justify-center gap-3">
-              <Link href="/docs" className="inline-flex h-10 items-center rounded-full border border-zinc-700 px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-800">
+              <Link
+                href="/docs"
+                className="inline-flex h-10 items-center rounded-full border border-zinc-700 px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-800"
+              >
                 View Docs
               </Link>
-              <a href="https://app.integrate.dev" className="inline-flex h-10 items-center gap-1 rounded-full bg-white px-6 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-100">
+              <a
+                href="https://app.integrate.dev"
+                className="inline-flex h-10 items-center gap-1 rounded-full bg-white px-6 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-100"
+              >
                 Get Started
                 <ArrowRight className="size-4" aria-hidden />
               </a>

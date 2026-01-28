@@ -1,6 +1,6 @@
-import { createMDX } from 'fumadocs-mdx/next';
-import { fileURLToPath } from 'node:url';
-import { dirname } from 'node:path';
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { createMDX } from "fumadocs-mdx/next";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -16,8 +16,8 @@ const config = {
   async rewrites() {
     return [
       {
-        source: '/docs/:path*.mdx',
-        destination: '/llms.mdx/:path*',
+        source: "/docs/:path*.mdx",
+        destination: "/llms.mdx/:path*",
       },
     ];
   },
