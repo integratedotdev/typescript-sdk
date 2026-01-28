@@ -11,6 +11,7 @@
     "format": "biome format --write"
   },
   "dependencies": {
+    "@vercel/analytics": "^1.6.1",
     "class-variance-authority": "^0.7.1",
     "fumadocs-core": "16.2.3",
     "fumadocs-mdx": "14.1.0",
