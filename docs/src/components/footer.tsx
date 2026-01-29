@@ -85,7 +85,7 @@ export function Footer() {
             <ul className="space-y-2 text-zinc-600 dark:text-zinc-400">
               <li>
                 <a
-                  href="https://github.com/integrate-dev"
+                  href="https://github.com/integratedotdev"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-zinc-900 dark:hover:text-white"

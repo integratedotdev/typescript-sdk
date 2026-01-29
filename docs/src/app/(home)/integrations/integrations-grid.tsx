@@ -139,14 +139,14 @@ export function IntegrationsGrid({ integrations }: IntegrationsGridProps) {
       <div className="text-xs text-zinc-500 dark:text-zinc-500">
         Missing an integration? Suggest on{" "}
         <a
-          href="https://github.com/integrate-dev"
+          href="https://github.com/integratedotdev"
           className="font-medium text-zinc-900 hover:underline dark:text-white"
         >
           GitHub
         </a>
         ,{" "}
         <a
-          href="https://discord.gg/integrate"
+          href="https://discord.gg/7bAnb7CGGm"
           className="font-medium text-zinc-900 hover:underline dark:text-white"
         >
           Discord
