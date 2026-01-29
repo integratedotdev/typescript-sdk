@@ -213,6 +213,9 @@ export async function executeToolWithToken(
   args: Record<string, unknown>,
   options?: AIToolsOptions
 ): Promise<any> {
+  // Auto-connect if needed (handles server actions/functions where connect() wasn't called)
+  await ensureClientConnected(client);
+
   // If provider tokens are provided, inject them into the OAuthManager
   if (options?.providerTokens) {
     const provider = getProviderForTool(client, toolName);

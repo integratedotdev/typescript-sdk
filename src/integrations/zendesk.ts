@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Zendesk');
 
 /**
  * Zendesk integration configuration
@@ -58,15 +61,17 @@ export function zendeskIntegration(config: ZendeskIntegrationConfig = {}): MCPIn
 
   return {
     id: "zendesk",
+    name: "Zendesk",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/zendesk.jpeg",
     tools: [...ZENDESK_TOOLS],
     oauth,
 
     async onInit(_client) {
-      console.log("Zendesk integration initialized");
+      logger.debug("Zendesk integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Zendesk integration connected");
+      logger.debug("Zendesk integration connected");
     },
   };
 }

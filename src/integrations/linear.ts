@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Linear');
 
 /**
  * Linear integration configuration
@@ -55,15 +58,17 @@ export function linearIntegration(config: LinearIntegrationConfig = {}): MCPInte
 
   return {
     id: "linear",
+    name: "Linear",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/linear.jpeg",
     tools: [...LINEAR_TOOLS],
     oauth,
 
     async onInit(_client) {
-      console.log("Linear integration initialized");
+      logger.debug("Linear integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Linear integration connected");
+      logger.debug("Linear integration connected");
     },
   };
 }

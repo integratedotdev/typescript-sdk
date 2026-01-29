@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('WhatsApp');
 
 /**
  * WhatsApp Business integration configuration
@@ -57,15 +60,17 @@ export function whatsappIntegration(config: WhatsAppIntegrationConfig = {}): MCP
 
   return {
     id: "whatsapp",
+    name: "WhatsApp Business",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/whatsapp.png",
     tools: [...WHATSAPP_TOOLS],
     oauth,
 
     async onInit(_client) {
-      console.log("WhatsApp Business integration initialized");
+      logger.debug("WhatsApp Business integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("WhatsApp Business integration connected");
+      logger.debug("WhatsApp Business integration connected");
     },
   };
 }

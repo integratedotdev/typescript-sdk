@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('OneDrive');
 
 /**
  * OneDrive integration configuration
@@ -58,15 +61,17 @@ export function onedriveIntegration(config: OneDriveIntegrationConfig = {}): MCP
 
   return {
     id: "onedrive",
+    name: "OneDrive",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/onedrive.webp",
     tools: [...ONEDRIVE_TOOLS],
     oauth,
 
     async onInit(_client) {
-      console.log("OneDrive integration initialized");
+      logger.debug("OneDrive integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("OneDrive integration connected");
+      logger.debug("OneDrive integration connected");
     },
   };
 }

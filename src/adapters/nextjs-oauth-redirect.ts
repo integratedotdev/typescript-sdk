@@ -4,6 +4,13 @@
  */
 
 import { parseState } from '../oauth/pkce.js';
+import { createLogger, type LogContext } from '../utils/logger.js';
+
+/**
+ * Logger instance (server-side redirect handler)
+ */
+const SERVER_LOG_CONTEXT: LogContext = 'server';
+const logger = createLogger('OAuthRedirect', SERVER_LOG_CONTEXT);
 
 // Type-only imports to avoid requiring Next.js at build time
 type NextRequest = any;
@@ -48,7 +55,7 @@ export function createOAuthRedirectHandler(config?: OAuthRedirectConfig) {
 
   return async function GET(req: NextRequest): Promise<NextResponse> {
     const { searchParams } = new URL(req.url);
-    
+
     const code = searchParams.get('code');
     const state = searchParams.get('state');
     const error = searchParams.get('error');
@@ -57,8 +64,8 @@ export function createOAuthRedirectHandler(config?: OAuthRedirectConfig) {
     // Handle OAuth error
     if (error) {
       const errorMsg = errorDescription || error;
-      console.error('[OAuth Redirect] Error:', errorMsg);
-      
+      logger.error('[OAuth Redirect] Error:', errorMsg);
+
       return Response.redirect(
         new URL(`${errorRedirectUrl}?error=${encodeURIComponent(errorMsg)}`, req.url)
       );
@@ -66,8 +73,8 @@ export function createOAuthRedirectHandler(config?: OAuthRedirectConfig) {
 
     // Validate required parameters
     if (!code || !state) {
-      console.error('[OAuth Redirect] Missing code or state parameter');
-      
+      logger.error('[OAuth Redirect] Missing code or state parameter');
+
       return Response.redirect(
         new URL(`${errorRedirectUrl}?error=${encodeURIComponent('Invalid OAuth callback')}`, req.url)
       );
@@ -75,7 +82,7 @@ export function createOAuthRedirectHandler(config?: OAuthRedirectConfig) {
 
     // Extract returnUrl from state parameter (with fallbacks)
     let returnUrl = defaultRedirectUrl;
-    
+
     try {
       // Try to parse state to extract returnUrl
       const stateData = parseState(state);
@@ -89,7 +96,7 @@ export function createOAuthRedirectHandler(config?: OAuthRedirectConfig) {
         if (referrer) {
           const referrerUrl = new URL(referrer);
           const currentUrl = new URL(req.url);
-          
+
           // Only use referrer if it's from the same origin (security)
           if (referrerUrl.origin === currentUrl.origin) {
             returnUrl = referrerUrl.pathname + referrerUrl.search;
@@ -105,7 +112,7 @@ export function createOAuthRedirectHandler(config?: OAuthRedirectConfig) {
     // Using hash to avoid sending sensitive params to the server
     const targetUrl = new URL(returnUrl, req.url);
     targetUrl.hash = `oauth_callback=${encodeURIComponent(JSON.stringify({ code, state }))}`;
-    
+
     return Response.redirect(targetUrl);
   };
 }

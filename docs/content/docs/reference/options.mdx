@@ -460,42 +460,90 @@ console.log("GitHub tools:", result);
 
 ### client.server.listConfiguredIntegrations()
 
-List integrations configured on this SDK client. This is a local-only operation that doesn't make any server calls.
+List integrations configured for your application. The behavior depends on how you created your client:
+
+- **Default client** (`import { client } from 'integrate-sdk'`): Fetches from server to get integrations configured via `createMCPServer()`
+- **Custom client** (`createMCPClient({ integrations: [...] })`): Returns local config (no server call)
+- **Server client** (`createMCPServer`): Returns local config (they ARE the server)
 
 ```typescript
-async listConfiguredIntegrations(): Promise<{
+async listConfiguredIntegrations(options?: {
+  includeToolMetadata?: boolean;
+}): Promise<{
   integrations: ConfiguredIntegration[];
 }>
 ```
+
+**Parameters:**
+
+- `options` (optional) - Configuration options
+  - `includeToolMetadata` (boolean, default: false) - If true, fetches full tool metadata from the server for all configured integrations. Uses batched requests with concurrency control to avoid rate limiting.
 
 **Returns:**
 
 - Object with `integrations` array containing:
   - `id` (string) - Integration identifier
   - `name` (string) - Integration display name
+  - `logoUrl` (string | undefined) - URL to the integration's logo image
   - `tools` (readonly string[]) - Array of tool names available for this integration
   - `hasOAuth` (boolean) - Whether the integration requires OAuth
   - `scopes` (readonly string[] | undefined) - OAuth scopes if applicable
   - `provider` (string | undefined) - OAuth provider name if applicable
+  - `toolMetadata` (ToolMetadata[] | undefined) - Full tool metadata when `includeToolMetadata: true` is passed
 
-**Example:**
+**Example (default client - fetches from server):**
 
 ```typescript
-// Get all configured integrations
+import { client } from "integrate-sdk";
+
+// Fetches from server to get what's actually configured
 const { integrations } = await client.server.listConfiguredIntegrations();
 
-console.log(`Configured ${integrations.length} integrations:`);
+console.log(`Server has ${integrations.length} integrations:`);
 integrations.forEach((integration) => {
   console.log(`- ${integration.name} (${integration.id})`);
-  console.log(`  Tools: ${integration.tools.length}`);
-  console.log(`  OAuth: ${integration.hasOAuth ? 'Yes' : 'No'}`);
-  if (integration.scopes) {
-    console.log(`  Scopes: ${integration.scopes.join(', ')}`);
-  }
 });
 ```
 
-**Note:** This method returns only the integrations configured on your local client instance. It does not query the MCP server, making it fast and suitable for checking client configuration.
+**Example (custom client - local config):**
+
+```typescript
+import { createMCPClient, githubIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [githubIntegration()],
+});
+
+// Returns local config - no server call
+const { integrations } = await customClient.server.listConfiguredIntegrations();
+// Returns [{ id: 'github', ... }]
+```
+
+**Example (with metadata - includes server calls):**
+
+```typescript
+// Get configured integrations with full tool metadata
+const { integrations } = await client.server.listConfiguredIntegrations({
+  includeToolMetadata: true,
+});
+
+integrations.forEach((integration) => {
+  console.log(`${integration.name}:`);
+  integration.toolMetadata?.forEach((tool) => {
+    console.log(`  - ${tool.name}`);
+    console.log(`    ${tool.description}`);
+    if (tool.inputSchema) {
+      console.log(`    Required: ${tool.inputSchema.required?.join(', ') || 'none'}`);
+    }
+  });
+});
+```
+
+**Note:** 
+- The default client fetches from the server because it has all integrations pre-configured but only some may be configured on the server with OAuth credentials.
+- Custom clients return local config because the developer explicitly chose which integrations to use.
+- With `includeToolMetadata: true`, it fetches tool metadata for all integrations using batched requests with concurrency control (3 parallel requests at a time) to avoid rate limiting.
+- If metadata fetching fails for an integration, it returns an empty array for that integration's `toolMetadata` rather than failing the entire operation.
 
 ## Type Definitions
 

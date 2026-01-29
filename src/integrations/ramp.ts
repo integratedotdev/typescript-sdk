@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Ramp');
 
 /**
  * Ramp integration configuration
@@ -58,15 +61,17 @@ export function rampIntegration(config: RampIntegrationConfig = {}): MCPIntegrat
 
   return {
     id: "ramp",
+    name: "Ramp",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/ramp.jpeg",
     tools: [...RAMP_TOOLS],
     oauth,
 
     async onInit(_client) {
-      console.log("Ramp integration initialized");
+      logger.debug("Ramp integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Ramp integration connected");
+      logger.debug("Ramp integration connected");
     },
   };
 }

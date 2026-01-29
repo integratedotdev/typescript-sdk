@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Outlook');
 
 /**
  * Outlook integration configuration
@@ -55,15 +58,17 @@ export function outlookIntegration(config: OutlookIntegrationConfig = {}): MCPIn
 
   return {
     id: "outlook",
+    name: "Outlook",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/outlook.png",
     tools: [...OUTLOOK_TOOLS],
     oauth,
 
     async onInit(_client) {
-      console.log("Outlook integration initialized");
+      logger.debug("Outlook integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Outlook integration connected");
+      logger.debug("Outlook integration connected");
     },
   };
 }

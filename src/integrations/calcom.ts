@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Cal.com');
 
 /**
  * Cal.com integration configuration
@@ -58,15 +61,17 @@ export function calcomIntegration(config: CalcomIntegrationConfig = {}): MCPInte
 
   return {
     id: "calcom",
+    name: "Cal.com",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/calcom.jpeg",
     tools: [...CALCOM_TOOLS],
     oauth,
 
     async onInit(_client) {
-      console.log("Cal.com integration initialized");
+      logger.debug("Cal.com integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Cal.com integration connected");
+      logger.debug("Cal.com integration connected");
     },
   };
 }

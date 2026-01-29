@@ -10,6 +10,12 @@ import type {
   JSONRPCNotification,
 } from "../protocol/messages.js";
 import { parseMessage } from "../protocol/jsonrpc.js";
+import { createLogger } from "../utils/logger.js";
+
+/**
+ * Logger instance
+ */
+const logger = createLogger('HTTPStream');
 
 export type MessageHandler = (
   message: JSONRPCResponse | JSONRPCNotification
@@ -146,7 +152,7 @@ export class HttpStreamTransport {
         // Stream was intentionally closed
         return;
       }
-      console.error("Stream error:", error);
+      logger.error("Stream error:", error);
     } finally {
       reader.releaseLock();
     }
@@ -164,7 +170,7 @@ export class HttpStreamTransport {
       if (this.connected) {
         // Send a ping/heartbeat (you can customize this based on your server's expectations)
         this.sendRawMessage({ jsonrpc: "2.0", method: "ping" }).catch((error) => {
-          console.error("Heartbeat failed:", error);
+          logger.error("Heartbeat failed:", error);
         });
       }
     }, this.heartbeatInterval);
@@ -195,11 +201,11 @@ export class HttpStreamTransport {
         try {
           handler(message);
         } catch (error) {
-          console.error("Error in message handler:", error);
+          logger.error("Error in message handler:", error);
         }
       });
     } catch (error) {
-      console.error("Failed to parse message:", error);
+      logger.error("Failed to parse message:", error);
     }
   }
 

@@ -10,7 +10,18 @@ import type { MCPIntegration } from './integrations/types.js';
 import { createNextOAuthHandler } from './adapters/nextjs.js';
 import { getEnv } from './utils/env.js';
 import { toWebRequest, sendWebResponse } from './adapters/node.js';
+import { setLogLevel, createLogger, type LogContext } from './utils/logger.js';
+
+/**
+ * Logger context for server-side logging
+ */
+const SERVER_LOG_CONTEXT: LogContext = 'server';
 import type { IncomingMessage, ServerResponse } from 'http';
+
+/**
+ * Logger instances
+ */
+const logger = createLogger('MCPServer', SERVER_LOG_CONTEXT);
 
 /**
  * Server client with attached handler, POST, and GET route handlers
@@ -38,6 +49,7 @@ let globalServerConfig: {
   }>;
   serverUrl?: string;
   apiKey?: string;
+  integrations?: readonly MCPIntegration[];
 } | null = null;
 
 /**
@@ -196,6 +208,9 @@ function getDefaultRedirectUri(): string {
 export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>(
   config: MCPServerConfig<TIntegrations>
 ) {
+  // Initialize logger based on debug flag (server context only)
+  setLogLevel(config.debug ? 'debug' : 'error', SERVER_LOG_CONTEXT);
+
   // Validate we're on the server
   if (typeof window !== 'undefined') {
     throw new Error(
@@ -218,7 +233,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
       const { clientId, clientSecret, redirectUri: integrationRedirectUri, config: oauthConfig } = integration.oauth;
 
       if (!clientId || !clientSecret) {
-        console.warn(
+        logger.warn(
           `Warning: Integration "${integration.id}" is missing OAuth credentials. ` +
           `Provide clientId and clientSecret in the integration configuration.`
         );
@@ -252,6 +267,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
     providers,
     serverUrl: config.serverUrl,
     apiKey: config.apiKey,
+    integrations: updatedIntegrations,
   };
 
   // Create the client instance with lazy connection (same as client-side)
@@ -273,6 +289,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
     providers,
     serverUrl: config.serverUrl,
     apiKey: config.apiKey,
+    integrations: updatedIntegrations,
     getSessionContext: config.getSessionContext,
     setProviderToken: config.setProviderToken,
     removeProviderToken: config.removeProviderToken,
@@ -395,7 +412,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
       try {
         const body = await webRequest.json();
         const authHeader = webRequest.headers.get('authorization');
-          const integrationsHeader = webRequest.headers.get('x-integrations');
+        const integrationsHeader = webRequest.headers.get('x-integrations');
 
         // Create OAuth handler with config that includes API key
         // The API key will be automatically sent as X-API-KEY header to the MCP server
@@ -409,7 +426,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
           getSessionContext: config.getSessionContext,
         });
 
-          const result = await oauthHandler.handleToolCall(body, authHeader, integrationsHeader);
+        const result = await oauthHandler.handleToolCall(body, authHeader, integrationsHeader);
         const response = Response.json(result);
 
         // Add X-Integrate-Use-Database header if database callbacks are configured
@@ -419,12 +436,27 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
 
         return response;
       } catch (error: any) {
-        console.error('[MCP Tool Call] Error:', error);
+        logger.error('[MCP Tool Call] Error:', error);
         return Response.json(
           { error: error.message || 'Failed to execute tool call' },
           { status: error.statusCode || 500 }
         );
       }
+    }
+
+    // Handle /integrations route - returns server-configured integrations
+    // Used by the default client (useServerConfig: true) to fetch what's actually configured
+    if (action === 'integrations' && method === 'GET') {
+      const integrations = updatedIntegrations.map((integration) => ({
+        id: integration.id,
+        name: (integration as any).name || integration.id,
+        logoUrl: (integration as any).logoUrl,
+        tools: integration.tools,
+        hasOAuth: !!integration.oauth,
+        scopes: integration.oauth?.scopes,
+        provider: integration.oauth?.provider,
+      }));
+      return Response.json({ integrations });
     }
 
     // Handle /triggers routes
@@ -454,17 +486,17 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
               limit: url.searchParams.get('limit') ? parseInt(url.searchParams.get('limit')!) : undefined,
               offset: url.searchParams.get('offset') ? parseInt(url.searchParams.get('offset')!) : undefined,
             };
-            
+
             // Get triggers and total from callback
             const callbackResult = await config.triggers.list(params, context);
-            
+
             // Import calculation utility
             const { calculateHasMore } = await import('./triggers/utils.js');
-            
+
             // Calculate hasMore
             const offset = params.offset || 0;
             const hasMore = calculateHasMore(offset, callbackResult.triggers.length, callbackResult.total);
-            
+
             // Return complete response with hasMore
             return Response.json({
               triggers: callbackResult.triggers,
@@ -474,14 +506,14 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
           } else if (method === 'POST') {
             // Create trigger
             const body = await webRequest.json();
-            
+
             // Import trigger utilities
             const { generateTriggerId, extractProviderFromToolName } = await import('./triggers/utils.js');
-            
+
             // Generate ID and extract provider from toolName
             const triggerId = generateTriggerId();
             const provider = body.toolName ? extractProviderFromToolName(body.toolName) : undefined;
-            
+
             const trigger = {
               id: triggerId,
               ...body,
@@ -498,7 +530,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
             // Register with MCP server scheduler
             const schedulerUrl = config.schedulerUrl || config.serverUrl || 'https://mcp.integrate.dev';
             const callbackBaseUrl = process.env.INTEGRATE_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
-            
+
             try {
               await fetch(`${schedulerUrl}/scheduler/register`, {
                 method: 'POST',
@@ -518,7 +550,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
                 }),
               });
             } catch (scheduleError) {
-              console.error('[Trigger] Failed to register with scheduler:', scheduleError);
+              logger.error('[Trigger] Failed to register with scheduler:', scheduleError);
               // Continue anyway - trigger is in DB, can be manually registered later
             }
 
@@ -540,25 +572,25 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
             if (!trigger) {
               return Response.json({ error: 'Trigger not found' }, { status: 404 });
             }
-            
+
             // Import validation utility
             const { validateStatusTransition } = await import('./triggers/utils.js');
-            
+
             // Validate status transition
             const validation = validateStatusTransition(trigger.status, 'paused');
             if (!validation.valid) {
               return Response.json({ error: validation.error }, { status: 400 });
             }
-            
+
             const updated = await config.triggers.update(
-              triggerId, 
-              { 
+              triggerId,
+              {
                 status: 'paused',
                 updatedAt: new Date().toISOString(),
-              }, 
+              },
               context
             );
-            
+
             // Notify scheduler
             const schedulerUrl = config.schedulerUrl || config.serverUrl || 'https://mcp.integrate.dev';
             try {
@@ -571,7 +603,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
                 body: JSON.stringify({ triggerId }),
               });
             } catch (error) {
-              console.error('[Trigger] Failed to pause in scheduler:', error);
+              logger.error('[Trigger] Failed to pause in scheduler:', error);
             }
 
             return Response.json(updated);
@@ -582,25 +614,25 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
             if (!trigger) {
               return Response.json({ error: 'Trigger not found' }, { status: 404 });
             }
-            
+
             // Import validation utility
             const { validateStatusTransition } = await import('./triggers/utils.js');
-            
+
             // Validate status transition
             const validation = validateStatusTransition(trigger.status, 'active');
             if (!validation.valid) {
               return Response.json({ error: validation.error }, { status: 400 });
             }
-            
+
             const updated = await config.triggers.update(
-              triggerId, 
-              { 
+              triggerId,
+              {
                 status: 'active',
                 updatedAt: new Date().toISOString(),
-              }, 
+              },
               context
             );
-            
+
             // Notify scheduler
             const schedulerUrl = config.schedulerUrl || config.serverUrl || 'https://mcp.integrate.dev';
             try {
@@ -613,7 +645,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
                 body: JSON.stringify({ triggerId }),
               });
             } catch (error) {
-              console.error('[Trigger] Failed to resume in scheduler:', error);
+              logger.error('[Trigger] Failed to resume in scheduler:', error);
             }
 
             return Response.json(updated);
@@ -633,7 +665,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
             }
 
             // Get provider token
-            const providerToken = config.getProviderToken 
+            const providerToken = config.getProviderToken
               ? await config.getProviderToken(trigger.provider, undefined, context)
               : undefined;
 
@@ -760,7 +792,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
 
             const body = await webRequest.json();
             const trigger = await config.triggers.get(triggerId, context);
-            
+
             if (!trigger) {
               return Response.json({ error: 'Trigger not found' }, { status: 404 });
             }
@@ -797,7 +829,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
             // Update trigger
             const body = await webRequest.json();
             const trigger = await config.triggers.get(triggerId, context);
-            
+
             if (!trigger) {
               return Response.json({ error: 'Trigger not found' }, { status: 404 });
             }
@@ -825,7 +857,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
                   }),
                 });
               } catch (error) {
-                console.error('[Trigger] Failed to update scheduler:', error);
+                logger.error('[Trigger] Failed to update scheduler:', error);
               }
             }
 
@@ -846,7 +878,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
                 body: JSON.stringify({ triggerId }),
               });
             } catch (error) {
-              console.error('[Trigger] Failed to unregister from scheduler:', error);
+              logger.error('[Trigger] Failed to unregister from scheduler:', error);
             }
 
             return new Response(null, { status: 204 });
@@ -858,7 +890,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
           { status: 404 }
         );
       } catch (error: any) {
-        console.error('[Trigger] Error:', error);
+        logger.error('[Trigger] Error:', error);
         return Response.json(
           { error: error.message || 'Failed to process trigger request' },
           { status: error.statusCode || 500 }
@@ -911,7 +943,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
       // Handle OAuth error
       if (error) {
         const errorMsg = errorDescription || error;
-        console.error('[OAuth Redirect] Error:', errorMsg);
+        logger.error('[OAuth Redirect] Error:', errorMsg);
 
         return Response.redirect(
           new URL(`${errorRedirectUrl}?error=${encodeURIComponent(errorMsg)}`, webRequest.url)
@@ -920,7 +952,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
 
       // Validate required parameters
       if (!code || !state) {
-        console.error('[OAuth Redirect] Missing code or state parameter');
+        logger.error('[OAuth Redirect] Missing code or state parameter');
 
         return Response.redirect(
           new URL(`${errorRedirectUrl}?error=${encodeURIComponent('Invalid OAuth callback')}`, webRequest.url)
@@ -1030,7 +1062,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
 
           return Response.redirect(frontendUrl);
         } catch (error: any) {
-          console.error('[OAuth Backend Callback] Error:', error);
+          logger.error('[OAuth Backend Callback] Error:', error);
           // Fall back to error redirect
           return Response.redirect(
             new URL(`${errorRedirectUrl}?error=${encodeURIComponent(error.message || 'Failed to exchange token')}`, webRequest.url)

@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Airtable');
 
 /**
  * Airtable integration configuration
@@ -55,15 +58,17 @@ export function airtableIntegration(config: AirtableIntegrationConfig = {}): MCP
 
   return {
     id: "airtable",
+    name: "Airtable",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/airtable.jpeg",
     tools: [...AIRTABLE_TOOLS],
     oauth,
 
     async onInit(_client) {
-      console.log("Airtable integration initialized");
+      logger.debug("Airtable integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Airtable integration connected");
+      logger.debug("Airtable integration connected");
     },
   };
 }

@@ -5,6 +5,9 @@
 
 import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
+import { createLogger } from "../utils/logger.js";
+
+const logger = createLogger('Intercom');
 
 /**
  * Intercom integration configuration
@@ -55,15 +58,17 @@ export function intercomIntegration(config: IntercomIntegrationConfig = {}): MCP
 
   return {
     id: "intercom",
+    name: "Intercom",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/intercom.png",
     tools: [...INTERCOM_TOOLS],
     oauth,
 
     async onInit(_client) {
-      console.log("Intercom integration initialized");
+      logger.debug("Intercom integration initialized");
     },
 
     async onAfterConnect(_client) {
-      console.log("Intercom integration connected");
+      logger.debug("Intercom integration connected");
     },
   };
 }
