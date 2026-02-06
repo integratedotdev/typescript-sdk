@@ -46,6 +46,8 @@ export interface OAuthHandlerConfig {
    * Sent as X-API-KEY header with all OAuth requests to the MCP server
    */
   apiKey?: string;
+  /** Optional integration list for /integrations endpoint */
+  integrations?: readonly { id: string; tools: readonly string[]; oauth?: { scopes?: string[]; provider?: string }; [key: string]: any }[];
   /**
    * Optional callback to extract user context from request
    * If not provided, SDK will attempt to auto-detect from common auth libraries
@@ -228,6 +230,25 @@ export class OAuthHandler {
     // Use configured serverUrl or default
     this.serverUrl = config.serverUrl || MCP_SERVER_URL;
     this.apiKey = config.apiKey;
+  }
+
+  /**
+   * Handle integrations list request
+   * Returns the list of server-configured integrations
+   */
+  handleIntegrations(): { integrations: Array<{ id: string; name: string; logoUrl?: string; tools: readonly string[]; hasOAuth: boolean; scopes?: string[]; provider?: string }> } {
+    const integrations = this.config.integrations || [];
+    return {
+      integrations: integrations.map((integration) => ({
+        id: integration.id,
+        name: (integration as any).name || integration.id,
+        logoUrl: (integration as any).logoUrl,
+        tools: integration.tools,
+        hasOAuth: !!integration.oauth,
+        scopes: integration.oauth?.scopes,
+        provider: integration.oauth?.provider,
+      })),
+    };
   }
 
   /**

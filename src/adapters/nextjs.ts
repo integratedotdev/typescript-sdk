@@ -667,6 +667,12 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
             );
           }
 
+          // Route: /api/integrate/integrations
+          if (segments.length === 1 && segments[0] === 'integrations') {
+            const result = handler.handleIntegrations();
+            return Response.json(result);
+          }
+
           return Response.json(
             { error: `Invalid route: /${segments.join('/')}` },
             { status: 404 }
