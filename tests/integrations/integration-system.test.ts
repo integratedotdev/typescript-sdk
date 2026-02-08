@@ -190,8 +190,45 @@ describe("Integration System", () => {
         clientSecret: "test-secret",
       });
 
+      // Search
       expect(integration.tools).toContain("notion_search");
+      // Pages
       expect(integration.tools).toContain("notion_get_page");
+      expect(integration.tools).toContain("notion_create_page");
+      expect(integration.tools).toContain("notion_update_page");
+      expect(integration.tools).toContain("notion_get_page_property");
+      // Databases
+      expect(integration.tools).toContain("notion_get_database");
+      expect(integration.tools).toContain("notion_query_database");
+      expect(integration.tools).toContain("notion_create_database");
+      expect(integration.tools).toContain("notion_update_database");
+      // Blocks
+      expect(integration.tools).toContain("notion_get_block");
+      expect(integration.tools).toContain("notion_get_block_children");
+      expect(integration.tools).toContain("notion_append_blocks");
+      expect(integration.tools).toContain("notion_update_block");
+      expect(integration.tools).toContain("notion_delete_block");
+      // Users
+      expect(integration.tools).toContain("notion_get_user");
+      expect(integration.tools).toContain("notion_get_current_user");
+      expect(integration.tools).toContain("notion_list_users");
+      // Comments
+      expect(integration.tools).toContain("notion_create_comment");
+      expect(integration.tools).toContain("notion_list_comments");
+      // Page Move
+      expect(integration.tools).toContain("notion_move_page");
+      // File Uploads
+      expect(integration.tools).toContain("notion_create_file_upload");
+      expect(integration.tools).toContain("notion_send_file_upload");
+      expect(integration.tools).toContain("notion_complete_file_upload");
+      expect(integration.tools).toContain("notion_get_file_upload");
+      // Data Sources
+      expect(integration.tools).toContain("notion_create_data_source");
+      expect(integration.tools).toContain("notion_get_data_source");
+      expect(integration.tools).toContain("notion_update_data_source");
+      expect(integration.tools).toContain("notion_query_data_source");
+
+      expect(integration.tools).toHaveLength(28);
     });
 
     test("uses default owner parameter", () => {

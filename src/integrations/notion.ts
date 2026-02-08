@@ -28,8 +28,43 @@ export interface NotionIntegrationConfig {
  * These should match the tool names exposed by your MCP server
  */
 const NOTION_TOOLS = [
+  // Search
   "notion_search",
+  // Pages
   "notion_get_page",
+  "notion_create_page",
+  "notion_update_page",
+  "notion_get_page_property",
+  // Databases
+  "notion_get_database",
+  "notion_query_database",
+  "notion_create_database",
+  "notion_update_database",
+  // Blocks
+  "notion_get_block",
+  "notion_get_block_children",
+  "notion_append_blocks",
+  "notion_update_block",
+  "notion_delete_block",
+  // Users
+  "notion_get_user",
+  "notion_get_current_user",
+  "notion_list_users",
+  // Comments
+  "notion_create_comment",
+  "notion_list_comments",
+  // Page Move
+  "notion_move_page",
+  // File Uploads
+  "notion_create_file_upload",
+  "notion_send_file_upload",
+  "notion_complete_file_upload",
+  "notion_get_file_upload",
+  // Data Sources
+  "notion_create_data_source",
+  "notion_get_data_source",
+  "notion_update_data_source",
+  "notion_query_data_source",
 ] as const;
 
 /**
