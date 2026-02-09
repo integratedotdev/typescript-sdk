@@ -164,6 +164,67 @@ export interface CalcomUser {
 }
 
 /**
+ * Cal.com Attendee
+ */
+export interface CalcomAttendee {
+  id: number;
+  bookingId: number;
+  name: string;
+  email: string;
+  timeZone: string;
+  locale?: string;
+}
+
+/**
+ * Cal.com Team
+ */
+export interface CalcomTeam {
+  id: number;
+  name: string;
+  slug: string;
+  logo?: string;
+  bio?: string;
+  hideBranding?: boolean;
+}
+
+/**
+ * Cal.com Membership
+ */
+export interface CalcomMembership {
+  id: number;
+  userId: number;
+  teamId: number;
+  role: string;
+  accepted: boolean;
+}
+
+/**
+ * Cal.com Webhook
+ */
+export interface CalcomWebhook {
+  id: number;
+  subscriberUrl: string;
+  eventTriggers: string[];
+  active: boolean;
+  payloadTemplate?: string;
+  secret?: string;
+  createdAt: string;
+}
+
+/**
+ * Cal.com Payment
+ */
+export interface CalcomPayment {
+  id: number;
+  bookingId: number;
+  amount: number;
+  currency: string;
+  success: boolean;
+  refunded: boolean;
+  externalId?: string;
+}
+
+/**
  * Cal.com Integration Client Interface
  * Provides type-safe methods for all Cal.com operations
  */
@@ -359,11 +420,355 @@ export interface CalcomIntegrationClient {
 
   /**
    * Get current user info
-   * 
+   *
    * @example
    * ```typescript
    * const user = await client.calcom.getMe();
    * ```
    */
   getMe(): Promise<MCPToolCallResponse>;
+
+  // ── Bookings (additional) ──────────────────────────────────────
+
+  /** Update an existing booking */
+  updateBooking(params: {
+    /** Booking ID */
+    booking_id: string;
+    /** JSON body with fields to update */
+    body_json?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Get recordings for a booking */
+  getBookingRecordings(params: {
+    /** Booking ID */
+    booking_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Get transcripts for a booking */
+  getBookingTranscripts(params: {
+    /** Booking ID */
+    booking_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Event Types (additional) ───────────────────────────────────
+
+  /** Get a specific event type */
+  getEventType(params: {
+    /** Event type ID */
+    event_type_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Create a new event type */
+  createEventType(params: {
+    /** Event type title */
+    title: string;
+    /** Event type slug */
+    slug: string;
+    /** Duration in minutes */
+    length: number;
+    /** Description */
+    description?: string;
+    /** Additional JSON body */
+    body_json?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Update an event type */
+  updateEventType(params: {
+    /** Event type ID */
+    event_type_id: string;
+    /** JSON body with fields to update */
+    body_json?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Delete an event type */
+  deleteEventType(params: {
+    /** Event type ID */
+    event_type_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** List event types for a team */
+  listTeamEventTypes(params: {
+    /** Team ID */
+    team_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Schedules (additional) ─────────────────────────────────────
+
+  /** Get a specific schedule */
+  getSchedule(params: {
+    /** Schedule ID */
+    schedule_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Create a new schedule */
+  createSchedule(params: {
+    /** Schedule name */
+    name: string;
+    /** Time zone */
+    time_zone: string;
+    /** Additional JSON body */
+    body_json?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Update a schedule */
+  updateSchedule(params: {
+    /** Schedule ID */
+    schedule_id: string;
+    /** JSON body with fields to update */
+    body_json?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Delete a schedule */
+  deleteSchedule(params: {
+    /** Schedule ID */
+    schedule_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Availability Rules ─────────────────────────────────────────
+
+  /** Get an availability rule */
+  getAvailabilityRule(params: {
+    /** Availability rule ID */
+    availability_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Create an availability rule */
+  createAvailabilityRule(params: {
+    /** JSON body defining the availability rule */
+    body_json: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Update an availability rule */
+  updateAvailabilityRule(params: {
+    /** Availability rule ID */
+    availability_id: string;
+    /** JSON body with fields to update */
+    body_json?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Delete an availability rule */
+  deleteAvailabilityRule(params: {
+    /** Availability rule ID */
+    availability_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Slots ──────────────────────────────────────────────────────
+
+  /** Get available time slots */
+  getSlots(params: {
+    /** Start time (ISO 8601) */
+    start_time: string;
+    /** End time (ISO 8601) */
+    end_time: string;
+    /** Event type ID */
+    event_type_id?: string;
+    /** Event type slug */
+    event_type_slug?: string;
+    /** Comma-separated list of usernames */
+    username_list?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Attendees ──────────────────────────────────────────────────
+
+  /** List attendees */
+  listAttendees(params?: {}): Promise<MCPToolCallResponse>;
+
+  /** Get a specific attendee */
+  getAttendee(params: {
+    /** Attendee ID */
+    attendee_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Create a new attendee */
+  createAttendee(params: {
+    /** Booking ID to add attendee to */
+    booking_id: string;
+    /** Attendee name */
+    name: string;
+    /** Attendee email */
+    email: string;
+    /** Attendee time zone */
+    time_zone: string;
+    /** Additional JSON body */
+    body_json?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Update an attendee */
+  updateAttendee(params: {
+    /** Attendee ID */
+    attendee_id: string;
+    /** JSON body with fields to update */
+    body_json?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Delete an attendee */
+  deleteAttendee(params: {
+    /** Attendee ID */
+    attendee_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Teams ──────────────────────────────────────────────────────
+
+  /** List teams */
+  listTeams(params?: {}): Promise<MCPToolCallResponse>;
+
+  /** Get a specific team */
+  getTeam(params: {
+    /** Team ID */
+    team_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Create a new team */
+  createTeam(params: {
+    /** Team name */
+    name: string;
+    /** Team slug */
+    slug?: string;
+    /** Additional JSON body */
+    body_json?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Update a team */
+  updateTeam(params: {
+    /** Team ID */
+    team_id: string;
+    /** JSON body with fields to update */
+    body_json?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Delete a team */
+  deleteTeam(params: {
+    /** Team ID */
+    team_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Memberships ────────────────────────────────────────────────
+
+  /** List memberships */
+  listMemberships(params?: {}): Promise<MCPToolCallResponse>;
+
+  /** Get a specific membership */
+  getMembership(params: {
+    /** User ID */
+    user_id: string;
+    /** Team ID */
+    team_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Create a membership */
+  createMembership(params: {
+    /** User ID */
+    user_id: string;
+    /** Team ID */
+    team_id: string;
+    /** Role (e.g. "MEMBER", "ADMIN", "OWNER") */
+    role: string;
+    /** Additional JSON body */
+    body_json?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Update a membership */
+  updateMembership(params: {
+    /** User ID */
+    user_id: string;
+    /** Team ID */
+    team_id: string;
+    /** JSON body with fields to update */
+    body_json?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Delete a membership */
+  deleteMembership(params: {
+    /** User ID */
+    user_id: string;
+    /** Team ID */
+    team_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Webhooks ───────────────────────────────────────────────────
+
+  /** List webhooks */
+  listWebhooks(params?: {}): Promise<MCPToolCallResponse>;
+
+  /** Get a specific webhook */
+  getWebhook(params: {
+    /** Webhook ID */
+    webhook_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Create a webhook */
+  createWebhook(params: {
+    /** Subscriber URL */
+    subscriber_url: string;
+    /** Event triggers */
+    event_triggers: string[];
+    /** Whether the webhook is active */
+    active?: boolean;
+    /** Webhook secret */
+    secret?: string;
+    /** Additional JSON body */
+    body_json?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Update a webhook */
+  updateWebhook(params: {
+    /** Webhook ID */
+    webhook_id: string;
+    /** JSON body with fields to update */
+    body_json?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Delete a webhook */
+  deleteWebhook(params: {
+    /** Webhook ID */
+    webhook_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Payments ───────────────────────────────────────────────────
+
+  /** List payments */
+  listPayments(params?: {}): Promise<MCPToolCallResponse>;
+
+  /** Get a specific payment */
+  getPayment(params: {
+    /** Payment ID */
+    payment_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Users ──────────────────────────────────────────────────────
+
+  /** List users */
+  listUsers(params?: {}): Promise<MCPToolCallResponse>;
+
+  /** Get a specific user */
+  getUser(params: {
+    /** User ID */
+    user_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Create a new user */
+  createUser(params: {
+    /** User email */
+    email: string;
+    /** Username */
+    username: string;
+    /** User name */
+    name?: string;
+    /** Additional JSON body */
+    body_json?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Update a user */
+  updateUser(params: {
+    /** User ID */
+    user_id: string;
+    /** JSON body with fields to update */
+    body_json?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /** Delete a user */
+  deleteUser(params: {
+    /** User ID */
+    user_id: string;
+  }): Promise<MCPToolCallResponse>;
 }

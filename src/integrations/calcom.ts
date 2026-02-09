@@ -21,7 +21,7 @@ export interface CalcomIntegrationConfig {
   clientId?: string;
   /** Cal.com OAuth client secret (defaults to CALCOM_CLIENT_SECRET env var) */
   clientSecret?: string;
-  /** Additional OAuth scopes (default: ['read:bookings', 'write:bookings', 'read:event-types', 'read:schedules']) */
+  /** Additional OAuth scopes (default: ['READ_BOOKING', 'WRITE_BOOKING', 'READ_PROFILE', 'WRITE_PROFILE']) */
   scopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
@@ -34,14 +34,70 @@ export interface CalcomIntegrationConfig {
  * These should match the tool names exposed by your MCP server
  */
 const CALCOM_TOOLS = [
+  // Bookings
   "calcom_list_bookings",
   "calcom_get_booking",
   "calcom_create_booking",
   "calcom_cancel_booking",
   "calcom_reschedule_booking",
+  "calcom_update_booking",
+  "calcom_get_booking_recordings",
+  "calcom_get_booking_transcripts",
+  // Event Types
   "calcom_list_event_types",
+  "calcom_get_event_type",
+  "calcom_create_event_type",
+  "calcom_update_event_type",
+  "calcom_delete_event_type",
+  "calcom_list_team_event_types",
+  // Availability
   "calcom_get_availability",
+  "calcom_get_availability_rule",
+  "calcom_create_availability_rule",
+  "calcom_update_availability_rule",
+  "calcom_delete_availability_rule",
+  // Schedules
   "calcom_list_schedules",
+  "calcom_get_schedule",
+  "calcom_create_schedule",
+  "calcom_update_schedule",
+  "calcom_delete_schedule",
+  // Slots
+  "calcom_get_slots",
+  // Attendees
+  "calcom_list_attendees",
+  "calcom_get_attendee",
+  "calcom_create_attendee",
+  "calcom_update_attendee",
+  "calcom_delete_attendee",
+  // Teams
+  "calcom_list_teams",
+  "calcom_get_team",
+  "calcom_create_team",
+  "calcom_update_team",
+  "calcom_delete_team",
+  // Memberships
+  "calcom_list_memberships",
+  "calcom_get_membership",
+  "calcom_create_membership",
+  "calcom_update_membership",
+  "calcom_delete_membership",
+  // Webhooks
+  "calcom_list_webhooks",
+  "calcom_get_webhook",
+  "calcom_create_webhook",
+  "calcom_update_webhook",
+  "calcom_delete_webhook",
+  // Payments
+  "calcom_list_payments",
+  "calcom_get_payment",
+  // Users
+  "calcom_list_users",
+  "calcom_get_user",
+  "calcom_create_user",
+  "calcom_update_user",
+  "calcom_delete_user",
+  // User Profile
   "calcom_get_me",
 ] as const;
 
@@ -51,7 +107,7 @@ export function calcomIntegration(config: CalcomIntegrationConfig = {}): MCPInte
     provider: "calcom",
     clientId: config.clientId ?? getEnv('CALCOM_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('CALCOM_CLIENT_SECRET'),
-    scopes: config.scopes || ["read:bookings", "write:bookings", "read:event-types", "read:schedules"],
+    scopes: config.scopes || ["READ_BOOKING", "WRITE_BOOKING", "READ_PROFILE", "WRITE_PROFILE"],
     redirectUri: config.redirectUri,
     config: {
       apiBaseUrl: config.apiBaseUrl || "https://api.cal.com/v1",

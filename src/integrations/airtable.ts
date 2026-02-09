@@ -21,7 +21,7 @@ export interface AirtableIntegrationConfig {
   clientId?: string;
   /** Airtable OAuth client secret (defaults to AIRTABLE_CLIENT_SECRET env var) */
   clientSecret?: string;
-  /** Additional OAuth scopes (default: ['data.records:read', 'data.records:write', 'schema.bases:read']) */
+  /** Additional OAuth scopes (default: ['data.records:read', 'data.records:write', 'data.recordComments:read', 'data.recordComments:write', 'schema.bases:read', 'schema.bases:write', 'webhook:manage']) */
   scopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
@@ -41,6 +41,24 @@ const AIRTABLE_TOOLS = [
   "airtable_create_record",
   "airtable_update_record",
   "airtable_search_records",
+  "airtable_delete_record",
+  // Schema Management
+  "airtable_create_base",
+  "airtable_create_table",
+  "airtable_update_table",
+  "airtable_create_field",
+  "airtable_update_field",
+  // Comments
+  "airtable_list_comments",
+  "airtable_create_comment",
+  "airtable_update_comment",
+  "airtable_delete_comment",
+  // Webhooks
+  "airtable_list_webhooks",
+  "airtable_create_webhook",
+  "airtable_delete_webhook",
+  "airtable_list_webhook_payloads",
+  "airtable_refresh_webhook",
 ] as const;
 
 
@@ -49,7 +67,12 @@ export function airtableIntegration(config: AirtableIntegrationConfig = {}): MCP
     provider: "airtable",
     clientId: config.clientId ?? getEnv('AIRTABLE_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('AIRTABLE_CLIENT_SECRET'),
-    scopes: config.scopes || ["data.records:read", "data.records:write", "schema.bases:read"],
+    scopes: config.scopes || [
+      "data.records:read", "data.records:write",
+      "data.recordComments:read", "data.recordComments:write",
+      "schema.bases:read", "schema.bases:write",
+      "webhook:manage",
+    ],
     redirectUri: config.redirectUri,
     config: {
       ...config,

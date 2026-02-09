@@ -788,6 +788,11 @@ describe("Integration System", () => {
 
       expect(integration.oauth?.scopes).toContain("data.records:read");
       expect(integration.oauth?.scopes).toContain("data.records:write");
+      expect(integration.oauth?.scopes).toContain("data.recordComments:read");
+      expect(integration.oauth?.scopes).toContain("data.recordComments:write");
+      expect(integration.oauth?.scopes).toContain("schema.bases:read");
+      expect(integration.oauth?.scopes).toContain("schema.bases:write");
+      expect(integration.oauth?.scopes).toContain("webhook:manage");
     });
 
     test("includes expected tools", () => {
@@ -796,9 +801,35 @@ describe("Integration System", () => {
         clientSecret: "test-secret",
       });
 
+      // Existing tools
       expect(integration.tools).toContain("airtable_list_bases");
+      expect(integration.tools).toContain("airtable_get_base");
+      expect(integration.tools).toContain("airtable_list_tables");
+      expect(integration.tools).toContain("airtable_get_table");
+      expect(integration.tools).toContain("airtable_list_records");
+      expect(integration.tools).toContain("airtable_get_record");
       expect(integration.tools).toContain("airtable_create_record");
+      expect(integration.tools).toContain("airtable_update_record");
       expect(integration.tools).toContain("airtable_search_records");
+      // Records
+      expect(integration.tools).toContain("airtable_delete_record");
+      // Schema Management
+      expect(integration.tools).toContain("airtable_create_base");
+      expect(integration.tools).toContain("airtable_create_table");
+      expect(integration.tools).toContain("airtable_update_table");
+      expect(integration.tools).toContain("airtable_create_field");
+      expect(integration.tools).toContain("airtable_update_field");
+      // Comments
+      expect(integration.tools).toContain("airtable_list_comments");
+      expect(integration.tools).toContain("airtable_create_comment");
+      expect(integration.tools).toContain("airtable_update_comment");
+      expect(integration.tools).toContain("airtable_delete_comment");
+      // Webhooks
+      expect(integration.tools).toContain("airtable_list_webhooks");
+      expect(integration.tools).toContain("airtable_create_webhook");
+      expect(integration.tools).toContain("airtable_delete_webhook");
+      expect(integration.tools).toContain("airtable_list_webhook_payloads");
+      expect(integration.tools).toContain("airtable_refresh_webhook");
     });
 
     test("has lifecycle hooks defined", () => {
@@ -992,10 +1023,10 @@ describe("Integration System", () => {
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.scopes).toContain("read:bookings");
-      expect(integration.oauth?.scopes).toContain("write:bookings");
-      expect(integration.oauth?.scopes).toContain("read:event-types");
-      expect(integration.oauth?.scopes).toContain("read:schedules");
+      expect(integration.oauth?.scopes).toContain("READ_BOOKING");
+      expect(integration.oauth?.scopes).toContain("WRITE_BOOKING");
+      expect(integration.oauth?.scopes).toContain("READ_PROFILE");
+      expect(integration.oauth?.scopes).toContain("WRITE_PROFILE");
     });
 
     test("includes expected tools", () => {
@@ -1004,14 +1035,70 @@ describe("Integration System", () => {
         clientSecret: "test-secret",
       });
 
+      // Bookings
       expect(integration.tools).toContain("calcom_list_bookings");
       expect(integration.tools).toContain("calcom_get_booking");
       expect(integration.tools).toContain("calcom_create_booking");
       expect(integration.tools).toContain("calcom_cancel_booking");
       expect(integration.tools).toContain("calcom_reschedule_booking");
+      expect(integration.tools).toContain("calcom_update_booking");
+      expect(integration.tools).toContain("calcom_get_booking_recordings");
+      expect(integration.tools).toContain("calcom_get_booking_transcripts");
+      // Event Types
       expect(integration.tools).toContain("calcom_list_event_types");
+      expect(integration.tools).toContain("calcom_get_event_type");
+      expect(integration.tools).toContain("calcom_create_event_type");
+      expect(integration.tools).toContain("calcom_update_event_type");
+      expect(integration.tools).toContain("calcom_delete_event_type");
+      expect(integration.tools).toContain("calcom_list_team_event_types");
+      // Availability
       expect(integration.tools).toContain("calcom_get_availability");
+      expect(integration.tools).toContain("calcom_get_availability_rule");
+      expect(integration.tools).toContain("calcom_create_availability_rule");
+      expect(integration.tools).toContain("calcom_update_availability_rule");
+      expect(integration.tools).toContain("calcom_delete_availability_rule");
+      // Schedules
       expect(integration.tools).toContain("calcom_list_schedules");
+      expect(integration.tools).toContain("calcom_get_schedule");
+      expect(integration.tools).toContain("calcom_create_schedule");
+      expect(integration.tools).toContain("calcom_update_schedule");
+      expect(integration.tools).toContain("calcom_delete_schedule");
+      // Slots
+      expect(integration.tools).toContain("calcom_get_slots");
+      // Attendees
+      expect(integration.tools).toContain("calcom_list_attendees");
+      expect(integration.tools).toContain("calcom_get_attendee");
+      expect(integration.tools).toContain("calcom_create_attendee");
+      expect(integration.tools).toContain("calcom_update_attendee");
+      expect(integration.tools).toContain("calcom_delete_attendee");
+      // Teams
+      expect(integration.tools).toContain("calcom_list_teams");
+      expect(integration.tools).toContain("calcom_get_team");
+      expect(integration.tools).toContain("calcom_create_team");
+      expect(integration.tools).toContain("calcom_update_team");
+      expect(integration.tools).toContain("calcom_delete_team");
+      // Memberships
+      expect(integration.tools).toContain("calcom_list_memberships");
+      expect(integration.tools).toContain("calcom_get_membership");
+      expect(integration.tools).toContain("calcom_create_membership");
+      expect(integration.tools).toContain("calcom_update_membership");
+      expect(integration.tools).toContain("calcom_delete_membership");
+      // Webhooks
+      expect(integration.tools).toContain("calcom_list_webhooks");
+      expect(integration.tools).toContain("calcom_get_webhook");
+      expect(integration.tools).toContain("calcom_create_webhook");
+      expect(integration.tools).toContain("calcom_update_webhook");
+      expect(integration.tools).toContain("calcom_delete_webhook");
+      // Payments
+      expect(integration.tools).toContain("calcom_list_payments");
+      expect(integration.tools).toContain("calcom_get_payment");
+      // Users
+      expect(integration.tools).toContain("calcom_list_users");
+      expect(integration.tools).toContain("calcom_get_user");
+      expect(integration.tools).toContain("calcom_create_user");
+      expect(integration.tools).toContain("calcom_update_user");
+      expect(integration.tools).toContain("calcom_delete_user");
+      // User Profile
       expect(integration.tools).toContain("calcom_get_me");
     });
 
