@@ -169,6 +169,117 @@ export interface TriggerExecutionResult {
   duration?: number;
 }
 
+// Multi-step trigger constants
+
+/** Maximum number of steps allowed in a multi-step trigger execution */
+export const MAX_TRIGGER_STEPS = 20;
+
+/** Default timeout for webhook delivery in milliseconds */
+export const WEBHOOK_DELIVERY_TIMEOUT_MS = 10_000;
+
+/**
+ * Result from a single step in a multi-step trigger execution
+ */
+export interface StepResult {
+  /** Zero-based index of this step */
+  stepIndex: number;
+  /** Tool that was executed */
+  toolName: string;
+  /** Whether this step succeeded */
+  success: boolean;
+  /** Step result data if successful */
+  result?: Record<string, unknown>;
+  /** Error message if step failed */
+  error?: string;
+  /** Execution duration in milliseconds */
+  duration: number;
+  /** ISO datetime when this step was executed */
+  executedAt: string;
+}
+
+/**
+ * Enhanced request body for the complete endpoint
+ * Backward-compatible: existing fields preserved, new fields optional
+ */
+export interface CompleteRequest {
+  /** Whether execution succeeded */
+  success: boolean;
+  /** Tool execution result if successful */
+  result?: Record<string, unknown>;
+  /** Error message if execution failed */
+  error?: string;
+  /** ISO datetime when execution completed */
+  executedAt: string;
+  /** Execution duration in milliseconds */
+  duration?: number;
+  /** Current step index (zero-based) for multi-step triggers */
+  stepIndex?: number;
+  /** Results from all previous steps (includes current step) */
+  previousResults?: StepResult[];
+  /** Whether this is the final step */
+  final?: boolean;
+}
+
+/**
+ * Response from the complete endpoint for multi-step triggers
+ */
+export interface CompleteResponse {
+  /** Whether there are more steps to execute */
+  hasMore?: boolean;
+  /** Next step to execute if hasMore is true */
+  nextStep?: {
+    toolName: string;
+    toolArguments: Record<string, unknown>;
+    provider: string;
+    accessToken: string;
+    tokenType: string;
+  };
+  /** Webhooks to deliver results to after all steps complete */
+  webhooks?: WebhookConfig[];
+}
+
+/**
+ * Webhook endpoint configuration
+ */
+export interface WebhookConfig {
+  /** URL to deliver the webhook payload to */
+  url: string;
+  /** Secret for HMAC-SHA256 signature (optional) */
+  secret?: string;
+  /** Additional headers to include in the request */
+  headers?: Record<string, string>;
+}
+
+/**
+ * Payload delivered to webhook endpoints
+ */
+export interface WebhookPayload {
+  /** Trigger ID that was executed */
+  triggerId: string;
+  /** Whether the overall execution succeeded */
+  success: boolean;
+  /** Results from all steps */
+  steps: StepResult[];
+  /** Total number of steps executed */
+  totalSteps: number;
+  /** Total execution duration in milliseconds */
+  totalDuration: number;
+  /** ISO datetime when execution completed */
+  executedAt: string;
+}
+
+/**
+ * Context passed to the onComplete callback
+ */
+export interface CompleteCallbackContext {
+  /** The trigger being completed */
+  trigger: Trigger;
+  /** The complete request body */
+  request: CompleteRequest;
+  /** Optional MCP context for multi-tenant support */
+  context?: MCPContext;
+}
+
 /**
  * Callbacks for trigger storage (required for createMCPServer)
  * Implement these to store triggers in your database
@@ -213,4 +324,13 @@ export interface TriggerCallbacks {
    * @param context - Optional user context for multi-tenant support
    */
   delete: (triggerId: string, context?: MCPContext) => Promise<void>;
+
+  /**
+   * Optional callback for multi-step trigger completion
+   * Called when the MCP server reports a step result. Return a CompleteResponse
+   * to control whether more steps should execute and which webhooks to fire.
+   * @param context - Trigger, request body, and optional MCP context
+   * @returns CompleteResponse indicating next step or final state
+   */
+  onComplete?: (context: CompleteCallbackContext) => Promise<CompleteResponse>;
 }

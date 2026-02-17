@@ -165,7 +165,16 @@ export type {
   ListTriggersResponse,
   TriggerExecutionResult,
   TriggerCallbacks,
+  StepResult,
+  CompleteRequest,
+  CompleteResponse,
+  WebhookConfig,
+  WebhookPayload,
+  CompleteCallbackContext,
 } from "./triggers/types.js";
+export { MAX_TRIGGER_STEPS, WEBHOOK_DELIVERY_TIMEOUT_MS } from "./triggers/types.js";
+export { validateStepLimit } from "./triggers/utils.js";
+export { deliverWebhooks } from "./triggers/webhooks.js";
 
 export {
   genericOAuthIntegration,

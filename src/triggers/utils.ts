@@ -90,6 +90,33 @@ export function validateStatusTransition(
 }
 
 /**
+ * Validate that a step index is within the allowed limit
+ *
+ * @param stepIndex - Current step index (zero-based)
+ * @param maxSteps - Maximum number of steps allowed
+ * @returns Validation result with error message if invalid
+ *
+ * @example
+ * ```typescript
+ * validateStepLimit(0, 20);  // { valid: true }
+ * validateStepLimit(19, 20); // { valid: true }
+ * validateStepLimit(20, 20); // { valid: false, error: "..." }
+ * ```
+ */
+export function validateStepLimit(
+  stepIndex: number,
+  maxSteps: number,
+): { valid: true } | { valid: false; error: string } {
+  if (stepIndex >= maxSteps) {
+    return {
+      valid: false,
+      error: `Step index ${stepIndex} exceeds maximum of ${maxSteps} steps`,
+    };
+  }
+  return { valid: true };
+}
+
+/**
  * Calculate whether more results are available for pagination
  * 
  * @param offset - Current pagination offset (number of items skipped)

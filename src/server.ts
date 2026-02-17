@@ -790,14 +790,85 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
               return Response.json({ error: 'Unauthorized' }, { status: 401 });
             }
 
-            const body = await webRequest.json();
+            const body = await webRequest.json() as import('./triggers/types.js').CompleteRequest;
             const trigger = await config.triggers.get(triggerId, context);
 
             if (!trigger) {
               return Response.json({ error: 'Trigger not found' }, { status: 404 });
             }
 
-            // Update trigger with execution result
+            // Validate step limit if stepIndex is provided
+            if (body.stepIndex != null) {
+              const { validateStepLimit } = await import('./triggers/utils.js');
+              const { MAX_TRIGGER_STEPS } = await import('./triggers/types.js');
+              const stepValidation = validateStepLimit(body.stepIndex, MAX_TRIGGER_STEPS);
+              if (!stepValidation.valid) {
+                return Response.json({ error: stepValidation.error }, { status: 400 });
+              }
+            }
+
+            // If onComplete callback exists, delegate to it
+            if (config.triggers.onComplete) {
+              try {
+                const completeResponse = await config.triggers.onComplete({
+                  trigger,
+                  request: body,
+                  context,
+                });
+
+                if (completeResponse.hasMore) {
+                  // Mid-execution: don't update trigger state, return response directly
+                  return Response.json(completeResponse);
+                }
+
+                // Final step: update trigger state
+                const updates: any = {
+                  lastRunAt: body.executedAt,
+                  runCount: (trigger.runCount || 0) + 1,
+                };
+
+                if (body.success) {
+                  updates.lastResult = body.result;
+                  updates.lastError = undefined;
+                  if (trigger.schedule.type === 'once') {
+                    updates.status = 'completed';
+                  }
+                } else {
+                  updates.lastError = body.error;
+                  updates.status = 'failed';
+                }
+
+                await config.triggers.update(triggerId, updates, context);
+
+                // Fire webhooks if any (fire-and-forget)
+                if (completeResponse.webhooks && completeResponse.webhooks.length > 0) {
+                  const { deliverWebhooks } = await import('./triggers/webhooks.js');
+                  const { WEBHOOK_DELIVERY_TIMEOUT_MS } = await import('./triggers/types.js');
+                  const steps = body.previousResults || [];
+                  const totalDuration = steps.reduce((sum, s) => sum + (s.duration || 0), 0);
+                  const payload: import('./triggers/types.js').WebhookPayload = {
+                    triggerId,
+                    success: body.success,
+                    steps,
+                    totalSteps: steps.length,
+                    totalDuration,
+                    executedAt: body.executedAt,
+                  };
+                  // Fire-and-forget: don't await, errors logged internally
+                  deliverWebhooks(completeResponse.webhooks, payload, WEBHOOK_DELIVERY_TIMEOUT_MS).catch(() => {});
+                }
+
+                return Response.json(completeResponse);
+              } catch (error) {
+                logger.error('onComplete callback error:', error);
+                return Response.json(
+                  { error: 'Internal server error in onComplete callback' },
+                  { status: 500 },
+                );
+              }
+            }
+
+            // Default behavior (no onComplete): update trigger state directly
             const updates: any = {
               lastRunAt: body.executedAt,
               runCount: (trigger.runCount || 0) + 1,
