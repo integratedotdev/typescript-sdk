@@ -231,8 +231,6 @@ export interface CompleteResponse {
     toolName: string;
     toolArguments: Record<string, unknown>;
     provider: string;
-    accessToken: string;
-    tokenType: string;
   };
   /** Webhooks to deliver results to after all steps complete */
   webhooks?: WebhookConfig[];
@@ -327,10 +325,20 @@ export interface TriggerCallbacks {
 
   /**
    * Optional callback for multi-step trigger completion
-   * Called when the MCP server reports a step result. Return a CompleteResponse
-   * to control whether more steps should execute and which webhooks to fire.
+   * Called after each step completes during local trigger execution.
+   * Return a CompleteResponse to control whether more steps should execute
+   * and which webhooks to fire.
    * @param context - Trigger, request body, and optional MCP context
    * @returns CompleteResponse indicating next step or final state
    */
   onComplete?: (context: CompleteCallbackContext) => Promise<CompleteResponse>;
+
+  /**
+   * Optional callback to resolve the callback URL for scheduler registration.
+   * When provided, this is used instead of the default INTEGRATE_URL-based URL.
+   * Useful when the app URL varies per tenant or environment.
+   * @param context - Optional MCP context for multi-tenant support
+   * @returns The base URL for trigger notification callbacks
+   */
+  getCallbackUrl?: (context?: MCPContext) => Promise<string> | string;
 }

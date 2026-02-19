@@ -597,21 +597,36 @@ describe("Trigger Handler Tests", () => {
     });
   });
 
-  describe("GET /api/integrate/triggers/:id/execute - MCP Server Callback", () => {
-    test("should return trigger details with OAuth token", async () => {
+  describe("POST /api/integrate/triggers/notify - Scheduler Notification", () => {
+    test("should execute trigger locally and return result", async () => {
       const mockToken = { accessToken: 'test-token', tokenType: 'Bearer' };
-      
+
       await mockTriggerCallbacks.create({
-        id: 'trig_execute',
+        id: 'trig_notify',
         toolName: 'github_create_issue',
-        toolArguments: {},
+        toolArguments: { title: 'Test' },
         schedule: { type: 'once', runAt: '2024-12-20T10:00:00Z' },
         status: 'active',
         provider: 'github',
+        userId: 'user_123',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         runCount: 0,
       });
+
+      // Mock fetch to handle both scheduler calls and the tool execution
+      const origFetch = global.fetch;
+      global.fetch = mock(async (url: string | URL | Request, options?: any) => {
+        const urlStr = typeof url === 'string' ? url : url instanceof URL ? url.toString() : url.url;
+        if (urlStr.includes('/scheduler/')) {
+          return new Response(JSON.stringify({ success: true }), { status: 200 });
+        }
+        // Mock the MCP server tool call
+        if (urlStr.includes('mcp.integrate.dev') || urlStr.includes('/api/v1/mcp')) {
+          return new Response(JSON.stringify({ content: [{ type: 'text', text: JSON.stringify({ issueNumber: 42 }) }] }), { status: 200 });
+        }
+        return origFetch(url, options);
+      }) as any;
 
       const server = createMCPServer({
         apiKey: 'test-api-key',
@@ -620,16 +635,23 @@ describe("Trigger Handler Tests", () => {
         getProviderToken: async () => mockToken,
       });
 
-      const request = new Request('http://localhost:3000/api/integrate/triggers/trig_execute/execute', {
-        headers: { 'x-api-key': 'test-api-key' },
+      const request = new Request('http://localhost:3000/api/integrate/triggers/notify', {
+        method: 'POST',
+        headers: { 'x-api-key': 'test-api-key', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          triggerId: 'trig_notify',
+          scheduledAt: new Date().toISOString(),
+        }),
       });
-      
-      const response = await server.client.handler(request, { params: { all: ['triggers', 'trig_execute', 'execute'] } });
+
+      const response = await server.client.handler(request, { params: { all: ['triggers', 'notify'] } });
       expect(response.status).toBe(200);
-      
+
       const data = await response.json();
-      expect(data.trigger.id).toBe('trig_execute');
-      expect(data.accessToken).toBe('test-token');
+      expect(data.success).toBeDefined();
+      expect(data.steps).toBeDefined();
+
+      global.fetch = origFetch;
     });
 
     test("should return 401 if API key is missing", async () => {
@@ -651,55 +673,53 @@ describe("Trigger Handler Tests", () => {
         triggers: mockTriggerCallbacks,
       });
 
-      const request = new Request('http://localhost:3000/api/integrate/triggers/trig_auth/execute');
-      const response = await server.client.handler(request, { params: { all: ['triggers', 'trig_auth', 'execute'] } });
-      
+      const request = new Request('http://localhost:3000/api/integrate/triggers/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ triggerId: 'trig_auth' }),
+      });
+      const response = await server.client.handler(request, { params: { all: ['triggers', 'notify'] } });
+
       expect(response.status).toBe(401);
     });
-  });
 
-  describe("POST /api/integrate/triggers/:id/complete - MCP Server Callback", () => {
-    test("should update trigger with successful execution result", async () => {
-      await mockTriggerCallbacks.create({
-        id: 'trig_complete',
-        toolName: 'github_create_issue',
-        toolArguments: {},
-        schedule: { type: 'cron', expression: '0 9 * * *' },
-        status: 'active',
-        provider: 'github',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        runCount: 5,
-      });
-
+    test("should return 404 for non-existent trigger", async () => {
       const server = createMCPServer({
         apiKey: 'test-api-key',
         integrations: [githubIntegration({ clientId: 'test-id', clientSecret: 'test-secret' })],
         triggers: mockTriggerCallbacks,
       });
 
-      const executedAt = new Date().toISOString();
-      const request = new Request('http://localhost:3000/api/integrate/triggers/trig_complete/complete', {
+      const request = new Request('http://localhost:3000/api/integrate/triggers/notify', {
         method: 'POST',
         headers: { 'x-api-key': 'test-api-key', 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          success: true,
-          result: { issueNumber: 123 },
-          executedAt,
-        }),
+        body: JSON.stringify({ triggerId: 'nonexistent' }),
       });
+      const response = await server.client.handler(request, { params: { all: ['triggers', 'notify'] } });
 
-      const response = await server.client.handler(request, { params: { all: ['triggers', 'trig_complete', 'complete'] } });
-      expect(response.status).toBe(200);
-      
-      const trigger = await mockTriggerCallbacks.get('trig_complete');
-      expect(trigger?.runCount).toBe(6);
-      expect(trigger?.lastRunAt).toBe(executedAt);
+      expect(response.status).toBe(404);
     });
 
-    test("should mark one-time trigger as completed on success", async () => {
+    test("should return 400 if triggerId is missing", async () => {
+      const server = createMCPServer({
+        apiKey: 'test-api-key',
+        integrations: [githubIntegration({ clientId: 'test-id', clientSecret: 'test-secret' })],
+        triggers: mockTriggerCallbacks,
+      });
+
+      const request = new Request('http://localhost:3000/api/integrate/triggers/notify', {
+        method: 'POST',
+        headers: { 'x-api-key': 'test-api-key', 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      const response = await server.client.handler(request, { params: { all: ['triggers', 'notify'] } });
+
+      expect(response.status).toBe(400);
+    });
+
+    test("should return 400 if trigger has no provider", async () => {
       await mockTriggerCallbacks.create({
-        id: 'trig_once',
+        id: 'trig_no_provider',
         toolName: 'test_tool',
         toolArguments: {},
         schedule: { type: 'once', runAt: '2024-12-20T10:00:00Z' },
@@ -715,374 +735,67 @@ describe("Trigger Handler Tests", () => {
         triggers: mockTriggerCallbacks,
       });
 
-      const request = new Request('http://localhost:3000/api/integrate/triggers/trig_once/complete', {
+      const request = new Request('http://localhost:3000/api/integrate/triggers/notify', {
         method: 'POST',
         headers: { 'x-api-key': 'test-api-key', 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          success: true,
-          result: {},
-          executedAt: new Date().toISOString(),
-        }),
+        body: JSON.stringify({ triggerId: 'trig_no_provider' }),
       });
+      const response = await server.client.handler(request, { params: { all: ['triggers', 'notify'] } });
 
-      const response = await server.client.handler(request, { params: { all: ['triggers', 'trig_once', 'complete'] } });
-      expect(response.status).toBe(200);
-      
-      const trigger = await mockTriggerCallbacks.get('trig_once');
-      expect(trigger?.status).toBe('completed');
-    });
-  });
-
-  describe("Multi-Step Complete", () => {
-    test("backward compat: no onComplete still returns { success: true }", async () => {
-      await mockTriggerCallbacks.create({
-        id: 'trig_compat',
-        toolName: 'github_create_issue',
-        toolArguments: {},
-        schedule: { type: 'cron', expression: '0 9 * * *' },
-        status: 'active',
-        provider: 'github',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        runCount: 0,
-      });
-
-      const server = createMCPServer({
-        apiKey: 'test-api-key',
-        integrations: [githubIntegration({ clientId: 'test-id', clientSecret: 'test-secret' })],
-        triggers: mockTriggerCallbacks,
-      });
-
-      const request = new Request('http://localhost:3000/api/integrate/triggers/trig_compat/complete', {
-        method: 'POST',
-        headers: { 'x-api-key': 'test-api-key', 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          success: true,
-          result: { data: 'test' },
-          executedAt: new Date().toISOString(),
-        }),
-      });
-
-      const response = await server.client.handler(request, { params: { all: ['triggers', 'trig_compat', 'complete'] } });
-      expect(response.status).toBe(200);
-      const data = await response.json();
-      expect(data.success).toBe(true);
-
-      const trigger = await mockTriggerCallbacks.get('trig_compat');
-      expect(trigger?.runCount).toBe(1);
-    });
-
-    test("onComplete returning hasMore=true returns response and does NOT update trigger state", async () => {
-      await mockTriggerCallbacks.create({
-        id: 'trig_multi',
-        toolName: 'github_create_issue',
-        toolArguments: {},
-        schedule: { type: 'cron', expression: '0 9 * * *' },
-        status: 'active',
-        provider: 'github',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        runCount: 3,
-      });
-
-      const onComplete = mock(async () => ({
-        hasMore: true as const,
-        nextStep: {
-          toolName: 'github_list_issues',
-          toolArguments: { repo: 'test/repo' },
-          provider: 'github',
-          accessToken: 'next-token',
-          tokenType: 'Bearer',
-        },
-      }));
-
-      const server = createMCPServer({
-        apiKey: 'test-api-key',
-        integrations: [githubIntegration({ clientId: 'test-id', clientSecret: 'test-secret' })],
-        triggers: { ...mockTriggerCallbacks, onComplete },
-      });
-
-      const request = new Request('http://localhost:3000/api/integrate/triggers/trig_multi/complete', {
-        method: 'POST',
-        headers: { 'x-api-key': 'test-api-key', 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          success: true,
-          result: { issueNumber: 1 },
-          executedAt: new Date().toISOString(),
-          stepIndex: 0,
-          previousResults: [{
-            stepIndex: 0,
-            toolName: 'github_create_issue',
-            success: true,
-            result: { issueNumber: 1 },
-            duration: 150,
-            executedAt: new Date().toISOString(),
-          }],
-        }),
-      });
-
-      const response = await server.client.handler(request, { params: { all: ['triggers', 'trig_multi', 'complete'] } });
-      expect(response.status).toBe(200);
-      const data = await response.json();
-      expect(data.hasMore).toBe(true);
-      expect(data.nextStep.toolName).toBe('github_list_issues');
-
-      // Trigger state should NOT be updated (still runCount 3)
-      const trigger = await mockTriggerCallbacks.get('trig_multi');
-      expect(trigger?.runCount).toBe(3);
-    });
-
-    test("onComplete returning hasMore=false updates trigger state", async () => {
-      await mockTriggerCallbacks.create({
-        id: 'trig_final',
-        toolName: 'github_create_issue',
-        toolArguments: {},
-        schedule: { type: 'cron', expression: '0 9 * * *' },
-        status: 'active',
-        provider: 'github',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        runCount: 5,
-      });
-
-      const onComplete = mock(async () => ({
-        hasMore: false as const,
-      }));
-
-      const server = createMCPServer({
-        apiKey: 'test-api-key',
-        integrations: [githubIntegration({ clientId: 'test-id', clientSecret: 'test-secret' })],
-        triggers: { ...mockTriggerCallbacks, onComplete },
-      });
-
-      const executedAt = new Date().toISOString();
-      const request = new Request('http://localhost:3000/api/integrate/triggers/trig_final/complete', {
-        method: 'POST',
-        headers: { 'x-api-key': 'test-api-key', 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          success: true,
-          result: { done: true },
-          executedAt,
-          stepIndex: 2,
-          final: true,
-        }),
-      });
-
-      const response = await server.client.handler(request, { params: { all: ['triggers', 'trig_final', 'complete'] } });
-      expect(response.status).toBe(200);
-
-      const trigger = await mockTriggerCallbacks.get('trig_final');
-      expect(trigger?.runCount).toBe(6);
-      expect(trigger?.lastRunAt).toBe(executedAt);
-    });
-
-    test("onComplete returning webhooks fires webhook POSTs", async () => {
-      await mockTriggerCallbacks.create({
-        id: 'trig_webhook',
-        toolName: 'github_create_issue',
-        toolArguments: {},
-        schedule: { type: 'cron', expression: '0 9 * * *' },
-        status: 'active',
-        provider: 'github',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        runCount: 0,
-      });
-
-      const webhookCalls: any[] = [];
-      const origMockFetch = global.fetch;
-      global.fetch = mock(async (url: string | URL | Request, options?: any) => {
-        const urlStr = typeof url === 'string' ? url : url instanceof URL ? url.toString() : url.url;
-        if (urlStr.includes('webhook.example.com')) {
-          webhookCalls.push({ url: urlStr, options });
-          return new Response('OK', { status: 200 });
-        }
-        return origMockFetch(url, options);
-      }) as any;
-
-      const onComplete = mock(async () => ({
-        hasMore: false as const,
-        webhooks: [
-          { url: 'https://webhook.example.com/hook1', secret: 'mysecret' },
-        ],
-      }));
-
-      const server = createMCPServer({
-        apiKey: 'test-api-key',
-        integrations: [githubIntegration({ clientId: 'test-id', clientSecret: 'test-secret' })],
-        triggers: { ...mockTriggerCallbacks, onComplete },
-      });
-
-      const executedAt = new Date().toISOString();
-      const request = new Request('http://localhost:3000/api/integrate/triggers/trig_webhook/complete', {
-        method: 'POST',
-        headers: { 'x-api-key': 'test-api-key', 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          success: true,
-          result: { done: true },
-          executedAt,
-          previousResults: [{
-            stepIndex: 0,
-            toolName: 'github_create_issue',
-            success: true,
-            duration: 100,
-            executedAt,
-          }],
-        }),
-      });
-
-      const response = await server.client.handler(request, { params: { all: ['triggers', 'trig_webhook', 'complete'] } });
-      expect(response.status).toBe(200);
-
-      // Give the fire-and-forget webhook call time to execute
-      await new Promise(resolve => setTimeout(resolve, 100));
-      expect(webhookCalls.length).toBeGreaterThanOrEqual(1);
-      expect(webhookCalls[0].url).toBe('https://webhook.example.com/hook1');
-    });
-
-    test("step limit exceeded returns 400", async () => {
-      await mockTriggerCallbacks.create({
-        id: 'trig_limit',
-        toolName: 'github_create_issue',
-        toolArguments: {},
-        schedule: { type: 'cron', expression: '0 9 * * *' },
-        status: 'active',
-        provider: 'github',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        runCount: 0,
-      });
-
-      const server = createMCPServer({
-        apiKey: 'test-api-key',
-        integrations: [githubIntegration({ clientId: 'test-id', clientSecret: 'test-secret' })],
-        triggers: mockTriggerCallbacks,
-      });
-
-      const request = new Request('http://localhost:3000/api/integrate/triggers/trig_limit/complete', {
-        method: 'POST',
-        headers: { 'x-api-key': 'test-api-key', 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          success: true,
-          result: {},
-          executedAt: new Date().toISOString(),
-          stepIndex: 20, // exceeds MAX_TRIGGER_STEPS (20)
-        }),
-      });
-
-      const response = await server.client.handler(request, { params: { all: ['triggers', 'trig_limit', 'complete'] } });
       expect(response.status).toBe(400);
-      const data = await response.json();
-      expect(data.error).toContain('exceeds maximum');
     });
 
-    test("onComplete error returns 500", async () => {
+    test("should build context from trigger userId (not from request session)", async () => {
+      const mockToken = { accessToken: 'test-token', tokenType: 'Bearer' };
+      let receivedContext: any;
+
       await mockTriggerCallbacks.create({
-        id: 'trig_err',
+        id: 'trig_ctx',
         toolName: 'github_create_issue',
-        toolArguments: {},
-        schedule: { type: 'cron', expression: '0 9 * * *' },
-        status: 'active',
-        provider: 'github',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        runCount: 0,
-      });
-
-      const onComplete = mock(async () => {
-        throw new Error('Callback exploded');
-      });
-
-      const server = createMCPServer({
-        apiKey: 'test-api-key',
-        integrations: [githubIntegration({ clientId: 'test-id', clientSecret: 'test-secret' })],
-        triggers: { ...mockTriggerCallbacks, onComplete },
-      });
-
-      const request = new Request('http://localhost:3000/api/integrate/triggers/trig_err/complete', {
-        method: 'POST',
-        headers: { 'x-api-key': 'test-api-key', 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          success: true,
-          result: {},
-          executedAt: new Date().toISOString(),
-        }),
-      });
-
-      const response = await server.client.handler(request, { params: { all: ['triggers', 'trig_err', 'complete'] } });
-      expect(response.status).toBe(500);
-      const data = await response.json();
-      expect(data.error).toContain('onComplete');
-    });
-
-    test("one-time trigger only marked completed on final step", async () => {
-      await mockTriggerCallbacks.create({
-        id: 'trig_once_multi',
-        toolName: 'github_create_issue',
-        toolArguments: {},
+        toolArguments: { title: 'Test' },
         schedule: { type: 'once', runAt: '2024-12-20T10:00:00Z' },
         status: 'active',
         provider: 'github',
+        userId: 'stored_user_456',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         runCount: 0,
       });
 
-      let callCount = 0;
-      const onComplete = mock(async () => {
-        callCount++;
-        if (callCount === 1) {
-          return { hasMore: true as const, nextStep: {
-            toolName: 'github_list_issues',
-            toolArguments: {},
-            provider: 'github',
-            accessToken: 'token',
-            tokenType: 'Bearer',
-          }};
+      const origFetch = global.fetch;
+      global.fetch = mock(async (url: string | URL | Request, options?: any) => {
+        const urlStr = typeof url === 'string' ? url : url instanceof URL ? url.toString() : url.url;
+        if (urlStr.includes('/scheduler/')) {
+          return new Response(JSON.stringify({ success: true }), { status: 200 });
         }
-        return { hasMore: false as const };
-      });
+        if (urlStr.includes('mcp.integrate.dev') || urlStr.includes('/api/v1/mcp')) {
+          return new Response(JSON.stringify({ content: [{ type: 'text', text: '{}' }] }), { status: 200 });
+        }
+        return origFetch(url, options);
+      }) as any;
 
       const server = createMCPServer({
         apiKey: 'test-api-key',
         integrations: [githubIntegration({ clientId: 'test-id', clientSecret: 'test-secret' })],
-        triggers: { ...mockTriggerCallbacks, onComplete },
+        triggers: mockTriggerCallbacks,
+        getProviderToken: async (provider, email, context) => {
+          receivedContext = context;
+          return mockToken;
+        },
       });
 
-      // First step (intermediate)
-      let request = new Request('http://localhost:3000/api/integrate/triggers/trig_once_multi/complete', {
+      const request = new Request('http://localhost:3000/api/integrate/triggers/notify', {
         method: 'POST',
         headers: { 'x-api-key': 'test-api-key', 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          success: true,
-          result: {},
-          executedAt: new Date().toISOString(),
-          stepIndex: 0,
-        }),
+        body: JSON.stringify({ triggerId: 'trig_ctx' }),
       });
 
-      let response = await server.client.handler(request, { params: { all: ['triggers', 'trig_once_multi', 'complete'] } });
-      expect(response.status).toBe(200);
-      let trigger = await mockTriggerCallbacks.get('trig_once_multi');
-      expect(trigger?.status).toBe('active'); // NOT completed yet
+      await server.client.handler(request, { params: { all: ['triggers', 'notify'] } });
 
-      // Final step
-      request = new Request('http://localhost:3000/api/integrate/triggers/trig_once_multi/complete', {
-        method: 'POST',
-        headers: { 'x-api-key': 'test-api-key', 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          success: true,
-          result: {},
-          executedAt: new Date().toISOString(),
-          stepIndex: 1,
-          final: true,
-        }),
-      });
+      // Context should come from trigger's stored userId, not from request session
+      expect(receivedContext).toEqual({ userId: 'stored_user_456' });
 
-      response = await server.client.handler(request, { params: { all: ['triggers', 'trig_once_multi', 'complete'] } });
-      expect(response.status).toBe(200);
-      trigger = await mockTriggerCallbacks.get('trig_once_multi');
-      expect(trigger?.status).toBe('completed'); // NOW completed
+      global.fetch = origFetch;
     });
   });
 

@@ -40,6 +40,10 @@ export type { StatusTransitionResult } from './utils.js';
 // Export webhook delivery
 export { deliverWebhooks } from './webhooks.js';
 
+// Export executor
+export { executeTrigger } from './executor.js';
+export type { ExecuteTriggerConfig, ExecuteTriggerResult } from './executor.js';
+
 // Export client
 export { TriggerClient } from './client.js';
 export type { TriggerClientConfig } from './client.js';

@@ -459,6 +459,84 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
       return Response.json({ integrations });
     }
 
+    // Handle /triggers/notify route (scheduler notification for local execution)
+    if (segments.length === 2 && segments[0] === 'triggers' && segments[1] === 'notify' && method === 'POST') {
+      if (!config.triggers) {
+        return Response.json(
+          { error: 'Triggers not configured. Add triggers callbacks to createMCPServer config.' },
+          { status: 501 }
+        );
+      }
+
+      try {
+        // Validate API key from scheduler
+        const apiKey = webRequest.headers.get('x-api-key');
+        if (!apiKey || apiKey !== config.apiKey) {
+          return Response.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const body = await webRequest.json();
+        const { triggerId } = body as { triggerId: string; scheduledAt?: string };
+
+        if (!triggerId) {
+          return Response.json({ error: 'triggerId is required' }, { status: 400 });
+        }
+
+        // Retrieve trigger from DB (no session context — scheduler has no user session)
+        const trigger = await config.triggers.get(triggerId);
+        if (!trigger) {
+          return Response.json({ error: 'Trigger not found' }, { status: 404 });
+        }
+
+        if (!trigger.provider) {
+          return Response.json(
+            { error: 'Trigger has no provider configured' },
+            { status: 400 }
+          );
+        }
+
+        // Build context from trigger's stored userId (scheduler has no user session)
+        const triggerContext = trigger.userId ? { userId: trigger.userId } : undefined;
+
+        // Import executor and run locally
+        const { executeTrigger } = await import('./triggers/executor.js');
+        const { OAuthHandler } = await import('./adapters/base-handler.js');
+
+        const oauthHandler = new OAuthHandler({
+          providers,
+          serverUrl: config.serverUrl,
+          apiKey: config.apiKey,
+          setProviderToken: config.setProviderToken,
+          removeProviderToken: config.removeProviderToken,
+          getSessionContext: config.getSessionContext,
+        });
+
+        const executionResult = await executeTrigger(trigger, {
+          triggers: config.triggers,
+          getProviderToken: async (provider, email, ctx) => {
+            return config.getProviderToken
+              ? await config.getProviderToken(provider, email, ctx)
+              : undefined;
+          },
+          handleToolCall: (toolBody, authHeader, integrationsHeader) => {
+            return oauthHandler.handleToolCall(toolBody, authHeader, integrationsHeader);
+          },
+        }, triggerContext);
+
+        return Response.json({
+          success: executionResult.success,
+          steps: executionResult.steps,
+          error: executionResult.error,
+        });
+      } catch (error: any) {
+        logger.error('[Trigger Notify] Error:', error);
+        return Response.json(
+          { error: error.message || 'Failed to execute trigger' },
+          { status: 500 }
+        );
+      }
+    }
+
     // Handle /triggers routes
     // Route structure: /api/integrate/triggers or /api/integrate/triggers/:id or /api/integrate/triggers/:id/:action
     if (segments.length >= 1 && segments[0] === 'triggers') {
@@ -529,9 +607,14 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
 
             // Register with MCP server scheduler
             const schedulerUrl = config.schedulerUrl || config.serverUrl || 'https://mcp.integrate.dev';
-            const callbackBaseUrl = process.env.INTEGRATE_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+            const defaultCallbackBaseUrl = process.env.INTEGRATE_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
 
             try {
+              // Resolve callback URL: use getCallbackUrl if provided, otherwise default
+              const callbackBaseUrl = config.triggers.getCallbackUrl
+                ? await config.triggers.getCallbackUrl(context)
+                : defaultCallbackBaseUrl;
+
               await fetch(`${schedulerUrl}/scheduler/register`, {
                 method: 'POST',
                 headers: {
@@ -541,8 +624,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
                 body: JSON.stringify({
                   triggerId: created.id,
                   schedule: created.schedule,
-                  callbackUrl: `${callbackBaseUrl}/api/integrate/triggers/${created.id}/execute`,
-                  completeUrl: `${callbackBaseUrl}/api/integrate/triggers/${created.id}/complete`,
+                  callbackUrl: `${callbackBaseUrl}/api/integrate/triggers/notify`,
                   metadata: {
                     userId: context?.userId,
                     provider: created.provider,
@@ -650,13 +732,12 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
 
             return Response.json(updated);
           } else if (subAction === 'run' && method === 'POST') {
-            // Execute trigger immediately
+            // Execute trigger immediately (uses local executor)
             const trigger = await config.triggers.get(triggerId, context);
             if (!trigger) {
               return Response.json({ error: 'Trigger not found' }, { status: 404 });
             }
 
-            // Check if provider exists
             if (!trigger.provider) {
               return Response.json(
                 { error: 'Trigger has no provider configured' },
@@ -664,20 +745,9 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
               );
             }
 
-            // Get provider token
-            const providerToken = config.getProviderToken
-              ? await config.getProviderToken(trigger.provider, undefined, context)
-              : undefined;
-
-            if (!providerToken) {
-              return Response.json(
-                { error: 'No OAuth token available for this trigger' },
-                { status: 401 }
-              );
-            }
-
-            // Execute tool via MCP server
+            const { executeTrigger } = await import('./triggers/executor.js');
             const { OAuthHandler } = await import('./adapters/base-handler.js');
+
             const oauthHandler = new OAuthHandler({
               providers,
               serverUrl: config.serverUrl,
@@ -687,208 +757,26 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
               getSessionContext: config.getSessionContext,
             });
 
-            const startTime = Date.now();
-            try {
-              const result = await oauthHandler.handleToolCall(
-                { name: trigger.toolName, arguments: trigger.toolArguments },
-                `Bearer ${providerToken.accessToken}`,
-                null
-              );
-
-              const duration = Date.now() - startTime;
-              const executionResult = {
-                success: true,
-                result,
-                executedAt: new Date().toISOString(),
-                duration,
-              };
-
-              // Update trigger with execution result
-              await config.triggers.update(
-                triggerId,
-                {
-                  lastRunAt: executionResult.executedAt,
-                  runCount: (trigger.runCount || 0) + 1,
-                  lastResult: result as unknown as Record<string, unknown>,
-                  lastError: undefined,
-                },
-                context
-              );
-
-              return Response.json(executionResult);
-            } catch (error: any) {
-              const duration = Date.now() - startTime;
-              const executionResult = {
-                success: false,
-                error: error.message || 'Tool execution failed',
-                executedAt: new Date().toISOString(),
-                duration,
-              };
-
-              // Update trigger with error
-              await config.triggers.update(
-                triggerId,
-                {
-                  lastRunAt: executionResult.executedAt,
-                  runCount: (trigger.runCount || 0) + 1,
-                  lastError: error.message,
-                  status: 'failed',
-                },
-                context
-              );
-
-              return Response.json(executionResult, { status: 500 });
-            }
-          } else if (subAction === 'execute' && method === 'GET') {
-            // MCP server callback to get trigger details + token
-            // Validate API key from MCP server
-            const apiKey = webRequest.headers.get('x-api-key');
-            if (!apiKey || apiKey !== config.apiKey) {
-              return Response.json({ error: 'Unauthorized' }, { status: 401 });
-            }
-
-            const trigger = await config.triggers.get(triggerId, context);
-            if (!trigger) {
-              return Response.json({ error: 'Trigger not found' }, { status: 404 });
-            }
-
-            // Check if provider exists
-            if (!trigger.provider) {
-              return Response.json(
-                { error: 'Trigger has no provider configured' },
-                { status: 400 }
-              );
-            }
-
-            // Get OAuth token for provider
-            const providerToken = config.getProviderToken
-              ? await config.getProviderToken(trigger.provider, undefined, context)
-              : undefined;
-
-            if (!providerToken) {
-              return Response.json(
-                { error: 'No OAuth token available for this trigger' },
-                { status: 401 }
-              );
-            }
+            const executionResult = await executeTrigger(trigger, {
+              triggers: config.triggers,
+              getProviderToken: async (provider, email, ctx) => {
+                return config.getProviderToken
+                  ? await config.getProviderToken(provider, email, ctx)
+                  : undefined;
+              },
+              handleToolCall: (toolBody, authHeader, integrationsHeader) => {
+                return oauthHandler.handleToolCall(toolBody, authHeader, integrationsHeader);
+              },
+            }, context);
 
             return Response.json({
-              trigger: {
-                id: trigger.id,
-                toolName: trigger.toolName,
-                toolArguments: trigger.toolArguments,
-                provider: trigger.provider,
-              },
-              accessToken: providerToken.accessToken,
-              tokenType: providerToken.tokenType || 'Bearer',
-            });
-          } else if (subAction === 'complete' && method === 'POST') {
-            // MCP server callback to report execution result
-            // Validate API key from MCP server
-            const apiKey = webRequest.headers.get('x-api-key');
-            if (!apiKey || apiKey !== config.apiKey) {
-              return Response.json({ error: 'Unauthorized' }, { status: 401 });
-            }
-
-            const body = await webRequest.json() as import('./triggers/types.js').CompleteRequest;
-            const trigger = await config.triggers.get(triggerId, context);
-
-            if (!trigger) {
-              return Response.json({ error: 'Trigger not found' }, { status: 404 });
-            }
-
-            // Validate step limit if stepIndex is provided
-            if (body.stepIndex != null) {
-              const { validateStepLimit } = await import('./triggers/utils.js');
-              const { MAX_TRIGGER_STEPS } = await import('./triggers/types.js');
-              const stepValidation = validateStepLimit(body.stepIndex, MAX_TRIGGER_STEPS);
-              if (!stepValidation.valid) {
-                return Response.json({ error: stepValidation.error }, { status: 400 });
-              }
-            }
-
-            // If onComplete callback exists, delegate to it
-            if (config.triggers.onComplete) {
-              try {
-                const completeResponse = await config.triggers.onComplete({
-                  trigger,
-                  request: body,
-                  context,
-                });
-
-                if (completeResponse.hasMore) {
-                  // Mid-execution: don't update trigger state, return response directly
-                  return Response.json(completeResponse);
-                }
-
-                // Final step: update trigger state
-                const updates: any = {
-                  lastRunAt: body.executedAt,
-                  runCount: (trigger.runCount || 0) + 1,
-                };
-
-                if (body.success) {
-                  updates.lastResult = body.result;
-                  updates.lastError = undefined;
-                  if (trigger.schedule.type === 'once') {
-                    updates.status = 'completed';
-                  }
-                } else {
-                  updates.lastError = body.error;
-                  updates.status = 'failed';
-                }
-
-                await config.triggers.update(triggerId, updates, context);
-
-                // Fire webhooks if any (fire-and-forget)
-                if (completeResponse.webhooks && completeResponse.webhooks.length > 0) {
-                  const { deliverWebhooks } = await import('./triggers/webhooks.js');
-                  const { WEBHOOK_DELIVERY_TIMEOUT_MS } = await import('./triggers/types.js');
-                  const steps = body.previousResults || [];
-                  const totalDuration = steps.reduce((sum, s) => sum + (s.duration || 0), 0);
-                  const payload: import('./triggers/types.js').WebhookPayload = {
-                    triggerId,
-                    success: body.success,
-                    steps,
-                    totalSteps: steps.length,
-                    totalDuration,
-                    executedAt: body.executedAt,
-                  };
-                  // Fire-and-forget: don't await, errors logged internally
-                  deliverWebhooks(completeResponse.webhooks, payload, WEBHOOK_DELIVERY_TIMEOUT_MS).catch(() => {});
-                }
-
-                return Response.json(completeResponse);
-              } catch (error) {
-                logger.error('onComplete callback error:', error);
-                return Response.json(
-                  { error: 'Internal server error in onComplete callback' },
-                  { status: 500 },
-                );
-              }
-            }
-
-            // Default behavior (no onComplete): update trigger state directly
-            const updates: any = {
-              lastRunAt: body.executedAt,
-              runCount: (trigger.runCount || 0) + 1,
-            };
-
-            if (body.success) {
-              updates.lastResult = body.result;
-              updates.lastError = undefined;
-              // Mark one-time triggers as completed
-              if (trigger.schedule.type === 'once') {
-                updates.status = 'completed';
-              }
-            } else {
-              updates.lastError = body.error;
-              updates.status = 'failed';
-            }
-
-            await config.triggers.update(triggerId, updates, context);
-
-            return Response.json({ success: true });
+              success: executionResult.success,
+              result: executionResult.steps[0]?.result,
+              executedAt: executionResult.steps[0]?.executedAt || new Date().toISOString(),
+              duration: executionResult.steps[0]?.duration,
+              error: executionResult.error,
+              steps: executionResult.steps,
+            }, { status: executionResult.success ? 200 : 500 });
           } else if (!subAction && method === 'GET') {
             // Get trigger
             const trigger = await config.triggers.get(triggerId, context);
