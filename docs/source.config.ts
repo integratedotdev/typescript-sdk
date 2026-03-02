@@ -22,6 +22,12 @@ export const docs = defineDocs({
 
 export default defineConfig({
   mdxOptions: {
-    // MDX options
+    // Keep light theme unchanged; upgrade dark theme to GitHub Dark High Contrast.
+    rehypeCodeOptions: {
+      themes: {
+        light: "github-light-default",
+        dark: "github-dark-high-contrast",
+      },
+    },
   },
 });

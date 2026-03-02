@@ -14,13 +14,6 @@ pre[style*="background"] {
   overflow: visible;
 }
 
-/* Apply black background only in dark mode */
-.dark pre.shiki,
-.dark pre[class*="shiki"],
-.dark pre[style*="background"] {
-  background: #000;
-}
-
 pre.shiki code,
 pre[class*="shiki"] code,
 pre[style*="background"] code {

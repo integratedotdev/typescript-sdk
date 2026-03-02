@@ -124,7 +124,7 @@ export default async function HomePage() {
     }),
     codeToHtml(codeSample, {
       lang: "ts",
-      theme: "github-dark",
+      theme: "github-dark-high-contrast",
     }),
     codeToHtml(vercelAICodeSample, {
       lang: "ts",
@@ -132,7 +132,7 @@ export default async function HomePage() {
     }),
     codeToHtml(vercelAICodeSample, {
       lang: "ts",
-      theme: "github-dark",
+      theme: "github-dark-high-contrast",
     }),
     codeToHtml(triggersCodeSample, {
       lang: "ts",
@@ -140,7 +140,7 @@ export default async function HomePage() {
     }),
     codeToHtml(triggersCodeSample, {
       lang: "ts",
-      theme: "github-dark",
+      theme: "github-dark-high-contrast",
     }),
     getIntegrationLogos(),
   ]);
