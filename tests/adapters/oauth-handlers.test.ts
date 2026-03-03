@@ -81,9 +81,11 @@ describe("OAuthHandler", () => {
       );
     });
 
-    it("should include redirectUri in request when provided", async () => {
+    it("should always use providerConfig.redirectUri, ignoring client-provided redirectUri", async () => {
       const mockFetch = mock(async (url: string) => {
-        expect(url).toContain("redirect_uri=https%3A%2F%2Fcustom.com%2Fcallback");
+        // Client-provided redirectUri should be ignored; providerConfig.redirectUri is used
+        expect(url).toContain("redirect_uri=https%3A%2F%2Fapp.com%2Fcallback");
+        expect(url).not.toContain("custom.com");
 
         return {
           ok: true,

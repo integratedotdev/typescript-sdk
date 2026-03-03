@@ -330,8 +330,9 @@ export class OAuthHandler {
     url.searchParams.set('code_challenge', authorizeRequest.codeChallenge);
     url.searchParams.set('code_challenge_method', authorizeRequest.codeChallengeMethod);
 
-    // Use request redirect URI or fallback to provider config
-    const redirectUri = authorizeRequest.redirectUri || providerConfig.redirectUri;
+    // Always use server-configured redirectUri so authorize and callback
+    // always send the same redirect_uri to the MCP server.
+    const redirectUri = providerConfig.redirectUri;
     if (redirectUri) {
       url.searchParams.set('redirect_uri', redirectUri);
     }
@@ -509,7 +510,12 @@ export class OAuthHandler {
           tokenType: result.tokenType,
           expiresIn: result.expiresIn,
           expiresAt: result.expiresAt,
-          scopes: result.scopes, // Include scopes in token data
+          // Normalize scopes: Cal.com (and potentially other providers) return a
+          // space-separated string inside a single array element. Split each element
+          // on spaces to produce individual scope strings.
+          scopes: result.scopes
+            ? result.scopes.flatMap((s: string) => s.split(' ').filter(Boolean))
+            : result.scopes,
         };
 
         // Email is not available at server-side callback time (fetched client-side)
