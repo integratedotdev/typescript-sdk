@@ -582,28 +582,49 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
             // Server clients always use local config (they ARE the server)
             // Custom clients (useServerConfig: false) also use local config
             if (hasApiKey || !this.__useServerConfig) {
-              // If includeToolMetadata is true, fetch tool metadata for all local integrations
-              if (options?.includeToolMetadata) {
+              // If includeToolMetadata is true and this is a server client with an API key,
+              // read tool schemas directly from availableTools (populated by discoverTools during connect)
+              if (options?.includeToolMetadata && hasApiKey) {
+                await this.ensureConnected();
+
+                const integrationsWithMetadata = (localIntegrations as readonly MCPIntegration[]).map((integration: MCPIntegration) => {
+                  const toolMetadata = integration.tools
+                    .map(toolName => this.availableTools.get(toolName))
+                    .filter((tool): tool is MCPTool => !!tool);
+
+                  return {
+                    id: integration.id,
+                    name: (integration as any).name || integration.id,
+                    logoUrl: (integration as any).logoUrl,
+                    tools: integration.tools,
+                    hasOAuth: !!integration.oauth,
+                    scopes: integration.oauth?.scopes,
+                    provider: integration.oauth?.provider,
+                    toolMetadata,
+                  };
+                });
+
+                return { integrations: integrationsWithMetadata };
+              }
+
+              // For browser clients (!hasApiKey) with includeToolMetadata, fall through to
+              // the server fetch path which uses list_tools_by_integration via API handler
+              if (options?.includeToolMetadata && !hasApiKey) {
                 const { parallelWithLimit } = await import('./utils/concurrency.js');
 
-                // Fetch metadata for each integration in parallel with concurrency limit
                 const integrationsWithMetadata = await parallelWithLimit(
                   localIntegrations,
                   async (integration: MCPIntegration) => {
                     try {
-                      // Call listToolsByIntegration to get full tool metadata
                       const response = await this.callServerToolInternal('list_tools_by_integration', {
                         integration: integration.id,
                       });
 
-                      // Extract tool metadata from response
-                      // Response format: { content: [{ type: "text", text: "..." }] }
                       let toolMetadata: any[] = [];
                       if (response.content && Array.isArray(response.content)) {
                         for (const item of response.content) {
                           if (item.type === 'text' && item.text) {
                             try {
-                              // Try to parse as JSON if it's a JSON string
                               const parsed = JSON.parse(item.text);
                               if (Array.isArray(parsed)) {
                                 toolMetadata = parsed;
@@ -628,7 +649,6 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
                         toolMetadata,
                       };
                     } catch (error) {
-                      // If metadata fetch fails, return without metadata
                       logger.error(`Failed to fetch tool metadata for ${integration.id}:`, error);
                       return {
                         id: integration.id,
@@ -642,12 +662,10 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
                       };
                     }
                   },
-                  3 // Concurrency limit: 3 parallel requests at a time
+                  3
                 );
 
-                return {
-                  integrations: integrationsWithMetadata,
-                };
+                return { integrations: integrationsWithMetadata };
               }
 
               // Return local data only (no server call)
