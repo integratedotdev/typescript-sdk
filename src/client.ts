@@ -253,6 +253,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   private apiRouteBase: string;
   private apiBaseUrl?: string;
   private databaseDetected: boolean = false;
+  private _connectingPromise: Promise<void> | null = null;
 
   /**
    * Explicitly configured integrations passed to createMCPClient
@@ -765,6 +766,23 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   }
 
   /**
+   * Ensure the client is connected before making transport requests.
+   * Safe to call concurrently — deduplicates in-flight connect() calls.
+   * Only needed for server-side clients that use transport.sendRequest() directly.
+   */
+  private async ensureConnected(): Promise<void> {
+    if (this.transport.isConnected()) {
+      return;
+    }
+    if (!this._connectingPromise) {
+      this._connectingPromise = this.connect().finally(() => {
+        this._connectingPromise = null;
+      });
+    }
+    return this._connectingPromise;
+  }
+
+  /**
    * Initialize all integrations
    */
   private async initializeIntegrations(): Promise<void> {
@@ -905,6 +923,9 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
 
     // Server-side clients with API key should call MCP server directly through transport
     if (hasApiKey) {
+      // Ensure transport is connected before any direct sendRequest() call
+      await this.ensureConnected();
+
       // Add provider token to transport if available
       if (provider) {
         const tokenData = await this.oauthManager.getProviderToken(provider, undefined, options?.context);
