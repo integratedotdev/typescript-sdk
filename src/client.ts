@@ -864,22 +864,29 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
    * Discover available tools from the server
    */
   private async discoverTools(): Promise<void> {
-    const response = await this.transport.sendRequest<MCPToolsListResponse>(
-      MCPMethod.TOOLS_LIST
-    );
+    let cursor: string | undefined;
+    let totalDiscovered = 0;
 
-    // Store all available tools
-    for (const tool of response.tools) {
-      this.availableTools.set(tool.name, tool);
-    }
+    do {
+      const response = await this.transport.sendRequest<MCPToolsListResponse>(
+        MCPMethod.TOOLS_LIST,
+        cursor ? { cursor } : undefined
+      );
 
-    // Filter to only enabled tools
-    const enabledTools = response.tools.filter((tool) =>
-      this.enabledToolNames.has(tool.name)
-    );
+      for (const tool of response.tools) {
+        this.availableTools.set(tool.name, tool);
+      }
+
+      totalDiscovered += response.tools.length;
+      cursor = response.nextCursor;
+    } while (cursor);
+
+    const enabledCount = Array.from(this.availableTools.keys()).filter(name =>
+      this.enabledToolNames.has(name)
+    ).length;
 
     logger.debug(
-      `Discovered ${response.tools.length} tools, ${enabledTools.length} enabled by integrations`
+      `Discovered ${totalDiscovered} tools, ${enabledCount} enabled by integrations`
     );
   }
 
