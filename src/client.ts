@@ -771,7 +771,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
    * Only needed for server-side clients that use transport.sendRequest() directly.
    */
   private async ensureConnected(): Promise<void> {
-    if (this.transport.isConnected()) {
+    if (this.isConnected()) {
       return;
     }
     if (!this._connectingPromise) {
