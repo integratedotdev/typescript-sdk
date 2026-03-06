@@ -675,8 +675,11 @@ export class OAuthHandler {
     });
 
     // Add provider token from Authorization header if present
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      headers['Authorization'] = authHeader;
+    if (authHeader) {
+      const normalized = authHeader.replace(/^bearer\s+/i, 'Bearer ');
+      if (normalized.startsWith('Bearer ')) {
+        headers['Authorization'] = normalized;
+      }
     }
 
     // Add client-configured integration IDs to allow server-side filtering

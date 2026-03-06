@@ -130,6 +130,18 @@ export async function executeTrigger(
       logger.error(`[Trigger ${trigger.id}] Step ${stepIndex} failed:`, err);
     }
 
+    // Treat MCP-level error responses as failures even when no exception was thrown
+    if (stepSuccess && toolResult) {
+      if (toolResult.isError === true) {
+        stepSuccess = false;
+        const errText = toolResult.content?.find((c: any) => c.type === 'text')?.text;
+        stepError = errText || 'Tool returned an error response';
+      } else if (toolResult.structuredContent?.success === false) {
+        stepSuccess = false;
+        stepError = toolResult.structuredContent?.error as string | undefined || 'Tool returned success: false';
+      }
+    }
+
     const duration = Date.now() - startTime;
     const executedAt = new Date().toISOString();
 
@@ -162,7 +174,7 @@ export async function executeTrigger(
       }
 
       await config.triggers.update(trigger.id, updates, context);
-      return { success: stepSuccess, steps, error: stepError };
+      return { success: steps.every((s) => s.success), steps, error: stepError };
     }
 
     // Build CompleteRequest for the onComplete callback
@@ -226,7 +238,7 @@ export async function executeTrigger(
       deliverWebhooks(completeResponse.webhooks, payload, WEBHOOK_DELIVERY_TIMEOUT_MS).catch(() => {});
     }
 
-    return { success: stepSuccess, steps, error: stepError };
+    return { success: steps.every((s) => s.success), steps, error: stepError };
   }
 
   // Reached MAX_TRIGGER_STEPS limit
