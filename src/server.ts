@@ -56,7 +56,7 @@ let globalServerConfig: {
  * Global handler for the full MCP server (set by createMCPServer)
  * Used by toNextJsHandler to forward trigger routes
  */
-let globalMCPHandler: ((request: Request) => Promise<Response>) | null = null;
+let globalMCPHandler: ((request: Request, context?: { params?: { action?: string; all?: string | string[] } }) => Promise<Response>) | null = null;
 
 /**
  * Temporary storage for codeVerifier and frontend origin during OAuth flow
@@ -1101,7 +1101,8 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
   };
 
   // Store full handler globally so toNextJsHandler can forward trigger routes
-  globalMCPHandler = (request: Request) => handler(request) as Promise<Response>;
+  globalMCPHandler = (request: Request, context?: { params?: { action?: string; all?: string | string[] } }) =>
+    handler(request, context) as Promise<Response>;
 
   // Attach handler, POST, and GET to the client for convenient access
   const serverClient = client as MCPServerClient<TIntegrations>;
@@ -1414,7 +1415,7 @@ export function toNextJsHandler<TIntegrations extends readonly MCPIntegration[] 
 
     // Forward trigger routes to the global MCP handler (has full trigger config)
     if (segments.length >= 1 && segments[0] === 'triggers' && globalMCPHandler) {
-      return globalMCPHandler(req);
+      return globalMCPHandler(req, { params: { all: segments } });
     }
 
     const handler = createNextOAuthHandler(config);
@@ -1438,7 +1439,7 @@ export function toNextJsHandler<TIntegrations extends readonly MCPIntegration[] 
 
     // Forward trigger routes to the global MCP handler (has full trigger config)
     if (segments.length >= 1 && segments[0] === 'triggers' && globalMCPHandler) {
-      return globalMCPHandler(req);
+      return globalMCPHandler(req, { params: { all: segments } });
     }
 
     const handler = createNextOAuthHandler(config);
