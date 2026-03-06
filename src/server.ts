@@ -53,6 +53,12 @@ let globalServerConfig: {
 } | null = null;
 
 /**
+ * Global handler for the full MCP server (set by createMCPServer)
+ * Used by toNextJsHandler to forward trigger routes
+ */
+let globalMCPHandler: ((request: Request) => Promise<Response>) | null = null;
+
+/**
  * Temporary storage for codeVerifier and frontend origin during OAuth flow
  * Keyed by state parameter, expires after 5 minutes
  */
@@ -757,6 +763,11 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
               getSessionContext: config.getSessionContext,
             });
 
+            // For server-to-server calls, context may be undefined — use trigger's stored userId
+            const triggerContext = trigger.userId
+              ? { ...(context ?? {}), userId: trigger.userId }
+              : context;
+
             const executionResult = await executeTrigger(trigger, {
               triggers: config.triggers,
               getProviderToken: async (provider, email, ctx) => {
@@ -767,7 +778,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
               handleToolCall: (toolBody, authHeader, integrationsHeader) => {
                 return oauthHandler.handleToolCall(toolBody, authHeader, integrationsHeader);
               },
-            }, context);
+            }, triggerContext);
 
             return Response.json({
               success: executionResult.success,
@@ -1089,6 +1100,9 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
     return response;
   };
 
+  // Store full handler globally so toNextJsHandler can forward trigger routes
+  globalMCPHandler = (request: Request) => handler(request) as Promise<Response>;
+
   // Attach handler, POST, and GET to the client for convenient access
   const serverClient = client as MCPServerClient<TIntegrations>;
   serverClient.handler = handler;
@@ -1395,6 +1409,14 @@ export function toNextJsHandler<TIntegrations extends readonly MCPIntegration[] 
     req: any,
     context: { params: { all: string[] } | Promise<{ all: string[] }> }
   ) => {
+    const params = context.params instanceof Promise ? await context.params : context.params;
+    const segments = params.all || [];
+
+    // Forward trigger routes to the global MCP handler (has full trigger config)
+    if (segments.length >= 1 && segments[0] === 'triggers' && globalMCPHandler) {
+      return globalMCPHandler(req);
+    }
+
     const handler = createNextOAuthHandler(config);
     const routes = handler.toNextJsHandler({
       redirectUrl,
@@ -1411,6 +1433,14 @@ export function toNextJsHandler<TIntegrations extends readonly MCPIntegration[] 
     req: any,
     context: { params: { all: string[] } | Promise<{ all: string[] }> }
   ) => {
+    const params = context.params instanceof Promise ? await context.params : context.params;
+    const segments = params.all || [];
+
+    // Forward trigger routes to the global MCP handler (has full trigger config)
+    if (segments.length >= 1 && segments[0] === 'triggers' && globalMCPHandler) {
+      return globalMCPHandler(req);
+    }
+
     const handler = createNextOAuthHandler(config);
     const routes = handler.toNextJsHandler({
       redirectUrl,
