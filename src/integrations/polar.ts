@@ -55,7 +55,6 @@ export function polarIntegration(config: PolarIntegrationConfig = {}): MCPIntegr
     redirectUri: config.redirectUri,
     config: {
       apiBaseUrl: config.apiBaseUrl || "https://api.polar.sh",
-      ...config,
     },
   };
 

@@ -338,9 +338,17 @@ export class OAuthHandler {
     }
 
     // Add provider-specific config parameters (e.g., Notion's 'owner' parameter)
+    // Fields already handled explicitly above — skip them if they accidentally
+    // appear in the provider-specific config (e.g., from a ...config spread)
+    const OAUTH_FIELDS = new Set([
+      'clientId', 'clientSecret', 'scopes', 'redirectUri',
+      'client_id', 'client_secret', 'scope', 'redirect_uri',
+      'provider',
+    ]);
+
     if (providerConfig.config) {
       for (const [key, value] of Object.entries(providerConfig.config)) {
-        if (value !== undefined && value !== null) {
+        if (value !== undefined && value !== null && !OAUTH_FIELDS.has(key)) {
           url.searchParams.set(key, String(value));
         }
       }
