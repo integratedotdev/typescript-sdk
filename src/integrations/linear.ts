@@ -21,7 +21,7 @@ export interface LinearIntegrationConfig {
   clientId?: string;
   /** Linear OAuth client secret (defaults to LINEAR_CLIENT_SECRET env var) */
   clientSecret?: string;
-  /** Additional OAuth scopes (default: ['read', 'write', 'issues:create']) */
+  /** Additional OAuth scopes (default: ['read', 'write', 'issues:create', 'comments:create']) */
   scopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
@@ -32,15 +32,62 @@ export interface LinearIntegrationConfig {
  * These should match the tool names exposed by your MCP server
  */
 const LINEAR_TOOLS = [
+  // Issues
   "linear_create_issue",
   "linear_list_issues",
   "linear_get_issue",
   "linear_update_issue",
-  "linear_list_projects",
-  "linear_list_teams",
-  "linear_add_comment",
-  "linear_list_labels",
+  "linear_archive_issue",
+  "linear_delete_issue",
   "linear_search_issues",
+  "linear_add_comment",
+
+  // Users
+  "linear_list_users",
+  "linear_get_user",
+
+  // Teams
+  "linear_list_teams",
+
+  // Workflow States
+  "linear_list_workflow_states",
+  "linear_create_workflow_state",
+
+  // Projects
+  "linear_list_projects",
+  "linear_get_project",
+  "linear_create_project",
+  "linear_update_project",
+
+  // Cycles
+  "linear_list_cycles",
+  "linear_get_cycle",
+  "linear_create_cycle",
+  "linear_update_cycle",
+
+  // Labels
+  "linear_list_labels",
+
+  // Issue Relations
+  "linear_create_issue_relation",
+  "linear_delete_issue_relation",
+
+  // Documents
+  "linear_list_documents",
+  "linear_get_document",
+  "linear_create_document",
+  "linear_update_document",
+
+  // Initiatives
+  "linear_list_initiatives",
+  "linear_get_initiative",
+  "linear_create_initiative",
+
+  // Attachments
+  "linear_create_attachment",
+
+  // Project Updates
+  "linear_create_project_update",
 ] as const;
 
 
@@ -49,7 +96,7 @@ export function linearIntegration(config: LinearIntegrationConfig = {}): MCPInte
     provider: "linear",
     clientId: config.clientId ?? getEnv('LINEAR_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('LINEAR_CLIENT_SECRET'),
-    scopes: config.scopes || ["read", "write", "issues:create"],
+    scopes: config.scopes || ["read", "write", "issues:create", "comments:create"],
     redirectUri: config.redirectUri,
     config: {
       ...config,
