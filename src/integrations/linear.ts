@@ -23,6 +23,8 @@ export interface LinearIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default: ['read', 'write', 'issues:create', 'comments:create']) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
 }
@@ -97,6 +99,7 @@ export function linearIntegration(config: LinearIntegrationConfig = {}): MCPInte
     clientId: config.clientId ?? getEnv('LINEAR_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('LINEAR_CLIENT_SECRET'),
     scopes: config.scopes || ["read", "write", "issues:create", "comments:create"],
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       ...config,

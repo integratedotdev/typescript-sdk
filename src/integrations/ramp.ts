@@ -23,6 +23,8 @@ export interface RampIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default: ['transactions:read', 'cards:read', 'users:read']) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
   /** Ramp API base URL (default: https://api.ramp.com/v1) */
@@ -52,6 +54,7 @@ export function rampIntegration(config: RampIntegrationConfig = {}): MCPIntegrat
     clientId: config.clientId ?? getEnv('RAMP_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('RAMP_CLIENT_SECRET'),
     scopes: config.scopes || ["transactions:read", "cards:read", "users:read"],
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       apiBaseUrl: config.apiBaseUrl || "https://api.ramp.com/v1",

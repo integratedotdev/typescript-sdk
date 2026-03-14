@@ -23,6 +23,8 @@ export interface GitHubIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default: ['repo', 'user']) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
   /** GitHub API base URL (default: https://api.github.com) */
@@ -90,6 +92,7 @@ export function githubIntegration(config: GitHubIntegrationConfig = {}): MCPInte
     clientId: config.clientId ?? getEnv('GITHUB_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('GITHUB_CLIENT_SECRET'),
     scopes: config.scopes || ["repo", "user"],
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       apiBaseUrl: config.apiBaseUrl || "https://api.github.com",

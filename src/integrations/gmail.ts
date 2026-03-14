@@ -23,6 +23,8 @@ export interface GmailIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default: Gmail API scopes) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
 }
@@ -99,6 +101,7 @@ export function gmailIntegration(config: GmailIntegrationConfig = {}): MCPIntegr
       "https://www.googleapis.com/auth/gmail.modify",
       "https://www.googleapis.com/auth/gmail.labels",
     ],
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config,
   };

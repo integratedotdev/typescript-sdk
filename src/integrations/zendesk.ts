@@ -23,6 +23,8 @@ export interface ZendeskIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default: ['read', 'write']) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
   /** Zendesk subdomain (e.g., 'mycompany' for mycompany.zendesk.com) */
@@ -52,6 +54,7 @@ export function zendeskIntegration(config: ZendeskIntegrationConfig = {}): MCPIn
     clientId: config.clientId ?? getEnv('ZENDESK_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('ZENDESK_CLIENT_SECRET'),
     scopes: config.scopes || ["read", "write"],
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       subdomain: config.subdomain ?? getEnv('ZENDESK_SUBDOMAIN'),

@@ -460,6 +460,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
         tools: integration.tools,
         hasOAuth: !!integration.oauth,
         scopes: integration.oauth?.scopes,
+        optionalScopes: integration.oauth?.optionalScopes,
         provider: integration.oauth?.provider,
       }));
       return Response.json({ integrations });

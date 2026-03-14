@@ -23,6 +23,8 @@ export interface OutlookIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default: ['Mail.Read', 'Mail.Send', 'Calendars.ReadWrite', 'Contacts.Read']) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
 }
@@ -50,6 +52,7 @@ export function outlookIntegration(config: OutlookIntegrationConfig = {}): MCPIn
     clientId: config.clientId ?? getEnv('OUTLOOK_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('OUTLOOK_CLIENT_SECRET'),
     scopes: config.scopes || ["Mail.Read", "Mail.Send", "Calendars.ReadWrite", "Contacts.Read"],
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       ...config,

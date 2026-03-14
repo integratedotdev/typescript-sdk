@@ -23,6 +23,8 @@ export interface YouTubeIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default: ['https://www.googleapis.com/auth/youtube.readonly']) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
 }
@@ -50,6 +52,7 @@ export function youtubeIntegration(config: YouTubeIntegrationConfig = {}): MCPIn
     clientId: config.clientId ?? getEnv('YOUTUBE_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('YOUTUBE_CLIENT_SECRET'),
     scopes: config.scopes || ["https://www.googleapis.com/auth/youtube.readonly"],
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       ...config,

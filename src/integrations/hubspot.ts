@@ -23,6 +23,8 @@ export interface HubSpotIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default: CRM scopes for contacts, companies, deals, tickets) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
 }
@@ -89,6 +91,7 @@ export function hubspotIntegration(config: HubSpotIntegrationConfig = {}): MCPIn
       "crm.objects.tickets.write",
       "crm.objects.owners.read",
     ],
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       ...config,

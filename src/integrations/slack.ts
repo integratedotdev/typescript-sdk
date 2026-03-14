@@ -23,6 +23,8 @@ export interface SlackIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default: ['chat:write', 'channels:read', 'users:read']) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
 }
@@ -50,6 +52,7 @@ export function slackIntegration(config: SlackIntegrationConfig = {}): MCPIntegr
     clientId: config.clientId ?? getEnv('SLACK_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('SLACK_CLIENT_SECRET'),
     scopes: config.scopes || ["chat:write", "channels:read", "users:read", "search:read", "files:write"],
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       ...config,

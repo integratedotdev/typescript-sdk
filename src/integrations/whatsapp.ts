@@ -23,6 +23,8 @@ export interface WhatsAppIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default: ['business_management', 'whatsapp_business_messaging', 'whatsapp_business_management']) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
   /** WhatsApp Business Account ID */
@@ -51,6 +53,7 @@ export function whatsappIntegration(config: WhatsAppIntegrationConfig = {}): MCP
     clientId: config.clientId ?? getEnv('WHATSAPP_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('WHATSAPP_CLIENT_SECRET'),
     scopes: config.scopes || ["business_management", "whatsapp_business_messaging", "whatsapp_business_management"],
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       businessAccountId: config.businessAccountId,

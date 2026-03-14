@@ -23,6 +23,8 @@ export interface VercelIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
 }
@@ -50,6 +52,7 @@ export function vercelIntegration(config: VercelIntegrationConfig = {}): MCPInte
     clientId: config.clientId ?? getEnv('VERCEL_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('VERCEL_CLIENT_SECRET'),
     scopes: config.scopes || [],
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       ...config,

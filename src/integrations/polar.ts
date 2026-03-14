@@ -23,6 +23,8 @@ export interface PolarIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default includes read/write for products, subscriptions, customers, orders, benefits, license_keys, checkout_links, discounts, metrics, organizations) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
   /** Polar API base URL (default: https://api.polar.sh) */
@@ -109,6 +111,7 @@ export function polarIntegration(config: PolarIntegrationConfig = {}): MCPIntegr
       "metrics:read",
       "organizations:read",
     ],
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       apiBaseUrl: config.apiBaseUrl || "https://api.polar.sh",

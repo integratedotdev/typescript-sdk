@@ -23,6 +23,8 @@ export interface GWorkspaceIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default: spreadsheets, documents, presentations, drive.readonly) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
 }
@@ -61,6 +63,7 @@ export function gworkspaceIntegration(config: GWorkspaceIntegrationConfig = {}):
       "https://www.googleapis.com/auth/presentations",
       "https://www.googleapis.com/auth/drive.readonly",
     ],
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       ...config,

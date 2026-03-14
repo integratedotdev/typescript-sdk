@@ -23,6 +23,8 @@ export interface TodoistIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default: ['data:read_write']) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
 }
@@ -50,6 +52,7 @@ export function todoistIntegration(config: TodoistIntegrationConfig = {}): MCPIn
     clientId: config.clientId ?? getEnv('TODOIST_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('TODOIST_CLIENT_SECRET'),
     scopes: config.scopes || ["data:read_write"],
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       ...config,

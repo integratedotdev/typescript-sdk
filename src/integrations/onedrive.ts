@@ -23,6 +23,8 @@ export interface OneDriveIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default: ['Files.Read', 'Files.ReadWrite', 'offline_access']) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
 }
@@ -53,6 +55,7 @@ export function onedriveIntegration(config: OneDriveIntegrationConfig = {}): MCP
     clientId: config.clientId ?? getEnv('ONEDRIVE_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('ONEDRIVE_CLIENT_SECRET'),
     scopes: config.scopes || ["Files.Read", "Files.ReadWrite", "offline_access"],
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       ...config,

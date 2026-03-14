@@ -23,6 +23,8 @@ export interface GcalIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default: ['https://www.googleapis.com/auth/calendar']) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
 }
@@ -50,6 +52,7 @@ export function gcalIntegration(config: GcalIntegrationConfig = {}): MCPIntegrat
     clientId: config.clientId ?? getEnv('GCAL_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('GCAL_CLIENT_SECRET'),
     scopes: config.scopes || ["https://www.googleapis.com/auth/calendar"],
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       ...config,

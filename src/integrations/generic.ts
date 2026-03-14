@@ -24,6 +24,8 @@ export interface GenericOAuthIntegrationConfig {
   clientSecret?: string;
   /** OAuth scopes */
   scopes: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** Tool names to enable from the server (must exist on the server) */
   tools: string[];
   /** OAuth redirect URI */
@@ -92,6 +94,7 @@ export function genericOAuthIntegration(
     clientId: config.clientId ?? getEnv(`${providerUpper}_CLIENT_ID`),
     clientSecret: config.clientSecret ?? getEnv(`${providerUpper}_CLIENT_SECRET`),
     scopes: config.scopes,
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config,
   };

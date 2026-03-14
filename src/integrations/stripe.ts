@@ -23,6 +23,8 @@ export interface StripeIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default: ['read_write']) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
 }
@@ -50,6 +52,7 @@ export function stripeIntegration(config: StripeIntegrationConfig = {}): MCPInte
     clientId: config.clientId ?? getEnv('STRIPE_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('STRIPE_CLIENT_SECRET'),
     scopes: config.scopes || ["read_write"],
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       ...config,

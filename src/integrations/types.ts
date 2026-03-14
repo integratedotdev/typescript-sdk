@@ -32,6 +32,8 @@ export interface OAuthConfig {
 
   /** Required OAuth scopes */
   scopes: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
 
   /** Redirect URI for OAuth flow */
   redirectUri?: string;

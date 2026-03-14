@@ -15,7 +15,9 @@ export interface NotionIntegrationConfig {
   clientSecret?: string;
   /** OAuth redirect URI (optional - auto-detected from environment) */
   redirectUri?: string;
-  /** 
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
+  /**
    * Notion OAuth owner parameter
    * - 'user': Integration will be added to the user's workspace (default)
    * - 'workspace': Integration will be added at workspace level
@@ -87,6 +89,7 @@ export function notionIntegration(config: NotionIntegrationConfig = {}): MCPInte
     clientId: config.clientId ?? getEnv('NOTION_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('NOTION_CLIENT_SECRET'),
     scopes: [], // Notion doesn't use traditional OAuth scopes
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       owner: config.owner || 'user',

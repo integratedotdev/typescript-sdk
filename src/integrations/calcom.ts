@@ -23,6 +23,8 @@ export interface CalcomIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default: ['READ_BOOKING', 'WRITE_BOOKING', 'READ_PROFILE', 'WRITE_PROFILE']) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
   /** Cal.com API base URL (default: https://api.cal.com/v1) */
@@ -108,6 +110,7 @@ export function calcomIntegration(config: CalcomIntegrationConfig = {}): MCPInte
     clientId: config.clientId ?? getEnv('CALCOM_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('CALCOM_CLIENT_SECRET'),
     scopes: config.scopes || ["READ_BOOKING", "WRITE_BOOKING", "READ_PROFILE", "WRITE_PROFILE"],
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       apiBaseUrl: config.apiBaseUrl || "https://api.cal.com/v1",
