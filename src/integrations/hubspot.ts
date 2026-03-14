@@ -32,18 +32,44 @@ export interface HubSpotIntegrationConfig {
  * These should match the tool names exposed by your MCP server
  */
 const HUBSPOT_TOOLS = [
+  // Contacts
   "hubspot_list_contacts",
   "hubspot_get_contact",
   "hubspot_create_contact",
   "hubspot_update_contact",
+  "hubspot_delete_contact",
+  // Companies
   "hubspot_list_companies",
   "hubspot_get_company",
   "hubspot_create_company",
+  "hubspot_update_company",
+  "hubspot_delete_company",
+  // Deals
   "hubspot_list_deals",
   "hubspot_get_deal",
   "hubspot_create_deal",
+  "hubspot_update_deal",
+  "hubspot_delete_deal",
+  // Tickets
   "hubspot_list_tickets",
   "hubspot_get_ticket",
+  "hubspot_create_ticket",
+  "hubspot_update_ticket",
+  "hubspot_delete_ticket",
+  // Search
+  "hubspot_search_crm",
+  // Notes
+  "hubspot_create_note",
+  // Tasks
+  "hubspot_create_task",
+  // Owners
+  "hubspot_list_owners",
+  "hubspot_get_owner",
+  // Pipelines
+  "hubspot_list_pipelines",
+  "hubspot_list_pipeline_stages",
+  // Associations
+  "hubspot_create_association",
 ] as const;
 
 
@@ -59,7 +85,9 @@ export function hubspotIntegration(config: HubSpotIntegrationConfig = {}): MCPIn
       "crm.objects.companies.write",
       "crm.objects.deals.read",
       "crm.objects.deals.write",
-      "tickets",
+      "crm.objects.tickets.read",
+      "crm.objects.tickets.write",
+      "crm.objects.owners.read",
     ],
     redirectUri: config.redirectUri,
     config: {

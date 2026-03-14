@@ -99,285 +99,306 @@ export interface HubSpotTicket {
 }
 
 /**
+ * HubSpot Owner
+ */
+export interface HubSpotOwner {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  userId: number;
+  createdAt: string;
+  updatedAt: string;
+  archived: boolean;
+}
+
+/**
+ * HubSpot Pipeline
+ */
+export interface HubSpotPipeline {
+  id: string;
+  label: string;
+  displayOrder: number;
+  stages: HubSpotPipelineStage[];
+  createdAt: string;
+  updatedAt: string;
+  archived: boolean;
+}
+
+/**
+ * HubSpot Pipeline Stage
+ */
+export interface HubSpotPipelineStage {
+  id: string;
+  label: string;
+  displayOrder: number;
+  metadata: Record<string, string>;
+  createdAt: string;
+  updatedAt: string;
+  archived: boolean;
+}
+
+/**
+ * HubSpot Note
+ */
+export interface HubSpotNote {
+  id: string;
+  properties: {
+    hs_note_body?: string;
+    hs_timestamp?: string;
+    hubspot_owner_id?: string;
+    [key: string]: any;
+  };
+  createdAt: string;
+  updatedAt: string;
+  archived: boolean;
+}
+
+/**
+ * HubSpot Task
+ */
+export interface HubSpotTask {
+  id: string;
+  properties: {
+    hs_task_subject?: string;
+    hs_task_body?: string;
+    hs_task_status?: string;
+    hs_task_priority?: string;
+    hs_task_type?: string;
+    hs_timestamp?: string;
+    hubspot_owner_id?: string;
+    [key: string]: any;
+  };
+  createdAt: string;
+  updatedAt: string;
+  archived: boolean;
+}
+
+/**
+ * HubSpot Association
+ */
+export interface HubSpotAssociation {
+  from: { id: string };
+  to: { id: string };
+  type: string;
+}
+
+/**
  * HubSpot Integration Client Interface
  * Provides type-safe methods for all HubSpot operations
  */
 export interface HubSpotIntegrationClient {
-  /**
-   * List contacts
-   * 
-   * @example
-   * ```typescript
-   * const contacts = await client.hubspot.listContacts({
-   *   limit: 50,
-   *   properties: ["email", "firstname", "lastname"]
-   * });
-   * ```
-   */
+  // ── Contacts ──
+
   listContacts(params?: {
-    /** Maximum number of results */
     limit?: number;
-    /** Pagination cursor */
     after?: string;
-    /** Properties to return */
-    properties?: string[];
-    /** Associations to include */
-    associations?: string[];
   }): Promise<MCPToolCallResponse>;
 
-  /**
-   * Get contact details
-   * 
-   * @example
-   * ```typescript
-   * const contact = await client.hubspot.getContact({
-   *   contact_id: "123456"
-   * });
-   * ```
-   */
   getContact(params: {
-    /** Contact ID */
     contact_id: string;
-    /** Properties to return */
-    properties?: string[];
-    /** Associations to include */
-    associations?: string[];
   }): Promise<MCPToolCallResponse>;
 
-  /**
-   * Create a new contact
-   * 
-   * @example
-   * ```typescript
-   * const contact = await client.hubspot.createContact({
-   *   properties: {
-   *     email: "user@example.com",
-   *     firstname: "John",
-   *     lastname: "Doe"
-   *   }
-   * });
-   * ```
-   */
   createContact(params: {
-    /** Contact properties */
-    properties: {
-      email?: string;
-      firstname?: string;
-      lastname?: string;
-      phone?: string;
-      company?: string;
-      website?: string;
-      lifecyclestage?: string;
-      [key: string]: any;
-    };
+    email?: string;
+    firstname?: string;
+    lastname?: string;
+    phone?: string;
+    company?: string;
+    website?: string;
+    lifecyclestage?: string;
   }): Promise<MCPToolCallResponse>;
 
-  /**
-   * Update a contact
-   * 
-   * @example
-   * ```typescript
-   * await client.hubspot.updateContact({
-   *   contact_id: "123456",
-   *   properties: {
-   *     phone: "+1234567890"
-   *   }
-   * });
-   * ```
-   */
   updateContact(params: {
-    /** Contact ID */
     contact_id: string;
-    /** Properties to update */
-    properties: {
-      email?: string;
-      firstname?: string;
-      lastname?: string;
-      phone?: string;
-      company?: string;
-      website?: string;
-      lifecyclestage?: string;
-      [key: string]: any;
-    };
+    email?: string;
+    firstname?: string;
+    lastname?: string;
+    phone?: string;
+    company?: string;
+    website?: string;
+    lifecyclestage?: string;
   }): Promise<MCPToolCallResponse>;
 
-  /**
-   * List companies
-   * 
-   * @example
-   * ```typescript
-   * const companies = await client.hubspot.listCompanies({
-   *   limit: 50,
-   *   properties: ["name", "domain"]
-   * });
-   * ```
-   */
+  deleteContact(params: {
+    contact_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Companies ──
+
   listCompanies(params?: {
-    /** Maximum number of results */
     limit?: number;
-    /** Pagination cursor */
     after?: string;
-    /** Properties to return */
-    properties?: string[];
-    /** Associations to include */
-    associations?: string[];
   }): Promise<MCPToolCallResponse>;
 
-  /**
-   * Get company details
-   * 
-   * @example
-   * ```typescript
-   * const company = await client.hubspot.getCompany({
-   *   company_id: "123456"
-   * });
-   * ```
-   */
   getCompany(params: {
-    /** Company ID */
     company_id: string;
-    /** Properties to return */
-    properties?: string[];
-    /** Associations to include */
-    associations?: string[];
   }): Promise<MCPToolCallResponse>;
 
-  /**
-   * Create a new company
-   * 
-   * @example
-   * ```typescript
-   * const company = await client.hubspot.createCompany({
-   *   properties: {
-   *     name: "Acme Corp",
-   *     domain: "acme.com"
-   *   }
-   * });
-   * ```
-   */
   createCompany(params: {
-    /** Company properties */
-    properties: {
-      name?: string;
-      domain?: string;
-      phone?: string;
-      city?: string;
-      state?: string;
-      country?: string;
-      industry?: string;
-      numberofemployees?: string;
-      annualrevenue?: string;
-      [key: string]: any;
-    };
+    name?: string;
+    domain?: string;
+    phone?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    industry?: string;
+    numberofemployees?: string;
+    annualrevenue?: string;
   }): Promise<MCPToolCallResponse>;
 
-  /**
-   * List deals
-   * 
-   * @example
-   * ```typescript
-   * const deals = await client.hubspot.listDeals({
-   *   limit: 50,
-   *   properties: ["dealname", "amount", "dealstage"]
-   * });
-   * ```
-   */
+  updateCompany(params: {
+    company_id: string;
+    name?: string;
+    domain?: string;
+    phone?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    industry?: string;
+    numberofemployees?: string;
+    annualrevenue?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  deleteCompany(params: {
+    company_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Deals ──
+
   listDeals(params?: {
-    /** Maximum number of results */
     limit?: number;
-    /** Pagination cursor */
     after?: string;
-    /** Properties to return */
-    properties?: string[];
-    /** Associations to include */
-    associations?: string[];
   }): Promise<MCPToolCallResponse>;
 
-  /**
-   * Get deal details
-   * 
-   * @example
-   * ```typescript
-   * const deal = await client.hubspot.getDeal({
-   *   deal_id: "123456"
-   * });
-   * ```
-   */
   getDeal(params: {
-    /** Deal ID */
     deal_id: string;
-    /** Properties to return */
-    properties?: string[];
-    /** Associations to include */
-    associations?: string[];
   }): Promise<MCPToolCallResponse>;
 
-  /**
-   * Create a new deal
-   * 
-   * @example
-   * ```typescript
-   * const deal = await client.hubspot.createDeal({
-   *   properties: {
-   *     dealname: "New Deal",
-   *     amount: "10000",
-   *     dealstage: "appointmentscheduled"
-   *   }
-   * });
-   * ```
-   */
   createDeal(params: {
-    /** Deal properties */
-    properties: {
-      dealname?: string;
-      dealstage?: string;
-      pipeline?: string;
-      amount?: string;
-      closedate?: string;
-      dealtype?: string;
-      description?: string;
-      [key: string]: any;
-    };
+    dealname?: string;
+    dealstage?: string;
+    pipeline?: string;
+    amount?: string;
+    closedate?: string;
+    dealtype?: string;
+    description?: string;
   }): Promise<MCPToolCallResponse>;
 
-  /**
-   * List support tickets
-   * 
-   * @example
-   * ```typescript
-   * const tickets = await client.hubspot.listTickets({
-   *   limit: 50,
-   *   properties: ["subject", "content", "hs_pipeline_stage"]
-   * });
-   * ```
-   */
+  updateDeal(params: {
+    deal_id: string;
+    dealname?: string;
+    dealstage?: string;
+    pipeline?: string;
+    amount?: string;
+    closedate?: string;
+    dealtype?: string;
+    description?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  deleteDeal(params: {
+    deal_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Tickets ──
+
   listTickets(params?: {
-    /** Maximum number of results */
     limit?: number;
-    /** Pagination cursor */
     after?: string;
-    /** Properties to return */
-    properties?: string[];
-    /** Associations to include */
-    associations?: string[];
   }): Promise<MCPToolCallResponse>;
 
-  /**
-   * Get ticket details
-   * 
-   * @example
-   * ```typescript
-   * const ticket = await client.hubspot.getTicket({
-   *   ticket_id: "123456"
-   * });
-   * ```
-   */
   getTicket(params: {
-    /** Ticket ID */
     ticket_id: string;
-    /** Properties to return */
-    properties?: string[];
-    /** Associations to include */
-    associations?: string[];
+  }): Promise<MCPToolCallResponse>;
+
+  createTicket(params: {
+    subject: string;
+    content?: string;
+    hs_pipeline?: string;
+    hs_pipeline_stage?: string;
+    hs_ticket_priority?: string;
+    hs_ticket_category?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  updateTicket(params: {
+    ticket_id: string;
+    subject?: string;
+    content?: string;
+    hs_pipeline?: string;
+    hs_pipeline_stage?: string;
+    hs_ticket_priority?: string;
+    hs_ticket_category?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  deleteTicket(params: {
+    ticket_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Search ──
+
+  searchCrm(params: {
+    object_type: string;
+    query?: string;
+    filter_property?: string;
+    filter_operator?: string;
+    filter_value?: string;
+    limit?: number;
+    after?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Notes ──
+
+  createNote(params: {
+    body: string;
+    timestamp?: string;
+    owner_id?: string;
+    associated_object_type?: string;
+    associated_object_id?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Tasks ──
+
+  createTask(params: {
+    subject: string;
+    due_date?: string;
+    body?: string;
+    status?: string;
+    priority?: string;
+    task_type?: string;
+    owner_id?: string;
+    associated_object_type?: string;
+    associated_object_id?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Owners ──
+
+  listOwners(params?: {
+    limit?: number;
+    after?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  getOwner(params: {
+    owner_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Pipelines ──
+
+  listPipelines(params: {
+    object_type: string;
+  }): Promise<MCPToolCallResponse>;
+
+  listPipelineStages(params: {
+    object_type: string;
+    pipeline_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Associations ──
+
+  createAssociation(params: {
+    from_object_type: string;
+    from_object_id: string;
+    to_object_type: string;
+    to_object_id: string;
+    association_type_id: string;
   }): Promise<MCPToolCallResponse>;
 }

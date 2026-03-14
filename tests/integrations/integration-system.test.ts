@@ -1593,7 +1593,9 @@ describe("Integration System", () => {
       expect(integration.oauth?.scopes).toContain("crm.objects.contacts.write");
       expect(integration.oauth?.scopes).toContain("crm.objects.companies.read");
       expect(integration.oauth?.scopes).toContain("crm.objects.deals.read");
-      expect(integration.oauth?.scopes).toContain("tickets");
+      expect(integration.oauth?.scopes).toContain("crm.objects.tickets.read");
+      expect(integration.oauth?.scopes).toContain("crm.objects.tickets.write");
+      expect(integration.oauth?.scopes).toContain("crm.objects.owners.read");
     });
 
     test("includes expected tools", () => {
