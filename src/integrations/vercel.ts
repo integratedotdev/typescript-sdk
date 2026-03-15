@@ -36,13 +36,25 @@ export interface VercelIntegrationConfig {
 const VERCEL_TOOLS = [
   "vercel_list_projects",
   "vercel_get_project",
+  "vercel_create_project",
+  "vercel_update_project",
+  "vercel_delete_project",
   "vercel_list_deployments",
   "vercel_get_deployment",
   "vercel_create_deployment",
   "vercel_cancel_deployment",
-  "vercel_list_domains",
-  "vercel_list_env_vars",
+  "vercel_delete_deployment",
+  "vercel_promote_deployment",
   "vercel_get_deployment_logs",
+  "vercel_list_domains",
+  "vercel_add_domain",
+  "vercel_remove_domain",
+  "vercel_get_domain_config",
+  "vercel_list_env_vars",
+  "vercel_create_env_var",
+  "vercel_delete_env_var",
+  "vercel_list_dns_records",
+  "vercel_create_dns_record",
 ] as const;
 
 
