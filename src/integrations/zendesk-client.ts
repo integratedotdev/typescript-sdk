@@ -177,6 +177,61 @@ export interface ZendeskComment {
 }
 
 /**
+ * Zendesk Group
+ */
+export interface ZendeskGroup {
+  id: number;
+  url: string;
+  name: string;
+  description?: string;
+  default: boolean;
+  deleted: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Zendesk View
+ */
+export interface ZendeskView {
+  id: number;
+  url: string;
+  title: string;
+  active: boolean;
+  description?: string;
+  position: number;
+  restriction?: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Zendesk Macro
+ */
+export interface ZendeskMacro {
+  id: number;
+  url: string;
+  title: string;
+  active: boolean;
+  description?: string;
+  actions: Array<{
+    field: string;
+    value: unknown;
+  }>;
+  restriction?: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Zendesk Tag
+ */
+export interface ZendeskTag {
+  name: string;
+  count: number;
+}
+
+/**
  * Zendesk Integration Client Interface
  * Provides type-safe methods for all Zendesk operations
  */
@@ -250,6 +305,10 @@ export interface ZendeskIntegrationClient {
     status?: "new" | "open" | "pending" | "hold" | "solved";
     /** Requester ID */
     requester_id?: number;
+    /** Requester email (alternative to requester_id) */
+    requester_email?: string;
+    /** Requester name (used with requester_email) */
+    requester_name?: string;
     /** Assignee ID */
     assignee_id?: number;
     /** Group ID */
@@ -404,6 +463,337 @@ export interface ZendeskIntegrationClient {
     page?: number;
     /** Results per page */
     per_page?: number;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Delete a ticket
+   *
+   * @example
+   * ```typescript
+   * await client.zendesk.deleteTicket({ ticket_id: 12345 });
+   * ```
+   */
+  deleteTicket(params: {
+    /** Ticket ID to delete */
+    ticket_id: number;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * List comments on a ticket
+   *
+   * @example
+   * ```typescript
+   * const comments = await client.zendesk.listTicketComments({
+   *   ticket_id: 12345
+   * });
+   * ```
+   */
+  listTicketComments(params: {
+    /** Ticket ID */
+    ticket_id: number;
+    /** Sort order */
+    sort_order?: "asc" | "desc";
+    /** Page number */
+    page?: number;
+    /** Results per page */
+    per_page?: number;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Create a new user
+   *
+   * @example
+   * ```typescript
+   * const user = await client.zendesk.createUser({
+   *   name: "Jane Doe",
+   *   email: "jane@example.com"
+   * });
+   * ```
+   */
+  createUser(params: {
+    /** User name */
+    name: string;
+    /** User email */
+    email: string;
+    /** User role */
+    role?: "end-user" | "agent" | "admin";
+    /** Phone number */
+    phone?: string;
+    /** Organization ID */
+    organization_id?: number;
+    /** Tags */
+    tags?: string[];
+    /** Custom user fields */
+    user_fields?: Record<string, unknown>;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Update an existing user
+   *
+   * @example
+   * ```typescript
+   * await client.zendesk.updateUser({
+   *   user_id: 123456,
+   *   name: "Jane Smith"
+   * });
+   * ```
+   */
+  updateUser(params: {
+    /** User ID to update */
+    user_id: number;
+    /** New name */
+    name?: string;
+    /** New email */
+    email?: string;
+    /** New role */
+    role?: "end-user" | "agent" | "admin";
+    /** New phone number */
+    phone?: string;
+    /** New organization ID */
+    organization_id?: number;
+    /** New tags */
+    tags?: string[];
+    /** Whether the user is suspended */
+    suspended?: boolean;
+    /** Custom user fields */
+    user_fields?: Record<string, unknown>;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Search for users
+   *
+   * @example
+   * ```typescript
+   * const results = await client.zendesk.searchUsers({
+   *   query: "jane@example.com"
+   * });
+   * ```
+   */
+  searchUsers(params: {
+    /** Search query */
+    query: string;
+    /** Page number */
+    page?: number;
+    /** Results per page */
+    per_page?: number;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Get a specific organization
+   *
+   * @example
+   * ```typescript
+   * const org = await client.zendesk.getOrganization({
+   *   organization_id: 789
+   * });
+   * ```
+   */
+  getOrganization(params: {
+    /** Organization ID */
+    organization_id: number;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Create a new organization
+   *
+   * @example
+   * ```typescript
+   * const org = await client.zendesk.createOrganization({
+   *   name: "Acme Corp"
+   * });
+   * ```
+   */
+  createOrganization(params: {
+    /** Organization name */
+    name: string;
+    /** Details about the organization */
+    details?: string;
+    /** Notes about the organization */
+    notes?: string;
+    /** Domain names associated with this organization */
+    domain_names?: string[];
+    /** Default group ID */
+    group_id?: number;
+    /** Tags */
+    tags?: string[];
+    /** Custom organization fields */
+    organization_fields?: Record<string, unknown>;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Update an existing organization
+   *
+   * @example
+   * ```typescript
+   * await client.zendesk.updateOrganization({
+   *   organization_id: 789,
+   *   name: "Acme Corporation"
+   * });
+   * ```
+   */
+  updateOrganization(params: {
+    /** Organization ID to update */
+    organization_id: number;
+    /** New name */
+    name?: string;
+    /** New details */
+    details?: string;
+    /** New notes */
+    notes?: string;
+    /** New domain names */
+    domain_names?: string[];
+    /** New default group ID */
+    group_id?: number;
+    /** New tags */
+    tags?: string[];
+    /** Custom organization fields */
+    organization_fields?: Record<string, unknown>;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * List groups
+   *
+   * @example
+   * ```typescript
+   * const groups = await client.zendesk.listGroups();
+   * ```
+   */
+  listGroups(params?: {
+    /** Page number */
+    page?: number;
+    /** Results per page */
+    per_page?: number;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Get a specific group
+   *
+   * @example
+   * ```typescript
+   * const group = await client.zendesk.getGroup({ group_id: 456 });
+   * ```
+   */
+  getGroup(params: {
+    /** Group ID */
+    group_id: number;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Search across all Zendesk resources (tickets, users, organizations)
+   *
+   * @example
+   * ```typescript
+   * const results = await client.zendesk.search({
+   *   query: "type:ticket status:open"
+   * });
+   * ```
+   */
+  search(params: {
+    /** Search query (Zendesk search syntax) */
+    query: string;
+    /** Sort by field */
+    sort_by?: string;
+    /** Sort order */
+    sort_order?: "asc" | "desc";
+    /** Page number */
+    page?: number;
+    /** Results per page */
+    per_page?: number;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * List views
+   *
+   * @example
+   * ```typescript
+   * const views = await client.zendesk.listViews();
+   * ```
+   */
+  listViews(params?: {
+    /** Page number */
+    page?: number;
+    /** Results per page */
+    per_page?: number;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Get tickets from a specific view
+   *
+   * @example
+   * ```typescript
+   * const tickets = await client.zendesk.getViewTickets({
+   *   view_id: 123
+   * });
+   * ```
+   */
+  getViewTickets(params: {
+    /** View ID */
+    view_id: number;
+    /** Page number */
+    page?: number;
+    /** Results per page */
+    per_page?: number;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * List macros
+   *
+   * @example
+   * ```typescript
+   * const macros = await client.zendesk.listMacros();
+   * ```
+   */
+  listMacros(params?: {
+    /** Page number */
+    page?: number;
+    /** Results per page */
+    per_page?: number;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * List tags
+   *
+   * @example
+   * ```typescript
+   * const tags = await client.zendesk.listTags();
+   * ```
+   */
+  listTags(): Promise<MCPToolCallResponse>;
+
+  /**
+   * Add tags to a ticket
+   *
+   * @example
+   * ```typescript
+   * await client.zendesk.addTags({
+   *   ticket_id: 12345,
+   *   tags: ["vip", "urgent"]
+   * });
+   * ```
+   */
+  addTags(params: {
+    /** Ticket ID */
+    ticket_id: number;
+    /** Tags to add */
+    tags: string[];
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Remove tags from a ticket
+   *
+   * @example
+   * ```typescript
+   * await client.zendesk.removeTags({
+   *   ticket_id: 12345,
+   *   tags: ["resolved"]
+   * });
+   * ```
+   */
+  removeTags(params: {
+    /** Ticket ID */
+    ticket_id: number;
+    /** Tags to remove */
+    tags: string[];
   }): Promise<MCPToolCallResponse>;
 }
 

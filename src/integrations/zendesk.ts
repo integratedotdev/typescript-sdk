@@ -36,15 +36,41 @@ export interface ZendeskIntegrationConfig {
  * These should match the tool names exposed by your MCP server
  */
 const ZENDESK_TOOLS = [
+  // Tickets
   "zendesk_list_tickets",
   "zendesk_get_ticket",
   "zendesk_create_ticket",
   "zendesk_update_ticket",
+  "zendesk_delete_ticket",
+  // Comments
   "zendesk_add_comment",
+  "zendesk_list_ticket_comments",
+  // Users
   "zendesk_list_users",
   "zendesk_get_user",
-  "zendesk_search_tickets",
+  "zendesk_create_user",
+  "zendesk_update_user",
+  "zendesk_search_users",
+  // Organizations
   "zendesk_list_organizations",
+  "zendesk_get_organization",
+  "zendesk_create_organization",
+  "zendesk_update_organization",
+  // Groups
+  "zendesk_list_groups",
+  "zendesk_get_group",
+  // Search
+  "zendesk_search_tickets",
+  "zendesk_search",
+  // Views
+  "zendesk_list_views",
+  "zendesk_get_view_tickets",
+  // Macros
+  "zendesk_list_macros",
+  // Tags
+  "zendesk_list_tags",
+  "zendesk_add_tags",
+  "zendesk_remove_tags",
 ] as const;
 
 

@@ -533,6 +533,13 @@ describe("Integration System", () => {
       expect(integration.tools).toContain("zendesk_list_tickets");
       expect(integration.tools).toContain("zendesk_create_ticket");
       expect(integration.tools).toContain("zendesk_search_tickets");
+      expect(integration.tools).toContain("zendesk_delete_ticket");
+      expect(integration.tools).toContain("zendesk_list_ticket_comments");
+      expect(integration.tools).toContain("zendesk_list_groups");
+      expect(integration.tools).toContain("zendesk_search");
+      expect(integration.tools).toContain("zendesk_list_views");
+      expect(integration.tools).toContain("zendesk_add_tags");
+      expect(integration.tools).toContain("zendesk_remove_tags");
     });
 
     test("supports subdomain configuration", () => {
