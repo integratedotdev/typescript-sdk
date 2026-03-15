@@ -57,8 +57,8 @@ export function zendeskIntegration(config: ZendeskIntegrationConfig = {}): MCPIn
     optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
-      subdomain: config.subdomain ?? getEnv('ZENDESK_SUBDOMAIN'),
       ...config,
+      subdomain: config.subdomain ?? getEnv('ZENDESK_SUBDOMAIN'),
     },
   };
 
