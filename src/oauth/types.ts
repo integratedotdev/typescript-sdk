@@ -87,6 +87,8 @@ export interface OAuthCallbackResponse {
   expiresAt?: string;
   /** Granted scopes */
   scopes?: string[];
+  /** Connected account email (populated for Google providers via id_token) */
+  email?: string;
 }
 
 /**
