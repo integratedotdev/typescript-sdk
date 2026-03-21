@@ -278,6 +278,49 @@ describe("OAuthHandler", () => {
         "Provider slack not configured"
       );
     });
+
+    it("passes callback email through to setProviderToken", async () => {
+      const setProviderToken = mock(async () => {});
+      const handlerWithStorage = new OAuthHandler({
+        ...config,
+        setProviderToken,
+      });
+
+      const mockFetch = mock(async () => {
+        return {
+          ok: true,
+          json: async () => ({
+            accessToken: "google-token",
+            tokenType: "Bearer",
+            expiresIn: 3600,
+            scopes: ["https://www.googleapis.com/auth/gmail.readonly"],
+            email: "person@gmail.com",
+          }),
+        } as Response;
+      });
+
+      global.fetch = mockFetch as any;
+
+      const request: CallbackRequest = {
+        provider: "gmail",
+        code: "auth-code-123",
+        codeVerifier: "verifier-123",
+        state: "state-123",
+      };
+
+      await handlerWithStorage.handleCallback(request);
+
+      expect(setProviderToken).toHaveBeenCalledWith(
+        "gmail",
+        expect.objectContaining({
+          accessToken: "google-token",
+          email: "person@gmail.com",
+          scopes: ["https://www.googleapis.com/auth/gmail.readonly"],
+        }),
+        "person@gmail.com",
+        undefined
+      );
+    });
   });
 
   describe("handleStatus", () => {
@@ -1780,4 +1823,3 @@ describe("SolidStart Handler - toSolidStartHandler", () => {
     });
   });
 });
-

@@ -5,6 +5,7 @@
 
 import type { MCPContext } from '../config/types.js';
 import type { ProviderTokenData } from '../oauth/types.js';
+import { fetchUserEmail } from '../oauth/email-fetcher.js';
 import { createLogger, type LogContext } from '../utils/logger.js';
 
 /**
@@ -162,6 +163,8 @@ export interface CallbackResponse {
   expiresIn: number;
   expiresAt?: string;
   scopes?: string[];
+  /** Connected account email (populated for Google providers via id_token) */
+  email?: string;
   /** Optional Set-Cookie header value to clear context cookie */
   clearCookie?: string;
 }
@@ -535,9 +538,13 @@ export class OAuthHandler {
             : result.scopes,
         };
 
-        // Email is not available at server-side callback time (fetched client-side)
-        // Pass undefined for email - customer's callback can fetch it if needed
-        await this.config.setProviderToken(callbackRequest.provider, tokenData, undefined, context);
+        // Prefer email returned directly from the callback response (e.g. Google id_token),
+        // then fall back to fetching it from the provider API when possible.
+        const email = result.email || await fetchUserEmail(callbackRequest.provider, tokenData);
+        if (email) {
+          tokenData.email = email;
+        }
+        await this.config.setProviderToken(callbackRequest.provider, tokenData, email, context);
       } catch (error) {
         // Token storage failed - log but don't fail the OAuth flow
       }
@@ -740,4 +747,3 @@ export class OAuthHandler {
     return jsonRpcResponse.result as ToolCallResponse;
   }
 }
-
