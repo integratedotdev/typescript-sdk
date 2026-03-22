@@ -147,14 +147,21 @@ console.log("Available slots:", result);
 
 ## OAuth Scopes
 
-The default scopes are `['read:bookings', 'write:bookings', 'read:event-types', 'read:schedules']`. You may need different scopes:
+The following scopes are supported. Enable them on your Cal.com OAuth app based on the tools you need:
 
-- **`read:bookings`** - View bookings
-- **`write:bookings`** - Create and manage bookings
-- **`read:event-types`** - View event types
-- **`write:event-types`** - Manage event types
-- **`read:schedules`** - View schedules
-- **`write:schedules`** - Manage schedules
+- **`BOOKING_READ`** - View bookings
+- **`BOOKING_WRITE`** - Create, edit, and delete bookings
+- **`EVENT_TYPE_READ`** - View event types
+- **`EVENT_TYPE_WRITE`** - Create, edit, and delete event types
+- **`SCHEDULE_READ`** - View schedules
+- **`SCHEDULE_WRITE`** - Create, edit, and delete schedules
+- **`PROFILE_READ`** - View personal info
+- **`PROFILE_WRITE`** - Edit personal info
+- **`TEAM_PROFILE_READ`** - View teams
+- **`TEAM_PROFILE_WRITE`** - Create, edit, and delete teams
+- **`TEAM_EVENT_TYPE_READ`** - View team event types
+- **`TEAM_MEMBERSHIP_READ`** - View team memberships
+- **`TEAM_MEMBERSHIP_WRITE`** - Create, edit, and delete team memberships
 
 ## Error Handling
 

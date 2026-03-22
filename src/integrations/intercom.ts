@@ -23,6 +23,8 @@ export interface IntercomIntegrationConfig {
   clientSecret?: string;
   /** OAuth scopes (Intercom uses app-level permissions, typically empty) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
 }
@@ -49,7 +51,8 @@ export function intercomIntegration(config: IntercomIntegrationConfig = {}): MCP
     provider: "intercom",
     clientId: config.clientId ?? getEnv('INTERCOM_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('INTERCOM_CLIENT_SECRET'),
-    scopes: config.scopes || [],
+    scopes: config.scopes,
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       ...config,

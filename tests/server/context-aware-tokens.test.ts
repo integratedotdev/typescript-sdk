@@ -68,6 +68,7 @@ describe('Context-Aware Token Storage', () => {
       });
       (client as any).transport.setHeader = vi.fn();
       (client as any).transport.removeHeader = vi.fn();
+      (client as any).transport.connected = true;
 
       const context: MCPContext = {
         userId: 'user123',
@@ -138,6 +139,7 @@ describe('Context-Aware Token Storage', () => {
       });
       (client as any).transport.setHeader = vi.fn();
       (client as any).transport.removeHeader = vi.fn();
+      (client as any).transport.connected = true;
 
       const context: MCPContext = {
         userId: 'user123',
@@ -289,6 +291,7 @@ describe('Context-Aware Token Storage', () => {
       });
       (client as any).transport.setHeader = vi.fn();
       (client as any).transport.removeHeader = vi.fn();
+      (client as any).transport.connected = true;
 
       // Call for user1
       await (client as any).github.listRepos({}, { context: { userId: 'user1' } });
@@ -337,6 +340,7 @@ describe('Context-Aware Token Storage', () => {
       });
       (client as any).transport.setHeader = vi.fn();
       (client as any).transport.removeHeader = vi.fn();
+      (client as any).transport.connected = true;
 
       const context: MCPContext = {
         userId: 'user123',
@@ -430,6 +434,7 @@ describe('Context-Aware Token Storage', () => {
       });
       (client as any).transport.setHeader = vi.fn();
       (client as any).transport.removeHeader = vi.fn();
+      (client as any).transport.connected = true;
 
       const context: MCPContext = {
         userId: 'user123',
@@ -472,6 +477,7 @@ describe('Context-Aware Token Storage', () => {
       });
       (client as any).transport.setHeader = vi.fn();
       (client as any).transport.removeHeader = vi.fn();
+      (client as any).transport.connected = true;
 
       const context: MCPContext = {};
 

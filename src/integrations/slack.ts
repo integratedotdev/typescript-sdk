@@ -23,6 +23,8 @@ export interface SlackIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default: ['chat:write', 'channels:read', 'users:read']) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
 }
@@ -32,15 +34,37 @@ export interface SlackIntegrationConfig {
  * These should match the tool names exposed by your MCP server
  */
 const SLACK_TOOLS = [
+  // Messaging
   "slack_send_message",
+  "slack_list_messages",
+  "slack_get_thread_replies",
+  "slack_update_message",
+  "slack_delete_message",
+  "slack_schedule_message",
+  "slack_get_permalink",
+  "slack_search_messages",
+  // Channels
   "slack_list_channels",
   "slack_get_channel",
+  "slack_create_channel",
+  "slack_invite_to_channel",
+  "slack_list_channel_members",
+  "slack_set_channel_topic",
+  "slack_archive_channel",
+  // Users
   "slack_list_users",
   "slack_get_user",
-  "slack_list_messages",
+  "slack_lookup_user_by_email",
+  // Reactions
   "slack_add_reaction",
-  "slack_search_messages",
+  "slack_remove_reaction",
+  "slack_get_reactions",
+  // Files
   "slack_upload_file",
+  // Pins
+  "slack_pin_message",
+  "slack_unpin_message",
+  "slack_list_pins",
 ] as const;
 
 
@@ -49,7 +73,8 @@ export function slackIntegration(config: SlackIntegrationConfig = {}): MCPIntegr
     provider: "slack",
     clientId: config.clientId ?? getEnv('SLACK_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('SLACK_CLIENT_SECRET'),
-    scopes: config.scopes || ["chat:write", "channels:read", "users:read", "search:read", "files:write"],
+    scopes: config.scopes,
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       ...config,

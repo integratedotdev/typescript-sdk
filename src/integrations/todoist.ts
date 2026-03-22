@@ -23,6 +23,8 @@ export interface TodoistIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default: ['data:read_write']) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
 }
@@ -32,15 +34,45 @@ export interface TodoistIntegrationConfig {
  * These should match the tool names exposed by your MCP server
  */
 const TODOIST_TOOLS = [
+  // Projects
   "todoist_list_projects",
   "todoist_get_project",
   "todoist_create_project",
+  "todoist_update_project",
+  "todoist_delete_project",
+  "todoist_archive_project",
+  // Tasks
   "todoist_list_tasks",
   "todoist_get_task",
   "todoist_create_task",
+  "todoist_update_task",
   "todoist_complete_task",
+  "todoist_delete_task",
+  "todoist_reopen_task",
+  "todoist_move_task",
+  "todoist_quick_add_task",
+  "todoist_get_completed_tasks",
+  "todoist_filter_tasks",
+  // Sections
+  "todoist_list_sections",
+  "todoist_create_section",
+  "todoist_get_section",
+  "todoist_update_section",
+  "todoist_delete_section",
+  // Comments
+  "todoist_list_comments",
+  "todoist_create_comment",
+  "todoist_get_comment",
+  "todoist_update_comment",
+  "todoist_delete_comment",
+  // Labels
   "todoist_list_labels",
   "todoist_create_label",
+  "todoist_update_label",
+  "todoist_delete_label",
+  // Reminders
+  "todoist_list_reminders",
+  "todoist_create_reminder",
 ] as const;
 
 
@@ -49,7 +81,8 @@ export function todoistIntegration(config: TodoistIntegrationConfig = {}): MCPIn
     provider: "todoist",
     clientId: config.clientId ?? getEnv('TODOIST_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('TODOIST_CLIENT_SECRET'),
-    scopes: config.scopes || ["data:read_write"],
+    scopes: config.scopes,
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       ...config,

@@ -16,16 +16,33 @@ export type {
   ListTriggersCallbackResponse,
   TriggerExecutionResult,
   TriggerCallbacks,
+  StepResult,
+  CompleteRequest,
+  CompleteResponse,
+  WebhookConfig,
+  WebhookPayload,
+  CompleteCallbackContext,
 } from './types.js';
+
+// Export constants
+export { MAX_TRIGGER_STEPS, WEBHOOK_DELIVERY_TIMEOUT_MS } from './types.js';
 
 // Export utility functions
 export {
   generateTriggerId,
   extractProviderFromToolName,
   validateStatusTransition,
+  validateStepLimit,
   calculateHasMore,
 } from './utils.js';
 export type { StatusTransitionResult } from './utils.js';
+
+// Export webhook delivery
+export { deliverWebhooks } from './webhooks.js';
+
+// Export executor
+export { executeTrigger } from './executor.js';
+export type { ExecuteTriggerConfig, ExecuteTriggerResult } from './executor.js';
 
 // Export client
 export { TriggerClient } from './client.js';

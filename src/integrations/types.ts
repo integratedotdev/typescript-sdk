@@ -30,8 +30,10 @@ export interface OAuthConfig {
    */
   clientSecret?: string | undefined;
 
-  /** Required OAuth scopes */
-  scopes: string[];
+  /** OAuth scopes (optional - server provides defaults if not specified) */
+  scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
 
   /** Redirect URI for OAuth flow */
   redirectUri?: string;

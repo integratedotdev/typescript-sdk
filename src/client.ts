@@ -253,6 +253,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   private apiRouteBase: string;
   private apiBaseUrl?: string;
   private databaseDetected: boolean = false;
+  private _connectingPromise: Promise<void> | null = null;
 
   /**
    * Explicitly configured integrations passed to createMCPClient
@@ -581,28 +582,49 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
             // Server clients always use local config (they ARE the server)
             // Custom clients (useServerConfig: false) also use local config
             if (hasApiKey || !this.__useServerConfig) {
-              // If includeToolMetadata is true, fetch tool metadata for all local integrations
-              if (options?.includeToolMetadata) {
+              // If includeToolMetadata is true and this is a server client with an API key,
+              // read tool schemas directly from availableTools (populated by discoverTools during connect)
+              if (options?.includeToolMetadata && hasApiKey) {
+                await this.ensureConnected();
+
+                const integrationsWithMetadata = (localIntegrations as readonly MCPIntegration[]).map((integration: MCPIntegration) => {
+                  const toolMetadata = integration.tools
+                    .map(toolName => this.availableTools.get(toolName))
+                    .filter((tool): tool is MCPTool => !!tool);
+
+                  return {
+                    id: integration.id,
+                    name: (integration as any).name || integration.id,
+                    logoUrl: (integration as any).logoUrl,
+                    tools: integration.tools,
+                    hasOAuth: !!integration.oauth,
+                    scopes: integration.oauth?.scopes,
+                    provider: integration.oauth?.provider,
+                    toolMetadata,
+                  };
+                });
+
+                return { integrations: integrationsWithMetadata };
+              }
+
+              // For browser clients (!hasApiKey) with includeToolMetadata, fall through to
+              // the server fetch path which uses list_tools_by_integration via API handler
+              if (options?.includeToolMetadata && !hasApiKey) {
                 const { parallelWithLimit } = await import('./utils/concurrency.js');
 
-                // Fetch metadata for each integration in parallel with concurrency limit
                 const integrationsWithMetadata = await parallelWithLimit(
                   localIntegrations,
                   async (integration: MCPIntegration) => {
                     try {
-                      // Call listToolsByIntegration to get full tool metadata
                       const response = await this.callServerToolInternal('list_tools_by_integration', {
                         integration: integration.id,
                       });
 
-                      // Extract tool metadata from response
-                      // Response format: { content: [{ type: "text", text: "..." }] }
                       let toolMetadata: any[] = [];
                       if (response.content && Array.isArray(response.content)) {
                         for (const item of response.content) {
                           if (item.type === 'text' && item.text) {
                             try {
-                              // Try to parse as JSON if it's a JSON string
                               const parsed = JSON.parse(item.text);
                               if (Array.isArray(parsed)) {
                                 toolMetadata = parsed;
@@ -627,7 +649,6 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
                         toolMetadata,
                       };
                     } catch (error) {
-                      // If metadata fetch fails, return without metadata
                       logger.error(`Failed to fetch tool metadata for ${integration.id}:`, error);
                       return {
                         id: integration.id,
@@ -641,12 +662,10 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
                       };
                     }
                   },
-                  3 // Concurrency limit: 3 parallel requests at a time
+                  3
                 );
 
-                return {
-                  integrations: integrationsWithMetadata,
-                };
+                return { integrations: integrationsWithMetadata };
               }
 
               // Return local data only (no server call)
@@ -765,6 +784,23 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   }
 
   /**
+   * Ensure the client is connected before making transport requests.
+   * Safe to call concurrently — deduplicates in-flight connect() calls.
+   * Only needed for server-side clients that use transport.sendRequest() directly.
+   */
+  private async ensureConnected(): Promise<void> {
+    if (this.isConnected()) {
+      return;
+    }
+    if (!this._connectingPromise) {
+      this._connectingPromise = this.connect().finally(() => {
+        this._connectingPromise = null;
+      });
+    }
+    return this._connectingPromise;
+  }
+
+  /**
    * Initialize all integrations
    */
   private async initializeIntegrations(): Promise<void> {
@@ -828,22 +864,29 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
    * Discover available tools from the server
    */
   private async discoverTools(): Promise<void> {
-    const response = await this.transport.sendRequest<MCPToolsListResponse>(
-      MCPMethod.TOOLS_LIST
-    );
+    let cursor: string | undefined;
+    let totalDiscovered = 0;
 
-    // Store all available tools
-    for (const tool of response.tools) {
-      this.availableTools.set(tool.name, tool);
-    }
+    do {
+      const response = await this.transport.sendRequest<MCPToolsListResponse>(
+        MCPMethod.TOOLS_LIST,
+        cursor ? { cursor } : undefined
+      );
 
-    // Filter to only enabled tools
-    const enabledTools = response.tools.filter((tool) =>
-      this.enabledToolNames.has(tool.name)
-    );
+      for (const tool of response.tools) {
+        this.availableTools.set(tool.name, tool);
+      }
+
+      totalDiscovered += response.tools.length;
+      cursor = response.nextCursor;
+    } while (cursor);
+
+    const enabledCount = Array.from(this.availableTools.keys()).filter(name =>
+      this.enabledToolNames.has(name)
+    ).length;
 
     logger.debug(
-      `Discovered ${response.tools.length} tools, ${enabledTools.length} enabled by integrations`
+      `Discovered ${totalDiscovered} tools, ${enabledCount} enabled by integrations`
     );
   }
 
@@ -905,6 +948,9 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
 
     // Server-side clients with API key should call MCP server directly through transport
     if (hasApiKey) {
+      // Ensure transport is connected before any direct sendRequest() call
+      await this.ensureConnected();
+
       // Add provider token to transport if available
       if (provider) {
         const tokenData = await this.oauthManager.getProviderToken(provider, undefined, options?.context);

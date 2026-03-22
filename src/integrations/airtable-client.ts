@@ -51,6 +51,35 @@ export interface AirtableRecord {
 }
 
 /**
+ * Airtable Comment
+ */
+export interface AirtableComment {
+  id: string;
+  author: {
+    id: string;
+    email: string;
+    name: string;
+  };
+  text: string;
+  createdTime: string;
+}
+
+/**
+ * Airtable Webhook
+ */
+export interface AirtableWebhook {
+  id: string;
+  type: string;
+  isActive: boolean;
+  cursorForNextPayload: number;
+  areNotificationsEnabled: boolean;
+  createdTime: string;
+  specification: Record<string, unknown>;
+  notificationUrl?: string;
+  expirationTime?: string;
+}
+
+/**
  * Airtable Integration Client Interface
  * Provides type-safe methods for all Airtable operations
  */
@@ -269,6 +298,210 @@ export interface AirtableIntegrationClient {
     }>;
     /** View ID or name */
     view?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Delete a record
+   */
+  deleteRecord(params: {
+    /** Base ID */
+    base_id: string;
+    /** Table ID or name */
+    table_id: string;
+    /** Record ID */
+    record_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // --- Schema Management ---
+
+  /**
+   * Create a new base
+   */
+  createBase(params: {
+    /** Workspace ID */
+    workspace_id: string;
+    /** Base name */
+    name: string;
+    /** Tables configuration as JSON string */
+    tables_json: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Create a new table in a base
+   */
+  createTable(params: {
+    /** Base ID */
+    base_id: string;
+    /** Table name */
+    name: string;
+    /** Fields configuration as JSON string */
+    fields_json: string;
+    /** Table description */
+    description?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Update a table's name or description
+   */
+  updateTable(params: {
+    /** Base ID */
+    base_id: string;
+    /** Table ID */
+    table_id: string;
+    /** New table name */
+    name?: string;
+    /** New table description */
+    description?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Create a new field in a table
+   */
+  createField(params: {
+    /** Base ID */
+    base_id: string;
+    /** Table ID */
+    table_id: string;
+    /** Field name */
+    name: string;
+    /** Field type */
+    type: string;
+    /** Field description */
+    description?: string;
+    /** Field options as JSON string */
+    options_json?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Update a field's name or description
+   */
+  updateField(params: {
+    /** Base ID */
+    base_id: string;
+    /** Table ID */
+    table_id: string;
+    /** Field ID */
+    field_id: string;
+    /** New field name */
+    name?: string;
+    /** New field description */
+    description?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // --- Comments ---
+
+  /**
+   * List comments on a record
+   */
+  listComments(params: {
+    /** Base ID */
+    base_id: string;
+    /** Table ID */
+    table_id: string;
+    /** Record ID */
+    record_id: string;
+    /** Pagination offset */
+    offset?: string;
+    /** Page size */
+    page_size?: number;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Create a comment on a record
+   */
+  createComment(params: {
+    /** Base ID */
+    base_id: string;
+    /** Table ID */
+    table_id: string;
+    /** Record ID */
+    record_id: string;
+    /** Comment text */
+    text: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Update a comment
+   */
+  updateComment(params: {
+    /** Base ID */
+    base_id: string;
+    /** Table ID */
+    table_id: string;
+    /** Record ID */
+    record_id: string;
+    /** Comment ID */
+    comment_id: string;
+    /** New comment text */
+    text: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Delete a comment
+   */
+  deleteComment(params: {
+    /** Base ID */
+    base_id: string;
+    /** Table ID */
+    table_id: string;
+    /** Record ID */
+    record_id: string;
+    /** Comment ID */
+    comment_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // --- Webhooks ---
+
+  /**
+   * List webhooks for a base
+   */
+  listWebhooks(params: {
+    /** Base ID */
+    base_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Create a webhook for a base
+   */
+  createWebhook(params: {
+    /** Base ID */
+    base_id: string;
+    /** Webhook specification as JSON string */
+    specification_json: string;
+    /** Notification URL */
+    notification_url?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Delete a webhook
+   */
+  deleteWebhook(params: {
+    /** Base ID */
+    base_id: string;
+    /** Webhook ID */
+    webhook_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * List webhook payloads
+   */
+  listWebhookPayloads(params: {
+    /** Base ID */
+    base_id: string;
+    /** Webhook ID */
+    webhook_id: string;
+    /** Cursor for pagination */
+    cursor?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Refresh a webhook to extend its expiration
+   */
+  refreshWebhook(params: {
+    /** Base ID */
+    base_id: string;
+    /** Webhook ID */
+    webhook_id: string;
   }): Promise<MCPToolCallResponse>;
 }
 

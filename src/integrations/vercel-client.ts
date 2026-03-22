@@ -96,6 +96,34 @@ export interface VercelEnvVar {
 }
 
 /**
+ * Vercel Domain Configuration
+ */
+export interface VercelDomainConfig {
+  configuredBy?: "CNAME" | "A" | "http";
+  acceptedChallenges?: Array<"dns-01" | "http-01">;
+  misconfigured: boolean;
+}
+
+/**
+ * Vercel DNS Record
+ */
+export interface VercelDnsRecord {
+  id: string;
+  slug: string;
+  name: string;
+  type: "A" | "AAAA" | "ALIAS" | "CAA" | "CNAME" | "MX" | "SRV" | "TXT" | "NS";
+  value: string;
+  mxPriority?: number;
+  priority?: number;
+  creator: string;
+  created: number;
+  updated: number;
+  createdAt: number;
+  updatedAt: number;
+  ttl?: number;
+}
+
+/**
  * Vercel Integration Client Interface
  * Provides type-safe methods for all Vercel operations
  */
@@ -287,6 +315,157 @@ export interface VercelIntegrationClient {
     until?: number;
     /** Maximum number of log lines */
     limit?: number;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Create a new project
+   */
+  createProject(params: {
+    /** Project name */
+    name: string;
+    /** Framework preset */
+    framework?: string;
+    /** Git repository to connect */
+    gitRepository?: {
+      type: "github" | "gitlab" | "bitbucket";
+      repo: string;
+    };
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Update an existing project
+   */
+  updateProject(params: {
+    /** Project ID or name */
+    project: string;
+    /** New project name */
+    name?: string;
+    /** Framework preset */
+    framework?: string;
+    /** Build command override */
+    buildCommand?: string;
+    /** Output directory override */
+    outputDirectory?: string;
+    /** Install command override */
+    installCommand?: string;
+    /** Dev command override */
+    devCommand?: string;
+    /** Root directory */
+    rootDirectory?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Delete a project
+   */
+  deleteProject(params: {
+    /** Project ID or name */
+    project: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Delete a deployment
+   */
+  deleteDeployment(params: {
+    /** Deployment ID */
+    deployment: string;
+    /** Deployment URL (alternative identifier) */
+    url?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Promote a deployment to production
+   */
+  promoteDeployment(params: {
+    /** Project ID or name */
+    project: string;
+    /** Deployment ID to promote */
+    deployment: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Create an environment variable
+   */
+  createEnvVar(params: {
+    /** Project ID or name */
+    project: string;
+    /** Variable key */
+    key: string;
+    /** Variable value */
+    value: string;
+    /** Target environments */
+    target: Array<"production" | "preview" | "development">;
+    /** Variable type */
+    type?: "system" | "secret" | "encrypted" | "plain";
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Delete an environment variable
+   */
+  deleteEnvVar(params: {
+    /** Project ID or name */
+    project: string;
+    /** Environment variable ID */
+    id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Add a domain to a project
+   */
+  addDomain(params: {
+    /** Project ID or name */
+    project: string;
+    /** Domain name to add */
+    domain: string;
+    /** Redirect target domain */
+    redirect?: string;
+    /** Redirect status code */
+    redirectStatusCode?: 301 | 302 | 307 | 308;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Remove a domain from a project
+   */
+  removeDomain(params: {
+    /** Project ID or name */
+    project: string;
+    /** Domain name to remove */
+    domain: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Get domain configuration
+   */
+  getDomainConfig(params: {
+    /** Domain name */
+    domain: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * List DNS records for a domain
+   */
+  listDnsRecords(params: {
+    /** Domain name */
+    domain: string;
+    /** Maximum number of records to return */
+    limit?: number;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Create a DNS record
+   */
+  createDnsRecord(params: {
+    /** Domain name */
+    domain: string;
+    /** Record name (subdomain or @ for root) */
+    name: string;
+    /** DNS record type */
+    type: "A" | "AAAA" | "ALIAS" | "CAA" | "CNAME" | "MX" | "SRV" | "TXT" | "NS";
+    /** Record value */
+    value: string;
+    /** TTL in seconds */
+    ttl?: number;
+    /** MX priority (required for MX records) */
+    mxPriority?: number;
   }): Promise<MCPToolCallResponse>;
 }
 

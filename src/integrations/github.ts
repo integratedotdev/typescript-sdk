@@ -23,6 +23,8 @@ export interface GitHubIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default: ['repo', 'user']) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
   /** GitHub API base URL (default: https://api.github.com) */
@@ -52,6 +54,35 @@ const GITHUB_TOOLS = [
   "github_get_user",
   "github_list_commits",
   "github_get_commit",
+  "github_list_issue_comments",
+  "github_add_issue_comment",
+  "github_update_issue_comment",
+  "github_delete_issue_comment",
+  "github_list_pr_files",
+  "github_list_pr_commits",
+  "github_list_pr_reviews",
+  "github_create_pr_review",
+  "github_list_pr_review_comments",
+  "github_get_file_contents",
+  "github_create_or_update_file",
+  "github_delete_file",
+  "github_list_releases",
+  "github_get_release",
+  "github_get_latest_release",
+  "github_create_release",
+  "github_list_labels",
+  "github_create_label",
+  "github_add_issue_labels",
+  "github_list_collaborators",
+  "github_fork_repo",
+  "github_search_repos",
+  "github_search_issues",
+  "github_search_code",
+  "github_list_workflows",
+  "github_list_workflow_runs",
+  "github_trigger_workflow",
+  "github_list_milestones",
+  "github_create_milestone",
 ] as const;
 
 
@@ -60,7 +91,8 @@ export function githubIntegration(config: GitHubIntegrationConfig = {}): MCPInte
     provider: "github",
     clientId: config.clientId ?? getEnv('GITHUB_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('GITHUB_CLIENT_SECRET'),
-    scopes: config.scopes || ["repo", "user"],
+    scopes: config.scopes,
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       apiBaseUrl: config.apiBaseUrl || "https://api.github.com",

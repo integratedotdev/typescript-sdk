@@ -138,12 +138,15 @@ console.log("Matching records:", result);
 
 ## OAuth Scopes
 
-The default scopes are `['data.records:read', 'data.records:write', 'schema.bases:read']`. You may need different scopes depending on your use case:
+The following scopes are supported. Enable them on your Airtable OAuth app based on the tools you need:
 
 - **`data.records:read`** - Read records from tables
 - **`data.records:write`** - Create, update, and delete records
+- **`data.recordComments:read`** - Read record comments
+- **`data.recordComments:write`** - Create and manage record comments
 - **`schema.bases:read`** - Read base and table schemas
 - **`schema.bases:write`** - Modify base and table schemas
+- **`webhook:manage`** - Create and manage webhooks
 
 ## Error Handling
 

@@ -275,8 +275,9 @@ export class OAuthManager {
         scopes: response.scopes,
       };
 
-      // 4. Fetch user email from provider
-      const email = await fetchUserEmail(pendingAuth.provider, tokenData);
+      // 4. Get user email — prefer email from callback response (e.g. Google id_token),
+      //    fall back to fetching from provider API
+      const email = response.email || await fetchUserEmail(pendingAuth.provider, tokenData);
       if (email) {
         tokenData.email = email;
       }

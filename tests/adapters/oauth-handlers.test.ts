@@ -81,9 +81,11 @@ describe("OAuthHandler", () => {
       );
     });
 
-    it("should include redirectUri in request when provided", async () => {
+    it("should always use providerConfig.redirectUri, ignoring client-provided redirectUri", async () => {
       const mockFetch = mock(async (url: string) => {
-        expect(url).toContain("redirect_uri=https%3A%2F%2Fcustom.com%2Fcallback");
+        // Client-provided redirectUri should be ignored; providerConfig.redirectUri is used
+        expect(url).toContain("redirect_uri=https%3A%2F%2Fapp.com%2Fcallback");
+        expect(url).not.toContain("custom.com");
 
         return {
           ok: true,
@@ -274,6 +276,49 @@ describe("OAuthHandler", () => {
 
       await expect(handler.handleCallback(request)).rejects.toThrow(
         "Provider slack not configured"
+      );
+    });
+
+    it("passes callback email through to setProviderToken", async () => {
+      const setProviderToken = mock(async () => {});
+      const handlerWithStorage = new OAuthHandler({
+        ...config,
+        setProviderToken,
+      });
+
+      const mockFetch = mock(async () => {
+        return {
+          ok: true,
+          json: async () => ({
+            accessToken: "google-token",
+            tokenType: "Bearer",
+            expiresIn: 3600,
+            scopes: ["https://www.googleapis.com/auth/gmail.readonly"],
+            email: "person@gmail.com",
+          }),
+        } as Response;
+      });
+
+      global.fetch = mockFetch as any;
+
+      const request: CallbackRequest = {
+        provider: "gmail",
+        code: "auth-code-123",
+        codeVerifier: "verifier-123",
+        state: "state-123",
+      };
+
+      await handlerWithStorage.handleCallback(request);
+
+      expect(setProviderToken).toHaveBeenCalledWith(
+        "gmail",
+        expect.objectContaining({
+          accessToken: "google-token",
+          email: "person@gmail.com",
+          scopes: ["https://www.googleapis.com/auth/gmail.readonly"],
+        }),
+        "person@gmail.com",
+        undefined
       );
     });
   });
@@ -1778,4 +1823,3 @@ describe("SolidStart Handler - toSolidStartHandler", () => {
     });
   });
 });
-

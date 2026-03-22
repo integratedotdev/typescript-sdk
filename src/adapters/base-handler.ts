@@ -5,6 +5,7 @@
 
 import type { MCPContext } from '../config/types.js';
 import type { ProviderTokenData } from '../oauth/types.js';
+import { fetchUserEmail } from '../oauth/email-fetcher.js';
 import { createLogger, type LogContext } from '../utils/logger.js';
 
 /**
@@ -33,6 +34,8 @@ export interface OAuthHandlerConfig {
     redirectUri?: string;
     /** Optional scopes for OAuth authorization */
     scopes?: string[];
+    /** Optional scopes that users may choose to grant or deny */
+    optionalScopes?: string[];
     /** Optional provider-specific configuration (e.g., Notion's 'owner' parameter) */
     config?: Record<string, any>;
   }>;
@@ -47,7 +50,7 @@ export interface OAuthHandlerConfig {
    */
   apiKey?: string;
   /** Optional integration list for /integrations endpoint */
-  integrations?: readonly { id: string; tools: readonly string[]; oauth?: { scopes?: string[]; provider?: string }; [key: string]: any }[];
+  integrations?: readonly { id: string; tools: readonly string[]; oauth?: { scopes?: string[]; optionalScopes?: string[]; provider?: string }; [key: string]: any }[];
   /**
    * Optional callback to extract user context from request
    * If not provided, SDK will attempt to auto-detect from common auth libraries
@@ -124,6 +127,7 @@ export interface AuthorizeRequest {
   codeChallenge: string;
   codeChallengeMethod: string;
   redirectUri?: string;
+  optionalScopes?: string[];
   /** Optional codeVerifier for backend redirect flow (when apiBaseUrl is set) */
   codeVerifier?: string;
   /** Optional frontend origin for backend redirect flow (when apiBaseUrl is set) */
@@ -159,6 +163,8 @@ export interface CallbackResponse {
   expiresIn: number;
   expiresAt?: string;
   scopes?: string[];
+  /** Connected account email (populated for Google providers via id_token) */
+  email?: string;
   /** Optional Set-Cookie header value to clear context cookie */
   clearCookie?: string;
 }
@@ -236,7 +242,7 @@ export class OAuthHandler {
    * Handle integrations list request
    * Returns the list of server-configured integrations
    */
-  handleIntegrations(): { integrations: Array<{ id: string; name: string; logoUrl?: string; tools: readonly string[]; hasOAuth: boolean; scopes?: string[]; provider?: string }> } {
+  handleIntegrations(): { integrations: Array<{ id: string; name: string; logoUrl?: string; tools: readonly string[]; hasOAuth: boolean; scopes?: string[]; optionalScopes?: string[]; provider?: string }> } {
     const integrations = this.config.integrations || [];
     return {
       integrations: integrations.map((integration) => ({
@@ -246,6 +252,7 @@ export class OAuthHandler {
         tools: integration.tools,
         hasOAuth: !!integration.oauth,
         scopes: integration.oauth?.scopes,
+        optionalScopes: integration.oauth?.optionalScopes,
         provider: integration.oauth?.provider,
       })),
     };
@@ -326,20 +333,34 @@ export class OAuthHandler {
       url.searchParams.set('scope', scopes.join(','));
     }
 
+    const optionalScopes = authorizeRequest.optionalScopes || providerConfig.optionalScopes || [];
+    if (optionalScopes.length > 0) {
+      url.searchParams.set('optional_scope', optionalScopes.join(','));
+    }
+
     url.searchParams.set('state', authorizeRequest.state);
     url.searchParams.set('code_challenge', authorizeRequest.codeChallenge);
     url.searchParams.set('code_challenge_method', authorizeRequest.codeChallengeMethod);
 
-    // Use request redirect URI or fallback to provider config
-    const redirectUri = authorizeRequest.redirectUri || providerConfig.redirectUri;
+    // Always use server-configured redirectUri so authorize and callback
+    // always send the same redirect_uri to the MCP server.
+    const redirectUri = providerConfig.redirectUri;
     if (redirectUri) {
       url.searchParams.set('redirect_uri', redirectUri);
     }
 
     // Add provider-specific config parameters (e.g., Notion's 'owner' parameter)
+    // Fields already handled explicitly above — skip them if they accidentally
+    // appear in the provider-specific config (e.g., from a ...config spread)
+    const OAUTH_FIELDS = new Set([
+      'clientId', 'clientSecret', 'scopes', 'optionalScopes', 'redirectUri',
+      'client_id', 'client_secret', 'scope', 'optional_scope', 'redirect_uri',
+      'provider',
+    ]);
+
     if (providerConfig.config) {
       for (const [key, value] of Object.entries(providerConfig.config)) {
-        if (value !== undefined && value !== null) {
+        if (value !== undefined && value !== null && !OAUTH_FIELDS.has(key)) {
           url.searchParams.set(key, String(value));
         }
       }
@@ -509,12 +530,21 @@ export class OAuthHandler {
           tokenType: result.tokenType,
           expiresIn: result.expiresIn,
           expiresAt: result.expiresAt,
-          scopes: result.scopes, // Include scopes in token data
+          // Normalize scopes: Cal.com (and potentially other providers) return a
+          // space-separated string inside a single array element. Split each element
+          // on spaces to produce individual scope strings.
+          scopes: result.scopes
+            ? result.scopes.flatMap((s: string) => s.split(' ').filter(Boolean))
+            : result.scopes,
         };
 
-        // Email is not available at server-side callback time (fetched client-side)
-        // Pass undefined for email - customer's callback can fetch it if needed
-        await this.config.setProviderToken(callbackRequest.provider, tokenData, undefined, context);
+        // Prefer email returned directly from the callback response (e.g. Google id_token),
+        // then fall back to fetching it from the provider API when possible.
+        const email = result.email || await fetchUserEmail(callbackRequest.provider, tokenData);
+        if (email) {
+          tokenData.email = email;
+        }
+        await this.config.setProviderToken(callbackRequest.provider, tokenData, email, context);
       } catch (error) {
         // Token storage failed - log but don't fail the OAuth flow
       }
@@ -669,8 +699,11 @@ export class OAuthHandler {
     });
 
     // Add provider token from Authorization header if present
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      headers['Authorization'] = authHeader;
+    if (authHeader) {
+      const normalized = authHeader.replace(/^bearer\s+/i, 'Bearer ');
+      if (normalized.startsWith('Bearer ')) {
+        headers['Authorization'] = normalized;
+      }
     }
 
     // Add client-configured integration IDs to allow server-side filtering
@@ -714,4 +747,3 @@ export class OAuthHandler {
     return jsonRpcResponse.result as ToolCallResponse;
   }
 }
-

@@ -597,21 +597,36 @@ describe("Trigger Handler Tests", () => {
     });
   });
 
-  describe("GET /api/integrate/triggers/:id/execute - MCP Server Callback", () => {
-    test("should return trigger details with OAuth token", async () => {
+  describe("POST /api/integrate/triggers/notify - Scheduler Notification", () => {
+    test("should execute trigger locally and return result", async () => {
       const mockToken = { accessToken: 'test-token', tokenType: 'Bearer' };
-      
+
       await mockTriggerCallbacks.create({
-        id: 'trig_execute',
+        id: 'trig_notify',
         toolName: 'github_create_issue',
-        toolArguments: {},
+        toolArguments: { title: 'Test' },
         schedule: { type: 'once', runAt: '2024-12-20T10:00:00Z' },
         status: 'active',
         provider: 'github',
+        userId: 'user_123',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         runCount: 0,
       });
+
+      // Mock fetch to handle both scheduler calls and the tool execution
+      const origFetch = global.fetch;
+      global.fetch = mock(async (url: string | URL | Request, options?: any) => {
+        const urlStr = typeof url === 'string' ? url : url instanceof URL ? url.toString() : url.url;
+        if (urlStr.includes('/scheduler/')) {
+          return new Response(JSON.stringify({ success: true }), { status: 200 });
+        }
+        // Mock the MCP server tool call
+        if (urlStr.includes('mcp.integrate.dev') || urlStr.includes('/api/v1/mcp')) {
+          return new Response(JSON.stringify({ content: [{ type: 'text', text: JSON.stringify({ issueNumber: 42 }) }] }), { status: 200 });
+        }
+        return origFetch(url, options);
+      }) as any;
 
       const server = createMCPServer({
         apiKey: 'test-api-key',
@@ -620,16 +635,23 @@ describe("Trigger Handler Tests", () => {
         getProviderToken: async () => mockToken,
       });
 
-      const request = new Request('http://localhost:3000/api/integrate/triggers/trig_execute/execute', {
-        headers: { 'x-api-key': 'test-api-key' },
+      const request = new Request('http://localhost:3000/api/integrate/triggers/notify', {
+        method: 'POST',
+        headers: { 'x-api-key': 'test-api-key', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          triggerId: 'trig_notify',
+          scheduledAt: new Date().toISOString(),
+        }),
       });
-      
-      const response = await server.client.handler(request, { params: { all: ['triggers', 'trig_execute', 'execute'] } });
+
+      const response = await server.client.handler(request, { params: { all: ['triggers', 'notify'] } });
       expect(response.status).toBe(200);
-      
+
       const data = await response.json();
-      expect(data.trigger.id).toBe('trig_execute');
-      expect(data.accessToken).toBe('test-token');
+      expect(data.success).toBeDefined();
+      expect(data.steps).toBeDefined();
+
+      global.fetch = origFetch;
     });
 
     test("should return 401 if API key is missing", async () => {
@@ -651,55 +673,53 @@ describe("Trigger Handler Tests", () => {
         triggers: mockTriggerCallbacks,
       });
 
-      const request = new Request('http://localhost:3000/api/integrate/triggers/trig_auth/execute');
-      const response = await server.client.handler(request, { params: { all: ['triggers', 'trig_auth', 'execute'] } });
-      
+      const request = new Request('http://localhost:3000/api/integrate/triggers/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ triggerId: 'trig_auth' }),
+      });
+      const response = await server.client.handler(request, { params: { all: ['triggers', 'notify'] } });
+
       expect(response.status).toBe(401);
     });
-  });
 
-  describe("POST /api/integrate/triggers/:id/complete - MCP Server Callback", () => {
-    test("should update trigger with successful execution result", async () => {
-      await mockTriggerCallbacks.create({
-        id: 'trig_complete',
-        toolName: 'github_create_issue',
-        toolArguments: {},
-        schedule: { type: 'cron', expression: '0 9 * * *' },
-        status: 'active',
-        provider: 'github',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        runCount: 5,
-      });
-
+    test("should return 404 for non-existent trigger", async () => {
       const server = createMCPServer({
         apiKey: 'test-api-key',
         integrations: [githubIntegration({ clientId: 'test-id', clientSecret: 'test-secret' })],
         triggers: mockTriggerCallbacks,
       });
 
-      const executedAt = new Date().toISOString();
-      const request = new Request('http://localhost:3000/api/integrate/triggers/trig_complete/complete', {
+      const request = new Request('http://localhost:3000/api/integrate/triggers/notify', {
         method: 'POST',
         headers: { 'x-api-key': 'test-api-key', 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          success: true,
-          result: { issueNumber: 123 },
-          executedAt,
-        }),
+        body: JSON.stringify({ triggerId: 'nonexistent' }),
       });
+      const response = await server.client.handler(request, { params: { all: ['triggers', 'notify'] } });
 
-      const response = await server.client.handler(request, { params: { all: ['triggers', 'trig_complete', 'complete'] } });
-      expect(response.status).toBe(200);
-      
-      const trigger = await mockTriggerCallbacks.get('trig_complete');
-      expect(trigger?.runCount).toBe(6);
-      expect(trigger?.lastRunAt).toBe(executedAt);
+      expect(response.status).toBe(404);
     });
 
-    test("should mark one-time trigger as completed on success", async () => {
+    test("should return 400 if triggerId is missing", async () => {
+      const server = createMCPServer({
+        apiKey: 'test-api-key',
+        integrations: [githubIntegration({ clientId: 'test-id', clientSecret: 'test-secret' })],
+        triggers: mockTriggerCallbacks,
+      });
+
+      const request = new Request('http://localhost:3000/api/integrate/triggers/notify', {
+        method: 'POST',
+        headers: { 'x-api-key': 'test-api-key', 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      const response = await server.client.handler(request, { params: { all: ['triggers', 'notify'] } });
+
+      expect(response.status).toBe(400);
+    });
+
+    test("should return 400 if trigger has no provider", async () => {
       await mockTriggerCallbacks.create({
-        id: 'trig_once',
+        id: 'trig_no_provider',
         toolName: 'test_tool',
         toolArguments: {},
         schedule: { type: 'once', runAt: '2024-12-20T10:00:00Z' },
@@ -715,21 +735,67 @@ describe("Trigger Handler Tests", () => {
         triggers: mockTriggerCallbacks,
       });
 
-      const request = new Request('http://localhost:3000/api/integrate/triggers/trig_once/complete', {
+      const request = new Request('http://localhost:3000/api/integrate/triggers/notify', {
         method: 'POST',
         headers: { 'x-api-key': 'test-api-key', 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          success: true,
-          result: {},
-          executedAt: new Date().toISOString(),
-        }),
+        body: JSON.stringify({ triggerId: 'trig_no_provider' }),
+      });
+      const response = await server.client.handler(request, { params: { all: ['triggers', 'notify'] } });
+
+      expect(response.status).toBe(400);
+    });
+
+    test("should build context from trigger userId (not from request session)", async () => {
+      const mockToken = { accessToken: 'test-token', tokenType: 'Bearer' };
+      let receivedContext: any;
+
+      await mockTriggerCallbacks.create({
+        id: 'trig_ctx',
+        toolName: 'github_create_issue',
+        toolArguments: { title: 'Test' },
+        schedule: { type: 'once', runAt: '2024-12-20T10:00:00Z' },
+        status: 'active',
+        provider: 'github',
+        userId: 'stored_user_456',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        runCount: 0,
       });
 
-      const response = await server.client.handler(request, { params: { all: ['triggers', 'trig_once', 'complete'] } });
-      expect(response.status).toBe(200);
-      
-      const trigger = await mockTriggerCallbacks.get('trig_once');
-      expect(trigger?.status).toBe('completed');
+      const origFetch = global.fetch;
+      global.fetch = mock(async (url: string | URL | Request, options?: any) => {
+        const urlStr = typeof url === 'string' ? url : url instanceof URL ? url.toString() : url.url;
+        if (urlStr.includes('/scheduler/')) {
+          return new Response(JSON.stringify({ success: true }), { status: 200 });
+        }
+        if (urlStr.includes('mcp.integrate.dev') || urlStr.includes('/api/v1/mcp')) {
+          return new Response(JSON.stringify({ content: [{ type: 'text', text: '{}' }] }), { status: 200 });
+        }
+        return origFetch(url, options);
+      }) as any;
+
+      const server = createMCPServer({
+        apiKey: 'test-api-key',
+        integrations: [githubIntegration({ clientId: 'test-id', clientSecret: 'test-secret' })],
+        triggers: mockTriggerCallbacks,
+        getProviderToken: async (provider, email, context) => {
+          receivedContext = context;
+          return mockToken;
+        },
+      });
+
+      const request = new Request('http://localhost:3000/api/integrate/triggers/notify', {
+        method: 'POST',
+        headers: { 'x-api-key': 'test-api-key', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ triggerId: 'trig_ctx' }),
+      });
+
+      await server.client.handler(request, { params: { all: ['triggers', 'notify'] } });
+
+      // Context should come from trigger's stored userId, not from request session
+      expect(receivedContext).toEqual({ userId: 'stored_user_456' });
+
+      global.fetch = origFetch;
     });
   });
 

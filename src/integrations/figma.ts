@@ -23,6 +23,8 @@ export interface FigmaIntegrationConfig {
   clientSecret?: string;
   /** Additional OAuth scopes (default: ['files:read', 'file_comments:write']) */
   scopes?: string[];
+  /** Optional OAuth scopes (user may choose to grant or deny) */
+  optionalScopes?: string[];
   /** OAuth redirect URI */
   redirectUri?: string;
 }
@@ -49,7 +51,8 @@ export function figmaIntegration(config: FigmaIntegrationConfig = {}): MCPIntegr
     provider: "figma",
     clientId: config.clientId ?? getEnv('FIGMA_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('FIGMA_CLIENT_SECRET'),
-    scopes: config.scopes || ["files:read", "file_comments:write"],
+    scopes: config.scopes,
+    optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
       ...config,
