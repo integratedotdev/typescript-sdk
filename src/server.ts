@@ -230,6 +230,8 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
     clientId: string;
     clientSecret: string;
     redirectUri?: string;
+    scopes?: string[];
+    optionalScopes?: string[];
     config?: Record<string, any>;
   }> = {};
 
@@ -253,6 +255,8 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
         clientId,
         clientSecret,
         redirectUri,
+        scopes: integration.oauth.scopes,
+        optionalScopes: integration.oauth.optionalScopes,
         config: oauthConfig as Record<string, any> | undefined,
       };
 
