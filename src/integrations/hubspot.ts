@@ -80,17 +80,7 @@ export function hubspotIntegration(config: HubSpotIntegrationConfig = {}): MCPIn
     provider: "hubspot",
     clientId: config.clientId ?? getEnv('HUBSPOT_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('HUBSPOT_CLIENT_SECRET'),
-    scopes: config.scopes || [
-      "crm.objects.contacts.read",
-      "crm.objects.contacts.write",
-      "crm.objects.companies.read",
-      "crm.objects.companies.write",
-      "crm.objects.deals.read",
-      "crm.objects.deals.write",
-      "crm.objects.tickets.read",
-      "crm.objects.tickets.write",
-      "crm.objects.owners.read",
-    ],
+    scopes: config.scopes,
     optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {

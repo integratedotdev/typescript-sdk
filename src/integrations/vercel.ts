@@ -63,7 +63,7 @@ export function vercelIntegration(config: VercelIntegrationConfig = {}): MCPInte
     provider: "vercel",
     clientId: config.clientId ?? getEnv('VERCEL_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('VERCEL_CLIENT_SECRET'),
-    scopes: config.scopes || [],
+    scopes: config.scopes,
     optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {

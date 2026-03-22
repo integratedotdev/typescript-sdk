@@ -52,7 +52,7 @@ export function whatsappIntegration(config: WhatsAppIntegrationConfig = {}): MCP
     provider: "whatsapp",
     clientId: config.clientId ?? getEnv('WHATSAPP_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('WHATSAPP_CLIENT_SECRET'),
-    scopes: config.scopes || ["business_management", "whatsapp_business_messaging", "whatsapp_business_management"],
+    scopes: config.scopes,
     optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {

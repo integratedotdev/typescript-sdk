@@ -53,7 +53,7 @@ export function rampIntegration(config: RampIntegrationConfig = {}): MCPIntegrat
     provider: "ramp",
     clientId: config.clientId ?? getEnv('RAMP_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('RAMP_CLIENT_SECRET'),
-    scopes: config.scopes || ["transactions:read", "cards:read", "users:read"],
+    scopes: config.scopes,
     optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {

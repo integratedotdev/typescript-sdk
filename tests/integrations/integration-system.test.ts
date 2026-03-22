@@ -56,13 +56,13 @@ describe("Integration System", () => {
       expect(integration.oauth?.scopes).toEqual(["repo", "user", "admin:org"]);
     });
 
-    test("uses default scopes when not provided", () => {
+    test("does not set scopes when not provided (server provides defaults)", () => {
       const integration = githubIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.scopes).toEqual(["repo", "user"]);
+      expect(integration.oauth?.scopes).toBeUndefined();
     });
 
     test("includes expected tools", () => {
@@ -269,7 +269,7 @@ describe("Integration System", () => {
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.scopes).toEqual([]);
+      expect(integration.oauth?.scopes).toBeUndefined();
     });
 
     test("has lifecycle hooks defined", () => {
@@ -322,14 +322,13 @@ describe("Integration System", () => {
       expect(integration.oauth?.scopes).toEqual(["chat:write", "channels:read"]);
     });
 
-    test("uses default scopes when not provided", () => {
+    test("does not set scopes when not provided (server provides defaults)", () => {
       const integration = slackIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.scopes).toContain("chat:write");
-      expect(integration.oauth?.scopes).toContain("channels:read");
+      expect(integration.oauth?.scopes).toBeUndefined();
     });
 
     test("includes expected tools", () => {
@@ -390,14 +389,13 @@ describe("Integration System", () => {
       expect(integration.oauth?.scopes).toEqual(["read", "write"]);
     });
 
-    test("uses default scopes when not provided", () => {
+    test("does not set scopes when not provided (server provides defaults)", () => {
       const integration = linearIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.scopes).toContain("read");
-      expect(integration.oauth?.scopes).toContain("write");
+      expect(integration.oauth?.scopes).toBeUndefined();
     });
 
     test("includes expected tools", () => {
@@ -514,14 +512,13 @@ describe("Integration System", () => {
       expect(integration.oauth?.scopes).toEqual(["read", "write"]);
     });
 
-    test("uses default scopes when not provided", () => {
+    test("does not set scopes when not provided (server provides defaults)", () => {
       const integration = zendeskIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.scopes).toContain("read");
-      expect(integration.oauth?.scopes).toContain("write");
+      expect(integration.oauth?.scopes).toBeUndefined();
     });
 
     test("includes expected tools", () => {
@@ -656,13 +653,13 @@ describe("Integration System", () => {
       expect(integration.oauth?.clientSecret).toBe("test-secret");
     });
 
-    test("uses default scopes when not provided", () => {
+    test("does not set scopes when not provided (server provides defaults)", () => {
       const integration = gcalIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.scopes).toContain("https://www.googleapis.com/auth/calendar");
+      expect(integration.oauth?.scopes).toBeUndefined();
     });
 
     test("includes expected tools", () => {
@@ -721,14 +718,13 @@ describe("Integration System", () => {
       expect(integration.oauth?.clientSecret).toBe("test-secret");
     });
 
-    test("uses default scopes when not provided", () => {
+    test("does not set scopes when not provided (server provides defaults)", () => {
       const integration = outlookIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.scopes).toContain("Mail.Read");
-      expect(integration.oauth?.scopes).toContain("Mail.Send");
+      expect(integration.oauth?.scopes).toBeUndefined();
     });
 
     test("includes expected tools", () => {
@@ -787,19 +783,13 @@ describe("Integration System", () => {
       expect(integration.oauth?.clientSecret).toBe("test-secret");
     });
 
-    test("uses default scopes when not provided", () => {
+    test("does not set scopes when not provided (server provides defaults)", () => {
       const integration = airtableIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.scopes).toContain("data.records:read");
-      expect(integration.oauth?.scopes).toContain("data.records:write");
-      expect(integration.oauth?.scopes).toContain("data.recordComments:read");
-      expect(integration.oauth?.scopes).toContain("data.recordComments:write");
-      expect(integration.oauth?.scopes).toContain("schema.bases:read");
-      expect(integration.oauth?.scopes).toContain("schema.bases:write");
-      expect(integration.oauth?.scopes).toContain("webhook:manage");
+      expect(integration.oauth?.scopes).toBeUndefined();
     });
 
     test("includes expected tools", () => {
@@ -884,13 +874,13 @@ describe("Integration System", () => {
       expect(integration.oauth?.clientSecret).toBe("test-secret");
     });
 
-    test("uses default scopes when not provided", () => {
+    test("does not set scopes when not provided (server provides defaults)", () => {
       const integration = todoistIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.scopes).toContain("data:read_write");
+      expect(integration.oauth?.scopes).toBeUndefined();
     });
 
     test("includes expected tools", () => {
@@ -951,14 +941,13 @@ describe("Integration System", () => {
       expect(integration.oauth?.scopes).toEqual(["business_management", "whatsapp_business_messaging"]);
     });
 
-    test("uses default scopes when not provided", () => {
+    test("does not set scopes when not provided (server provides defaults)", () => {
       const integration = whatsappIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.scopes).toContain("business_management");
-      expect(integration.oauth?.scopes).toContain("whatsapp_business_messaging");
+      expect(integration.oauth?.scopes).toBeUndefined();
     });
 
     test("includes expected tools", () => {
@@ -1024,16 +1013,13 @@ describe("Integration System", () => {
       expect(integration.oauth?.scopes).toEqual(["read:bookings", "write:bookings"]);
     });
 
-    test("uses default scopes when not provided", () => {
+    test("does not set scopes when not provided (server provides defaults)", () => {
       const integration = calcomIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.scopes).toContain("READ_BOOKING");
-      expect(integration.oauth?.scopes).toContain("WRITE_BOOKING");
-      expect(integration.oauth?.scopes).toContain("READ_PROFILE");
-      expect(integration.oauth?.scopes).toContain("WRITE_PROFILE");
+      expect(integration.oauth?.scopes).toBeUndefined();
     });
 
     test("includes expected tools", () => {
@@ -1156,15 +1142,13 @@ describe("Integration System", () => {
       expect(integration.oauth?.scopes).toEqual(["transactions:read", "cards:read"]);
     });
 
-    test("uses default scopes when not provided", () => {
+    test("does not set scopes when not provided (server provides defaults)", () => {
       const integration = rampIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.scopes).toContain("transactions:read");
-      expect(integration.oauth?.scopes).toContain("cards:read");
-      expect(integration.oauth?.scopes).toContain("users:read");
+      expect(integration.oauth?.scopes).toBeUndefined();
     });
 
     test("includes expected tools", () => {
@@ -1231,15 +1215,13 @@ describe("Integration System", () => {
       expect(integration.oauth?.scopes).toEqual(["Files.Read", "Files.ReadWrite"]);
     });
 
-    test("uses default scopes when not provided", () => {
+    test("does not set scopes when not provided (server provides defaults)", () => {
       const integration = onedriveIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.scopes).toContain("Files.Read");
-      expect(integration.oauth?.scopes).toContain("Files.ReadWrite");
-      expect(integration.oauth?.scopes).toContain("offline_access");
+      expect(integration.oauth?.scopes).toBeUndefined();
     });
 
     test("includes expected tools", () => {
@@ -1303,16 +1285,13 @@ describe("Integration System", () => {
       expect(integration.oauth?.scopes).toEqual(["https://www.googleapis.com/auth/spreadsheets"]);
     });
 
-    test("uses default scopes when not provided", () => {
+    test("does not set scopes when not provided (server provides defaults)", () => {
       const integration = gworkspaceIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.scopes).toContain("https://www.googleapis.com/auth/spreadsheets");
-      expect(integration.oauth?.scopes).toContain("https://www.googleapis.com/auth/documents");
-      expect(integration.oauth?.scopes).toContain("https://www.googleapis.com/auth/presentations");
-      expect(integration.oauth?.scopes).toContain("https://www.googleapis.com/auth/drive.readonly");
+      expect(integration.oauth?.scopes).toBeUndefined();
     });
 
     test("includes expected tools", () => {
@@ -1376,17 +1355,13 @@ describe("Integration System", () => {
       expect(integration.oauth?.scopes).toEqual(["products:read", "subscriptions:read"]);
     });
 
-    test("uses default scopes when not provided", () => {
+    test("does not set scopes when not provided (server provides defaults)", () => {
       const integration = polarIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.scopes).toContain("products:read");
-      expect(integration.oauth?.scopes).toContain("subscriptions:read");
-      expect(integration.oauth?.scopes).toContain("customers:read");
-      expect(integration.oauth?.scopes).toContain("orders:read");
-      expect(integration.oauth?.scopes).toContain("benefits:read");
+      expect(integration.oauth?.scopes).toBeUndefined();
     });
 
     test("includes expected tools", () => {
@@ -1451,14 +1426,13 @@ describe("Integration System", () => {
       expect(integration.oauth?.scopes).toEqual(["files:read"]);
     });
 
-    test("uses default scopes when not provided", () => {
+    test("does not set scopes when not provided (server provides defaults)", () => {
       const integration = figmaIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.scopes).toContain("files:read");
-      expect(integration.oauth?.scopes).toContain("file_comments:write");
+      expect(integration.oauth?.scopes).toBeUndefined();
     });
 
     test("includes expected tools", () => {
@@ -1520,13 +1494,13 @@ describe("Integration System", () => {
       expect(integration.oauth?.clientSecret).toBe("test-secret");
     });
 
-    test("uses empty scopes by default (app-level permissions)", () => {
+    test("does not set scopes when not provided (server provides defaults)", () => {
       const integration = intercomIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.scopes).toEqual([]);
+      expect(integration.oauth?.scopes).toBeUndefined();
     });
 
     test("includes expected tools", () => {
@@ -1590,19 +1564,13 @@ describe("Integration System", () => {
       expect(integration.oauth?.scopes).toEqual(["crm.objects.contacts.read"]);
     });
 
-    test("uses default CRM scopes when not provided", () => {
+    test("does not set scopes when not provided (server provides defaults)", () => {
       const integration = hubspotIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.scopes).toContain("crm.objects.contacts.read");
-      expect(integration.oauth?.scopes).toContain("crm.objects.contacts.write");
-      expect(integration.oauth?.scopes).toContain("crm.objects.companies.read");
-      expect(integration.oauth?.scopes).toContain("crm.objects.deals.read");
-      expect(integration.oauth?.scopes).toContain("crm.objects.tickets.read");
-      expect(integration.oauth?.scopes).toContain("crm.objects.tickets.write");
-      expect(integration.oauth?.scopes).toContain("crm.objects.owners.read");
+      expect(integration.oauth?.scopes).toBeUndefined();
     });
 
     test("includes expected tools", () => {
@@ -1667,13 +1635,13 @@ describe("Integration System", () => {
       expect(integration.oauth?.scopes).toEqual(["https://www.googleapis.com/auth/youtube.readonly"]);
     });
 
-    test("uses default YouTube readonly scope when not provided", () => {
+    test("does not set scopes when not provided (server provides defaults)", () => {
       const integration = youtubeIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.scopes).toContain("https://www.googleapis.com/auth/youtube.readonly");
+      expect(integration.oauth?.scopes).toBeUndefined();
     });
 
     test("includes expected tools", () => {

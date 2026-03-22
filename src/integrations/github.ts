@@ -91,7 +91,7 @@ export function githubIntegration(config: GitHubIntegrationConfig = {}): MCPInte
     provider: "github",
     clientId: config.clientId ?? getEnv('GITHUB_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('GITHUB_CLIENT_SECRET'),
-    scopes: config.scopes || ["repo", "user"],
+    scopes: config.scopes,
     optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {

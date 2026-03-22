@@ -51,7 +51,7 @@ export function youtubeIntegration(config: YouTubeIntegrationConfig = {}): MCPIn
     provider: "youtube",
     clientId: config.clientId ?? getEnv('YOUTUBE_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('YOUTUBE_CLIENT_SECRET'),
-    scopes: config.scopes || ["https://www.googleapis.com/auth/youtube.readonly"],
+    scopes: config.scopes,
     optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {

@@ -51,7 +51,7 @@ export function stripeIntegration(config: StripeIntegrationConfig = {}): MCPInte
     provider: "stripe",
     clientId: config.clientId ?? getEnv('STRIPE_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('STRIPE_CLIENT_SECRET'),
-    scopes: config.scopes || ["read_write"],
+    scopes: config.scopes,
     optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {

@@ -81,21 +81,54 @@ const customClient = createMCPClient({
 
 ### Projects
 
-- **`todoist_list_projects`** - List projects
-- **`todoist_get_project`** - Get a specific project
+- **`todoist_list_projects`** - List all projects
+- **`todoist_get_project`** - Get details of a specific project
 - **`todoist_create_project`** - Create a new project
+- **`todoist_update_project`** - Update an existing project
+- **`todoist_delete_project`** - Delete a project
+- **`todoist_archive_project`** - Archive a project
 
 ### Tasks
 
-- **`todoist_list_tasks`** - List tasks
-- **`todoist_get_task`** - Get a specific task
+- **`todoist_list_tasks`** - List active tasks with optional filters
+- **`todoist_get_task`** - Get details of a specific task
 - **`todoist_create_task`** - Create a new task
+- **`todoist_update_task`** - Update an existing task
 - **`todoist_complete_task`** - Mark a task as complete
+- **`todoist_delete_task`** - Delete a task permanently
+- **`todoist_reopen_task`** - Reopen a completed task
+- **`todoist_move_task`** - Move a task to a different project, section, or parent
+- **`todoist_quick_add_task`** - Add a task using natural language
+- **`todoist_get_completed_tasks`** - Get completed tasks
+- **`todoist_filter_tasks`** - Get tasks matching a Todoist filter expression
+
+### Sections
+
+- **`todoist_list_sections`** - List sections, optionally filtered by project
+- **`todoist_create_section`** - Create a new section in a project
+- **`todoist_get_section`** - Get details of a specific section
+- **`todoist_update_section`** - Rename a section
+- **`todoist_delete_section`** - Delete a section (and all tasks in it)
+
+### Comments
+
+- **`todoist_list_comments`** - List comments on a task or project
+- **`todoist_create_comment`** - Add a comment to a task or project
+- **`todoist_get_comment`** - Get details of a specific comment
+- **`todoist_update_comment`** - Update a comment's text
+- **`todoist_delete_comment`** - Delete a comment
 
 ### Labels
 
-- **`todoist_list_labels`** - List labels
+- **`todoist_list_labels`** - List all personal labels
 - **`todoist_create_label`** - Create a new label
+- **`todoist_update_label`** - Update a label
+- **`todoist_delete_label`** - Delete a label
+
+### Reminders
+
+- **`todoist_list_reminders`** - List all reminders
+- **`todoist_create_reminder`** - Create a reminder for a task
 
 ## Examples
 
@@ -149,11 +182,9 @@ console.log("Task completed:", result);
 
 ## OAuth Scopes
 
-The default scope is `['data:read_write']`. Available scopes:
+The following scope is supported:
 
-- **`data:read`** - Read tasks, projects, and labels
 - **`data:read_write`** - Full access to read and write data (default)
-- **`data:delete`** - Delete tasks, projects, and labels
 
 ## Error Handling
 

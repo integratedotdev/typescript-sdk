@@ -88,7 +88,7 @@ export function notionIntegration(config: NotionIntegrationConfig = {}): MCPInte
     provider: "notion",
     clientId: config.clientId ?? getEnv('NOTION_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('NOTION_CLIENT_SECRET'),
-    scopes: [], // Notion doesn't use traditional OAuth scopes
+    scopes: undefined,
     optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {

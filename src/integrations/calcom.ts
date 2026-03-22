@@ -109,7 +109,7 @@ export function calcomIntegration(config: CalcomIntegrationConfig = {}): MCPInte
     provider: "calcom",
     clientId: config.clientId ?? getEnv('CALCOM_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('CALCOM_CLIENT_SECRET'),
-    scopes: config.scopes || ["READ_BOOKING", "WRITE_BOOKING", "READ_PROFILE", "WRITE_PROFILE"],
+    scopes: config.scopes,
     optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {

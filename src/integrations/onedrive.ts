@@ -54,7 +54,7 @@ export function onedriveIntegration(config: OneDriveIntegrationConfig = {}): MCP
     provider: "onedrive",
     clientId: config.clientId ?? getEnv('ONEDRIVE_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('ONEDRIVE_CLIENT_SECRET'),
-    scopes: config.scopes || ["Files.Read", "Files.ReadWrite", "offline_access"],
+    scopes: config.scopes,
     optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {

@@ -51,7 +51,7 @@ export function intercomIntegration(config: IntercomIntegrationConfig = {}): MCP
     provider: "intercom",
     clientId: config.clientId ?? getEnv('INTERCOM_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('INTERCOM_CLIENT_SECRET'),
-    scopes: config.scopes || [],
+    scopes: config.scopes,
     optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {

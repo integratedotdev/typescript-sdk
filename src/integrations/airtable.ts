@@ -69,12 +69,7 @@ export function airtableIntegration(config: AirtableIntegrationConfig = {}): MCP
     provider: "airtable",
     clientId: config.clientId ?? getEnv('AIRTABLE_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('AIRTABLE_CLIENT_SECRET'),
-    scopes: config.scopes || [
-      "data.records:read", "data.records:write",
-      "data.recordComments:read", "data.recordComments:write",
-      "schema.bases:read", "schema.bases:write",
-      "webhook:manage",
-    ],
+    scopes: config.scopes,
     optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {

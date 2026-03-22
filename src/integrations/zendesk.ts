@@ -79,7 +79,7 @@ export function zendeskIntegration(config: ZendeskIntegrationConfig = {}): MCPIn
     provider: "zendesk",
     clientId: config.clientId ?? getEnv('ZENDESK_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('ZENDESK_CLIENT_SECRET'),
-    scopes: config.scopes || ["read", "write"],
+    scopes: config.scopes,
     optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {

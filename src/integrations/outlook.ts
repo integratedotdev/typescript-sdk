@@ -51,7 +51,7 @@ export function outlookIntegration(config: OutlookIntegrationConfig = {}): MCPIn
     provider: "outlook",
     clientId: config.clientId ?? getEnv('OUTLOOK_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('OUTLOOK_CLIENT_SECRET'),
-    scopes: config.scopes || ["Mail.Read", "Mail.Send", "Calendars.ReadWrite", "Contacts.Read"],
+    scopes: config.scopes,
     optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {

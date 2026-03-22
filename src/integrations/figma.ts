@@ -51,7 +51,7 @@ export function figmaIntegration(config: FigmaIntegrationConfig = {}): MCPIntegr
     provider: "figma",
     clientId: config.clientId ?? getEnv('FIGMA_CLIENT_ID'),
     clientSecret: config.clientSecret ?? getEnv('FIGMA_CLIENT_SECRET'),
-    scopes: config.scopes || ["files:read", "file_comments:write"],
+    scopes: config.scopes,
     optionalScopes: config.optionalScopes,
     redirectUri: config.redirectUri,
     config: {
