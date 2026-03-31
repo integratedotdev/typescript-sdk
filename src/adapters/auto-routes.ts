@@ -133,6 +133,11 @@ export async function POST(
       return createSuccessResponse(result);
     }
 
+    if (action === 'refresh') {
+      const result = await handler.handleRefresh(req);
+      return createSuccessResponse(result);
+    }
+
     return createErrorResponse(`Unknown action: ${action}`, 404);
   } catch (error: any) {
     logger.error(`[OAuth ${action}] Error:`, error);

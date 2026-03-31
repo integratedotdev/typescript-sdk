@@ -194,6 +194,27 @@ export interface DisconnectResponse {
 }
 
 /**
+ * Request body for token refresh endpoint
+ */
+export interface RefreshRequest {
+  provider: string;
+  refreshToken: string;
+}
+
+/**
+ * Response from token refresh endpoint
+ */
+export interface RefreshResponse {
+  accessToken: string;
+  refreshToken?: string;
+  tokenType: string;
+  expiresIn: number;
+  expiresAt?: string;
+  scopes?: string[];
+  email?: string;
+}
+
+/**
  * Request body for MCP tool call endpoint
  */
 export interface ToolCallRequest {
@@ -667,6 +688,115 @@ export class OAuthHandler {
 
     const data = await response.json();
     return data as DisconnectResponse;
+  }
+
+  /**
+   * Handle token refresh
+   * Refreshes an expired access token via the MCP server's /oauth/refresh endpoint
+   *
+   * @param request - Refresh request with provider and refreshToken, OR full Web Request object
+   * @returns Refreshed token data
+   *
+   * @throws Error if provider is not configured
+   * @throws Error if MCP server request fails
+   */
+  async handleRefresh(request: RefreshRequest | Request): Promise<RefreshResponse> {
+    let webRequest: Request | undefined;
+    let refreshRequest: RefreshRequest;
+
+    if (request instanceof Request) {
+      webRequest = request;
+      refreshRequest = await request.json();
+    } else if (typeof request === 'object' && 'json' in request && typeof request.json === 'function') {
+      refreshRequest = await request.json();
+    } else {
+      refreshRequest = request as RefreshRequest;
+    }
+
+    // Get OAuth config from environment (server-side)
+    const providerConfig = this.config.providers[refreshRequest.provider];
+    if (!providerConfig) {
+      throw new Error(`Provider ${refreshRequest.provider} not configured. Add OAuth credentials to your API route configuration.`);
+    }
+
+    // Extract user context for multi-tenant token storage
+    let context: MCPContext | undefined;
+    if (webRequest) {
+      try {
+        if (this.config.getSessionContext) {
+          context = await this.config.getSessionContext(webRequest);
+        }
+
+        if (!context || !context.userId) {
+          const { detectSessionContext } = await import('./session-detector.js');
+          context = await detectSessionContext(webRequest);
+        }
+      } catch (error) {
+        // Context extraction failed - continue without it
+      }
+    }
+
+    // Build request body for MCP server
+    const body: Record<string, string> = {
+      provider: refreshRequest.provider,
+      refresh_token: refreshRequest.refreshToken,
+      client_id: providerConfig.clientId,
+    };
+
+    // Only include client_secret for confidential clients (omit for public clients like Polar)
+    if (providerConfig.clientSecret) {
+      body.client_secret = providerConfig.clientSecret;
+    }
+
+    // Include subdomain for providers that need it (e.g., Zendesk)
+    if (providerConfig.config?.subdomain) {
+      body.subdomain = providerConfig.config.subdomain;
+    }
+
+    // Forward to MCP server for token refresh
+    const url = new URL('/oauth/refresh', this.serverUrl);
+
+    const response = await fetch(url.toString(), {
+      method: 'POST',
+      headers: this.getHeaders({
+        'Content-Type': 'application/json',
+      }),
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Token refresh failed: ${error}`);
+    }
+
+    const data = await response.json();
+    const result: RefreshResponse = data as RefreshResponse;
+
+    // Store refreshed tokens via callback if configured
+    if (this.config.setProviderToken) {
+      try {
+        const tokenData: ProviderTokenData = {
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
+          tokenType: result.tokenType,
+          expiresIn: result.expiresIn,
+          expiresAt: result.expiresAt,
+          scopes: result.scopes
+            ? result.scopes.flatMap((s: string) => s.split(' ').filter(Boolean))
+            : result.scopes,
+        };
+
+        const email = result.email || await fetchUserEmail(refreshRequest.provider, tokenData);
+        if (email) {
+          tokenData.email = email;
+        }
+        await this.config.setProviderToken(refreshRequest.provider, tokenData, email, context);
+      } catch (error) {
+        // Token storage failed - log but don't fail the refresh flow
+      }
+    }
+
+    return result;
   }
 
   /**
