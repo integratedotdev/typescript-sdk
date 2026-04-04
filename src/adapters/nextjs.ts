@@ -390,7 +390,11 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
 
         return response;
       } catch (error: any) {
-        logger.error('[OAuth Refresh] Error:', error);
+        if (error.message?.toLowerCase().includes('not supported')) {
+          logger.info('[OAuth Refresh] Not supported for this provider:', error.message);
+        } else {
+          logger.error('[OAuth Refresh] Error:', error);
+        }
         return Response.json(
           { error: error.message || 'Failed to refresh token' },
           { status: 500 }

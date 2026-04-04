@@ -766,6 +766,10 @@ export class OAuthHandler {
 
     if (!response.ok) {
       const error = await response.text();
+      const lowerError = error.toLowerCase();
+      if (lowerError.includes('not supported') || lowerError.includes('unsupported')) {
+        throw new Error(`Token refresh not supported: ${error}`);
+      }
       throw new Error(`Token refresh failed: ${error}`);
     }
 
