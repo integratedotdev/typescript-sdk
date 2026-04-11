@@ -49,6 +49,7 @@ interface SandboxFactory {
  */
 let sandboxFactoryOverride: SandboxFactory | null = null;
 let _sandboxAvailableCache: boolean | null = null;
+let _sandboxImportError: unknown = null;
 let _sandboxForcedUnavailableForTests = false;
 
 /** @internal — used by unit tests to stub the sandbox SDK. */
@@ -56,12 +57,27 @@ export function __setSandboxFactoryForTests(factory: SandboxFactory | null): voi
   sandboxFactoryOverride = factory;
   _sandboxForcedUnavailableForTests = false;
   _sandboxAvailableCache = null;
+  _sandboxImportError = null;
 }
 
 /** @internal — used by unit tests to simulate missing @vercel/sandbox. */
 export function __setSandboxUnavailableForTests(force: boolean): void {
   _sandboxForcedUnavailableForTests = force;
   _sandboxAvailableCache = null;
+  _sandboxImportError = force
+    ? new Error("Sandbox forced unavailable by test seam.")
+    : null;
+}
+
+/**
+ * Returns the most recent error observed while attempting to import
+ * `@vercel/sandbox`. Useful for surfacing the root cause when the availability
+ * check returns `false` — the warning in `tool-builder.ts` pipes this through
+ * to the user so they don't have to guess whether it's a missing package, a
+ * bundler issue, or a runtime restriction.
+ */
+export function getSandboxImportError(): unknown {
+  return _sandboxImportError;
 }
 
 export async function isSandboxAvailable(): Promise<boolean> {
@@ -72,15 +88,23 @@ export async function isSandboxAvailable(): Promise<boolean> {
   }
   if (sandboxFactoryOverride) {
     _sandboxAvailableCache = true;
+    _sandboxImportError = null;
     return true;
   }
   try {
-    const dynamicImport = new Function("specifier", "return import(specifier)") as (s: string) => Promise<any>;
-    await dynamicImport("@" + "vercel/sandbox");
+    // Plain dynamic import so bundlers (Next.js/webpack, esbuild) see the
+    // dependency and include it in their server output. Earlier versions
+    // used `new Function("return import(specifier)")` to hide the import,
+    // which caused serverless builds on Vercel to ship without
+    // `@vercel/sandbox` even though it was in package.json.
+    // @ts-expect-error — optional runtime dep; types not required at compile time.
+    await import("@vercel/sandbox");
     _sandboxAvailableCache = true;
+    _sandboxImportError = null;
     return true;
-  } catch {
+  } catch (err) {
     _sandboxAvailableCache = false;
+    _sandboxImportError = err;
     return false;
   }
 }
@@ -88,15 +112,17 @@ export async function isSandboxAvailable(): Promise<boolean> {
 async function loadSandboxFactory(): Promise<SandboxFactory> {
   if (sandboxFactoryOverride) return sandboxFactoryOverride;
   try {
-    // Hide the dynamic import from bundlers so the optional dep isn't statically resolved.
-    const dynamicImport = new Function("specifier", "return import(specifier)") as (s: string) => Promise<any>;
-    const pkg = "@" + "vercel/sandbox";
-    const mod = await dynamicImport(pkg);
+    // @ts-expect-error — optional runtime dep; types not required at compile time.
+    const mod: any = await import("@vercel/sandbox");
     return mod.Sandbox ?? mod.default?.Sandbox ?? mod;
   } catch (err) {
+    _sandboxImportError = err;
+    const detail = err instanceof Error ? `: ${err.message}` : "";
     throw new Error(
-      "Code Mode requires the optional peer dependency `@vercel/sandbox`. " +
-      "Install it with `npm install @vercel/sandbox` (or `bun add @vercel/sandbox`)."
+      "Code Mode failed to load `@vercel/sandbox`" + detail + ". " +
+      "Ensure the package is installed and reachable at runtime. On Next.js/Vercel, " +
+      "confirm it is listed in `dependencies` (not only `devDependencies`) and that " +
+      "the route using Code Mode runs in the Node.js runtime (not Edge)."
     );
   }
 }

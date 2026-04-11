@@ -15,6 +15,7 @@ import { generateCodeModeTypes } from "./type-generator.js";
 import {
   executeSandboxCode,
   isSandboxAvailable,
+  getSandboxImportError,
   type ExecuteSandboxCodeResult,
 } from "./executor.js";
 import { getEnv } from "../utils/env.js";
@@ -126,14 +127,25 @@ export async function canUseCodeMode(client: MCPClient<any>): Promise<boolean> {
   return (await diagnoseCodeMode(client)).available;
 }
 
-const CODE_MODE_UNAVAILABLE_MESSAGES: Record<CodeModeUnavailableReason, string> = {
-  "sandbox-missing":
+function buildFallbackMessage(reason: CodeModeUnavailableReason): string {
+  if (reason === "no-public-url") {
+    return (
+      "[integrate-sdk] Code Mode unavailable (reason: no-public-url) — falling back to tool mode. " +
+      "Set `codeMode.publicUrl` on your server config or the `INTEGRATE_URL` env var."
+    );
+  }
+  const importError = getSandboxImportError();
+  const detail = importError instanceof Error
+    ? ` Underlying import error: ${importError.message}`
+    : importError
+      ? ` Underlying import error: ${String(importError)}`
+      : "";
+  return (
     "[integrate-sdk] Code Mode unavailable (reason: sandbox-missing) — falling back to tool mode. " +
-    "Install `@vercel/sandbox` (e.g. `bun add @vercel/sandbox`) to enable Code Mode.",
-  "no-public-url":
-    "[integrate-sdk] Code Mode unavailable (reason: no-public-url) — falling back to tool mode. " +
-    "Set `codeMode.publicUrl` on your server config or the `INTEGRATE_URL` env var.",
-};
+    "Ensure `@vercel/sandbox` is in `dependencies` and the route runs in the Node.js runtime (not Edge)." +
+    detail
+  );
+}
 
 const warnedCodeModeReasons = new Set<CodeModeUnavailableReason>();
 
@@ -150,7 +162,7 @@ export function __resetCodeModeFallbackWarnings(): void {
 export function warnCodeModeFallback(reason: CodeModeUnavailableReason): void {
   if (warnedCodeModeReasons.has(reason)) return;
   warnedCodeModeReasons.add(reason);
-  console.warn(CODE_MODE_UNAVAILABLE_MESSAGES[reason]);
+  console.warn(buildFallbackMessage(reason));
 }
 
 /**
