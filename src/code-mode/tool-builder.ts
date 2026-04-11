@@ -123,6 +123,7 @@ export function buildCodeModeTool(
       sandboxOverrides.publicUrl ??
       serverCodeModeConfig.publicUrl ??
       getEnv("INTEGRATE_PUBLIC_URL");
+    const apiKey = (client as any).__oauthConfig?.apiKey as string | undefined;
 
     if (!publicUrl) {
       return {
@@ -142,6 +143,7 @@ export function buildCodeModeTool(
     return executeSandboxCode({
       code,
       mcpUrl,
+      apiKey,
       providerTokens,
       context,
       integrationsHeader: integrationIds && integrationIds.length > 0 ? integrationIds.join(",") : undefined,

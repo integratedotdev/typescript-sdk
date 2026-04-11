@@ -94,6 +94,8 @@ export interface ExecuteSandboxCodeOptions {
   code: string;
   /** Fully-qualified MCP route URL, e.g. `https://myapp.com/api/integrate/mcp`. */
   mcpUrl: string;
+  /** Server API key forwarded to trusted sandbox callbacks. */
+  apiKey?: string;
   /** Session token forwarded as `Authorization: Bearer <token>` by the stub. */
   sessionToken?: string;
   /**
@@ -220,6 +222,7 @@ export async function executeSandboxCode(options: ExecuteSandboxCodeOptions): Pr
     const env: Record<string, string> = {
       INTEGRATE_MCP_URL: options.mcpUrl,
     };
+    if (options.apiKey) env.INTEGRATE_API_KEY = options.apiKey;
     if (options.sessionToken) env.INTEGRATE_SESSION_TOKEN = options.sessionToken;
     if (options.providerTokens && Object.keys(options.providerTokens).length > 0) {
       env.INTEGRATE_PROVIDER_TOKENS = JSON.stringify(options.providerTokens);

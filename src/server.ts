@@ -455,8 +455,15 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
         if (!authHeader && config.getProviderToken) {
           const codeModeHeader = webRequest.headers.get('x-integrate-code-mode');
           const contextHeader = webRequest.headers.get('x-integrate-context');
+          const callbackApiKey = webRequest.headers.get('x-integrate-api-key');
           const toolName = typeof body?.name === 'string' ? body.name : '';
-          if (codeModeHeader === '1' && contextHeader && toolName) {
+          if (
+            codeModeHeader === '1' &&
+            contextHeader &&
+            toolName &&
+            config.apiKey &&
+            callbackApiKey === config.apiKey
+          ) {
             try {
               const context = JSON.parse(contextHeader) as MCPContext;
               const provider = toolName.split('_')[0];
