@@ -6,7 +6,7 @@ import { getOpenAITools } from "../../src/ai/openai.js";
 import { getAnthropicTools } from "../../src/ai/anthropic.js";
 import { getGoogleTools } from "../../src/ai/google.js";
 import { CODE_MODE_TOOL_NAME } from "../../src/code-mode/tool-builder.js";
-import { __setSandboxFactoryForTests } from "../../src/code-mode/executor.js";
+import { __setSandboxFactoryForTests, __setSandboxUnavailableForTests } from "../../src/code-mode/executor.js";
 import type { MCPTool } from "../../src/protocol/messages.js";
 
 const MOCK_TOOL: MCPTool = {
@@ -66,6 +66,7 @@ function makeSandboxFactory(onRunCommand?: (params: any) => void) {
 
 afterEach(() => {
   __setSandboxFactoryForTests(null);
+  __setSandboxUnavailableForTests(false);
   delete process.env.INTEGRATE_PUBLIC_URL;
 });
 
@@ -131,6 +132,15 @@ describe("AI helper code mode defaults", () => {
   });
 
   test("preserves explicit code mode when sandbox is unavailable", async () => {
+    __setSandboxUnavailableForTests(true);
+    __setSandboxFactoryForTests({
+      async create() {
+        throw new Error(
+          "Code Mode requires the optional peer dependency `@vercel/sandbox`. " +
+          "Install it with `npm install @vercel/sandbox` (or `bun add @vercel/sandbox`)."
+        );
+      },
+    } as any);
     const client = createTestClient("https://example.com");
 
     const vercelTools = await getVercelAITools(client, { mode: "code" });
