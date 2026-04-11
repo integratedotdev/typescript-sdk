@@ -421,7 +421,7 @@ describe("Trigger Tools for AI", () => {
       (server.client as any).transport = { isConnected: () => true };
 
       const context = { userId: 'user123', organizationId: 'org456' };
-      const tools = await getVercelAITools(server.client, { context });
+      const tools = await getVercelAITools(server.client, { mode: 'tools', context });
 
       await tools.create_trigger.execute({
         toolName: 'github_create_issue',

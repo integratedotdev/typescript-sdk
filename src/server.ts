@@ -303,6 +303,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
     getSessionContext: config.getSessionContext,
     setProviderToken: config.setProviderToken,
     removeProviderToken: config.removeProviderToken,
+    codeMode: config.codeMode,
   };
 
   // Attach trigger config to the client for AI tools access
@@ -421,8 +422,29 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
     if (action === 'mcp' && method === 'POST') {
       try {
         const body = await webRequest.json();
-        const authHeader = webRequest.headers.get('authorization');
+        let authHeader = webRequest.headers.get('authorization');
         const integrationsHeader = webRequest.headers.get('x-integrations');
+
+        // Code Mode fallback: when the sandbox callback passes a multi-provider
+        // `x-integrate-tokens` map, synthesize the single-provider `Authorization`
+        // header expected by `handleToolCall` based on the tool's integration
+        // prefix. This keeps the sandbox → /mcp round trip on the same auth plane
+        // existing clients use without leaking the whole token map.
+        if (!authHeader) {
+          const tokensHeader = webRequest.headers.get('x-integrate-tokens');
+          const toolName = typeof body?.name === 'string' ? body.name : '';
+          if (tokensHeader && toolName) {
+            try {
+              const tokens = JSON.parse(tokensHeader) as Record<string, string>;
+              const provider = toolName.split('_')[0];
+              if (provider && tokens[provider]) {
+                authHeader = `Bearer ${tokens[provider]}`;
+              }
+            } catch {
+              // Ignore malformed token header — fall through to unauthenticated call.
+            }
+          }
+        }
 
         // Create OAuth handler with config that includes API key
         // The API key will be automatically sent as X-API-KEY header to the MCP server
@@ -450,6 +472,82 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
         return Response.json(
           { error: error.message || 'Failed to execute tool call' },
           { status: error.statusCode || 500 }
+        );
+      }
+    }
+
+    // Handle /code route — Code Mode execution endpoint.
+    // Accepts { code, providerTokens?, context? } and runs the snippet in a
+    // Vercel Sandbox that proxies MCP tool calls back through /api/integrate/mcp.
+    if (action === 'code' && method === 'POST') {
+      try {
+        const body = await webRequest.json() as {
+          code?: string;
+          providerTokens?: Record<string, string>;
+          context?: Record<string, unknown>;
+        };
+
+        if (typeof body?.code !== 'string' || body.code.length === 0) {
+          return Response.json({ error: '`code` is required and must be a non-empty string.' }, { status: 400 });
+        }
+
+        const { executeSandboxCode } = await import('./code-mode/executor.js');
+
+        const codeModeConfig = config.codeMode ?? {};
+        const publicUrl = codeModeConfig.publicUrl ?? getEnv('INTEGRATE_PUBLIC_URL');
+        if (!publicUrl) {
+          return Response.json(
+            {
+              error:
+                'Code Mode requires `codeMode.publicUrl` in createMCPServer config (or the INTEGRATE_PUBLIC_URL env var). ' +
+                'Set it to the public origin where /api/integrate/mcp is reachable.',
+            },
+            { status: 500 }
+          );
+        }
+
+        // Pull session context from the incoming request unless the caller
+        // supplied an explicit context override.
+        let contextOverride = body.context as any;
+        if (!contextOverride && config.getSessionContext) {
+          try {
+            contextOverride = await config.getSessionContext(webRequest);
+          } catch {
+            // ignore session extraction failures
+          }
+        }
+
+        // Forward either the explicit providerTokens from the body or those
+        // already present on the request (same auto-extraction pattern the AI
+        // helpers use).
+        let providerTokens = body.providerTokens;
+        if (!providerTokens) {
+          const headerTokens = webRequest.headers.get('x-integrate-tokens');
+          if (headerTokens) {
+            try { providerTokens = JSON.parse(headerTokens); } catch { /* ignore */ }
+          }
+        }
+
+        const integrationIds = updatedIntegrations.map((i) => i.id);
+
+        const result = await executeSandboxCode({
+          code: body.code,
+          mcpUrl: publicUrl.replace(/\/$/, '') + '/api/integrate/mcp',
+          providerTokens,
+          context: contextOverride,
+          integrationsHeader: integrationIds.join(','),
+          runtime: codeModeConfig.runtime,
+          timeoutMs: codeModeConfig.timeoutMs,
+          vcpus: codeModeConfig.vcpus,
+          networkPolicy: codeModeConfig.networkPolicy,
+        });
+
+        return Response.json(result, { status: result.success ? 200 : 500 });
+      } catch (error: any) {
+        logger.error('[Code Mode] Error:', error);
+        return Response.json(
+          { error: error?.message || 'Failed to execute code' },
+          { status: 500 }
         );
       }
     }

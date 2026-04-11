@@ -55,3 +55,12 @@ export {
   // Utilities
   type AIToolsOptions
 } from './src/ai/index.js';
+
+// Code Mode exports
+export {
+  buildCodeModeTool,
+  CODE_MODE_TOOL_NAME,
+  generateCodeModeTypes,
+  executeSandboxCode,
+  RUNTIME_STUB_SOURCE,
+} from './src/code-mode/index.js';

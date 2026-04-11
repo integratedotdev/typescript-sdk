@@ -45,7 +45,7 @@ describe("Anthropic Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getAnthropicTools(client);
+      const tools = await getAnthropicTools(client, { mode: 'tools' });
       const anthropicTool = tools.find((t) => t.name === "test_tool");
 
       expect(anthropicTool).toBeDefined();
@@ -78,7 +78,7 @@ describe("Anthropic Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getAnthropicTools(client);
+      const tools = await getAnthropicTools(client, { mode: 'tools' });
       const anthropicTool = tools.find((t) => t.name === "test_tool");
 
       expect(anthropicTool?.description).toBe("Execute test_tool");
@@ -104,7 +104,7 @@ describe("Anthropic Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getAnthropicTools(client);
+      const tools = await getAnthropicTools(client, { mode: 'tools' });
       const anthropicTool = tools.find((t) => t.name === "test_tool");
 
       expect(anthropicTool?.input_schema.type).toBe("object");
@@ -145,7 +145,7 @@ describe("Anthropic Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getAnthropicTools(client);
+      const tools = await getAnthropicTools(client, { mode: 'tools' });
       const anthropicTool = tools.find((t) => t.name === "complex_tool");
 
       expect(anthropicTool?.input_schema.type).toBe("object");
@@ -188,7 +188,7 @@ describe("Anthropic Integration", () => {
     });
 
     test("converts all enabled tools", async () => {
-      const tools = await getAnthropicTools(client);
+      const tools = await getAnthropicTools(client, { mode: 'tools' });
 
       expect(tools).toHaveLength(2);
       expect(tools.some((t) => t.name === "tool1")).toBe(true);
@@ -205,13 +205,12 @@ describe("Anthropic Integration", () => {
 
       // Since tools are already cached in availableTools from beforeAll,
       // getEnabledToolsAsync will use the cache
-      const tools = await getAnthropicTools(client);
+      const tools = await getAnthropicTools(client, { mode: 'tools' });
       expect(tools.length).toBeGreaterThan(0);
     });
 
     test("uses provided provider tokens", async () => {
-      const tools = await getAnthropicTools(client, {
-        providerTokens: { github: "test_token_123" },
+      const tools = await getAnthropicTools(client, { mode: 'tools',         providerTokens: { github: "test_token_123" },
       });
 
       expect(tools).toBeDefined();

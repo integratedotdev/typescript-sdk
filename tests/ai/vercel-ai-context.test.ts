@@ -78,7 +78,7 @@ describe('Vercel AI SDK Context Passing', () => {
       };
 
       // Convert tools with context
-      const tools = await getVercelAITools(client, { context });
+      const tools = await getVercelAITools(client, { mode: 'tools', context });
 
       // Execute the tool
       await tools['github_list_repos'].execute({ per_page: 10 });
@@ -113,7 +113,7 @@ describe('Vercel AI SDK Context Passing', () => {
       });
 
       // Convert tools without context
-      const tools = await getVercelAITools(client);
+      const tools = await getVercelAITools(client, { mode: 'tools' });
 
       // Execute the tool
       await tools['github_list_repos'].execute({ per_page: 10 });
@@ -164,7 +164,7 @@ describe('Vercel AI SDK Context Passing', () => {
       };
 
       // Convert tools with context
-      const tools = await getVercelAITools(client, { context });
+      const tools = await getVercelAITools(client, { mode: 'tools', context });
 
       // Execute the tool (which should trigger the full call chain)
       await tools['github_list_repos'].execute({ per_page: 10 });
@@ -215,13 +215,11 @@ describe('Vercel AI SDK Context Passing', () => {
       vi.spyOn(client, 'getEnabledToolsAsync').mockResolvedValue([mockToolObject as any]);
 
       // Create tools for user1
-      const toolsUser1 = await getVercelAITools(client, {
-        context: { userId: 'user1' },
+      const toolsUser1 = await getVercelAITools(client, { mode: 'tools',         context: { userId: 'user1' },
       });
 
       // Create tools for user2
-      const toolsUser2 = await getVercelAITools(client, {
-        context: { userId: 'user2' },
+      const toolsUser2 = await getVercelAITools(client, { mode: 'tools',         context: { userId: 'user2' },
       });
 
       // Execute tool for user1
@@ -258,7 +256,7 @@ describe('Vercel AI SDK Context Passing', () => {
       });
 
       // Convert tools with empty context
-      const tools = await getVercelAITools(client, { context: {} });
+      const tools = await getVercelAITools(client, { mode: 'tools', context: {} });
 
       // Execute the tool
       await tools['github_list_repos'].execute({ per_page: 10 });
@@ -311,7 +309,7 @@ describe('Vercel AI SDK Context Passing', () => {
       };
 
       // Convert tools with custom context fields
-      const tools = await getVercelAITools(client, { context });
+      const tools = await getVercelAITools(client, { mode: 'tools', context });
 
       // Execute the tool
       await tools['github_list_repos'].execute({ per_page: 10 });
@@ -358,8 +356,7 @@ describe('Vercel AI SDK Context Passing', () => {
 
       // Simulate API route handler
       const userId = 'user-from-session';
-      const tools = await getVercelAITools(client, {
-        context: { userId },
+      const tools = await getVercelAITools(client, { mode: 'tools',         context: { userId },
       });
 
       // Simulate AI model calling the tool
@@ -414,7 +411,7 @@ describe('Vercel AI SDK Context Passing', () => {
         organizationId: 'org456',
       };
 
-      const tools = await getVercelAITools(client, { context });
+      const tools = await getVercelAITools(client, { mode: 'tools', context });
 
       // Execute tool
       await tools['github_list_repos'].execute({ per_page: 10 });
