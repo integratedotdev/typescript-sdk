@@ -97,7 +97,7 @@ export async function isSandboxAvailable(): Promise<boolean> {
     // used `new Function("return import(specifier)")` to hide the import,
     // which caused serverless builds on Vercel to ship without
     // `@vercel/sandbox` even though it was in package.json.
-    // @ts-expect-error — optional runtime dep; types not required at compile time.
+    // @ts-ignore — dep may or may not be installed in the local environment.
     await import("@vercel/sandbox");
     _sandboxAvailableCache = true;
     _sandboxImportError = null;
@@ -112,7 +112,7 @@ export async function isSandboxAvailable(): Promise<boolean> {
 async function loadSandboxFactory(): Promise<SandboxFactory> {
   if (sandboxFactoryOverride) return sandboxFactoryOverride;
   try {
-    // @ts-expect-error — optional runtime dep; types not required at compile time.
+    // @ts-ignore — dep may or may not be installed in the local environment.
     const mod: any = await import("@vercel/sandbox");
     return mod.Sandbox ?? mod.default?.Sandbox ?? mod;
   } catch (err) {
