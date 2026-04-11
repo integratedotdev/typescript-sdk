@@ -6,7 +6,7 @@ import { getOpenAITools } from "../../src/ai/openai.js";
 import { getAnthropicTools } from "../../src/ai/anthropic.js";
 import { getGoogleTools } from "../../src/ai/google.js";
 import { CODE_MODE_TOOL_NAME } from "../../src/code-mode/tool-builder.js";
-import { __setSandboxFactoryForTests } from "../../src/code-mode/executor.js";
+import { __setSandboxFactoryForTests, __setSandboxUnavailableForTests } from "../../src/code-mode/executor.js";
 import type { MCPTool } from "../../src/protocol/messages.js";
 
 const MOCK_TOOL: MCPTool = {
@@ -23,7 +23,7 @@ const MOCK_TOOL: MCPTool = {
   },
 };
 
-function createTestClient(publicUrl?: string) {
+function createTestClient(publicUrl?: string, apiKey?: string) {
   const client = createMCPClient({
     integrations: [
       createSimpleIntegration({
@@ -37,6 +37,7 @@ function createTestClient(publicUrl?: string) {
   (client as any).initialized = true;
   (client as any).transport = { isConnected: () => true };
   (client as any).__oauthConfig = {
+    apiKey,
     integrations: [{ id: "test" }],
     codeMode: publicUrl ? { publicUrl } : undefined,
   };
@@ -44,12 +45,13 @@ function createTestClient(publicUrl?: string) {
   return client;
 }
 
-function makeSandboxFactory() {
+function makeSandboxFactory(onRunCommand?: (params: any) => void) {
   return {
     async create() {
       return {
         async writeFiles() {},
-        async runCommand() {
+        async runCommand(params?: any) {
+          onRunCommand?.(params);
           return {
             exitCode: 0,
             stdout: async () => "",
@@ -64,6 +66,7 @@ function makeSandboxFactory() {
 
 afterEach(() => {
   __setSandboxFactoryForTests(null);
+  __setSandboxUnavailableForTests(false);
   delete process.env.INTEGRATE_PUBLIC_URL;
 });
 
@@ -129,6 +132,15 @@ describe("AI helper code mode defaults", () => {
   });
 
   test("preserves explicit code mode when sandbox is unavailable", async () => {
+    __setSandboxUnavailableForTests(true);
+    __setSandboxFactoryForTests({
+      async create() {
+        throw new Error(
+          "Code Mode requires the optional peer dependency `@vercel/sandbox`. " +
+          "Install it with `npm install @vercel/sandbox` (or `bun add @vercel/sandbox`)."
+        );
+      },
+    } as any);
     const client = createTestClient("https://example.com");
 
     const vercelTools = await getVercelAITools(client, { mode: "code" });
@@ -137,5 +149,21 @@ describe("AI helper code mode defaults", () => {
     expect(vercelTools[CODE_MODE_TOOL_NAME]).toBeDefined();
     expect(result.success).toBe(false);
     expect(result.error).toContain("Code Mode requires the optional peer dependency `@vercel/sandbox`.");
+  });
+
+  test("passes server API key into code mode sandbox execution", async () => {
+    let recordedEnv: Record<string, string> | undefined;
+    __setSandboxFactoryForTests(
+      makeSandboxFactory((params) => {
+        recordedEnv = params?.env;
+      })
+    );
+    const client = createTestClient("https://example.com", "server_api_key_123");
+
+    const vercelTools = await getVercelAITools(client, { mode: "code" });
+    const result = await vercelTools[CODE_MODE_TOOL_NAME].execute({ code: "return 1;" });
+
+    expect(result.success).toBe(true);
+    expect(recordedEnv?.INTEGRATE_API_KEY).toBe("server_api_key_123");
   });
 });

@@ -49,15 +49,27 @@ interface SandboxFactory {
  */
 let sandboxFactoryOverride: SandboxFactory | null = null;
 let _sandboxAvailableCache: boolean | null = null;
+let _sandboxForcedUnavailableForTests = false;
 
 /** @internal — used by unit tests to stub the sandbox SDK. */
 export function __setSandboxFactoryForTests(factory: SandboxFactory | null): void {
   sandboxFactoryOverride = factory;
+  _sandboxForcedUnavailableForTests = false;
+  _sandboxAvailableCache = null;
+}
+
+/** @internal — used by unit tests to simulate missing @vercel/sandbox. */
+export function __setSandboxUnavailableForTests(force: boolean): void {
+  _sandboxForcedUnavailableForTests = force;
   _sandboxAvailableCache = null;
 }
 
 export async function isSandboxAvailable(): Promise<boolean> {
   if (_sandboxAvailableCache !== null) return _sandboxAvailableCache;
+  if (_sandboxForcedUnavailableForTests) {
+    _sandboxAvailableCache = false;
+    return false;
+  }
   if (sandboxFactoryOverride) {
     _sandboxAvailableCache = true;
     return true;
@@ -94,6 +106,8 @@ export interface ExecuteSandboxCodeOptions {
   code: string;
   /** Fully-qualified MCP route URL, e.g. `https://myapp.com/api/integrate/mcp`. */
   mcpUrl: string;
+  /** Server API key forwarded to trusted sandbox callbacks. */
+  apiKey?: string;
   /** Session token forwarded as `Authorization: Bearer <token>` by the stub. */
   sessionToken?: string;
   /**
@@ -220,6 +234,7 @@ export async function executeSandboxCode(options: ExecuteSandboxCodeOptions): Pr
     const env: Record<string, string> = {
       INTEGRATE_MCP_URL: options.mcpUrl,
     };
+    if (options.apiKey) env.INTEGRATE_API_KEY = options.apiKey;
     if (options.sessionToken) env.INTEGRATE_SESSION_TOKEN = options.sessionToken;
     if (options.providerTokens && Object.keys(options.providerTokens).length > 0) {
       env.INTEGRATE_PROVIDER_TOKENS = JSON.stringify(options.providerTokens);
