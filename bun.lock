@@ -5,7 +5,7 @@
     "": {
       "name": "integrate-sdk",
       "dependencies": {
-        "@vercel/sandbox": ">=1.0.0",
+        "@vercel/sandbox": "^1.0.0",
         "nanoid": "^3.3.7",
         "zod": "^3.23.8",
         "zod-to-json-schema": "^3.25.1",
