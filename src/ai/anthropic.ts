@@ -9,6 +9,7 @@ import type { MCPTool } from "../protocol/messages.js";
 import type { MCPContext } from "../config/types.js";
 import { executeToolWithToken, getProviderTokens, ensureClientConnected, type AIToolsOptions } from "./utils.js";
 import { createTriggerTools } from "./trigger-tools.js";
+import { buildCodeModeTool, CODE_MODE_TOOL_NAME } from "../code-mode/tool-builder.js";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import type Anthropic from "@anthropic-ai/sdk";
 
@@ -33,6 +34,17 @@ export interface AnthropicTool {
 export interface AnthropicToolsOptions extends AIToolsOptions {
   /** User context for multi-tenant token storage */
   context?: MCPContext;
+  /**
+   * How to expose MCP tools to the model.
+   *
+   * - `'code'` (default): Returns a single `execute_code` tool backed by a
+   *   Vercel Sandbox. The model writes TypeScript that calls the typed
+   *   `client.<integration>.<method>()` API and chains operations in one round-trip.
+   * - `'tools'`: Legacy behavior — one Anthropic tool per MCP tool.
+   *
+   * @default 'code'
+   */
+  mode?: 'code' | 'tools';
 }
 
 /**
@@ -134,6 +146,20 @@ async function handleAnthropicToolCalls(
   const triggerConfig = (client as any).__triggerConfig;
   const triggerTools = triggerConfig ? createTriggerTools(triggerConfig, options?.context) : null;
 
+  // Lazy-build the code mode tool for this helper invocation
+  let cachedCodeModeTool: ReturnType<typeof buildCodeModeTool> | null = null;
+  const getCodeModeTool = async () => {
+    if (cachedCodeModeTool) return cachedCodeModeTool;
+    const mcpTools = await client.getEnabledToolsAsync();
+    cachedCodeModeTool = buildCodeModeTool(client, {
+      tools: mcpTools,
+      providerTokens: options?.providerTokens,
+      context: options?.context,
+      integrationIds: (client as any).__oauthConfig?.integrations?.map((i: any) => i.id),
+    });
+    return cachedCodeModeTool;
+  };
+
   // Filter for tool_use blocks
   const toolUseBlocks = messageContent.filter(
     (block): block is AnthropicToolUseBlock =>
@@ -146,9 +172,12 @@ async function handleAnthropicToolCalls(
   // Execute each tool call
   for (const toolUse of toolUseBlocks) {
     try {
-      // Check if this is a trigger tool
+      // Check if this is a trigger tool or code mode tool
       let result;
-      if (triggerTools && (triggerTools as any)[toolUse.name]) {
+      if (toolUse.name === CODE_MODE_TOOL_NAME) {
+        const codeTool = await getCodeModeTool();
+        result = await codeTool.execute(toolUse.input as { code: string });
+      } else if (triggerTools && (triggerTools as any)[toolUse.name]) {
         result = await (triggerTools as any)[toolUse.name].execute(toolUse.input);
       } else {
         result = await executeToolWithToken(client, toolUse.name, toolUse.input, options);
@@ -239,7 +268,27 @@ export async function getAnthropicTools(
   // Use getEnabledToolsAsync to ensure schemas are always populated
   // This fetches from server if not connected, otherwise uses cached tools
   const mcpTools = await client.getEnabledToolsAsync();
-  const anthropicTools: AnthropicTool[] = mcpTools.map(mcpTool => convertMCPToolToAnthropic(mcpTool, client, finalOptions));
+  const mode = options?.mode ?? 'code';
+
+  const anthropicTools: AnthropicTool[] = mode === 'code'
+    ? (() => {
+        const codeTool = buildCodeModeTool(client, {
+          tools: mcpTools,
+          providerTokens,
+          context: options?.context,
+          integrationIds: (client as any).__oauthConfig?.integrations?.map((i: any) => i.id),
+        });
+        return [{
+          name: CODE_MODE_TOOL_NAME,
+          description: codeTool.description,
+          input_schema: {
+            type: 'object',
+            properties: codeTool.parameters.properties as Record<string, unknown>,
+            required: [...codeTool.parameters.required],
+          },
+        }];
+      })()
+    : mcpTools.map(mcpTool => convertMCPToolToAnthropic(mcpTool, client, finalOptions));
 
   // Add trigger management tools if configured
   const triggerConfig = (client as any).__triggerConfig;

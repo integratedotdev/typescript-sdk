@@ -16,6 +16,7 @@ import {
   type AIToolsOptions
 } from "./utils.js";
 import { createTriggerTools } from "./trigger-tools.js";
+import { buildCodeModeTool, CODE_MODE_TOOL_NAME } from "../code-mode/tool-builder.js";
 
 /**
  * Tool definition compatible with Vercel AI SDK v5
@@ -33,6 +34,19 @@ export interface VercelAITool {
 export interface VercelAIToolsOptions extends AIToolsOptions {
   /** User context for multi-tenant token storage */
   context?: MCPContext;
+  /**
+   * How to expose MCP tools to the model.
+   *
+   * - `'code'` (default): Returns a single `execute_code` tool. The model writes
+   *   a TypeScript snippet that calls the typed `client.<integration>.<method>()`
+   *   API; the snippet runs in an isolated Vercel Sandbox and calls back into
+   *   `/api/integrate/mcp`. Chains multiple operations in one round-trip.
+   * - `'tools'`: Legacy behavior — returns one AI tool per MCP tool. Use this
+   *   if you can't run `@vercel/sandbox` or need the model to see every tool.
+   *
+   * @default 'code'
+   */
+  mode?: 'code' | 'tools';
 }
 
 /**
@@ -135,18 +149,37 @@ export async function getVercelAITools(
 
   // Auto-connect if needed (handles server actions/functions where connect() wasn't called)
   await ensureClientConnected(client);
-  
+
   // Use getEnabledToolsAsync to ensure schemas are always populated
   // This fetches from server if not connected, otherwise uses cached tools
   const mcpTools = await client.getEnabledToolsAsync();
   const vercelTools: Record<string, any> = {};
 
-  // Add MCP integration tools
-  for (const mcpTool of mcpTools) {
-    vercelTools[mcpTool.name] = convertMCPToolToVercelAI(mcpTool, client, finalOptions);
+  const mode = options?.mode ?? 'code';
+
+  if (mode === 'code') {
+    const codeTool = buildCodeModeTool(client, {
+      tools: mcpTools,
+      providerTokens,
+      context: options?.context,
+      integrationIds: (client as any).__oauthConfig?.integrations?.map((i: any) => i.id)
+        ?? (client as any).integrations?.map?.((i: any) => i.id),
+    });
+    vercelTools[CODE_MODE_TOOL_NAME] = {
+      description: codeTool.description,
+      inputSchema: z.object({
+        code: z.string().describe(codeTool.parameters.properties.code.description),
+      }),
+      execute: async (args: { code: string }) => codeTool.execute(args),
+    };
+  } else {
+    // Legacy behavior — one Vercel tool per MCP tool
+    for (const mcpTool of mcpTools) {
+      vercelTools[mcpTool.name] = convertMCPToolToVercelAI(mcpTool, client, finalOptions);
+    }
   }
 
-  // Add trigger management tools if configured
+  // Add trigger management tools if configured (available in both modes)
   const triggerConfig = (client as any).__triggerConfig;
   if (triggerConfig) {
     const triggerTools = createTriggerTools(triggerConfig, options?.context);

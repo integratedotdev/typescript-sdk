@@ -9,6 +9,7 @@ import type { MCPTool } from "../protocol/messages.js";
 import type { MCPContext } from "../config/types.js";
 import { executeToolWithToken, getProviderTokens, ensureClientConnected, type AIToolsOptions } from "./utils.js";
 import { createTriggerTools } from "./trigger-tools.js";
+import { buildCodeModeTool, CODE_MODE_TOOL_NAME } from "../code-mode/tool-builder.js";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import type { OpenAI } from "openai";
 
@@ -37,6 +38,17 @@ export interface OpenAIToolsOptions extends AIToolsOptions {
   strict?: boolean;
   /** User context for multi-tenant token storage */
   context?: MCPContext;
+  /**
+   * How to expose MCP tools to the model.
+   *
+   * - `'code'` (default): Returns a single `execute_code` tool backed by a
+   *   Vercel Sandbox. The model writes TypeScript that calls the typed
+   *   `client.<integration>.<method>()` API and chains operations in one round-trip.
+   * - `'tools'`: Legacy behavior — one OpenAI function tool per MCP tool.
+   *
+   * @default 'code'
+   */
+  mode?: 'code' | 'tools';
 }
 
 /**
@@ -127,11 +139,29 @@ export async function getOpenAITools(
 
   // Auto-connect if needed (handles server actions/functions where connect() wasn't called)
   await ensureClientConnected(client);
-  
+
   // Use getEnabledToolsAsync to ensure schemas are always populated
   // This fetches from server if not connected, otherwise uses cached tools
   const mcpTools = await client.getEnabledToolsAsync();
-  const openaiTools: OpenAITool[] = mcpTools.map(mcpTool => convertMCPToolToOpenAI(mcpTool, client, finalOptions));
+  const mode = options?.mode ?? 'code';
+
+  const openaiTools: OpenAITool[] = mode === 'code'
+    ? (() => {
+        const codeTool = buildCodeModeTool(client, {
+          tools: mcpTools,
+          providerTokens,
+          context: options?.context,
+          integrationIds: (client as any).__oauthConfig?.integrations?.map((i: any) => i.id),
+        });
+        return [{
+          type: 'function',
+          name: CODE_MODE_TOOL_NAME,
+          description: codeTool.description,
+          parameters: codeTool.parameters as unknown as { [key: string]: unknown },
+          strict: options?.strict ?? null,
+        }];
+      })()
+    : mcpTools.map(mcpTool => convertMCPToolToOpenAI(mcpTool, client, finalOptions));
 
   // Add trigger management tools if configured
   const triggerConfig = (client as any).__triggerConfig;
@@ -206,6 +236,21 @@ async function handleOpenAIToolCalls(
   const triggerConfig = (client as any).__triggerConfig;
   const triggerTools = triggerConfig ? createTriggerTools(triggerConfig, options?.context) : null;
 
+  // Lazy-build the code mode tool for this helper invocation so we can
+  // dispatch `execute_code` calls without re-fetching tool metadata.
+  let cachedCodeModeTool: Awaited<ReturnType<typeof buildCodeModeTool>> | null = null;
+  const getCodeModeTool = async () => {
+    if (cachedCodeModeTool) return cachedCodeModeTool;
+    const mcpTools = await client.getEnabledToolsAsync();
+    cachedCodeModeTool = buildCodeModeTool(client, {
+      tools: mcpTools,
+      providerTokens: options?.providerTokens,
+      context: options?.context,
+      integrationIds: (client as any).__oauthConfig?.integrations?.map((i: any) => i.id),
+    });
+    return cachedCodeModeTool;
+  };
+
   for (const output of toolCalls) {
     if (output.type === 'function_call') {
       const toolCall = {
@@ -216,10 +261,13 @@ async function handleOpenAIToolCalls(
 
       try {
         const args = JSON.parse(toolCall.arguments);
-        
+
         // Check if this is a trigger tool
         let result;
-        if (triggerTools && (triggerTools as any)[toolCall.name]) {
+        if (toolCall.name === CODE_MODE_TOOL_NAME) {
+          const codeTool = await getCodeModeTool();
+          result = await codeTool.execute(args as { code: string });
+        } else if (triggerTools && (triggerTools as any)[toolCall.name]) {
           result = await (triggerTools as any)[toolCall.name].execute(args);
         } else {
           result = await executeToolWithToken(client, toolCall.name, args, options);

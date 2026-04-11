@@ -43,7 +43,7 @@ describe("Vercel AI SDK Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getVercelAITools(client);
+      const tools = await getVercelAITools(client, { mode: 'tools' });
       const vercelTool = tools["test_tool"];
 
       expect(vercelTool).toBeDefined();
@@ -80,7 +80,7 @@ describe("Vercel AI SDK Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getVercelAITools(client);
+      const tools = await getVercelAITools(client, { mode: 'tools' });
       const vercelTool = tools["test_tool"];
 
       expect(vercelTool.description).toBe("Execute test_tool");
@@ -127,7 +127,7 @@ describe("Vercel AI SDK Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getVercelAITools(client);
+      const tools = await getVercelAITools(client, { mode: 'tools' });
       const vercelTool = tools["complex_tool"];
 
       // Verify it's a Zod object schema
@@ -191,7 +191,7 @@ describe("Vercel AI SDK Integration", () => {
     });
 
     test("converts all enabled tools", async () => {
-      const vercelTools = await getVercelAITools(client);
+      const vercelTools = await getVercelAITools(client, { mode: 'tools' });
 
       expect(Object.keys(vercelTools)).toHaveLength(3);
       expect(vercelTools["tool1"]).toBeDefined();
@@ -200,7 +200,7 @@ describe("Vercel AI SDK Integration", () => {
     });
 
     test("each converted tool has required properties", async () => {
-      const vercelTools = await getVercelAITools(client);
+      const vercelTools = await getVercelAITools(client, { mode: 'tools' });
 
       for (const [name, tool] of Object.entries(vercelTools)) {
         expect(tool.description).toBeString();
@@ -210,7 +210,7 @@ describe("Vercel AI SDK Integration", () => {
     });
 
     test("tool names match original MCP tool names", async () => {
-      const vercelTools = await getVercelAITools(client);
+      const vercelTools = await getVercelAITools(client, { mode: 'tools' });
 
       expect(vercelTools).toHaveProperty("tool1");
       expect(vercelTools).toHaveProperty("tool2");
@@ -250,7 +250,7 @@ describe("Vercel AI SDK Integration", () => {
         };
       };
 
-      const tools = await getVercelAITools(client);
+      const tools = await getVercelAITools(client, { mode: 'tools' });
       const vercelTool = tools["test_tool"];
       const testArgs = { input: "test value" };
       await vercelTool.execute(testArgs);
@@ -287,7 +287,7 @@ describe("Vercel AI SDK Integration", () => {
 
       client._callToolByName = async () => mockResponse;
 
-      const tools = await getVercelAITools(client);
+      const tools = await getVercelAITools(client, { mode: 'tools' });
       const vercelTool = tools["test_tool"];
       const result = await vercelTool.execute({ input: "test" });
 
@@ -320,7 +320,7 @@ describe("Vercel AI SDK Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getVercelAITools(client);
+      const tools = await getVercelAITools(client, { mode: 'tools' });
 
       // Should normalize to proper Zod object schema
       expect(tools["test_tool"].inputSchema._def.typeName).toBe("ZodObject");
@@ -353,7 +353,7 @@ describe("Vercel AI SDK Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getVercelAITools(client);
+      const tools = await getVercelAITools(client, { mode: 'tools' });
 
       // Should convert to Zod object schema
       expect(tools["test_tool"].inputSchema._def.typeName).toBe("ZodObject");
@@ -382,7 +382,7 @@ describe("Vercel AI SDK Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getVercelAITools(client);
+      const tools = await getVercelAITools(client, { mode: 'tools' });
 
       // Should provide safe default Zod empty object schema
       expect(tools["test_tool"].inputSchema._def.typeName).toBe("ZodObject");
@@ -421,7 +421,7 @@ describe("Vercel AI SDK Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getVercelAITools(client);
+      const tools = await getVercelAITools(client, { mode: 'tools' });
 
       // Should convert to Zod schema
       expect(tools["test_tool"].inputSchema._def.typeName).toBe("ZodObject");
@@ -462,8 +462,7 @@ describe("Vercel AI SDK Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getVercelAITools(client, {
-        providerTokens: { github: "test_token_123" },
+      const tools = await getVercelAITools(client, { mode: 'tools',         providerTokens: { github: "test_token_123" },
       });
 
       expect(tools).toBeDefined();
@@ -530,8 +529,7 @@ describe("Vercel AI SDK Integration", () => {
         };
       };
 
-      const tools = await getVercelAITools(client, {
-        providerTokens: { github: "test_token_123" },
+      const tools = await getVercelAITools(client, { mode: 'tools',         providerTokens: { github: "test_token_123" },
       });
 
       await tools["github_create_issue"].execute({ title: "Test" });
@@ -587,8 +585,7 @@ describe("Vercel AI SDK Integration", () => {
         isError: false,
       });
 
-      const tools = await getVercelAITools(client, {
-        providerTokens: { github: "test_token_123" },
+      const tools = await getVercelAITools(client, { mode: 'tools',         providerTokens: { github: "test_token_123" },
       });
 
       await tools["github_create_issue"].execute({ title: "Test" });
@@ -676,8 +673,7 @@ describe("Vercel AI SDK Integration", () => {
         };
       };
 
-      const tools = await getVercelAITools(client, {
-        providerTokens: {
+      const tools = await getVercelAITools(client, { mode: 'tools',         providerTokens: {
           github: "github_token_123",
           gmail: "gmail_token_456",
         },
@@ -718,7 +714,7 @@ describe("Vercel AI SDK Integration", () => {
       });
 
       // Call without providerTokens option
-      const tools = await getVercelAITools(client);
+      const tools = await getVercelAITools(client, { mode: 'tools' });
       const result = await tools["test_tool"].execute({ input: "test" });
 
       expect(result).toBeDefined();
@@ -772,8 +768,7 @@ describe("Vercel AI SDK Integration", () => {
       });
 
       // Call with providerTokens but missing the github token
-      const tools = await getVercelAITools(client, {
-        providerTokens: { gmail: "gmail_token_123" }, // No github token
+      const tools = await getVercelAITools(client, { mode: 'tools',         providerTokens: { gmail: "gmail_token_123" }, // No github token
       });
 
       // Should still execute without error (falls back to default behavior)

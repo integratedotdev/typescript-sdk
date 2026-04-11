@@ -1,0 +1,243 @@
+---
+title: Code Mode
+description: Let the LLM write TypeScript against a typed API instead of calling individual tools
+---
+
+Code Mode is the default way the Integrate SDK exposes your integrations to AI models. Instead of sending every MCP tool (potentially hundreds across 25+ integrations) to the model on each request, Code Mode hands the LLM a single `execute_code` tool and a typed TypeScript API it can write code against.
+
+The LLM writes a snippet, the snippet runs in an isolated [Vercel Sandbox](https://vercel.com/docs/vercel-sandbox), and the results come back in one round-trip — no matter how many integrations the code touches.
+
+## Why Code Mode
+
+| | Per-tool (legacy) | Code Mode |
+|---|---|---|
+| Tools sent to model | 1 per MCP tool (25+ × N) | 1 (`execute_code`) |
+| Round-trips for multi-step tasks | 1 per tool call | 1 for the whole snippet |
+| Context window pressure | High — full tool list every request | Low — typed API surface only |
+| Model strength | Structured tool-calling | Writing code (what LLMs do best) |
+
+## Requirements
+
+Install the sandbox peer dependency:
+
+```bash
+bun add @vercel/sandbox
+```
+
+Code Mode needs a publicly reachable URL for your app so the sandbox can call back into your `/api/integrate/mcp` route. Set this in your server config:
+
+```typescript
+// lib/integrate.ts
+import { createMCPServer, githubIntegration, gmailIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    githubIntegration({ scopes: ["repo", "user"] }),
+    gmailIntegration({ scopes: ["gmail.send", "gmail.readonly"] }),
+  ],
+  codeMode: {
+    publicUrl: process.env.INTEGRATE_PUBLIC_URL, // e.g. "https://myapp.com"
+  },
+});
+```
+
+Or set the environment variable directly (no config change needed):
+
+```bash
+INTEGRATE_PUBLIC_URL=https://myapp.com
+```
+
+<Callout type="warn">
+Code Mode will return a clear error if `publicUrl` is not set. The sandbox needs it to call back into your `/api/integrate/mcp` route.
+</Callout>
+
+## Usage
+
+No API changes are required — `getVercelAITools`, `getOpenAITools`, `getAnthropicTools`, and `getGoogleTools` all default to Code Mode automatically.
+
+### Vercel AI SDK
+
+```typescript
+// app/api/chat/route.ts
+import { serverClient } from "@/lib/integrate";
+import { getVercelAITools } from "integrate-sdk/server";
+import { convertToModelMessages, stepCountIs, streamText } from "ai";
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+
+  const result = streamText({
+    model: "openai/gpt-4o",
+    messages: convertToModelMessages(messages),
+    tools: await getVercelAITools(serverClient), // Code Mode is the default
+    stopWhen: stepCountIs(3),
+  });
+
+  return result.toUIMessageStreamResponse();
+}
+```
+
+### OpenAI
+
+```typescript
+// app/api/chat/route.ts
+import { serverClient } from "@/lib/integrate";
+import { getOpenAITools, handleOpenAIResponse } from "integrate-sdk/server";
+import OpenAI from "openai";
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+
+  const response = await openai.responses.create({
+    model: "gpt-4o",
+    input: messages,
+    tools: await getOpenAITools(serverClient), // Code Mode is the default
+  });
+
+  const result = await handleOpenAIResponse(serverClient, response);
+  return Response.json(result);
+}
+```
+
+### Anthropic
+
+```typescript
+// app/api/chat/route.ts
+import { serverClient } from "@/lib/integrate";
+import { getAnthropicTools, handleAnthropicMessage } from "integrate-sdk/server";
+import Anthropic from "@anthropic-ai/sdk";
+
+const anthropic = new Anthropic();
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+
+  const msg = await anthropic.messages.create({
+    model: "claude-sonnet-4-5",
+    messages,
+    tools: await getAnthropicTools(serverClient), // Code Mode is the default
+    max_tokens: 4096,
+  });
+
+  const result = await handleAnthropicMessage(serverClient, msg);
+  return Response.json(result);
+}
+```
+
+### Google GenAI
+
+```typescript
+// app/api/chat/route.ts
+import { serverClient } from "@/lib/integrate";
+import { getGoogleTools, executeGoogleFunctionCalls } from "integrate-sdk/server";
+import { GoogleGenAI } from "@google/genai";
+
+const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY });
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+
+  const response = await ai.models.generateContent({
+    model: "gemini-2.0-flash-001",
+    contents: messages,
+    config: {
+      tools: [{ functionDeclarations: await getGoogleTools(serverClient) }], // Code Mode is the default
+    },
+  });
+
+  if (response.functionCalls?.length) {
+    const results = await executeGoogleFunctionCalls(serverClient, response.functionCalls);
+    return Response.json(results);
+  }
+
+  return Response.json(response);
+}
+```
+
+## What the LLM sees
+
+When Code Mode is active, the model receives a single `execute_code` tool whose description contains a generated TypeScript API derived from your enabled integrations:
+
+```typescript
+export interface GithubClient {
+  /** Create a new issue in a repository */
+  createIssue(args: {
+    /** Repository owner */
+    owner: string;
+    repo: string;
+    title: string;
+    body?: string;
+    labels?: string[];
+  }): Promise<ToolResult>;
+
+  /** List repositories for the authenticated user */
+  listRepos(args?: { visibility?: "all" | "public" | "private" }): Promise<ToolResult>;
+}
+
+export interface GmailClient {
+  /** Send an email */
+  sendMessage(args: {
+    to: string;
+    subject: string;
+    body: string;
+  }): Promise<ToolResult>;
+}
+
+export interface Client {
+  github: GithubClient;
+  gmail: GmailClient;
+}
+
+export declare const client: Client;
+```
+
+The model writes code against this surface. A multi-step task that would have required multiple round-trips with per-tool mode is handled in one:
+
+```typescript
+// What the LLM writes inside execute_code:
+const issues = await client.github.listIssues({ owner: "acme", repo: "api" });
+const open = JSON.parse(issues.content[0].text).filter((i: any) => i.state === "open");
+
+for (const issue of open.slice(0, 3)) {
+  await client.gmail.sendMessage({
+    to: "team@acme.com",
+    subject: `Open issue: ${issue.title}`,
+    body: `#${issue.number} — ${issue.html_url}`,
+  });
+}
+
+return { notified: open.slice(0, 3).map((i: any) => i.number) };
+```
+
+## Advanced configuration
+
+```typescript
+createMCPServer({
+  // ...
+  codeMode: {
+    publicUrl: process.env.INTEGRATE_PUBLIC_URL,
+    runtime: "node24",       // "node22" (default) or "node24"
+    timeoutMs: 30_000,       // sandbox timeout, default 60_000
+    vcpus: 1,                // default 2
+  },
+});
+```
+
+## Opting out
+
+If you need the legacy behavior — one tool per MCP tool — pass `mode: 'tools'` to any helper:
+
+```typescript
+// One tool per integration method — useful if your model doesn't handle code well
+const tools = await getVercelAITools(serverClient, { mode: "tools" });
+const tools = await getOpenAITools(serverClient, { mode: "tools" });
+const tools = await getAnthropicTools(serverClient, { mode: "tools" });
+const tools = await getGoogleTools(serverClient, { mode: "tools" });
+```
+
+## Authentication
+
+OAuth works exactly as before. The user authenticates once via the standard OAuth popup, and their tokens are automatically forwarded through the sandbox to every tool call the LLM code makes. No changes to your auth setup are required.
