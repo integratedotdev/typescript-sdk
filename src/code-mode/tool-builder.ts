@@ -12,7 +12,11 @@ import type { MCPClient } from "../client.js";
 import type { MCPContext } from "../config/types.js";
 import type { MCPTool } from "../protocol/messages.js";
 import { generateCodeModeTypes } from "./type-generator.js";
-import { executeSandboxCode, type ExecuteSandboxCodeResult } from "./executor.js";
+import {
+  executeSandboxCode,
+  isSandboxAvailable,
+  type ExecuteSandboxCodeResult,
+} from "./executor.js";
 import { getEnv } from "../utils/env.js";
 
 export const CODE_MODE_TOOL_NAME = "execute_code";
@@ -87,6 +91,13 @@ export function resolveCodeModeClientConfig(client: MCPClient<any>): {
 } {
   const oauthConfig = (client as any).__oauthConfig;
   return (oauthConfig?.codeMode ?? {}) as Record<string, any>;
+}
+
+export async function canUseCodeMode(client: MCPClient<any>): Promise<boolean> {
+  if (!(await isSandboxAvailable())) return false;
+  const serverConfig = resolveCodeModeClientConfig(client);
+  const publicUrl = serverConfig.publicUrl ?? getEnv("INTEGRATE_PUBLIC_URL");
+  return !!publicUrl;
 }
 
 /**

@@ -48,10 +48,29 @@ interface SandboxFactory {
  * forcing the real package to be installed.
  */
 let sandboxFactoryOverride: SandboxFactory | null = null;
+let _sandboxAvailableCache: boolean | null = null;
 
 /** @internal — used by unit tests to stub the sandbox SDK. */
 export function __setSandboxFactoryForTests(factory: SandboxFactory | null): void {
   sandboxFactoryOverride = factory;
+  _sandboxAvailableCache = null;
+}
+
+export async function isSandboxAvailable(): Promise<boolean> {
+  if (_sandboxAvailableCache !== null) return _sandboxAvailableCache;
+  if (sandboxFactoryOverride) {
+    _sandboxAvailableCache = true;
+    return true;
+  }
+  try {
+    const dynamicImport = new Function("specifier", "return import(specifier)") as (s: string) => Promise<any>;
+    await dynamicImport("@" + "vercel/sandbox");
+    _sandboxAvailableCache = true;
+    return true;
+  } catch {
+    _sandboxAvailableCache = false;
+    return false;
+  }
 }
 
 async function loadSandboxFactory(): Promise<SandboxFactory> {

@@ -22,6 +22,7 @@ export { RUNTIME_STUB_SOURCE } from "./runtime-stub.js";
 
 export {
   buildCodeModeTool,
+  canUseCodeMode,
   CODE_MODE_TOOL_NAME,
   type CodeModeToolOptions,
   type CodeModeToolDefinition,

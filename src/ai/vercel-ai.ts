@@ -16,7 +16,11 @@ import {
   type AIToolsOptions
 } from "./utils.js";
 import { createTriggerTools } from "./trigger-tools.js";
-import { buildCodeModeTool, CODE_MODE_TOOL_NAME } from "../code-mode/tool-builder.js";
+import {
+  buildCodeModeTool,
+  canUseCodeMode,
+  CODE_MODE_TOOL_NAME,
+} from "../code-mode/tool-builder.js";
 
 /**
  * Tool definition compatible with Vercel AI SDK v5
@@ -37,14 +41,14 @@ export interface VercelAIToolsOptions extends AIToolsOptions {
   /**
    * How to expose MCP tools to the model.
    *
-   * - `'code'` (default): Returns a single `execute_code` tool. The model writes
+   * - `'code'`: Returns a single `execute_code` tool. The model writes
    *   a TypeScript snippet that calls the typed `client.<integration>.<method>()`
    *   API; the snippet runs in an isolated Vercel Sandbox and calls back into
    *   `/api/integrate/mcp`. Chains multiple operations in one round-trip.
    * - `'tools'`: Legacy behavior — returns one AI tool per MCP tool. Use this
    *   if you can't run `@vercel/sandbox` or need the model to see every tool.
    *
-   * @default 'code'
+   * @default auto-detects `'code'` when sandbox + public URL are available, otherwise `'tools'`
    */
   mode?: 'code' | 'tools';
 }
@@ -155,9 +159,12 @@ export async function getVercelAITools(
   const mcpTools = await client.getEnabledToolsAsync();
   const vercelTools: Record<string, any> = {};
 
-  const mode = options?.mode ?? 'code';
+  const effectiveMode: 'code' | 'tools' =
+    options?.mode !== undefined
+      ? options.mode
+      : ((await canUseCodeMode(client)) ? 'code' : 'tools');
 
-  if (mode === 'code') {
+  if (effectiveMode === 'code') {
     const codeTool = buildCodeModeTool(client, {
       tools: mcpTools,
       providerTokens,
@@ -188,4 +195,3 @@ export async function getVercelAITools(
 
   return vercelTools;
 }
-
