@@ -23,6 +23,7 @@ export { RUNTIME_STUB_SOURCE } from "./runtime-stub.js";
 export {
   buildCodeModeTool,
   canUseCodeMode,
+  diagnoseSandboxUnavailable,
   CODE_MODE_TOOL_NAME,
   type CodeModeToolOptions,
   type CodeModeToolDefinition,

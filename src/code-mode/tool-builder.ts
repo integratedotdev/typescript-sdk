@@ -101,6 +101,30 @@ export async function canUseCodeMode(client: MCPClient<any>): Promise<boolean> {
 }
 
 /**
+ * Returns a human-readable reason why Code Mode cannot be used, or null if it can.
+ * Used by AI helpers to emit a dev-visible warning on silent fallback.
+ */
+export async function diagnoseSandboxUnavailable(client: MCPClient<any>): Promise<string | null> {
+  if (!(await isSandboxAvailable())) {
+    return (
+      "`@vercel/sandbox` is not importable. " +
+      "Run `npm install @vercel/sandbox` (or `bun add @vercel/sandbox`) to enable Code Mode."
+    );
+  }
+  const serverConfig = resolveCodeModeClientConfig(client);
+  const publicUrl = serverConfig.publicUrl ?? getEnv("INTEGRATE_PUBLIC_URL");
+  if (!publicUrl) {
+    return (
+      "`publicUrl` is not configured. " +
+      "Set the INTEGRATE_PUBLIC_URL environment variable (e.g. INTEGRATE_PUBLIC_URL=https://myapp.com) " +
+      "or pass `codeMode: { publicUrl: \"https://myapp.com\" }` to `createMCPServer()`. " +
+      "The sandbox needs it to call back into /api/integrate/mcp."
+    );
+  }
+  return null;
+}
+
+/**
  * Build the `execute_code` tool definition. The returned `execute` function
  * is what the AI provider SDK ultimately invokes when the model picks the
  * tool.

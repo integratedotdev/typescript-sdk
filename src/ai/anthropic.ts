@@ -12,6 +12,7 @@ import { createTriggerTools } from "./trigger-tools.js";
 import {
   buildCodeModeTool,
   canUseCodeMode,
+  diagnoseSandboxUnavailable,
   CODE_MODE_TOOL_NAME,
 } from "../code-mode/tool-builder.js";
 import { zodToJsonSchema } from "zod-to-json-schema";
@@ -272,10 +273,20 @@ export async function getAnthropicTools(
   // Use getEnabledToolsAsync to ensure schemas are always populated
   // This fetches from server if not connected, otherwise uses cached tools
   const mcpTools = await client.getEnabledToolsAsync();
-  const effectiveMode: 'code' | 'tools' =
-    options?.mode !== undefined
-      ? options.mode
-      : ((await canUseCodeMode(client)) ? 'code' : 'tools');
+  let effectiveMode: 'code' | 'tools';
+  if (options?.mode !== undefined) {
+    effectiveMode = options.mode;
+  } else {
+    if (await canUseCodeMode(client)) {
+      effectiveMode = 'code';
+    } else {
+      const reason = await diagnoseSandboxUnavailable(client);
+      if (reason) {
+        console.warn(`[integrate-sdk] Code Mode unavailable, falling back to tools mode. ${reason}`);
+      }
+      effectiveMode = 'tools';
+    }
+  }
 
   const anthropicTools: AnthropicTool[] = effectiveMode === 'code'
     ? (() => {

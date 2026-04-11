@@ -19,6 +19,7 @@ import { createTriggerTools } from "./trigger-tools.js";
 import {
   buildCodeModeTool,
   canUseCodeMode,
+  diagnoseSandboxUnavailable,
   CODE_MODE_TOOL_NAME,
 } from "../code-mode/tool-builder.js";
 
@@ -159,10 +160,20 @@ export async function getVercelAITools(
   const mcpTools = await client.getEnabledToolsAsync();
   const vercelTools: Record<string, any> = {};
 
-  const effectiveMode: 'code' | 'tools' =
-    options?.mode !== undefined
-      ? options.mode
-      : ((await canUseCodeMode(client)) ? 'code' : 'tools');
+  let effectiveMode: 'code' | 'tools';
+  if (options?.mode !== undefined) {
+    effectiveMode = options.mode;
+  } else {
+    if (await canUseCodeMode(client)) {
+      effectiveMode = 'code';
+    } else {
+      const reason = await diagnoseSandboxUnavailable(client);
+      if (reason) {
+        console.warn(`[integrate-sdk] Code Mode unavailable, falling back to tools mode. ${reason}`);
+      }
+      effectiveMode = 'tools';
+    }
+  }
 
   if (effectiveMode === 'code') {
     const codeTool = buildCodeModeTool(client, {
