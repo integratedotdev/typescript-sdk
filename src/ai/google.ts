@@ -9,7 +9,11 @@ import type { MCPTool } from "../protocol/messages.js";
 import type { MCPContext } from "../config/types.js";
 import { executeToolWithToken, getProviderTokens, ensureClientConnected, type AIToolsOptions } from "./utils.js";
 import { createTriggerTools } from "./trigger-tools.js";
-import { buildCodeModeTool, CODE_MODE_TOOL_NAME } from "../code-mode/tool-builder.js";
+import {
+  buildCodeModeTool,
+  canUseCodeMode,
+  CODE_MODE_TOOL_NAME,
+} from "../code-mode/tool-builder.js";
 import { zodToJsonSchema } from "zod-to-json-schema";
 
 // Type-only imports from @google/genai
@@ -56,12 +60,12 @@ export interface GoogleToolsOptions extends AIToolsOptions {
   /**
    * How to expose MCP tools to the model.
    *
-   * - `'code'` (default): Returns a single `execute_code` tool backed by a
+   * - `'code'`: Returns a single `execute_code` tool backed by a
    *   Vercel Sandbox. The model writes TypeScript that calls the typed
    *   `client.<integration>.<method>()` API and chains operations in one round-trip.
    * - `'tools'`: Legacy behavior — one Google FunctionDeclaration per MCP tool.
    *
-   * @default 'code'
+   * @default auto-detects `'code'` when sandbox + public URL are available, otherwise `'tools'`
    */
   mode?: 'code' | 'tools';
 }
@@ -371,10 +375,13 @@ export async function getGoogleTools(
   // Use getEnabledToolsAsync to ensure schemas are always populated
   // This fetches from server if not connected, otherwise uses cached tools
   const mcpTools = await client.getEnabledToolsAsync();
-  const mode = options?.mode ?? 'code';
+  const effectiveMode: 'code' | 'tools' =
+    options?.mode !== undefined
+      ? options.mode
+      : ((await canUseCodeMode(client)) ? 'code' : 'tools');
 
   let googleTools: GoogleTool[];
-  if (mode === 'code') {
+  if (effectiveMode === 'code') {
     const TypeEnum = await getGoogleType();
     const codeTool = buildCodeModeTool(client, {
       tools: mcpTools,
@@ -499,4 +506,3 @@ function convertJsonSchemaToGoogleSchema(jsonSchema: any, TypeEnum: typeof Type)
   
   return result;
 }
-
