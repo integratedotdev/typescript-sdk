@@ -9,6 +9,7 @@ import { describe, test, expect, afterEach } from "bun:test";
 import {
   executeSandboxCode,
   __setSandboxFactoryForTests,
+  __setSandboxUnavailableForTests,
   isSandboxAvailable,
 } from "../../src/code-mode/executor.js";
 
@@ -66,6 +67,7 @@ function makeFakeSandbox(opts: {
 describe("executeSandboxCode", () => {
   afterEach(() => {
     __setSandboxFactoryForTests(null);
+    __setSandboxUnavailableForTests(false);
   });
 
   test("reports sandbox as available when a test factory override is set", async () => {
@@ -74,20 +76,20 @@ describe("executeSandboxCode", () => {
     await expect(isSandboxAvailable()).resolves.toBe(true);
   });
 
-  test("reports sandbox as unavailable when no override is set", async () => {
-    __setSandboxFactoryForTests(null);
+  test("reports sandbox as unavailable when forced unavailable for tests", async () => {
+    __setSandboxUnavailableForTests(true);
 
     await expect(isSandboxAvailable()).resolves.toBe(false);
   });
 
   test("resets the sandbox availability cache when the test override changes", async () => {
-    __setSandboxFactoryForTests(null);
+    __setSandboxUnavailableForTests(true);
     await expect(isSandboxAvailable()).resolves.toBe(false);
 
     __setSandboxFactoryForTests(makeFakeSandbox());
     await expect(isSandboxAvailable()).resolves.toBe(true);
 
-    __setSandboxFactoryForTests(null);
+    __setSandboxUnavailableForTests(true);
     await expect(isSandboxAvailable()).resolves.toBe(false);
   });
 

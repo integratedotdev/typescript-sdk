@@ -49,15 +49,27 @@ interface SandboxFactory {
  */
 let sandboxFactoryOverride: SandboxFactory | null = null;
 let _sandboxAvailableCache: boolean | null = null;
+let _sandboxForcedUnavailableForTests = false;
 
 /** @internal — used by unit tests to stub the sandbox SDK. */
 export function __setSandboxFactoryForTests(factory: SandboxFactory | null): void {
   sandboxFactoryOverride = factory;
+  _sandboxForcedUnavailableForTests = false;
+  _sandboxAvailableCache = null;
+}
+
+/** @internal — used by unit tests to simulate missing @vercel/sandbox. */
+export function __setSandboxUnavailableForTests(force: boolean): void {
+  _sandboxForcedUnavailableForTests = force;
   _sandboxAvailableCache = null;
 }
 
 export async function isSandboxAvailable(): Promise<boolean> {
   if (_sandboxAvailableCache !== null) return _sandboxAvailableCache;
+  if (_sandboxForcedUnavailableForTests) {
+    _sandboxAvailableCache = false;
+    return false;
+  }
   if (sandboxFactoryOverride) {
     _sandboxAvailableCache = true;
     return true;
