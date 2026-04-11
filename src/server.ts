@@ -5,7 +5,7 @@
 
 import { MCPClient } from './client.js';
 import { MCPClientBase } from './client.js';
-import type { MCPServerConfig } from './config/types.js';
+import type { MCPContext, MCPServerConfig } from './config/types.js';
 import type { MCPIntegration } from './integrations/types.js';
 import { createNextOAuthHandler } from './adapters/nextjs.js';
 import { getEnv } from './utils/env.js';
@@ -442,6 +442,32 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
               }
             } catch {
               // Ignore malformed token header — fall through to unauthenticated call.
+            }
+          }
+        }
+
+        // Code Mode context-based fallback: when the sandbox callback carries
+        // x-integrate-context (set by executeSandboxCode) but no token was
+        // found via x-integrate-tokens, look up the token using the consumer's
+        // getProviderToken callback. This supports DB-backed token storage
+        // (e.g., Better Auth + Drizzle) where tokens are never pre-loaded
+        // into the sandbox environment variables.
+        if (!authHeader && config.getProviderToken) {
+          const codeModeHeader = webRequest.headers.get('x-integrate-code-mode');
+          const contextHeader = webRequest.headers.get('x-integrate-context');
+          const toolName = typeof body?.name === 'string' ? body.name : '';
+          if (codeModeHeader === '1' && contextHeader && toolName) {
+            try {
+              const context = JSON.parse(contextHeader) as MCPContext;
+              const provider = toolName.split('_')[0];
+              if (provider) {
+                const tokenData = await config.getProviderToken(provider, undefined, context);
+                if (tokenData?.accessToken) {
+                  authHeader = `Bearer ${tokenData.accessToken}`;
+                }
+              }
+            } catch {
+              // Ignore malformed context — fall through to unauthenticated call.
             }
           }
         }
@@ -1894,4 +1920,3 @@ export function toSvelteKitHandler<TIntegrations extends readonly MCPIntegration
     }
   };
 }
-
