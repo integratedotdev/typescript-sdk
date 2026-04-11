@@ -87,18 +87,18 @@ describe("Trigger Tools for AI", () => {
 
       // Should have MCP tools + trigger tools
       expect(tools).toBeDefined();
-      expect(tools.create_trigger).toBeDefined();
-      expect(tools.list_triggers).toBeDefined();
-      expect(tools.get_trigger).toBeDefined();
-      expect(tools.update_trigger).toBeDefined();
-      expect(tools.delete_trigger).toBeDefined();
-      expect(tools.pause_trigger).toBeDefined();
-      expect(tools.resume_trigger).toBeDefined();
-      
+      expect(tools.trigger_create).toBeDefined();
+      expect(tools.trigger_list).toBeDefined();
+      expect(tools.trigger_get).toBeDefined();
+      expect(tools.trigger_update).toBeDefined();
+      expect(tools.trigger_delete).toBeDefined();
+      expect(tools.trigger_pause).toBeDefined();
+      expect(tools.trigger_resume).toBeDefined();
+
       // Verify tool structure
-      expect(tools.create_trigger.description).toBeDefined();
-      expect(tools.create_trigger.inputSchema).toBeDefined();
-      expect(tools.create_trigger.execute).toBeInstanceOf(Function);
+      expect(tools.trigger_create.description).toBeDefined();
+      expect(tools.trigger_create.inputSchema).toBeDefined();
+      expect(tools.trigger_create.execute).toBeInstanceOf(Function);
     });
 
     test("should not include trigger tools when triggers not configured", async () => {
@@ -120,11 +120,11 @@ describe("Trigger Tools for AI", () => {
       const tools = await getVercelAITools(server.client);
 
       // Should only have MCP tools, no trigger tools
-      expect(tools.create_trigger).toBeUndefined();
-      expect(tools.list_triggers).toBeUndefined();
+      expect(tools.trigger_create).toBeUndefined();
+      expect(tools.trigger_list).toBeUndefined();
     });
 
-    test("should execute create_trigger tool", async () => {
+    test("should execute trigger_create tool", async () => {
       const server = createMCPServer({
         apiKey: 'test-key',
         integrations: [
@@ -143,7 +143,7 @@ describe("Trigger Tools for AI", () => {
 
       const tools = await getVercelAITools(server.client);
 
-      const result = await tools.create_trigger.execute({
+      const result = await tools.trigger_create.execute({
         name: 'Test Trigger',
         toolName: 'github_create_issue',
         toolArguments: { repo: 'test/repo', title: 'Test' },
@@ -157,7 +157,7 @@ describe("Trigger Tools for AI", () => {
       expect(result.status).toBe('active');
     });
 
-    test("should execute list_triggers tool", async () => {
+    test("should execute trigger_list tool", async () => {
       // Create test triggers
       await mockTriggerCallbacks.create({
         id: 'trig_1',
@@ -188,14 +188,14 @@ describe("Trigger Tools for AI", () => {
       (server.client as any).transport = { isConnected: () => true };
 
       const tools = await getVercelAITools(server.client);
-      const result = await tools.list_triggers.execute({});
+      const result = await tools.trigger_list.execute({});
 
       expect(result.triggers).toHaveLength(1);
       expect(result.total).toBe(1);
       expect(result.hasMore).toBe(false);
     });
 
-    test("should execute pause_trigger tool with validation", async () => {
+    test("should execute trigger_pause tool with validation", async () => {
       await mockTriggerCallbacks.create({
         id: 'trig_pause',
         toolName: 'test_tool',
@@ -224,7 +224,7 @@ describe("Trigger Tools for AI", () => {
       (server.client as any).transport = { isConnected: () => true };
 
       const tools = await getVercelAITools(server.client);
-      const result = await tools.pause_trigger.execute({ triggerId: 'trig_pause' });
+      const result = await tools.trigger_pause.execute({ triggerId: 'trig_pause' });
 
       expect(result.status).toBe('paused');
     });
@@ -260,7 +260,7 @@ describe("Trigger Tools for AI", () => {
       const tools = await getVercelAITools(server.client);
 
       await expect(
-        tools.pause_trigger.execute({ triggerId: 'trig_already_paused' })
+        tools.trigger_pause.execute({ triggerId: 'trig_already_paused' })
       ).rejects.toThrow("Cannot pause trigger with status 'paused'");
     });
   });
@@ -287,13 +287,13 @@ describe("Trigger Tools for AI", () => {
 
       // Should have trigger tools
       const toolNames = tools.map(t => t.name);
-      expect(toolNames).toContain('create_trigger');
-      expect(toolNames).toContain('list_triggers');
-      expect(toolNames).toContain('pause_trigger');
-      expect(toolNames).toContain('resume_trigger');
-      
+      expect(toolNames).toContain('trigger_create');
+      expect(toolNames).toContain('trigger_list');
+      expect(toolNames).toContain('trigger_pause');
+      expect(toolNames).toContain('trigger_resume');
+
       // Verify tool structure
-      const createTrigger = tools.find(t => t.name === 'create_trigger');
+      const createTrigger = tools.find(t => t.name === 'trigger_create');
       expect(createTrigger?.type).toBe('function');
       expect(createTrigger?.description).toBeDefined();
       expect(createTrigger?.parameters).toBeDefined();
@@ -318,8 +318,8 @@ describe("Trigger Tools for AI", () => {
       const tools = await getOpenAITools(server.client);
       const toolNames = tools.map(t => t.name);
       
-      expect(toolNames).not.toContain('create_trigger');
-      expect(toolNames).not.toContain('list_triggers');
+      expect(toolNames).not.toContain('trigger_create');
+      expect(toolNames).not.toContain('trigger_list');
     });
   });
 
@@ -345,11 +345,11 @@ describe("Trigger Tools for AI", () => {
 
       // Should have trigger tools
       const toolNames = tools.map(t => t.name);
-      expect(toolNames).toContain('create_trigger');
-      expect(toolNames).toContain('list_triggers');
-      
+      expect(toolNames).toContain('trigger_create');
+      expect(toolNames).toContain('trigger_list');
+
       // Verify tool structure
-      const createTrigger = tools.find(t => t.name === 'create_trigger');
+      const createTrigger = tools.find(t => t.name === 'trigger_create');
       expect(createTrigger?.description).toBeDefined();
       expect(createTrigger?.input_schema).toBeDefined();
       expect(createTrigger?.input_schema.type).toBe('object');
@@ -378,11 +378,11 @@ describe("Trigger Tools for AI", () => {
 
       // Should have trigger tools
       const toolNames = tools.map(t => t.name);
-      expect(toolNames).toContain('create_trigger');
-      expect(toolNames).toContain('list_triggers');
-      
+      expect(toolNames).toContain('trigger_create');
+      expect(toolNames).toContain('trigger_list');
+
       // Verify tool structure
-      const createTrigger = tools.find(t => t.name === 'create_trigger');
+      const createTrigger = tools.find(t => t.name === 'trigger_create');
       expect(createTrigger?.description).toBeDefined();
       expect(createTrigger?.parameters).toBeDefined();
     });
@@ -423,7 +423,7 @@ describe("Trigger Tools for AI", () => {
       const context = { userId: 'user123', organizationId: 'org456' };
       const tools = await getVercelAITools(server.client, { mode: 'tools', context });
 
-      await tools.create_trigger.execute({
+      await tools.trigger_create.execute({
         toolName: 'github_create_issue',
         toolArguments: { repo: 'test/repo' },
         schedule: { type: 'once', runAt: '2024-12-20T10:00:00Z' },

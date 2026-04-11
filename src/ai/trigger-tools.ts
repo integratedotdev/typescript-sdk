@@ -37,7 +37,7 @@ export function createTriggerTools(config: TriggerToolsConfig, context?: MCPCont
   const { callbacks } = config;
   
   return {
-    create_trigger: {
+    trigger_create: {
       description: "Schedule a tool to run at a specific time or on a recurring schedule. Use this when the user wants to do something later.",
       inputSchema: z.object({
         name: z.string().optional().describe("Human-readable trigger name"),
@@ -75,7 +75,7 @@ export function createTriggerTools(config: TriggerToolsConfig, context?: MCPCont
       },
     },
     
-    list_triggers: {
+    trigger_list: {
       description: "List all scheduled triggers with optional filtering by status or tool name",
       inputSchema: z.object({
         status: z.enum(['active', 'paused', 'completed', 'failed']).optional().describe("Filter by trigger status"),
@@ -105,7 +105,7 @@ export function createTriggerTools(config: TriggerToolsConfig, context?: MCPCont
       },
     },
     
-    get_trigger: {
+    trigger_get: {
       description: "Get details of a specific trigger by its ID",
       inputSchema: z.object({
         triggerId: z.string().describe("The trigger ID to retrieve"),
@@ -121,7 +121,7 @@ export function createTriggerTools(config: TriggerToolsConfig, context?: MCPCont
       },
     },
     
-    update_trigger: {
+    trigger_update: {
       description: "Update a trigger's properties like name, description, arguments, or schedule",
       inputSchema: z.object({
         triggerId: z.string().describe("The trigger ID to update"),
@@ -152,7 +152,7 @@ export function createTriggerTools(config: TriggerToolsConfig, context?: MCPCont
       },
     },
     
-    delete_trigger: {
+    trigger_delete: {
       description: "Delete a trigger permanently. This cannot be undone.",
       inputSchema: z.object({
         triggerId: z.string().describe("The trigger ID to delete"),
@@ -163,7 +163,7 @@ export function createTriggerTools(config: TriggerToolsConfig, context?: MCPCont
       },
     },
     
-    pause_trigger: {
+    trigger_pause: {
       description: "Pause a trigger to temporarily stop it from executing. Can be resumed later.",
       inputSchema: z.object({
         triggerId: z.string().describe("The trigger ID to pause"),
@@ -194,7 +194,7 @@ export function createTriggerTools(config: TriggerToolsConfig, context?: MCPCont
       },
     },
     
-    resume_trigger: {
+    trigger_resume: {
       description: "Resume a paused trigger to start executing it again on schedule",
       inputSchema: z.object({
         triggerId: z.string().describe("The trigger ID to resume"),
