@@ -36,7 +36,7 @@ export interface CodeModeToolOptions {
   /**
    * Sandbox + callback overrides. Everything is optional — defaults come
    * from the server client's `__oauthConfig.codeMode` block (set by
-   * `createMCPServer`) or from `INTEGRATE_PUBLIC_URL`.
+   * `createMCPServer`) or from `INTEGRATE_URL`.
    */
   sandbox?: {
     publicUrl?: string;
@@ -99,12 +99,23 @@ export type CodeModeDiagnosis =
   | { available: true }
   | { available: false; reason: CodeModeUnavailableReason };
 
+/**
+ * Resolve the public URL the sandbox should call back into. Precedence:
+ *   1. Explicit `codeMode.publicUrl` on the server config
+ *   2. `INTEGRATE_URL` env var (same variable used for OAuth redirect auto-detect)
+ */
+export function resolveCodeModePublicUrl(
+  serverConfig: { publicUrl?: string } = {},
+): string | undefined {
+  return serverConfig.publicUrl ?? getEnv("INTEGRATE_URL");
+}
+
 export async function diagnoseCodeMode(client: MCPClient<any>): Promise<CodeModeDiagnosis> {
   if (!(await isSandboxAvailable())) {
     return { available: false, reason: "sandbox-missing" };
   }
   const serverConfig = resolveCodeModeClientConfig(client);
-  const publicUrl = serverConfig.publicUrl ?? getEnv("INTEGRATE_PUBLIC_URL");
+  const publicUrl = resolveCodeModePublicUrl(serverConfig);
   if (!publicUrl) {
     return { available: false, reason: "no-public-url" };
   }
@@ -121,7 +132,7 @@ const CODE_MODE_UNAVAILABLE_MESSAGES: Record<CodeModeUnavailableReason, string> 
     "Install `@vercel/sandbox` (e.g. `bun add @vercel/sandbox`) to enable Code Mode.",
   "no-public-url":
     "[integrate-sdk] Code Mode unavailable (reason: no-public-url) — falling back to tool mode. " +
-    "Set `codeMode.publicUrl` on your server config or the `INTEGRATE_PUBLIC_URL` env var.",
+    "Set `codeMode.publicUrl` on your server config or the `INTEGRATE_URL` env var.",
 };
 
 const warnedCodeModeReasons = new Set<CodeModeUnavailableReason>();
@@ -161,10 +172,9 @@ export function buildCodeModeTool(
   const description = `${DEFAULT_INSTRUCTIONS}\n\n\`\`\`typescript\n${generated.source}\n\`\`\``;
 
   const execute = async ({ code }: { code: string }): Promise<ExecuteSandboxCodeResult> => {
-    const publicUrl =
-      sandboxOverrides.publicUrl ??
-      serverCodeModeConfig.publicUrl ??
-      getEnv("INTEGRATE_PUBLIC_URL");
+    const publicUrl = resolveCodeModePublicUrl({
+      publicUrl: sandboxOverrides.publicUrl ?? serverCodeModeConfig.publicUrl,
+    });
     const apiKey = (client as any).__oauthConfig?.apiKey as string | undefined;
 
     if (!publicUrl) {
@@ -175,7 +185,7 @@ export function buildCodeModeTool(
         stderr: "",
         durationMs: 0,
         error:
-          "Code Mode requires `codeMode.publicUrl` in createMCPServer config (or the INTEGRATE_PUBLIC_URL env var). " +
+          "Code Mode requires `codeMode.publicUrl` in createMCPServer config (or the INTEGRATE_URL env var). " +
           "The sandbox uses it to call back into /api/integrate/mcp.",
       };
     }

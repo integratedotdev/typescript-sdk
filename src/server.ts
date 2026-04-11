@@ -525,14 +525,15 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
         }
 
         const { executeSandboxCode } = await import('./code-mode/executor.js');
+        const { resolveCodeModePublicUrl } = await import('./code-mode/tool-builder.js');
 
         const codeModeConfig = config.codeMode ?? {};
-        const publicUrl = codeModeConfig.publicUrl ?? getEnv('INTEGRATE_PUBLIC_URL');
+        const publicUrl = resolveCodeModePublicUrl(codeModeConfig);
         if (!publicUrl) {
           return Response.json(
             {
               error:
-                'Code Mode requires `codeMode.publicUrl` in createMCPServer config (or the INTEGRATE_PUBLIC_URL env var). ' +
+                'Code Mode requires `codeMode.publicUrl` in createMCPServer config (or the INTEGRATE_URL env var). ' +
                 'Set it to the public origin where /api/integrate/mcp is reachable.',
             },
             { status: 500 }

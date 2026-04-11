@@ -71,7 +71,7 @@ afterEach(() => {
   __setSandboxFactoryForTests(null);
   __setSandboxUnavailableForTests(false);
   __resetCodeModeFallbackWarnings();
-  delete process.env.INTEGRATE_PUBLIC_URL;
+  delete process.env.INTEGRATE_URL;
 });
 
 function captureWarnings(): { warnings: string[]; restore: () => void } {
@@ -139,9 +139,9 @@ describe("AI helper code mode defaults", () => {
     expect(googleTools.some((tool) => tool.name === CODE_MODE_TOOL_NAME)).toBe(true);
   });
 
-  test("uses INTEGRATE_PUBLIC_URL env var when auto-detecting code mode", async () => {
+  test("uses INTEGRATE_URL env var when auto-detecting code mode", async () => {
     __setSandboxFactoryForTests(makeSandboxFactory());
-    process.env.INTEGRATE_PUBLIC_URL = "https://example.com";
+    process.env.INTEGRATE_URL = "https://example.com";
     const client = createTestClient();
 
     const openaiTools = await getOpenAITools(client);
@@ -202,7 +202,7 @@ describe("AI helper code mode defaults", () => {
 
     const matching = warnings.filter((w) => w.includes("no-public-url"));
     expect(matching.length).toBe(1);
-    expect(matching[0]).toContain("INTEGRATE_PUBLIC_URL");
+    expect(matching[0]).toContain("INTEGRATE_URL");
   });
 
   test("does not warn when Code Mode is available", async () => {

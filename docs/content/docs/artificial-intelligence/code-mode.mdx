@@ -37,7 +37,7 @@ export const { client: serverClient } = createMCPServer({
     gmailIntegration({ scopes: ["gmail.send", "gmail.readonly"] }),
   ],
   codeMode: {
-    publicUrl: process.env.INTEGRATE_PUBLIC_URL, // e.g. "https://myapp.com"
+    publicUrl: process.env.INTEGRATE_URL, // e.g. "https://myapp.com"
   },
 });
 ```
@@ -45,7 +45,7 @@ export const { client: serverClient } = createMCPServer({
 Or set the environment variable directly (no config change needed):
 
 ```bash
-INTEGRATE_PUBLIC_URL=https://myapp.com
+INTEGRATE_URL=https://myapp.com
 ```
 
 <Callout type="warn">
@@ -218,7 +218,7 @@ return { notified: open.slice(0, 3).map((i: any) => i.number) };
 createMCPServer({
   // ...
   codeMode: {
-    publicUrl: process.env.INTEGRATE_PUBLIC_URL,
+    publicUrl: process.env.INTEGRATE_URL,
     runtime: "node24",       // "node22" (default) or "node24"
     timeoutMs: 30_000,       // sandbox timeout, default 60_000
     vcpus: 1,                // default 2

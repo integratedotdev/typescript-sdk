@@ -322,7 +322,7 @@ export interface MCPServerConfig<TIntegrations extends readonly MCPIntegration[]
    * createMCPServer({
    *   integrations: [...],
    *   codeMode: {
-   *     publicUrl: process.env.INTEGRATE_PUBLIC_URL, // required when code mode is used
+   *     publicUrl: process.env.INTEGRATE_URL, // required when code mode is used
    *     timeoutMs: 90_000,
    *   },
    * });
@@ -334,7 +334,7 @@ export interface MCPServerConfig<TIntegrations extends readonly MCPIntegration[]
      * Vercel Sandbox. Must include the scheme and no trailing `/api/integrate` suffix,
      * e.g. `https://myapp.vercel.app`.
      *
-     * Falls back to `process.env.INTEGRATE_PUBLIC_URL` if unset. If neither is provided,
+     * Falls back to `process.env.INTEGRATE_URL` if unset. If neither is provided,
      * Code Mode requests fail fast with a descriptive error.
      */
     publicUrl?: string;
