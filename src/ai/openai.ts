@@ -11,7 +11,8 @@ import { executeToolWithToken, getProviderTokens, ensureClientConnected, type AI
 import { createTriggerTools } from "./trigger-tools.js";
 import {
   buildCodeModeTool,
-  canUseCodeMode,
+  diagnoseCodeMode,
+  warnCodeModeFallback,
   CODE_MODE_TOOL_NAME,
 } from "../code-mode/tool-builder.js";
 import { zodToJsonSchema } from "zod-to-json-schema";
@@ -147,10 +148,18 @@ export async function getOpenAITools(
   // Use getEnabledToolsAsync to ensure schemas are always populated
   // This fetches from server if not connected, otherwise uses cached tools
   const mcpTools = await client.getEnabledToolsAsync();
-  const effectiveMode: 'code' | 'tools' =
-    options?.mode !== undefined
-      ? options.mode
-      : ((await canUseCodeMode(client)) ? 'code' : 'tools');
+  let effectiveMode: 'code' | 'tools';
+  if (options?.mode !== undefined) {
+    effectiveMode = options.mode;
+  } else {
+    const diagnosis = await diagnoseCodeMode(client);
+    if (diagnosis.available) {
+      effectiveMode = 'code';
+    } else {
+      warnCodeModeFallback(diagnosis.reason);
+      effectiveMode = 'tools';
+    }
+  }
 
   const openaiTools: OpenAITool[] = effectiveMode === 'code'
     ? (() => {

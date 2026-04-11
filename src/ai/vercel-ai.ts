@@ -18,7 +18,8 @@ import {
 import { createTriggerTools } from "./trigger-tools.js";
 import {
   buildCodeModeTool,
-  canUseCodeMode,
+  diagnoseCodeMode,
+  warnCodeModeFallback,
   CODE_MODE_TOOL_NAME,
 } from "../code-mode/tool-builder.js";
 
@@ -159,10 +160,18 @@ export async function getVercelAITools(
   const mcpTools = await client.getEnabledToolsAsync();
   const vercelTools: Record<string, any> = {};
 
-  const effectiveMode: 'code' | 'tools' =
-    options?.mode !== undefined
-      ? options.mode
-      : ((await canUseCodeMode(client)) ? 'code' : 'tools');
+  let effectiveMode: 'code' | 'tools';
+  if (options?.mode !== undefined) {
+    effectiveMode = options.mode;
+  } else {
+    const diagnosis = await diagnoseCodeMode(client);
+    if (diagnosis.available) {
+      effectiveMode = 'code';
+    } else {
+      warnCodeModeFallback(diagnosis.reason);
+      effectiveMode = 'tools';
+    }
+  }
 
   if (effectiveMode === 'code') {
     const codeTool = buildCodeModeTool(client, {

@@ -93,11 +93,53 @@ export function resolveCodeModeClientConfig(client: MCPClient<any>): {
   return (oauthConfig?.codeMode ?? {}) as Record<string, any>;
 }
 
-export async function canUseCodeMode(client: MCPClient<any>): Promise<boolean> {
-  if (!(await isSandboxAvailable())) return false;
+export type CodeModeUnavailableReason = "sandbox-missing" | "no-public-url";
+
+export type CodeModeDiagnosis =
+  | { available: true }
+  | { available: false; reason: CodeModeUnavailableReason };
+
+export async function diagnoseCodeMode(client: MCPClient<any>): Promise<CodeModeDiagnosis> {
+  if (!(await isSandboxAvailable())) {
+    return { available: false, reason: "sandbox-missing" };
+  }
   const serverConfig = resolveCodeModeClientConfig(client);
   const publicUrl = serverConfig.publicUrl ?? getEnv("INTEGRATE_PUBLIC_URL");
-  return !!publicUrl;
+  if (!publicUrl) {
+    return { available: false, reason: "no-public-url" };
+  }
+  return { available: true };
+}
+
+export async function canUseCodeMode(client: MCPClient<any>): Promise<boolean> {
+  return (await diagnoseCodeMode(client)).available;
+}
+
+const CODE_MODE_UNAVAILABLE_MESSAGES: Record<CodeModeUnavailableReason, string> = {
+  "sandbox-missing":
+    "[integrate-sdk] Code Mode unavailable (reason: sandbox-missing) — falling back to tool mode. " +
+    "Install `@vercel/sandbox` (e.g. `bun add @vercel/sandbox`) to enable Code Mode.",
+  "no-public-url":
+    "[integrate-sdk] Code Mode unavailable (reason: no-public-url) — falling back to tool mode. " +
+    "Set `codeMode.publicUrl` on your server config or the `INTEGRATE_PUBLIC_URL` env var.",
+};
+
+const warnedCodeModeReasons = new Set<CodeModeUnavailableReason>();
+
+/** @internal — used by unit tests to reset the warn-once throttle. */
+export function __resetCodeModeFallbackWarnings(): void {
+  warnedCodeModeReasons.clear();
+}
+
+/**
+ * Called by AI helpers when auto-detection picks `tools` mode. Emits a
+ * throttled `console.warn` so operators can tell *why* Code Mode was
+ * silently downgraded. Each reason warns at most once per process.
+ */
+export function warnCodeModeFallback(reason: CodeModeUnavailableReason): void {
+  if (warnedCodeModeReasons.has(reason)) return;
+  warnedCodeModeReasons.add(reason);
+  console.warn(CODE_MODE_UNAVAILABLE_MESSAGES[reason]);
 }
 
 /**

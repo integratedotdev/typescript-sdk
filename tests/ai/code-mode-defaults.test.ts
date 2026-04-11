@@ -5,7 +5,10 @@ import { getVercelAITools } from "../../src/ai/vercel-ai.js";
 import { getOpenAITools } from "../../src/ai/openai.js";
 import { getAnthropicTools } from "../../src/ai/anthropic.js";
 import { getGoogleTools } from "../../src/ai/google.js";
-import { CODE_MODE_TOOL_NAME } from "../../src/code-mode/tool-builder.js";
+import {
+  CODE_MODE_TOOL_NAME,
+  __resetCodeModeFallbackWarnings,
+} from "../../src/code-mode/tool-builder.js";
 import { __setSandboxFactoryForTests, __setSandboxUnavailableForTests } from "../../src/code-mode/executor.js";
 import type { MCPTool } from "../../src/protocol/messages.js";
 
@@ -67,8 +70,23 @@ function makeSandboxFactory(onRunCommand?: (params: any) => void) {
 afterEach(() => {
   __setSandboxFactoryForTests(null);
   __setSandboxUnavailableForTests(false);
+  __resetCodeModeFallbackWarnings();
   delete process.env.INTEGRATE_PUBLIC_URL;
 });
+
+function captureWarnings(): { warnings: string[]; restore: () => void } {
+  const warnings: string[] = [];
+  const original = console.warn;
+  console.warn = (...args: unknown[]) => {
+    warnings.push(args.map((a) => (typeof a === "string" ? a : JSON.stringify(a))).join(" "));
+  };
+  return {
+    warnings,
+    restore: () => {
+      console.warn = original;
+    },
+  };
+}
 
 describe("AI helper code mode defaults", () => {
   test("falls back to tools mode for all helpers when sandbox is unavailable", async () => {
@@ -149,6 +167,70 @@ describe("AI helper code mode defaults", () => {
     expect(vercelTools[CODE_MODE_TOOL_NAME]).toBeDefined();
     expect(result.success).toBe(false);
     expect(result.error).toContain("Code Mode requires the optional peer dependency `@vercel/sandbox`.");
+  });
+
+  test("warns once with reason=sandbox-missing when sandbox is unavailable", async () => {
+    __setSandboxUnavailableForTests(true);
+    const client = createTestClient("https://example.com");
+    const { warnings, restore } = captureWarnings();
+
+    try {
+      await getVercelAITools(client);
+      await getOpenAITools(client);
+    } finally {
+      restore();
+    }
+
+    const matching = warnings.filter((w) => w.includes("sandbox-missing"));
+    expect(matching.length).toBe(1);
+    expect(matching[0]).toContain("[integrate-sdk] Code Mode unavailable");
+    expect(matching[0]).toContain("falling back to tool mode");
+  });
+
+  test("warns once with reason=no-public-url when publicUrl is missing", async () => {
+    __setSandboxFactoryForTests(makeSandboxFactory());
+    const client = createTestClient();
+    const { warnings, restore } = captureWarnings();
+
+    try {
+      await getVercelAITools(client);
+      await getAnthropicTools(client);
+      await getGoogleTools(client);
+    } finally {
+      restore();
+    }
+
+    const matching = warnings.filter((w) => w.includes("no-public-url"));
+    expect(matching.length).toBe(1);
+    expect(matching[0]).toContain("INTEGRATE_PUBLIC_URL");
+  });
+
+  test("does not warn when Code Mode is available", async () => {
+    __setSandboxFactoryForTests(makeSandboxFactory());
+    const client = createTestClient("https://example.com");
+    const { warnings, restore } = captureWarnings();
+
+    try {
+      await getVercelAITools(client);
+    } finally {
+      restore();
+    }
+
+    expect(warnings.filter((w) => w.includes("Code Mode unavailable"))).toEqual([]);
+  });
+
+  test("does not warn when mode is explicitly set", async () => {
+    __setSandboxUnavailableForTests(true);
+    const client = createTestClient();
+    const { warnings, restore } = captureWarnings();
+
+    try {
+      await getVercelAITools(client, { mode: "tools" });
+    } finally {
+      restore();
+    }
+
+    expect(warnings.filter((w) => w.includes("Code Mode unavailable"))).toEqual([]);
   });
 
   test("passes server API key into code mode sandbox execution", async () => {
