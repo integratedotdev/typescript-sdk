@@ -516,8 +516,56 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
     async mcp(req: NextRequest): Promise<NextResponse> {
       try {
         const body = await req.json();
-        const authHeader = req.headers.get('authorization');
+        let authHeader = req.headers.get('authorization') as string | null;
         const integrationsHeader = req.headers.get('x-integrations');
+        const codeModeHeader = req.headers.get('x-integrate-code-mode');
+        const tokensHeader = req.headers.get('x-integrate-tokens');
+        const toolName = typeof body?.name === 'string' ? body.name : '';
+
+        // Diagnostic: log what we received from the sandbox callback
+        console.warn(
+          '[integrate-sdk] nextjs mcp() handler:',
+          JSON.stringify({
+            toolName,
+            hasAuth: !!authHeader,
+            codeModeHeader,
+            hasTokensHeader: !!tokensHeader,
+            tokensHeaderLength: tokensHeader?.length ?? 0,
+          })
+        );
+
+        // Code Mode: synthesize Authorization from x-integrate-tokens.
+        // The sandbox sends provider tokens as a JSON map; we resolve the
+        // correct provider from the tool name prefix and set the Bearer token.
+        if (codeModeHeader === '1' && tokensHeader && toolName) {
+          try {
+            const tokens = JSON.parse(tokensHeader) as Record<string, string>;
+            // Find the provider whose id is a prefix of the tool name
+            let best: string | null = null;
+            for (const candidate of Object.keys(tokens)) {
+              if (!candidate) continue;
+              if (toolName === candidate || toolName.startsWith(candidate + '_')) {
+                if (!best || candidate.length > best.length) best = candidate;
+              }
+            }
+            console.warn(
+              '[integrate-sdk] nextjs mcp() token resolution:',
+              JSON.stringify({
+                toolName,
+                tokenKeys: Object.keys(tokens),
+                bestMatch: best,
+                hasToken: best ? !!tokens[best] : false,
+                willSetAuth: !!(best && tokens[best]),
+              })
+            );
+            if (best && tokens[best]) {
+              authHeader = `Bearer ${tokens[best]}`;
+            }
+          } catch (e) {
+            console.warn('[integrate-sdk] nextjs mcp() token parse error:', e instanceof Error ? e.message : e);
+          }
+        }
+
         const result = await handler.handleToolCall(body, authHeader, integrationsHeader);
         return Response.json(result);
       } catch (error: any) {
