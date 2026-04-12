@@ -214,11 +214,40 @@ export function buildCodeModeTool(
 
     const mcpUrl = publicUrl.replace(/\/$/, "") + "/api/integrate/mcp";
 
+    // Resolve provider tokens lazily at execute time if not provided at build time.
+    // This handles the common case where getVercelAITools() is called in an AI route
+    // that doesn't receive x-integrate-tokens from the frontend — the server-side
+    // client's oauthManager can still pull tokens from DB callbacks or memory cache.
+    let resolvedTokens = providerTokens;
+    if (!resolvedTokens || Object.keys(resolvedTokens).length === 0) {
+      const oauthManager = (client as any).oauthManager;
+      if (oauthManager) {
+        resolvedTokens = {};
+        const clientIntegrations: Array<{ oauth?: { provider: string } }> = (client as any).integrations || [];
+        for (const integration of clientIntegrations) {
+          if (integration.oauth) {
+            const provider = integration.oauth.provider;
+            try {
+              const tokenData = await oauthManager.getProviderToken(provider, undefined, context);
+              if (tokenData?.accessToken) {
+                resolvedTokens[provider] = tokenData.accessToken;
+              }
+            } catch {
+              // Skip providers with no tokens
+            }
+          }
+        }
+        if (Object.keys(resolvedTokens).length === 0) {
+          resolvedTokens = undefined;
+        }
+      }
+    }
+
     return executeSandboxCode({
       code,
       mcpUrl,
       apiKey,
-      providerTokens,
+      providerTokens: resolvedTokens,
       context,
       integrationsHeader: integrationIds && integrationIds.length > 0 ? integrationIds.join(",") : undefined,
       runtime: sandboxOverrides.runtime ?? serverCodeModeConfig.runtime,
