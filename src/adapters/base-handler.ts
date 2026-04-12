@@ -409,8 +409,12 @@ export class OAuthHandler {
     // Store codeVerifier and frontendOrigin temporarily if provided (for backend redirect flow)
     if (authorizeRequest.codeVerifier) {
       try {
-        // Import the storage from server.ts
-        const { storeCodeVerifier } = await import('../server.js');
+        // Use new Function to hide the import from static-analysis bundlers so
+        // server.ts (and its Node-only transitive deps) are not pulled into the
+        // browser bundle. This import only succeeds in a server context where
+        // server.ts is actually available; failures are silently swallowed below.
+        const serverImport = new Function("s", "return import(s)") as (s: string) => Promise<any>;
+        const { storeCodeVerifier } = await serverImport('../server.js');
         storeCodeVerifier(authorizeRequest.state, authorizeRequest.codeVerifier, authorizeRequest.provider, authorizeRequest.frontendOrigin);
       } catch (error) {
         // If storage fails, log warning but continue

@@ -91,6 +91,15 @@ export async function isSandboxAvailable(): Promise<boolean> {
     _sandboxImportError = null;
     return true;
   }
+  // Guard: sandboxes cannot run in a browser. This check also lets Turbopack
+  // and webpack dead-code-eliminate the import("@vercel/sandbox") below from
+  // the client bundle — both bundlers statically evaluate `typeof window`
+  // when building for the browser.
+  if (typeof window !== 'undefined') {
+    _sandboxAvailableCache = false;
+    _sandboxImportError = new Error('Sandbox is not available in browser environments.');
+    return false;
+  }
   try {
     // Plain dynamic import so bundlers (Next.js/webpack, esbuild) see the
     // dependency and include it in their server output. Earlier versions
