@@ -480,7 +480,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
         // header expected by `handleToolCall` based on the tool's integration
         // prefix. This keeps the sandbox → /mcp round trip on the same auth plane
         // existing clients use without leaking the whole token map.
-        if (!authHeader && tokensHeader && toolName) {
+        if (codeModeHeader === '1' && tokensHeader && toolName) {
           try {
             const tokens = JSON.parse(tokensHeader) as Record<string, string>;
             const provider = resolveProviderFromToolName(toolName, Object.keys(tokens));

@@ -1091,6 +1091,14 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
       // Route through API handler instead of direct MCP server call
       const response = await this.callToolThroughHandler(name, args, provider, options);
 
+      // Check for MCP-level error responses (isError flag on successful JSON-RPC responses)
+      if (response.isError === true) {
+        const errorText =
+          response.content?.find((c) => c.type === "text")?.text ||
+          "Tool returned an error response";
+        throw new Error(errorText);
+      }
+
       // Mark provider as authenticated on success
       if (provider) {
         this.authState.set(provider, { authenticated: true });
