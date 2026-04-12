@@ -475,22 +475,6 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
         const toolName = typeof body?.name === 'string' ? body.name : '';
         let tokensResolvedProvider: string | null = null;
 
-        // Diagnostic: log all code-mode callback details for debugging
-        if (codeModeHeader === '1') {
-          logger.debug(
-            '[MCP Code Mode Callback]',
-            JSON.stringify({
-              toolName,
-              hasAuthHeader: !!authHeader,
-              hasTokensHeader: !!tokensHeader,
-              tokenKeys: tokensHeader ? (() => { try { return Object.keys(JSON.parse(tokensHeader)); } catch { return 'PARSE_ERROR'; } })() : [],
-              hasApiKey: !!callbackApiKey,
-              hasContext: !!contextHeader,
-              hasIntegrations: !!integrationsHeader,
-            })
-          );
-        }
-
         // Code Mode fallback: when the sandbox callback passes a multi-provider
         // `x-integrate-tokens` map, synthesize the single-provider `Authorization`
         // header expected by `handleToolCall` based on the tool's integration
@@ -500,24 +484,12 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
           try {
             const tokens = JSON.parse(tokensHeader) as Record<string, string>;
             const provider = resolveProviderFromToolName(toolName, Object.keys(tokens));
-            console.warn(
-              '[integrate-sdk] /mcp token extraction:',
-              JSON.stringify({
-                toolName,
-                resolvedProvider: provider,
-                tokenLength: provider ? (tokens[provider]?.length ?? 0) : 0,
-                tokenTruthy: provider ? !!tokens[provider] : false,
-                allTokenLengths: Object.fromEntries(
-                  Object.entries(tokens).map(([k, v]) => [k, typeof v === 'string' ? v.length : typeof v])
-                ),
-              })
-            );
             if (provider && tokens[provider]) {
               tokensResolvedProvider = provider;
               authHeader = `Bearer ${tokens[provider]}`;
             }
-          } catch (e) {
-            console.warn('[integrate-sdk] /mcp token parse error:', e instanceof Error ? e.message : e);
+          } catch {
+            // Malformed token header — fall through
           }
         }
 
@@ -579,33 +551,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
           getSessionContext: config.getSessionContext,
         });
 
-        // Diagnostic: log the auth state right before forwarding to MCP server
-        if (codeModeHeader === '1') {
-          console.warn(
-            '[integrate-sdk] /mcp code-mode dispatch:',
-            JSON.stringify({
-              toolName,
-              hasAuthHeader: !!authHeader,
-              authHeaderPrefix: authHeader ? authHeader.substring(0, 15) + '...' : null,
-              tokensResolvedProvider,
-              serverUrl: config.serverUrl || '(default)',
-            })
-          );
-        }
-
         const result = await oauthHandler.handleToolCall(body, authHeader, integrationsHeader);
-
-        // Diagnostic: log the result for code-mode calls
-        if (codeModeHeader === '1') {
-          const isError = (result as any)?.isError;
-          const firstText = (result as any)?.content?.[0]?.text;
-          if (isError) {
-            console.warn(
-              '[integrate-sdk] /mcp code-mode result: isError=true, text=',
-              typeof firstText === 'string' ? firstText.substring(0, 120) : firstText
-            );
-          }
-        }
 
         const response = Response.json(result);
 

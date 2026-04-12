@@ -860,18 +860,6 @@ export class OAuthHandler {
       },
     };
 
-    // Diagnostic: log the outbound request to the MCP server
-    console.warn(
-      '[integrate-sdk] handleToolCall →',
-      url,
-      JSON.stringify({
-        tool: request.name,
-        hasAuth: !!headers['Authorization'],
-        hasApiKey: !!headers['X-API-KEY'],
-        headerKeys: Object.keys(headers),
-      })
-    );
-
     // Use redirect: 'manual' to prevent Node.js fetch (undici) from
     // following redirects automatically. The Fetch spec mandates stripping
     // the Authorization header on cross-origin redirects — and even some

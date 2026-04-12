@@ -224,15 +224,11 @@ export function buildCodeModeTool(
     // or calls getVercelAITools() outside the request scope, build-time tokens are
     // empty. But execute() still runs inside the request, so next/headers() works.
     let resolvedTokens = providerTokens;
-    let tokenSource: string = resolvedTokens && Object.keys(resolvedTokens).length > 0 ? "build-time" : "none";
 
     // Tier 2: try request-header extraction at execute time
     if (!resolvedTokens || Object.keys(resolvedTokens).length === 0) {
       try {
         resolvedTokens = await getProviderTokens();
-        if (resolvedTokens && Object.keys(resolvedTokens).length > 0) {
-          tokenSource = "request-header";
-        }
       } catch {
         // No request context or no header — continue to tier 3
       }
@@ -259,21 +255,9 @@ export function buildCodeModeTool(
         }
         if (Object.keys(resolvedTokens).length === 0) {
           resolvedTokens = undefined;
-        } else {
-          tokenSource = "oauthManager";
         }
       }
     }
-
-    console.debug(
-      "[integrate-sdk] execute_code token resolution:",
-      JSON.stringify({
-        source: tokenSource,
-        keys: resolvedTokens ? Object.keys(resolvedTokens) : [],
-        hasApiKey: !!apiKey,
-        mcpUrl,
-      })
-    );
 
     return executeSandboxCode({
       code,
