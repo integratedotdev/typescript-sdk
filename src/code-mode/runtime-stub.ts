@@ -55,7 +55,14 @@ async function callTool(toolName, args) {
   }
 
   if (!res.ok) {
-    const message = (payload && (payload.error || payload.message)) || 'Tool call failed: HTTP ' + res.status;
+    let message = (payload && (payload.error || payload.message)) || 'Tool call failed: HTTP ' + res.status;
+    if ((res.status === 401 || res.status === 403) && typeof text === 'string' && text.indexOf('Authorization header') !== -1) {
+      message =
+        'Code Mode callback was rejected by the MCP server (HTTP ' + res.status + '). ' +
+        'The SDK route could not synthesize an Authorization header. Check the host-side ' +
+        'createMCPServer config (apiKey, getProviderToken) or pass providerTokens to the ' +
+        'AI helper. Original upstream message: ' + text;
+    }
     const err = new Error(message);
     err.status = res.status;
     err.toolName = toolName;
