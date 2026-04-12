@@ -14,6 +14,7 @@ import {
   diagnoseCodeMode,
   warnCodeModeFallback,
   CODE_MODE_TOOL_NAME,
+  TYPES_TOOL_NAME,
 } from "../code-mode/tool-builder.js";
 import { zodToJsonSchema } from "zod-to-json-schema";
 
@@ -265,8 +266,11 @@ export async function executeGoogleFunctionCalls(
       // Check if this is a trigger tool or code mode tool
       let result;
       if (call.name === CODE_MODE_TOOL_NAME) {
-        const codeTool = await getCodeModeTool();
+        const { codeTool } = await getCodeModeTool();
         result = await codeTool.execute(args as { code: string });
+      } else if (call.name === TYPES_TOOL_NAME) {
+        const { typesTool } = await getCodeModeTool();
+        result = typesTool.execute(args as { integration: string });
       } else if (triggerTools && (triggerTools as any)[call.name]) {
         result = await (triggerTools as any)[call.name].execute(args);
       } else {
@@ -392,7 +396,7 @@ export async function getGoogleTools(
   let googleTools: GoogleTool[];
   if (effectiveMode === 'code') {
     const TypeEnum = await getGoogleType();
-    const codeTool = buildCodeModeTool(client, {
+    const { codeTool, typesTool } = buildCodeModeTool(client, {
       tools: mcpTools,
       providerTokens,
       context: options?.context,
@@ -410,6 +414,19 @@ export async function getGoogleTools(
           },
         },
         required: ['code'],
+      } as Schema,
+    }, {
+      name: TYPES_TOOL_NAME,
+      description: typesTool.description,
+      parameters: {
+        type: TypeEnum.OBJECT,
+        properties: {
+          integration: {
+            type: TypeEnum.STRING,
+            description: typesTool.parameters.properties.integration.description,
+          },
+        },
+        required: ['integration'],
       } as Schema,
     }];
   } else {

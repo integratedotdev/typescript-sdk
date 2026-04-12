@@ -21,6 +21,7 @@ import {
 import { getEnv } from "../utils/env.js";
 
 export const CODE_MODE_TOOL_NAME = "execute_code";
+export const TYPES_TOOL_NAME = "get_integration_types";
 
 export interface CodeModeToolOptions {
   /** Enabled MCP tools (already fetched by the caller). */
@@ -62,25 +63,34 @@ export interface CodeModeToolDefinition {
   execute: (input: { code: string }) => Promise<ExecuteSandboxCodeResult>;
 }
 
+export interface TypesToolDefinition {
+  name: string;
+  description: string;
+  parameters: {
+    type: "object";
+    properties: {
+      integration: { type: "string"; description: string };
+    };
+    required: ["integration"];
+    additionalProperties: false;
+  };
+  execute: (input: { integration: string }) => { types: string } | { error: string; available: string[] };
+}
+
+export interface CodeModeTools {
+  codeTool: CodeModeToolDefinition;
+  typesTool: TypesToolDefinition;
+}
+
 const DEFAULT_INSTRUCTIONS = [
-  "You are given a single tool: `execute_code`. Instead of calling individual MCP tools,",
-  "you write a short async TypeScript/JavaScript snippet that uses the typed `client`",
-  "object below, and the snippet runs in an isolated sandbox which dispatches the actual",
-  "tool calls. Chain multiple operations together in one snippet whenever possible —",
-  "that is the whole point of this tool.",
+  "Write an async JS/TS snippet that runs in an isolated sandbox using `client.<integration>.<method>(args)`.",
+  "Chain multiple operations in one snippet. Use `await`, `return <value>` for JSON output, `console.log()` for debug.",
+  "Each method returns `ToolResult { content: [{ type, text? }], isError? }` — parse `result.content[0].text` as JSON.",
+  "Only `client`, `callTool`, `fetch`, `console`, `JSON` are available (no npm imports).",
   "",
-  "Rules:",
-  "- The snippet is the body of an `async` function. Use `await` freely.",
-  "- Use `return <value>` at the end to hand a structured result back to the caller;",
-  "  the caller receives it as JSON.",
-  "- Use `console.log(...)` for intermediate observations you want to read later.",
-  "- Throw / let errors propagate; the runtime will surface them with a non-zero exit.",
-  "- Each method call returns an object of shape `ToolResult` (see types below).",
-  "  The payload usually lives in `result.content[0].text` as JSON — parse it if needed.",
-  "- You cannot import npm packages. Only the pre-imported `client` and standard",
-  "  globals (`fetch`, `console`, `JSON`, ...) are available.",
+  "Call `get_integration_types` with an integration name to get full parameter types before writing code.",
   "",
-  "API surface:",
+  "Available methods:",
 ].join("\n");
 
 export function resolveCodeModeClientConfig(client: MCPClient<any>): {
@@ -166,14 +176,14 @@ export function warnCodeModeFallback(reason: CodeModeUnavailableReason): void {
 }
 
 /**
- * Build the `execute_code` tool definition. The returned `execute` function
- * is what the AI provider SDK ultimately invokes when the model picks the
- * tool.
+ * Build the `execute_code` and `get_integration_types` tool definitions.
+ * The compact method listing goes in execute_code's description; full
+ * TypeScript types are served on demand via get_integration_types.
  */
 export function buildCodeModeTool(
   client: MCPClient<any>,
   options: CodeModeToolOptions
-): CodeModeToolDefinition {
+): CodeModeTools {
   const { tools, providerTokens, context, integrationIds } = options;
 
   const generated = generateCodeModeTypes(tools);
@@ -181,7 +191,7 @@ export function buildCodeModeTool(
   const serverCodeModeConfig = resolveCodeModeClientConfig(client);
   const sandboxOverrides = options.sandbox ?? {};
 
-  const description = `${DEFAULT_INSTRUCTIONS}\n\n\`\`\`typescript\n${generated.source}\n\`\`\``;
+  const description = `${DEFAULT_INSTRUCTIONS}\n${generated.compact}`;
 
   const execute = async ({ code }: { code: string }): Promise<ExecuteSandboxCodeResult> => {
     const publicUrl = resolveCodeModePublicUrl({
@@ -218,7 +228,9 @@ export function buildCodeModeTool(
     });
   };
 
-  return {
+  const availableIntegrations = Object.keys(generated.perIntegration);
+
+  const codeTool: CodeModeToolDefinition = {
     name: CODE_MODE_TOOL_NAME,
     description,
     parameters: {
@@ -235,4 +247,31 @@ export function buildCodeModeTool(
     },
     execute,
   };
+
+  const typesTool: TypesToolDefinition = {
+    name: TYPES_TOOL_NAME,
+    description:
+      "Get full TypeScript type definitions (method signatures, parameter types, JSDoc) for a specific integration. " +
+      `Available integrations: ${availableIntegrations.join(", ")}.`,
+    parameters: {
+      type: "object",
+      properties: {
+        integration: {
+          type: "string",
+          description: `Integration name to get types for (${availableIntegrations.join(", ")}).`,
+        },
+      },
+      required: ["integration"],
+      additionalProperties: false,
+    },
+    execute: ({ integration }: { integration: string }) => {
+      const types = generated.perIntegration[integration];
+      if (!types) {
+        return { error: `Unknown integration "${integration}".`, available: availableIntegrations };
+      }
+      return { types };
+    },
+  };
+
+  return { codeTool, typesTool };
 }

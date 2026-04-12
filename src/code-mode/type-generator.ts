@@ -13,10 +13,14 @@ import { toolNameToMethod } from "../utils/naming.js";
 export interface GeneratedTypes {
   /** The full TypeScript source to embed in the LLM prompt. */
   source: string;
+  /** Compact method listing (no JSDoc, param names only) for the tool description. */
+  compact: string;
   /** Map from dotted method path (e.g. `github.createIssue`) to MCP tool name. */
   methodMap: Record<string, string>;
   /** Per-integration tool counts, useful for logging. */
   integrationCounts: Record<string, number>;
+  /** Per-integration full type source for on-demand lookup. */
+  perIntegration: Record<string, string>;
 }
 
 const RESERVED_TS = new Set([
@@ -142,6 +146,8 @@ export function generateCodeModeTypes(tools: MCPTool[]): GeneratedTypes {
   const methodMap: Record<string, string> = {};
   const integrationCounts: Record<string, number> = {};
   const sections: string[] = [];
+  const compactLines: string[] = [];
+  const perIntegration: Record<string, string> = {};
 
   const integrationIds = Object.keys(byIntegration).sort();
 
@@ -158,18 +164,47 @@ export function generateCodeModeTypes(tools: MCPTool[]): GeneratedTypes {
     integrationCounts[integrationId] = integrationTools.length;
 
     const interfaceName = pascalCase(integrationId) + "Client";
+
+    // --- Full types (for per-integration on-demand lookup) ---
+    const fullSections: string[] = [];
+    fullSections.push(`export interface ${interfaceName} {`);
     sections.push(`export interface ${interfaceName} {`);
+
+    // --- Compact method signatures ---
+    const compactMethods: string[] = [];
+
     for (const tool of integrationTools) {
       const methodName = toolNameToMethod(tool.name);
       methodMap[`${integrationId}.${methodName}`] = tool.name;
-      sections.push(formatDescription(tool.description, "  "));
+
+      // Full version (with JSDoc + detailed types)
+      const fullDesc = formatDescription(tool.description, "  ");
+      fullSections.push(fullDesc);
+      sections.push(fullDesc);
       const argType = argsType(tool.inputSchema);
       const argIsOptional = !methodHasRequiredArgs(tool.inputSchema);
       const paramName = argIsOptional ? "args?" : "args";
-      sections.push(`  ${safeIdent(methodName)}(${paramName}: ${argType}): Promise<ToolResult>;`);
+      const fullLine = `  ${safeIdent(methodName)}(${paramName}: ${argType}): Promise<ToolResult>;`;
+      fullSections.push(fullLine);
+      sections.push(fullLine);
+
+      // Compact version (param names only, no types, no JSDoc)
+      const compactArgs = compactArgsSignature(tool.inputSchema);
+      const compactParam = argIsOptional ? `args?: ${compactArgs}` : `args: ${compactArgs}`;
+      compactMethods.push(`  ${safeIdent(methodName)}(${compactParam}): Promise<ToolResult>`);
     }
     sections.push("}");
     sections.push("");
+    fullSections.push("}");
+
+    // Store per-integration full types
+    perIntegration[integrationId] = fullSections.join("\n");
+
+    // Add to compact output
+    compactLines.push(`client.${integrationId}:`);
+    for (const m of compactMethods) {
+      compactLines.push(m);
+    }
   }
 
   sections.push("export interface ToolResult {");
@@ -190,9 +225,26 @@ export function generateCodeModeTypes(tools: MCPTool[]): GeneratedTypes {
 
   return {
     source: sections.filter((line, idx, arr) => !(line === "" && arr[idx - 1] === "")).join("\n"),
+    compact: compactLines.join("\n"),
     methodMap,
     integrationCounts,
+    perIntegration,
   };
+}
+
+/**
+ * Build a compact args signature showing only parameter names (no types, no descriptions).
+ * e.g. `{ owner, repo, title, body?, labels? }`
+ */
+function compactArgsSignature(schema: ToolInputSchema | undefined): string {
+  if (!schema || !schema.properties || Object.keys(schema.properties).length === 0) {
+    return "{}";
+  }
+  const required = new Set(Array.isArray(schema.required) ? (schema.required as string[]) : []);
+  const params = Object.keys(schema.properties).map(
+    (key) => `${safeIdent(key)}${required.has(key) ? "" : "?"}`
+  );
+  return `{ ${params.join(", ")} }`;
 }
 
 function pascalCase(id: string): string {

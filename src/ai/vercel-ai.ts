@@ -21,6 +21,7 @@ import {
   diagnoseCodeMode,
   warnCodeModeFallback,
   CODE_MODE_TOOL_NAME,
+  TYPES_TOOL_NAME,
 } from "../code-mode/tool-builder.js";
 
 /**
@@ -174,7 +175,7 @@ export async function getVercelAITools(
   }
 
   if (effectiveMode === 'code') {
-    const codeTool = buildCodeModeTool(client, {
+    const { codeTool, typesTool } = buildCodeModeTool(client, {
       tools: mcpTools,
       providerTokens,
       context: options?.context,
@@ -187,6 +188,13 @@ export async function getVercelAITools(
         code: z.string().describe(codeTool.parameters.properties.code.description),
       }),
       execute: async (args: { code: string }) => codeTool.execute(args),
+    };
+    vercelTools[TYPES_TOOL_NAME] = {
+      description: typesTool.description,
+      inputSchema: z.object({
+        integration: z.string().describe(typesTool.parameters.properties.integration.description),
+      }),
+      execute: async (args: { integration: string }) => typesTool.execute(args),
     };
   } else {
     // Legacy behavior — one Vercel tool per MCP tool

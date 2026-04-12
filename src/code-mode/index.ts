@@ -24,6 +24,9 @@ export {
   buildCodeModeTool,
   canUseCodeMode,
   CODE_MODE_TOOL_NAME,
+  TYPES_TOOL_NAME,
   type CodeModeToolOptions,
   type CodeModeToolDefinition,
+  type TypesToolDefinition,
+  type CodeModeTools,
 } from "./tool-builder.js";

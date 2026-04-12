@@ -14,6 +14,7 @@ import {
   diagnoseCodeMode,
   warnCodeModeFallback,
   CODE_MODE_TOOL_NAME,
+  TYPES_TOOL_NAME,
 } from "../code-mode/tool-builder.js";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import type Anthropic from "@anthropic-ai/sdk";
@@ -180,8 +181,11 @@ async function handleAnthropicToolCalls(
       // Check if this is a trigger tool or code mode tool
       let result;
       if (toolUse.name === CODE_MODE_TOOL_NAME) {
-        const codeTool = await getCodeModeTool();
+        const { codeTool } = await getCodeModeTool();
         result = await codeTool.execute(toolUse.input as { code: string });
+      } else if (toolUse.name === TYPES_TOOL_NAME) {
+        const { typesTool } = await getCodeModeTool();
+        result = typesTool.execute(toolUse.input as { integration: string });
       } else if (triggerTools && (triggerTools as any)[toolUse.name]) {
         result = await (triggerTools as any)[toolUse.name].execute(toolUse.input);
       } else {
@@ -288,7 +292,7 @@ export async function getAnthropicTools(
 
   const anthropicTools: AnthropicTool[] = effectiveMode === 'code'
     ? (() => {
-        const codeTool = buildCodeModeTool(client, {
+        const { codeTool, typesTool } = buildCodeModeTool(client, {
           tools: mcpTools,
           providerTokens,
           context: options?.context,
@@ -301,6 +305,14 @@ export async function getAnthropicTools(
             type: 'object',
             properties: codeTool.parameters.properties as Record<string, unknown>,
             required: [...codeTool.parameters.required],
+          },
+        }, {
+          name: TYPES_TOOL_NAME,
+          description: typesTool.description,
+          input_schema: {
+            type: 'object',
+            properties: typesTool.parameters.properties as Record<string, unknown>,
+            required: [...typesTool.parameters.required],
           },
         }];
       })()

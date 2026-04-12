@@ -627,6 +627,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
         const result = await executeSandboxCode({
           code: body.code,
           mcpUrl: publicUrl.replace(/\/$/, '') + '/api/integrate/mcp',
+          apiKey: config.apiKey,
           providerTokens,
           context: contextOverride,
           integrationsHeader: integrationIds.join(','),

@@ -14,6 +14,7 @@ import {
   diagnoseCodeMode,
   warnCodeModeFallback,
   CODE_MODE_TOOL_NAME,
+  TYPES_TOOL_NAME,
 } from "../code-mode/tool-builder.js";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import type { OpenAI } from "openai";
@@ -163,7 +164,7 @@ export async function getOpenAITools(
 
   const openaiTools: OpenAITool[] = effectiveMode === 'code'
     ? (() => {
-        const codeTool = buildCodeModeTool(client, {
+        const { codeTool, typesTool } = buildCodeModeTool(client, {
           tools: mcpTools,
           providerTokens,
           context: options?.context,
@@ -174,6 +175,12 @@ export async function getOpenAITools(
           name: CODE_MODE_TOOL_NAME,
           description: codeTool.description,
           parameters: codeTool.parameters as unknown as { [key: string]: unknown },
+          strict: options?.strict ?? null,
+        }, {
+          type: 'function',
+          name: TYPES_TOOL_NAME,
+          description: typesTool.description,
+          parameters: typesTool.parameters as unknown as { [key: string]: unknown },
           strict: options?.strict ?? null,
         }];
       })()
@@ -281,8 +288,11 @@ async function handleOpenAIToolCalls(
         // Check if this is a trigger tool
         let result;
         if (toolCall.name === CODE_MODE_TOOL_NAME) {
-          const codeTool = await getCodeModeTool();
+          const { codeTool } = await getCodeModeTool();
           result = await codeTool.execute(args as { code: string });
+        } else if (toolCall.name === TYPES_TOOL_NAME) {
+          const { typesTool } = await getCodeModeTool();
+          result = typesTool.execute(args as { integration: string });
         } else if (triggerTools && (triggerTools as any)[toolCall.name]) {
           result = await (triggerTools as any)[toolCall.name].execute(args);
         } else {
