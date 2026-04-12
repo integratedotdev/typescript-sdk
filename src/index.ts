@@ -50,8 +50,8 @@ export { createOAuthRedirectHandler } from "./adapters/nextjs-oauth-redirect.js"
 export type { OAuthRedirectConfig } from "./adapters/nextjs-oauth-redirect.js";
 
 export { fromNodeHeaders, toWebRequest } from "./adapters/node.js";
-export { toSolidStartHandler } from "./adapters/solid-start.js";
-export { toSvelteKitHandler, svelteKitHandler } from "./adapters/svelte-kit.js";
+// Note: toSolidStartHandler, toSvelteKitHandler — import from 'integrate-sdk/server'
+// (those adapter shims re-export from server.ts which is Node-only)
 export { toTanStackStartHandler, createTanStackOAuthHandler } from "./adapters/tanstack-start.js";
 
 // Configuration

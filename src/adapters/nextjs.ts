@@ -364,6 +364,45 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
     },
 
     /**
+     * POST /api/integrate/oauth/refresh
+     *
+     * Refresh an expired access token via the MCP server
+     *
+     * Request body:
+     * ```json
+     * {
+     *   "provider": "github",
+     *   "refreshToken": "<stored-refresh-token>"
+     * }
+     * ```
+     *
+     * Response: Same shape as callback response (accessToken, refreshToken, etc.)
+     */
+    async refresh(req: NextRequest): Promise<NextResponse> {
+      try {
+        const result = await handler.handleRefresh(req);
+        const response = Response.json(result);
+
+        // Add X-Integrate-Use-Database header if database callbacks are configured
+        if (handler.hasDatabaseCallbacks()) {
+          response.headers.set('X-Integrate-Use-Database', 'true');
+        }
+
+        return response;
+      } catch (error: any) {
+        if (error.message?.toLowerCase().includes('not supported')) {
+          logger.info('[OAuth Refresh] Not supported for this provider:', error.message);
+        } else {
+          logger.error('[OAuth Refresh] Error:', error);
+        }
+        return Response.json(
+          { error: error.message || 'Failed to refresh token' },
+          { status: 500 }
+        );
+      }
+    },
+
+    /**
      * Create unified route handlers for catch-all route
      * 
      * This is the simplest way to set up OAuth routes - create a single catch-all
@@ -411,6 +450,10 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
 
           if (action === 'disconnect') {
             return handlers.disconnect(req);
+          }
+
+          if (action === 'refresh') {
+            return handlers.refresh(req);
           }
 
           if (action === 'mcp') {
@@ -473,8 +516,34 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
     async mcp(req: NextRequest): Promise<NextResponse> {
       try {
         const body = await req.json();
-        const authHeader = req.headers.get('authorization');
+        let authHeader = req.headers.get('authorization') as string | null;
         const integrationsHeader = req.headers.get('x-integrations');
+        const codeModeHeader = req.headers.get('x-integrate-code-mode');
+        const tokensHeader = req.headers.get('x-integrate-tokens');
+        const toolName = typeof body?.name === 'string' ? body.name : '';
+
+        // Code Mode: synthesize Authorization from x-integrate-tokens.
+        // The sandbox sends provider tokens as a JSON map; we resolve the
+        // correct provider from the tool name prefix and set the Bearer token.
+        if (codeModeHeader === '1' && tokensHeader && toolName) {
+          try {
+            const tokens = JSON.parse(tokensHeader) as Record<string, string>;
+            // Find the provider whose id is a prefix of the tool name (longest match wins)
+            let best: string | null = null;
+            for (const candidate of Object.keys(tokens)) {
+              if (!candidate) continue;
+              if (toolName === candidate || toolName.startsWith(candidate + '_')) {
+                if (!best || candidate.length > best.length) best = candidate;
+              }
+            }
+            if (best && tokens[best]) {
+              authHeader = `Bearer ${tokens[best]}`;
+            }
+          } catch {
+            // Malformed token header — fall through to unauthenticated call
+          }
+        }
+
         const result = await handler.handleToolCall(body, authHeader, integrationsHeader);
         return Response.json(result);
       } catch (error: any) {
@@ -520,6 +589,7 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
      * - GET /api/integrate/oauth/callback - Provider OAuth redirect
      * - GET /api/integrate/oauth/status - Check authorization status
      * - POST /api/integrate/oauth/disconnect - Disconnect provider
+     * - POST /api/integrate/oauth/refresh - Refresh expired token
      * - POST /api/integrate/mcp - Execute MCP tool calls
      */
     toNextJsHandler(redirectConfig?: {
@@ -557,6 +627,10 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
 
             if (action === 'disconnect') {
               return handlers.disconnect(req);
+            }
+
+            if (action === 'refresh') {
+              return handlers.refresh(req);
             }
 
             return Response.json(

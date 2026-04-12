@@ -3,12 +3,51 @@
  * Tests for new OAuth functionality including events, session management, and disconnect/logout
  */
 
-import { describe, test, expect, beforeEach, mock } from "bun:test";
+import { describe, test, expect, beforeEach, afterEach, mock } from "bun:test";
 import { createMCPClient } from "../../src/client.js";
 import { githubIntegration } from "../../src/integrations/github.js";
 import { gmailIntegration } from "../../src/integrations/gmail.js";
 
 describe("OAuth Features", () => {
+  let originalLocalStorage: Storage | undefined;
+  let originalWindow: Window & typeof globalThis | undefined;
+  const mockLocalStorage = new Map<string, string>();
+
+  beforeEach(() => {
+    originalLocalStorage = global.localStorage;
+    originalWindow = global.window;
+
+    mockLocalStorage.clear();
+
+    const mockStorage = {
+      getItem: (key: string) => mockLocalStorage.get(key) || null,
+      setItem: (key: string, value: string) => mockLocalStorage.set(key, value),
+      removeItem: (key: string) => mockLocalStorage.delete(key),
+      clear: () => mockLocalStorage.clear(),
+      get length() { return mockLocalStorage.size; },
+      key: (index: number) => Array.from(mockLocalStorage.keys())[index] || null,
+    };
+
+    global.localStorage = mockStorage as any;
+    (global as any).window = { localStorage: mockStorage };
+  });
+
+  afterEach(() => {
+    mockLocalStorage.clear();
+
+    if (originalLocalStorage) {
+      global.localStorage = originalLocalStorage;
+    } else {
+      delete (global as any).localStorage;
+    }
+
+    if (originalWindow) {
+      global.window = originalWindow;
+    } else {
+      delete (global as any).window;
+    }
+  });
+
   describe("Event System", () => {
     test("on() registers event listener", () => {
       const client = createMCPClient({

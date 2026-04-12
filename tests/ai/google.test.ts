@@ -61,7 +61,7 @@ describe("Google GenAI Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getGoogleTools(client);
+      const tools = await getGoogleTools(client, { mode: 'tools' });
       const googleTool = tools.find((t) => t.name === "test_tool");
 
       expect(googleTool).toBeDefined();
@@ -99,7 +99,7 @@ describe("Google GenAI Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getGoogleTools(client);
+      const tools = await getGoogleTools(client, { mode: 'tools' });
       const googleTool = tools.find((t) => t.name === "test_tool");
 
       expect(googleTool?.description).toBe("Execute test_tool");
@@ -130,7 +130,7 @@ describe("Google GenAI Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getGoogleTools(client);
+      const tools = await getGoogleTools(client, { mode: 'tools' });
       const googleTool = tools.find((t) => t.name === "test_tool");
 
       expect(googleTool?.parameters.type).toBeDefined();
@@ -171,7 +171,7 @@ describe("Google GenAI Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getGoogleTools(client);
+      const tools = await getGoogleTools(client, { mode: 'tools' });
       const googleTool = tools.find((t) => t.name === "type_test_tool");
 
       expect(googleTool?.parameters.properties).toBeDefined();
@@ -218,7 +218,7 @@ describe("Google GenAI Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getGoogleTools(client);
+      const tools = await getGoogleTools(client, { mode: 'tools' });
       const googleTool = tools.find((t) => t.name === "required_test_tool");
 
       expect((googleTool?.parameters as any).required).toEqual(["required_field"]);
@@ -264,7 +264,7 @@ describe("Google GenAI Integration", () => {
         return;
       }
 
-      const tools = await getGoogleTools(client);
+      const tools = await getGoogleTools(client, { mode: 'tools' });
 
       expect(tools).toHaveLength(2);
       expect(tools.some((t) => t.name === "tool1")).toBe(true);
@@ -286,7 +286,7 @@ describe("Google GenAI Integration", () => {
 
       // Since tools are already cached in availableTools from beforeAll,
       // getEnabledToolsAsync will use the cache
-      const tools = await getGoogleTools(client);
+      const tools = await getGoogleTools(client, { mode: 'tools' });
       expect(tools.length).toBeGreaterThan(0);
     });
 
@@ -296,8 +296,7 @@ describe("Google GenAI Integration", () => {
         return;
       }
 
-      const tools = await getGoogleTools(client, {
-        providerTokens: { github: "test_token_123" },
+      const tools = await getGoogleTools(client, { mode: 'tools',         providerTokens: { github: "test_token_123" },
       });
 
       expect(tools).toBeDefined();

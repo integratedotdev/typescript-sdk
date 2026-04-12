@@ -44,7 +44,7 @@ describe("OpenAI Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getOpenAITools(client);
+      const tools = await getOpenAITools(client, { mode: 'tools' });
       const openaiTool = tools.find((t) => t.name === "test_tool");
 
       expect(openaiTool).toBeDefined();
@@ -77,7 +77,7 @@ describe("OpenAI Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getOpenAITools(client);
+      const tools = await getOpenAITools(client, { mode: 'tools' });
       const openaiTool = tools.find((t) => t.name === "test_tool");
 
       expect(openaiTool?.description).toBeNull();
@@ -103,7 +103,7 @@ describe("OpenAI Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getOpenAITools(client);
+      const tools = await getOpenAITools(client, { mode: 'tools' });
       const openaiTool = tools.find((t) => t.name === "test_tool");
 
       expect(openaiTool?.parameters).toBeNull();
@@ -129,7 +129,7 @@ describe("OpenAI Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getOpenAITools(client, { strict: true });
+      const tools = await getOpenAITools(client, { mode: 'tools', strict: true });
       const openaiTool = tools.find((t) => t.name === "test_tool");
 
       expect(openaiTool?.strict).toBe(true);
@@ -168,7 +168,7 @@ describe("OpenAI Integration", () => {
       (client as any).initialized = true;
       (client as any).transport = { isConnected: () => true };
 
-      const tools = await getOpenAITools(client);
+      const tools = await getOpenAITools(client, { mode: 'tools' });
       const openaiTool = tools.find((t) => t.name === "complex_tool");
 
       expect(openaiTool?.parameters).toEqual(complexSchema);
@@ -209,7 +209,7 @@ describe("OpenAI Integration", () => {
     });
 
     test("converts all enabled tools", async () => {
-      const tools = await getOpenAITools(client);
+      const tools = await getOpenAITools(client, { mode: 'tools' });
 
       expect(tools).toHaveLength(2);
       expect(tools.some((t) => t.name === "tool1")).toBe(true);
@@ -226,19 +226,18 @@ describe("OpenAI Integration", () => {
 
       // Since tools are already cached in availableTools from beforeAll,
       // getEnabledToolsAsync will use the cache
-      const tools = await getOpenAITools(client);
+      const tools = await getOpenAITools(client, { mode: 'tools' });
       expect(tools.length).toBeGreaterThan(0);
     });
 
     test("works without provider tokens (client-side usage)", async () => {
-      const tools = await getOpenAITools(client);
+      const tools = await getOpenAITools(client, { mode: 'tools' });
       expect(tools).toBeDefined();
       expect(tools.length).toBeGreaterThan(0);
     });
 
     test("uses provided provider tokens", async () => {
-      const tools = await getOpenAITools(client, {
-        providerTokens: { github: "test_token_123" },
+      const tools = await getOpenAITools(client, { mode: 'tools',         providerTokens: { github: "test_token_123" },
       });
 
       expect(tools).toBeDefined();

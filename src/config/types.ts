@@ -301,6 +301,56 @@ export interface MCPServerConfig<TIntegrations extends readonly MCPIntegration[]
    * ```
    */
   schedulerUrl?: string;
+
+  /**
+   * Code Mode configuration
+   *
+   * When the AI helpers (`getVercelAITools`, `getOpenAITools`, etc.) are called with
+   * the default mode `'code'`, the SDK exposes a single `execute_code` tool to the LLM.
+   * The LLM writes TypeScript that calls the generated `client.<integration>.<method>()`
+   * surface, and the code runs in an isolated Vercel Sandbox microVM which calls back
+   * into the MCP route at `publicUrl`.
+   *
+   * Requires `@vercel/sandbox` to be installed (optional peer dependency) and the
+   * Vercel OIDC token (or `VERCEL_TOKEN`) to be available in the environment.
+   *
+   * Cold start for Code Mode is on the order of a few hundred milliseconds per call
+   * because a new sandbox is created per `execute_code` invocation (no warm pool in v1).
+   *
+   * @example
+   * ```typescript
+   * createMCPServer({
+   *   integrations: [...],
+   *   codeMode: {
+   *     publicUrl: process.env.INTEGRATE_URL, // required when code mode is used
+   *     timeoutMs: 90_000,
+   *   },
+   * });
+   * ```
+   */
+  codeMode?: {
+    /**
+     * Public URL where the MCP route (`/api/integrate/mcp`) is reachable from the
+     * Vercel Sandbox. Must include the scheme and no trailing `/api/integrate` suffix,
+     * e.g. `https://myapp.vercel.app`.
+     *
+     * Falls back to `process.env.INTEGRATE_URL` if unset. If neither is provided,
+     * Code Mode requests fail fast with a descriptive error.
+     */
+    publicUrl?: string;
+    /** Sandbox runtime image. Defaults to `'node22'`. */
+    runtime?: 'node24' | 'node22';
+    /** Sandbox execution timeout in milliseconds. Defaults to 60_000. */
+    timeoutMs?: number;
+    /** Number of vCPUs for the sandbox. Defaults to 2. */
+    vcpus?: number;
+    /**
+     * Egress firewall for the sandbox. Defaults to an allow-list containing only
+     * the host parsed from `publicUrl`. Pass `'allow-all'` or an explicit policy
+     * to override.
+     */
+    networkPolicy?: 'allow-all' | 'deny-all' | { allow?: string[]; subnets?: { allow?: string[]; deny?: string[] } };
+  };
 }
 
 /**

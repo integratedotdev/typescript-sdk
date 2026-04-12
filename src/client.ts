@@ -403,6 +403,13 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
         logger.error('Failed to load provider tokens:', error);
       });
     } else {
+      // Auto-load tokens from PROVIDER_TOKENS env var for sandbox/code execution environments.
+      // This enables user integrations to work when tokens are injected via environment variables
+      // (e.g. when code runs in a Vercel sandbox for code mode). Must happen before
+      // loadAllProviderTokensSync so the auth-state update below picks up env var tokens.
+      // Only applies when no database callbacks are configured (callbacks take precedence).
+      this.oauthManager.loadTokensFromEnvVar();
+
       // IndexedDB: Load tokens asynchronously (IndexedDB operations are async)
       // Always load existing tokens first, even if there's an OAuth callback pending
       // This ensures any previously saved tokens are available immediately
@@ -1083,6 +1090,14 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     try {
       // Route through API handler instead of direct MCP server call
       const response = await this.callToolThroughHandler(name, args, provider, options);
+
+      // Check for MCP-level error responses (isError flag on successful JSON-RPC responses)
+      if (response.isError === true) {
+        const errorText =
+          response.content?.find((c) => c.type === "text")?.text ||
+          "Tool returned an error response";
+        throw new Error(errorText);
+      }
 
       // Mark provider as authenticated on success
       if (provider) {
@@ -2263,4 +2278,3 @@ export async function clearClientCache(): Promise<void> {
     })
   );
 }
-

@@ -9,6 +9,13 @@ import type { MCPTool } from "../protocol/messages.js";
 import type { MCPContext } from "../config/types.js";
 import { executeToolWithToken, getProviderTokens, ensureClientConnected, type AIToolsOptions } from "./utils.js";
 import { createTriggerTools } from "./trigger-tools.js";
+import {
+  buildCodeModeTool,
+  diagnoseCodeMode,
+  warnCodeModeFallback,
+  CODE_MODE_TOOL_NAME,
+  TYPES_TOOL_NAME,
+} from "../code-mode/tool-builder.js";
 import { zodToJsonSchema } from "zod-to-json-schema";
 
 // Type-only imports from @google/genai
@@ -52,6 +59,17 @@ async function getGoogleType(): Promise<typeof Type> {
 export interface GoogleToolsOptions extends AIToolsOptions {
   /** User context for multi-tenant token storage */
   context?: MCPContext;
+  /**
+   * How to expose MCP tools to the model.
+   *
+   * - `'code'`: Returns a single `execute_code` tool backed by a
+   *   Vercel Sandbox. The model writes TypeScript that calls the typed
+   *   `client.<integration>.<method>()` API and chains operations in one round-trip.
+   * - `'tools'`: Legacy behavior — one Google FunctionDeclaration per MCP tool.
+   *
+   * @default auto-detects `'code'` when sandbox + public URL are available, otherwise `'tools'`
+   */
+  mode?: 'code' | 'tools';
 }
 
 /**
@@ -221,24 +239,44 @@ export async function executeGoogleFunctionCalls(
   // Check if we have trigger tools
   const triggerConfig = (client as any).__triggerConfig;
   const triggerTools = triggerConfig ? createTriggerTools(triggerConfig, options?.context) : null;
-  
+
+  // Lazy-build the code mode tool for this helper invocation
+  let cachedCodeModeTool: ReturnType<typeof buildCodeModeTool> | null = null;
+  const getCodeModeTool = async () => {
+    if (cachedCodeModeTool) return cachedCodeModeTool;
+    const mcpTools = await client.getEnabledToolsAsync();
+    cachedCodeModeTool = buildCodeModeTool(client, {
+      tools: mcpTools,
+      providerTokens: finalOptions?.providerTokens,
+      context: options?.context,
+      integrationIds: (client as any).__oauthConfig?.integrations?.map((i: any) => i.id),
+    });
+    return cachedCodeModeTool;
+  };
+
   const results = await Promise.all(
     functionCalls.map(async (call) => {
       if (!call?.name) {
         throw new Error('Function call must have a name');
       }
-      
+
       // Extract args - the actual GoogleFunctionCall type has args as a property
       const args = (call as any).args || {};
-      
-      // Check if this is a trigger tool
+
+      // Check if this is a trigger tool or code mode tool
       let result;
-      if (triggerTools && (triggerTools as any)[call.name]) {
+      if (call.name === CODE_MODE_TOOL_NAME) {
+        const { codeTool } = await getCodeModeTool();
+        result = await codeTool.execute(args as { code: string });
+      } else if (call.name === TYPES_TOOL_NAME) {
+        const { typesTool } = await getCodeModeTool();
+        result = typesTool.execute(args as { integration: string });
+      } else if (triggerTools && (triggerTools as any)[call.name]) {
         result = await (triggerTools as any)[call.name].execute(args);
       } else {
         result = await executeToolWithToken(client, call.name, args, finalOptions);
       }
-      
+
       return JSON.stringify(result);
     })
   );
@@ -342,9 +380,60 @@ export async function getGoogleTools(
   // Use getEnabledToolsAsync to ensure schemas are always populated
   // This fetches from server if not connected, otherwise uses cached tools
   const mcpTools = await client.getEnabledToolsAsync();
-  const googleTools: GoogleTool[] = await Promise.all(
-    mcpTools.map(mcpTool => convertMCPToolToGoogle(mcpTool, client, finalOptions))
-  );
+  let effectiveMode: 'code' | 'tools';
+  if (options?.mode !== undefined) {
+    effectiveMode = options.mode;
+  } else {
+    const diagnosis = await diagnoseCodeMode(client);
+    if (diagnosis.available) {
+      effectiveMode = 'code';
+    } else {
+      warnCodeModeFallback(diagnosis.reason);
+      effectiveMode = 'tools';
+    }
+  }
+
+  let googleTools: GoogleTool[];
+  if (effectiveMode === 'code') {
+    const TypeEnum = await getGoogleType();
+    const { codeTool, typesTool } = buildCodeModeTool(client, {
+      tools: mcpTools,
+      providerTokens,
+      context: options?.context,
+      integrationIds: (client as any).__oauthConfig?.integrations?.map((i: any) => i.id),
+    });
+    googleTools = [{
+      name: CODE_MODE_TOOL_NAME,
+      description: codeTool.description,
+      parameters: {
+        type: TypeEnum.OBJECT,
+        properties: {
+          code: {
+            type: TypeEnum.STRING,
+            description: codeTool.parameters.properties.code.description,
+          },
+        },
+        required: ['code'],
+      } as Schema,
+    }, {
+      name: TYPES_TOOL_NAME,
+      description: typesTool.description,
+      parameters: {
+        type: TypeEnum.OBJECT,
+        properties: {
+          integration: {
+            type: TypeEnum.STRING,
+            description: typesTool.parameters.properties.integration.description,
+          },
+        },
+        required: ['integration'],
+      } as Schema,
+    }];
+  } else {
+    googleTools = await Promise.all(
+      mcpTools.map(mcpTool => convertMCPToolToGoogle(mcpTool, client, finalOptions))
+    );
+  }
 
   // Add trigger management tools if configured
   const triggerConfig = (client as any).__triggerConfig;
@@ -443,4 +532,3 @@ function convertJsonSchemaToGoogleSchema(jsonSchema: any, TypeEnum: typeof Type)
   
   return result;
 }
-

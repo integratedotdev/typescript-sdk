@@ -883,6 +883,44 @@ export class OAuthManager {
   }
 
   /**
+   * Load provider tokens from the PROVIDER_TOKENS environment variable.
+   *
+   * In sandbox/code-execution environments (e.g. Vercel sandbox for code mode),
+   * the host passes user OAuth tokens via this env var because there is no browser
+   * storage or database callback available. Tokens are loaded into the in-memory
+   * cache only — they are never persisted.
+   *
+   * Format: JSON object mapping provider name → access token string.
+   * Example: PROVIDER_TOKENS='{"github":"ghp_...","gmail":"ya29...."}'
+   */
+  loadTokensFromEnvVar(): void {
+    try {
+      if (typeof process === 'undefined' || !process.env?.PROVIDER_TOKENS) {
+        return;
+      }
+
+      const parsed = JSON.parse(process.env.PROVIDER_TOKENS) as Record<string, unknown>;
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        logger.warn('PROVIDER_TOKENS env var is set but is not a JSON object — skipping');
+        return;
+      }
+
+      for (const [provider, token] of Object.entries(parsed)) {
+        if (typeof token === 'string') {
+          this.providerTokens.set(provider, {
+            accessToken: token,
+            tokenType: 'Bearer',
+            expiresIn: 0,
+          });
+          logger.debug(`Loaded token for ${provider} from PROVIDER_TOKENS env var`);
+        }
+      }
+    } catch {
+      // Ignore — PROVIDER_TOKENS may not be set or may be invalid JSON
+    }
+  }
+
+  /**
    * Save pending auth to localStorage (for redirect flows)
    * Uses localStorage instead of sessionStorage because OAuth may open in a new tab,
    * and sessionStorage is isolated per tab. localStorage is shared across tabs.
@@ -1111,4 +1149,3 @@ export class OAuthManager {
     this.windowManager.close();
   }
 }
-

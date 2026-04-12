@@ -194,6 +194,27 @@ export interface DisconnectResponse {
 }
 
 /**
+ * Request body for token refresh endpoint
+ */
+export interface RefreshRequest {
+  provider: string;
+  refreshToken: string;
+}
+
+/**
+ * Response from token refresh endpoint
+ */
+export interface RefreshResponse {
+  accessToken: string;
+  refreshToken?: string;
+  tokenType: string;
+  expiresIn: number;
+  expiresAt?: string;
+  scopes?: string[];
+  email?: string;
+}
+
+/**
  * Request body for MCP tool call endpoint
  */
 export interface ToolCallRequest {
@@ -388,8 +409,12 @@ export class OAuthHandler {
     // Store codeVerifier and frontendOrigin temporarily if provided (for backend redirect flow)
     if (authorizeRequest.codeVerifier) {
       try {
-        // Import the storage from server.ts
-        const { storeCodeVerifier } = await import('../server.js');
+        // Use new Function to hide the import from static-analysis bundlers so
+        // server.ts (and its Node-only transitive deps) are not pulled into the
+        // browser bundle. This import only succeeds in a server context where
+        // server.ts is actually available; failures are silently swallowed below.
+        const serverImport = new Function("s", "return import(s)") as (s: string) => Promise<any>;
+        const { storeCodeVerifier } = await serverImport('../server.js');
         storeCodeVerifier(authorizeRequest.state, authorizeRequest.codeVerifier, authorizeRequest.provider, authorizeRequest.frontendOrigin);
       } catch (error) {
         // If storage fails, log warning but continue
@@ -670,6 +695,119 @@ export class OAuthHandler {
   }
 
   /**
+   * Handle token refresh
+   * Refreshes an expired access token via the MCP server's /oauth/refresh endpoint
+   *
+   * @param request - Refresh request with provider and refreshToken, OR full Web Request object
+   * @returns Refreshed token data
+   *
+   * @throws Error if provider is not configured
+   * @throws Error if MCP server request fails
+   */
+  async handleRefresh(request: RefreshRequest | Request): Promise<RefreshResponse> {
+    let webRequest: Request | undefined;
+    let refreshRequest: RefreshRequest;
+
+    if (request instanceof Request) {
+      webRequest = request;
+      refreshRequest = await request.json();
+    } else if (typeof request === 'object' && 'json' in request && typeof request.json === 'function') {
+      refreshRequest = await request.json();
+    } else {
+      refreshRequest = request as RefreshRequest;
+    }
+
+    // Get OAuth config from environment (server-side)
+    const providerConfig = this.config.providers[refreshRequest.provider];
+    if (!providerConfig) {
+      throw new Error(`Provider ${refreshRequest.provider} not configured. Add OAuth credentials to your API route configuration.`);
+    }
+
+    // Extract user context for multi-tenant token storage
+    let context: MCPContext | undefined;
+    if (webRequest) {
+      try {
+        if (this.config.getSessionContext) {
+          context = await this.config.getSessionContext(webRequest);
+        }
+
+        if (!context || !context.userId) {
+          const { detectSessionContext } = await import('./session-detector.js');
+          context = await detectSessionContext(webRequest);
+        }
+      } catch (error) {
+        // Context extraction failed - continue without it
+      }
+    }
+
+    // Build request body for MCP server
+    const body: Record<string, string> = {
+      provider: refreshRequest.provider,
+      refresh_token: refreshRequest.refreshToken,
+      client_id: providerConfig.clientId,
+    };
+
+    // Only include client_secret for confidential clients (omit for public clients like Polar)
+    if (providerConfig.clientSecret) {
+      body.client_secret = providerConfig.clientSecret;
+    }
+
+    // Include subdomain for providers that need it (e.g., Zendesk)
+    if (providerConfig.config?.subdomain) {
+      body.subdomain = providerConfig.config.subdomain;
+    }
+
+    // Forward to MCP server for token refresh
+    const url = new URL('/oauth/refresh', this.serverUrl);
+
+    const response = await fetch(url.toString(), {
+      method: 'POST',
+      headers: this.getHeaders({
+        'Content-Type': 'application/json',
+      }),
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      const lowerError = error.toLowerCase();
+      if (lowerError.includes('not supported') || lowerError.includes('unsupported')) {
+        throw new Error(`Token refresh not supported: ${error}`);
+      }
+      throw new Error(`Token refresh failed: ${error}`);
+    }
+
+    const data = await response.json();
+    const result: RefreshResponse = data as RefreshResponse;
+
+    // Store refreshed tokens via callback if configured
+    if (this.config.setProviderToken) {
+      try {
+        const tokenData: ProviderTokenData = {
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
+          tokenType: result.tokenType,
+          expiresIn: result.expiresIn,
+          expiresAt: result.expiresAt,
+          scopes: result.scopes
+            ? result.scopes.flatMap((s: string) => s.split(' ').filter(Boolean))
+            : result.scopes,
+        };
+
+        const email = result.email || await fetchUserEmail(refreshRequest.provider, tokenData);
+        if (email) {
+          tokenData.email = email;
+        }
+        await this.config.setProviderToken(refreshRequest.provider, tokenData, email, context);
+      } catch (error) {
+        // Token storage failed - log but don't fail the refresh flow
+      }
+    }
+
+    return result;
+  }
+
+  /**
    * Handle MCP tool call
    * Forwards tool call requests to MCP server with API key and provider token
    * 
@@ -722,11 +860,35 @@ export class OAuthHandler {
       },
     };
 
-    const response = await fetch(url, {
+    // Use redirect: 'manual' to prevent Node.js fetch (undici) from
+    // following redirects automatically. The Fetch spec mandates stripping
+    // the Authorization header on cross-origin redirects — and even some
+    // same-origin redirects (e.g. HTTP → HTTPS, path normalization) can
+    // trigger this in certain runtimes. By handling redirects ourselves we
+    // guarantee the Authorization header reaches the MCP server.
+    let response = await fetch(url, {
       method: 'POST',
       headers,
       body: JSON.stringify(jsonRpcRequest),
+      redirect: 'manual',
     });
+
+    // If we got a redirect, follow it manually while preserving all headers
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get('location');
+      if (location) {
+        const redirectUrl = new URL(location, url).href;
+        console.warn(
+          `[integrate-sdk] handleToolCall: following redirect ${response.status} → ${redirectUrl} (preserving Authorization header)`
+        );
+        response = await fetch(redirectUrl, {
+          method: 'POST',
+          headers, // keep ALL headers including Authorization
+          body: JSON.stringify(jsonRpcRequest),
+          redirect: 'manual',
+        });
+      }
+    }
 
     if (!response.ok) {
       const error = await response.text();

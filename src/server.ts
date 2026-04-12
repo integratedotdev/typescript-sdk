@@ -5,7 +5,7 @@
 
 import { MCPClient } from './client.js';
 import { MCPClientBase } from './client.js';
-import type { MCPServerConfig } from './config/types.js';
+import type { MCPContext, MCPServerConfig } from './config/types.js';
 import type { MCPIntegration } from './integrations/types.js';
 import { createNextOAuthHandler } from './adapters/nextjs.js';
 import { getEnv } from './utils/env.js';
@@ -63,6 +63,50 @@ let globalMCPHandler: ((request: Request, context?: { params?: { action?: string
  * Keyed by state parameter, expires after 5 minutes
  */
 const codeVerifierStorage = new Map<string, { codeVerifier: string; provider: string; frontendOrigin?: string; expiresAt: number }>();
+
+/**
+ * Longest-prefix match of `toolName` against a list of candidate integration
+ * IDs. Needed because some integration IDs contain underscores (e.g.
+ * `google_calendar`), so the naive `toolName.split('_')[0]` would truncate
+ * them to the wrong provider key.
+ */
+function resolveProviderFromToolName(toolName: string, candidates: string[]): string | null {
+  let best: string | null = null;
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    if (toolName === candidate || toolName.startsWith(candidate + '_')) {
+      if (!best || candidate.length > best.length) best = candidate;
+    }
+  }
+  return best;
+}
+
+const unauthenticatedCodeModeWarnings = new Set<string>();
+
+function warnUnauthenticatedCodeModeCallback(details: {
+  toolName: string;
+  tokensPresent: boolean;
+  tokensResolvedProvider: string | null;
+  contextPresent: boolean;
+  apiKeyMatches: boolean;
+  getProviderTokenConfigured: boolean;
+}): void {
+  if (unauthenticatedCodeModeWarnings.has(details.toolName)) return;
+  unauthenticatedCodeModeWarnings.add(details.toolName);
+  console.warn(
+    `[integrate-sdk] Code Mode callback for tool "${details.toolName}" has no Authorization header.\n` +
+    `  x-integrate-tokens present: ${details.tokensPresent} (resolved provider: ${details.tokensResolvedProvider ?? 'none'})\n` +
+    `  x-integrate-context present: ${details.contextPresent}\n` +
+    `  x-integrate-api-key matches server apiKey: ${details.apiKeyMatches}\n` +
+    `  getProviderToken configured: ${details.getProviderTokenConfigured}\n` +
+    `  Fix by either (a) passing providerTokens to the AI helper, or (b) configuring getProviderToken + apiKey on createMCPServer and passing context.`
+  );
+}
+
+/** @internal — used by unit tests to reset the warn-once throttle. */
+export function __resetUnauthenticatedCodeModeWarnings(): void {
+  unauthenticatedCodeModeWarnings.clear();
+}
 
 /**
  * Clean up expired codeVerifier entries
@@ -303,6 +347,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
     getSessionContext: config.getSessionContext,
     setProviderToken: config.setProviderToken,
     removeProviderToken: config.removeProviderToken,
+    codeMode: config.codeMode,
   };
 
   // Attach trigger config to the client for AI tools access
@@ -421,8 +466,78 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
     if (action === 'mcp' && method === 'POST') {
       try {
         const body = await webRequest.json();
-        const authHeader = webRequest.headers.get('authorization');
+        let authHeader = webRequest.headers.get('authorization');
         const integrationsHeader = webRequest.headers.get('x-integrations');
+        const codeModeHeader = webRequest.headers.get('x-integrate-code-mode');
+        const contextHeader = webRequest.headers.get('x-integrate-context');
+        const callbackApiKey = webRequest.headers.get('x-integrate-api-key');
+        const tokensHeader = webRequest.headers.get('x-integrate-tokens');
+        const toolName = typeof body?.name === 'string' ? body.name : '';
+        let tokensResolvedProvider: string | null = null;
+
+        // Code Mode fallback: when the sandbox callback passes a multi-provider
+        // `x-integrate-tokens` map, synthesize the single-provider `Authorization`
+        // header expected by `handleToolCall` based on the tool's integration
+        // prefix. This keeps the sandbox → /mcp round trip on the same auth plane
+        // existing clients use without leaking the whole token map.
+        if (codeModeHeader === '1' && tokensHeader && toolName) {
+          try {
+            const tokens = JSON.parse(tokensHeader) as Record<string, string>;
+            const provider = resolveProviderFromToolName(toolName, Object.keys(tokens));
+            if (provider && tokens[provider]) {
+              tokensResolvedProvider = provider;
+              authHeader = `Bearer ${tokens[provider]}`;
+            }
+          } catch {
+            // Malformed token header — fall through
+          }
+        }
+
+        // Code Mode context-based fallback: when the sandbox callback carries
+        // x-integrate-context (set by executeSandboxCode) but no token was
+        // found via x-integrate-tokens, look up the token using the consumer's
+        // getProviderToken callback. This supports DB-backed token storage
+        // (e.g., Better Auth + Drizzle) where tokens are never pre-loaded
+        // into the sandbox environment variables.
+        if (
+          !authHeader &&
+          config.getProviderToken &&
+          codeModeHeader === '1' &&
+          contextHeader &&
+          toolName &&
+          config.apiKey &&
+          callbackApiKey === config.apiKey
+        ) {
+          try {
+            const context = JSON.parse(contextHeader) as MCPContext;
+            const candidates = integrationsHeader
+              ? integrationsHeader.split(',').map(s => s.trim()).filter(Boolean)
+              : (config.integrations ?? []).map((i: any) => i.id).filter(Boolean);
+            const provider = resolveProviderFromToolName(toolName, candidates);
+            if (provider) {
+              const tokenData = await config.getProviderToken(provider, undefined, context);
+              if (tokenData?.accessToken) {
+                authHeader = `Bearer ${tokenData.accessToken}`;
+              }
+            }
+          } catch {
+            // Ignore malformed context — fall through to unauthenticated call.
+          }
+        }
+
+        // Diagnostic: when a code-mode callback still has no Authorization, warn
+        // once per (tool,reason) so operators can see which precondition failed
+        // instead of guessing from the upstream "Bearer token is required" error.
+        if (!authHeader && codeModeHeader === '1') {
+          warnUnauthenticatedCodeModeCallback({
+            toolName,
+            tokensPresent: !!tokensHeader,
+            tokensResolvedProvider,
+            contextPresent: !!contextHeader,
+            apiKeyMatches: !!(config.apiKey && callbackApiKey === config.apiKey),
+            getProviderTokenConfigured: !!config.getProviderToken,
+          });
+        }
 
         // Create OAuth handler with config that includes API key
         // The API key will be automatically sent as X-API-KEY header to the MCP server
@@ -437,6 +552,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
         });
 
         const result = await oauthHandler.handleToolCall(body, authHeader, integrationsHeader);
+
         const response = Response.json(result);
 
         // Add X-Integrate-Use-Database header if database callbacks are configured
@@ -450,6 +566,84 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
         return Response.json(
           { error: error.message || 'Failed to execute tool call' },
           { status: error.statusCode || 500 }
+        );
+      }
+    }
+
+    // Handle /code route — Code Mode execution endpoint.
+    // Accepts { code, providerTokens?, context? } and runs the snippet in a
+    // Vercel Sandbox that proxies MCP tool calls back through /api/integrate/mcp.
+    if (action === 'code' && method === 'POST') {
+      try {
+        const body = await webRequest.json() as {
+          code?: string;
+          providerTokens?: Record<string, string>;
+          context?: Record<string, unknown>;
+        };
+
+        if (typeof body?.code !== 'string' || body.code.length === 0) {
+          return Response.json({ error: '`code` is required and must be a non-empty string.' }, { status: 400 });
+        }
+
+        const { executeSandboxCode } = await import('./code-mode/executor.js');
+        const { resolveCodeModePublicUrl } = await import('./code-mode/tool-builder.js');
+
+        const codeModeConfig = config.codeMode ?? {};
+        const publicUrl = resolveCodeModePublicUrl(codeModeConfig);
+        if (!publicUrl) {
+          return Response.json(
+            {
+              error:
+                'Code Mode requires `codeMode.publicUrl` in createMCPServer config (or the INTEGRATE_URL env var). ' +
+                'Set it to the public origin where /api/integrate/mcp is reachable.',
+            },
+            { status: 500 }
+          );
+        }
+
+        // Pull session context from the incoming request unless the caller
+        // supplied an explicit context override.
+        let contextOverride = body.context as any;
+        if (!contextOverride && config.getSessionContext) {
+          try {
+            contextOverride = await config.getSessionContext(webRequest);
+          } catch {
+            // ignore session extraction failures
+          }
+        }
+
+        // Forward either the explicit providerTokens from the body or those
+        // already present on the request (same auto-extraction pattern the AI
+        // helpers use).
+        let providerTokens = body.providerTokens;
+        if (!providerTokens) {
+          const headerTokens = webRequest.headers.get('x-integrate-tokens');
+          if (headerTokens) {
+            try { providerTokens = JSON.parse(headerTokens); } catch { /* ignore */ }
+          }
+        }
+
+        const integrationIds = updatedIntegrations.map((i) => i.id);
+
+        const result = await executeSandboxCode({
+          code: body.code,
+          mcpUrl: publicUrl.replace(/\/$/, '') + '/api/integrate/mcp',
+          apiKey: config.apiKey,
+          providerTokens,
+          context: contextOverride,
+          integrationsHeader: integrationIds.join(','),
+          runtime: codeModeConfig.runtime,
+          timeoutMs: codeModeConfig.timeoutMs,
+          vcpus: codeModeConfig.vcpus,
+          networkPolicy: codeModeConfig.networkPolicy,
+        });
+
+        return Response.json(result, { status: result.success ? 200 : 500 });
+      } catch (error: any) {
+        logger.error('[Code Mode] Error:', error);
+        return Response.json(
+          { error: error?.message || 'Failed to execute code' },
+          { status: 500 }
         );
       }
     }
@@ -1796,4 +1990,3 @@ export function toSvelteKitHandler<TIntegrations extends readonly MCPIntegration
     }
   };
 }
-
