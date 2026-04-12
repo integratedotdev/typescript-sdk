@@ -860,11 +860,47 @@ export class OAuthHandler {
       },
     };
 
-    const response = await fetch(url, {
+    // Diagnostic: log the outbound request to the MCP server
+    console.warn(
+      '[integrate-sdk] handleToolCall →',
+      url,
+      JSON.stringify({
+        tool: request.name,
+        hasAuth: !!headers['Authorization'],
+        hasApiKey: !!headers['X-API-KEY'],
+        headerKeys: Object.keys(headers),
+      })
+    );
+
+    // Use redirect: 'manual' to prevent Node.js fetch (undici) from
+    // following redirects automatically. The Fetch spec mandates stripping
+    // the Authorization header on cross-origin redirects — and even some
+    // same-origin redirects (e.g. HTTP → HTTPS, path normalization) can
+    // trigger this in certain runtimes. By handling redirects ourselves we
+    // guarantee the Authorization header reaches the MCP server.
+    let response = await fetch(url, {
       method: 'POST',
       headers,
       body: JSON.stringify(jsonRpcRequest),
+      redirect: 'manual',
     });
+
+    // If we got a redirect, follow it manually while preserving all headers
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get('location');
+      if (location) {
+        const redirectUrl = new URL(location, url).href;
+        console.warn(
+          `[integrate-sdk] handleToolCall: following redirect ${response.status} → ${redirectUrl} (preserving Authorization header)`
+        );
+        response = await fetch(redirectUrl, {
+          method: 'POST',
+          headers, // keep ALL headers including Authorization
+          body: JSON.stringify(jsonRpcRequest),
+          redirect: 'manual',
+        });
+      }
+    }
 
     if (!response.ok) {
       const error = await response.text();

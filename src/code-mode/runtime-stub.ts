@@ -33,8 +33,10 @@ console.error('[sandbox-diag] HAS_SESSION_TOKEN=' + !!SESSION_TOKEN);
 console.error('[sandbox-diag] HAS_PROVIDER_TOKENS=' + !!PROVIDER_TOKENS);
 if (PROVIDER_TOKENS) {
   try {
-    const _keys = Object.keys(JSON.parse(PROVIDER_TOKENS));
+    const _parsed = JSON.parse(PROVIDER_TOKENS);
+    const _keys = Object.keys(_parsed);
     console.error('[sandbox-diag] PROVIDER_TOKEN_KEYS=' + _keys.join(','));
+    console.error('[sandbox-diag] TOKEN_LENGTHS=' + _keys.map(k => k + ':' + (typeof _parsed[k] === 'string' ? _parsed[k].length : typeof _parsed[k])).join(','));
   } catch { console.error('[sandbox-diag] PROVIDER_TOKENS is not valid JSON'); }
 }
 
