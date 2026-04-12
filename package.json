@@ -1,10 +1,6 @@
 {
   "name": "integrate-sdk",
-<<<<<<< HEAD
-  "version": "0.9.15",
-=======
-  "version": "0.9.1",
->>>>>>> 9af3ea2 (Load provider tokens from PROVIDER_TOKENS environment variable)
+  "version": "0.9.16",
   "description": "Type-safe 3rd party integration SDK for the Integrate MCP server",
   "type": "module",
   "main": "./dist/index.js",
