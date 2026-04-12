@@ -19,6 +19,7 @@ import {
   type ExecuteSandboxCodeResult,
 } from "./executor.js";
 import { getEnv } from "../utils/env.js";
+import { getProviderTokens } from "../utils/request-tokens.js";
 
 export const CODE_MODE_TOOL_NAME = "execute_code";
 export const TYPES_TOOL_NAME = "get_integration_types";
@@ -214,11 +215,30 @@ export function buildCodeModeTool(
 
     const mcpUrl = publicUrl.replace(/\/$/, "") + "/api/integrate/mcp";
 
-    // Resolve provider tokens lazily at execute time if not provided at build time.
-    // This handles the common case where getVercelAITools() is called in an AI route
-    // that doesn't receive x-integrate-tokens from the frontend — the server-side
-    // client's oauthManager can still pull tokens from DB callbacks or memory cache.
+    // Resolve provider tokens at execute time using a three-tier fallback:
+    //   1. Build-time tokens (captured when getVercelAITools/etc. was called)
+    //   2. Request-header extraction (x-integrate-tokens via next/headers() at execute time)
+    //   3. OAuthManager DB callbacks (getProviderToken from createMCPServer config)
+    //
+    // Tier 2 is critical: if the developer's route handler caches the tools object
+    // or calls getVercelAITools() outside the request scope, build-time tokens are
+    // empty. But execute() still runs inside the request, so next/headers() works.
     let resolvedTokens = providerTokens;
+    let tokenSource: string = resolvedTokens && Object.keys(resolvedTokens).length > 0 ? "build-time" : "none";
+
+    // Tier 2: try request-header extraction at execute time
+    if (!resolvedTokens || Object.keys(resolvedTokens).length === 0) {
+      try {
+        resolvedTokens = await getProviderTokens();
+        if (resolvedTokens && Object.keys(resolvedTokens).length > 0) {
+          tokenSource = "request-header";
+        }
+      } catch {
+        // No request context or no header — continue to tier 3
+      }
+    }
+
+    // Tier 3: resolve from the client's oauthManager (DB callbacks / memory cache)
     if (!resolvedTokens || Object.keys(resolvedTokens).length === 0) {
       const oauthManager = (client as any).oauthManager;
       if (oauthManager) {
@@ -239,9 +259,21 @@ export function buildCodeModeTool(
         }
         if (Object.keys(resolvedTokens).length === 0) {
           resolvedTokens = undefined;
+        } else {
+          tokenSource = "oauthManager";
         }
       }
     }
+
+    console.debug(
+      "[integrate-sdk] execute_code token resolution:",
+      JSON.stringify({
+        source: tokenSource,
+        keys: resolvedTokens ? Object.keys(resolvedTokens) : [],
+        hasApiKey: !!apiKey,
+        mcpUrl,
+      })
+    );
 
     return executeSandboxCode({
       code,

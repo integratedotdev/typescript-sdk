@@ -475,6 +475,22 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
         const toolName = typeof body?.name === 'string' ? body.name : '';
         let tokensResolvedProvider: string | null = null;
 
+        // Diagnostic: log all code-mode callback details for debugging
+        if (codeModeHeader === '1') {
+          logger.debug(
+            '[MCP Code Mode Callback]',
+            JSON.stringify({
+              toolName,
+              hasAuthHeader: !!authHeader,
+              hasTokensHeader: !!tokensHeader,
+              tokenKeys: tokensHeader ? (() => { try { return Object.keys(JSON.parse(tokensHeader)); } catch { return 'PARSE_ERROR'; } })() : [],
+              hasApiKey: !!callbackApiKey,
+              hasContext: !!contextHeader,
+              hasIntegrations: !!integrationsHeader,
+            })
+          );
+        }
+
         // Code Mode fallback: when the sandbox callback passes a multi-provider
         // `x-integrate-tokens` map, synthesize the single-provider `Authorization`
         // header expected by `handleToolCall` based on the tool's integration

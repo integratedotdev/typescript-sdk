@@ -25,6 +25,19 @@ if (!MCP_URL) {
   throw new Error('INTEGRATE_MCP_URL is not set — the sandbox cannot reach the MCP route.');
 }
 
+// Diagnostic: log sandbox env summary to stderr so it shows up in the
+// execute_code result's stderr field for debugging auth issues.
+console.error('[sandbox-diag] MCP_URL=' + MCP_URL);
+console.error('[sandbox-diag] HAS_API_KEY=' + !!API_KEY);
+console.error('[sandbox-diag] HAS_SESSION_TOKEN=' + !!SESSION_TOKEN);
+console.error('[sandbox-diag] HAS_PROVIDER_TOKENS=' + !!PROVIDER_TOKENS);
+if (PROVIDER_TOKENS) {
+  try {
+    const _keys = Object.keys(JSON.parse(PROVIDER_TOKENS));
+    console.error('[sandbox-diag] PROVIDER_TOKEN_KEYS=' + _keys.join(','));
+  } catch { console.error('[sandbox-diag] PROVIDER_TOKENS is not valid JSON'); }
+}
+
 function camelToSnake(str) {
   return str.replace(/[A-Z]/g, (letter) => '_' + letter.toLowerCase());
 }
@@ -40,6 +53,14 @@ async function callTool(toolName, args) {
   if (INTEGRATIONS_HEADER) headers['x-integrations'] = INTEGRATIONS_HEADER;
   if (CONTEXT_JSON) headers['x-integrate-context'] = CONTEXT_JSON;
 
+  console.error('[sandbox-diag] callTool: ' + toolName + ' → ' + MCP_URL);
+  console.error('[sandbox-diag] headers: ' + JSON.stringify({
+    hasAuth: !!headers['Authorization'],
+    hasApiKey: !!headers['x-integrate-api-key'],
+    hasTokens: !!headers['x-integrate-tokens'],
+    hasCodeMode: !!headers['x-integrate-code-mode'],
+  }));
+
   const res = await fetch(MCP_URL, {
     method: 'POST',
     headers,
@@ -47,6 +68,8 @@ async function callTool(toolName, args) {
   });
 
   const text = await res.text();
+  console.error('[sandbox-diag] response: HTTP ' + res.status + ' len=' + text.length);
+
   let payload;
   try {
     payload = text ? JSON.parse(text) : null;

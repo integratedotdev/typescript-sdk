@@ -277,6 +277,22 @@ export async function executeSandboxCode(options: ExecuteSandboxCodeOptions): Pr
     if (options.integrationsHeader) env.INTEGRATE_INTEGRATIONS = options.integrationsHeader;
     if (options.context) env.INTEGRATE_CONTEXT = JSON.stringify(options.context);
 
+    // Diagnostic: log sandbox configuration so operators can verify what
+    // reaches the sandbox when debugging auth failures.
+    console.debug(
+      "[integrate-sdk] Sandbox env:",
+      JSON.stringify({
+        mcpUrl: options.mcpUrl,
+        hasApiKey: !!options.apiKey,
+        hasSessionToken: !!options.sessionToken,
+        providerTokenKeys: options.providerTokens ? Object.keys(options.providerTokens) : [],
+        hasIntegrations: !!options.integrationsHeader,
+        hasContext: !!options.context,
+        runtime,
+        timeoutMs,
+      })
+    );
+
     const cmd = await sandbox.runCommand({
       cmd: "node",
       args: ["user.mjs"],
