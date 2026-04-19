@@ -389,35 +389,439 @@ export interface StripeIntegrationClient {
 
   /**
    * Create a subscription
-   * 
+   *
    * @example
    * ```typescript
    * const subscription = await client.stripe.createSubscription({
    *   customer: "cus_xxxxx",
-   *   items: [{ price: "price_xxxxx" }]
+   *   price: "price_xxxxx"
    * });
    * ```
    */
   createSubscription(params: {
     /** Customer ID */
     customer: string;
-    /** Subscription items */
-    items: Array<{
-      /** Price ID */
-      price: string;
-      /** Quantity */
-      quantity?: number;
-    }>;
-    /** Default payment method */
-    default_payment_method?: string;
-    /** Trial end timestamp or 'now' */
-    trial_end?: number | "now";
-    /** Trial period in days */
+    /** Price ID */
+    price: string;
+    /** Quantity */
+    quantity?: number;
+    /** Number of trial days */
     trial_period_days?: number;
-    /** Metadata key-value pairs */
-    metadata?: Record<string, string>;
-    /** Cancel at period end */
-    cancel_at_period_end?: boolean;
+    /** Collection method */
+    collection_method?: "charge_automatically" | "send_invoice";
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Customers (additional) ────────────────────────────────
+
+  /**
+   * Update an existing customer
+   *
+   * @example
+   * ```typescript
+   * await client.stripe.updateCustomer({ customer_id: "cus_xxxxx", email: "new@example.com" });
+   * ```
+   */
+  updateCustomer(params: {
+    /** Customer ID */
+    customer_id: string;
+    /** New email address */
+    email?: string;
+    /** New name */
+    name?: string;
+    /** New description */
+    description?: string;
+    /** New phone number */
+    phone?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Delete a customer
+   *
+   * @example
+   * ```typescript
+   * await client.stripe.deleteCustomer({ customer_id: "cus_xxxxx" });
+   * ```
+   */
+  deleteCustomer(params: {
+    /** Customer ID */
+    customer_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Search customers using Stripe search syntax
+   *
+   * @example
+   * ```typescript
+   * const results = await client.stripe.searchCustomers({ query: "email:'user@example.com'" });
+   * ```
+   */
+  searchCustomers(params: {
+    /** Stripe search query (e.g. "email:'user@example.com'") */
+    query: string;
+    /** Maximum number of results */
+    limit?: number;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Payment Intents (additional) ──────────────────────────
+
+  /**
+   * Cancel a payment intent
+   *
+   * @example
+   * ```typescript
+   * await client.stripe.cancelPayment({ payment_id: "pi_xxxxx" });
+   * ```
+   */
+  cancelPayment(params: {
+    /** Payment Intent ID */
+    payment_id: string;
+    /** Reason for cancellation */
+    cancellation_reason?: "duplicate" | "fraudulent" | "requested_by_customer" | "abandoned";
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Capture an authorized payment intent
+   *
+   * @example
+   * ```typescript
+   * await client.stripe.capturePayment({ payment_id: "pi_xxxxx" });
+   * ```
+   */
+  capturePayment(params: {
+    /** Payment Intent ID */
+    payment_id: string;
+    /** Amount to capture in cents (defaults to full authorized amount) */
+    amount_to_capture?: number;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Subscriptions (additional) ────────────────────────────
+
+  /**
+   * Get a subscription by ID
+   *
+   * @example
+   * ```typescript
+   * const sub = await client.stripe.getSubscription({ subscription_id: "sub_xxxxx" });
+   * ```
+   */
+  getSubscription(params: {
+    /** Subscription ID */
+    subscription_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Update a subscription
+   *
+   * @example
+   * ```typescript
+   * await client.stripe.updateSubscription({ subscription_id: "sub_xxxxx", quantity: 5 });
+   * ```
+   */
+  updateSubscription(params: {
+    /** Subscription ID */
+    subscription_id: string;
+    /** New price ID */
+    price?: string;
+    /** New quantity */
+    quantity?: number;
+    /** Collection method */
+    collection_method?: "charge_automatically" | "send_invoice";
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Cancel a subscription
+   *
+   * @example
+   * ```typescript
+   * await client.stripe.cancelSubscription({ subscription_id: "sub_xxxxx" });
+   * ```
+   */
+  cancelSubscription(params: {
+    /** Subscription ID */
+    subscription_id: string;
+    /** If true, cancels at the end of the billing period instead of immediately */
+    at_period_end?: boolean;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Invoices (additional) ─────────────────────────────────
+
+  /**
+   * Create an invoice for a customer
+   *
+   * @example
+   * ```typescript
+   * await client.stripe.createInvoice({ customer: "cus_xxxxx", collection_method: "send_invoice", days_until_due: 30 });
+   * ```
+   */
+  createInvoice(params: {
+    /** Customer ID */
+    customer: string;
+    /** Collection method */
+    collection_method?: "charge_automatically" | "send_invoice";
+    /** Days until invoice is due (required when collection_method is send_invoice) */
+    days_until_due?: number;
+    /** Invoice description */
+    description?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Finalize a draft invoice
+   *
+   * @example
+   * ```typescript
+   * await client.stripe.finalizeInvoice({ invoice_id: "in_xxxxx" });
+   * ```
+   */
+  finalizeInvoice(params: {
+    /** Invoice ID */
+    invoice_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Pay an open invoice immediately
+   *
+   * @example
+   * ```typescript
+   * await client.stripe.payInvoice({ invoice_id: "in_xxxxx" });
+   * ```
+   */
+  payInvoice(params: {
+    /** Invoice ID */
+    invoice_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Void an invoice (cannot be undone)
+   *
+   * @example
+   * ```typescript
+   * await client.stripe.voidInvoice({ invoice_id: "in_xxxxx" });
+   * ```
+   */
+  voidInvoice(params: {
+    /** Invoice ID */
+    invoice_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Products ──────────────────────────────────────────────
+
+  /**
+   * List products
+   *
+   * @example
+   * ```typescript
+   * const products = await client.stripe.listProducts({ active: true });
+   * ```
+   */
+  listProducts(params?: {
+    /** Maximum number to return */
+    limit?: number;
+    /** Cursor for pagination */
+    starting_after?: string;
+    /** Filter by active status */
+    active?: boolean;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Get a product by ID
+   *
+   * @example
+   * ```typescript
+   * const product = await client.stripe.getProduct({ product_id: "prod_xxxxx" });
+   * ```
+   */
+  getProduct(params: {
+    /** Product ID */
+    product_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Create a product
+   *
+   * @example
+   * ```typescript
+   * const product = await client.stripe.createProduct({ name: "Pro Plan" });
+   * ```
+   */
+  createProduct(params: {
+    /** Product name */
+    name: string;
+    /** Product description */
+    description?: string;
+    /** Whether the product is active */
+    active?: boolean;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Prices ────────────────────────────────────────────────
+
+  /**
+   * List prices
+   *
+   * @example
+   * ```typescript
+   * const prices = await client.stripe.listPrices({ product: "prod_xxxxx" });
+   * ```
+   */
+  listPrices(params?: {
+    /** Maximum number to return */
+    limit?: number;
+    /** Cursor for pagination */
+    starting_after?: string;
+    /** Filter by product ID */
+    product?: string;
+    /** Filter by active status */
+    active?: boolean;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Get a price by ID
+   *
+   * @example
+   * ```typescript
+   * const price = await client.stripe.getPrice({ price_id: "price_xxxxx" });
+   * ```
+   */
+  getPrice(params: {
+    /** Price ID */
+    price_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Create a price for a product
+   *
+   * @example
+   * ```typescript
+   * const price = await client.stripe.createPrice({
+   *   product: "prod_xxxxx",
+   *   currency: "usd",
+   *   unit_amount: 1000,
+   *   recurring_interval: "month"
+   * });
+   * ```
+   */
+  createPrice(params: {
+    /** Product ID to attach this price to */
+    product: string;
+    /** Three-letter ISO currency code */
+    currency: string;
+    /** Amount in cents */
+    unit_amount: number;
+    /** Billing interval for recurring prices */
+    recurring_interval?: "day" | "week" | "month" | "year";
+    /** Number of intervals between billings (default: 1) */
+    recurring_interval_count?: number;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Refunds ───────────────────────────────────────────────
+
+  /**
+   * List refunds
+   *
+   * @example
+   * ```typescript
+   * const refunds = await client.stripe.listRefunds({ payment_intent: "pi_xxxxx" });
+   * ```
+   */
+  listRefunds(params?: {
+    /** Maximum number to return */
+    limit?: number;
+    /** Cursor for pagination */
+    starting_after?: string;
+    /** Filter by payment intent ID */
+    payment_intent?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Get a refund by ID
+   *
+   * @example
+   * ```typescript
+   * const refund = await client.stripe.getRefund({ refund_id: "re_xxxxx" });
+   * ```
+   */
+  getRefund(params: {
+    /** Refund ID */
+    refund_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Create a refund for a payment
+   *
+   * @example
+   * ```typescript
+   * await client.stripe.createRefund({ payment_intent: "pi_xxxxx", amount: 500 });
+   * ```
+   */
+  createRefund(params: {
+    /** Payment Intent ID to refund */
+    payment_intent: string;
+    /** Amount to refund in cents (defaults to full amount) */
+    amount?: number;
+    /** Reason for the refund */
+    reason?: "duplicate" | "fraudulent" | "requested_by_customer";
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Balance ───────────────────────────────────────────────
+
+  /**
+   * Get the current Stripe account balance
+   *
+   * @example
+   * ```typescript
+   * const balance = await client.stripe.getBalance();
+   * ```
+   */
+  getBalance(params?: Record<string, never>): Promise<MCPToolCallResponse>;
+
+  // ── Events ────────────────────────────────────────────────
+
+  /**
+   * List events from the Stripe event log
+   *
+   * @example
+   * ```typescript
+   * const events = await client.stripe.listEvents({ type: "payment_intent.succeeded", limit: 20 });
+   * ```
+   */
+  listEvents(params?: {
+    /** Maximum number to return */
+    limit?: number;
+    /** Cursor for pagination */
+    starting_after?: string;
+    /** Filter by event type (e.g. "payment_intent.succeeded") */
+    type?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Get a specific event by ID
+   *
+   * @example
+   * ```typescript
+   * const event = await client.stripe.getEvent({ event_id: "evt_xxxxx" });
+   * ```
+   */
+  getEvent(params: {
+    /** Event ID */
+    event_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Payment Methods ───────────────────────────────────────
+
+  /**
+   * List payment methods for a customer
+   *
+   * @example
+   * ```typescript
+   * const methods = await client.stripe.listPaymentMethods({ customer: "cus_xxxxx" });
+   * ```
+   */
+  listPaymentMethods(params: {
+    /** Customer ID */
+    customer: string;
+    /** Filter by payment method type (e.g. "card") */
+    type?: string;
+    /** Maximum number to return */
+    limit?: number;
   }): Promise<MCPToolCallResponse>;
 }
 
