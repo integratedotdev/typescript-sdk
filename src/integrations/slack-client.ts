@@ -597,4 +597,272 @@ export interface SlackIntegrationClient {
     /** Channel ID */
     channel: string;
   }): Promise<MCPToolCallResponse>;
+
+  // ── Channel management ─────────────────────────────────────
+
+  /**
+   * Set the purpose of a channel
+   *
+   * @example
+   * ```typescript
+   * await client.slack.setChannelPurpose({ channel: "C1234567890", purpose: "Team updates" });
+   * ```
+   */
+  setChannelPurpose(params: {
+    /** Channel ID */
+    channel: string;
+    /** New purpose text */
+    purpose: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Rename a channel
+   *
+   * @example
+   * ```typescript
+   * await client.slack.renameChannel({ channel: "C1234567890", name: "new-channel-name" });
+   * ```
+   */
+  renameChannel(params: {
+    /** Channel ID */
+    channel: string;
+    /** New channel name */
+    name: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Join a channel
+   *
+   * @example
+   * ```typescript
+   * await client.slack.joinChannel({ channel: "C1234567890" });
+   * ```
+   */
+  joinChannel(params: {
+    /** Channel ID or name */
+    channel: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Leave a channel
+   *
+   * @example
+   * ```typescript
+   * await client.slack.leaveChannel({ channel: "C1234567890" });
+   * ```
+   */
+  leaveChannel(params: {
+    /** Channel ID */
+    channel: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Remove a user from a channel
+   *
+   * @example
+   * ```typescript
+   * await client.slack.kickFromChannel({ channel: "C1234567890", user: "U1234567890" });
+   * ```
+   */
+  kickFromChannel(params: {
+    /** Channel ID */
+    channel: string;
+    /** User ID to remove */
+    user: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Unarchive a channel
+   *
+   * @example
+   * ```typescript
+   * await client.slack.unarchiveChannel({ channel: "C1234567890" });
+   * ```
+   */
+  unarchiveChannel(params: {
+    /** Channel ID */
+    channel: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Open or resume a direct message conversation with one or more users
+   *
+   * @example
+   * ```typescript
+   * await client.slack.openDm({ users: "U1234567890,U0987654321" });
+   * ```
+   */
+  openDm(params: {
+    /** Comma-separated user IDs (supports group DMs) */
+    users: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Users ──────────────────────────────────────────────────
+
+  /**
+   * Get the presence status of a user
+   *
+   * @example
+   * ```typescript
+   * const presence = await client.slack.getUserPresence({ user: "U1234567890" });
+   * ```
+   */
+  getUserPresence(params: {
+    /** User ID */
+    user: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Get Do Not Disturb status for a user
+   *
+   * @example
+   * ```typescript
+   * const dnd = await client.slack.getDndInfo({ user: "U1234567890" });
+   * ```
+   */
+  getDndInfo(params: {
+    /** User ID */
+    user: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Files ──────────────────────────────────────────────────
+
+  /**
+   * List files in the workspace
+   *
+   * @example
+   * ```typescript
+   * const files = await client.slack.listFiles({ channel: "C1234567890" });
+   * ```
+   */
+  listFiles(params?: {
+    /** Filter to files in this channel */
+    channel?: string;
+    /** Filter to files uploaded by this user */
+    user?: string;
+    /** Comma-separated file types to filter (e.g., "images,pdfs") */
+    types?: string;
+    /** Number of files to return */
+    count?: number;
+    /** Page number */
+    page?: number;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Get info about a file
+   *
+   * @example
+   * ```typescript
+   * const file = await client.slack.getFile({ file: "F1234567890" });
+   * ```
+   */
+  getFile(params: {
+    /** File ID */
+    file: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Delete a file
+   *
+   * @example
+   * ```typescript
+   * await client.slack.deleteFile({ file: "F1234567890" });
+   * ```
+   */
+  deleteFile(params: {
+    /** File ID */
+    file: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Workspace ──────────────────────────────────────────────
+
+  /**
+   * Get information about the current workspace/team
+   *
+   * @example
+   * ```typescript
+   * const team = await client.slack.getTeamInfo();
+   * ```
+   */
+  getTeamInfo(params?: Record<string, never>): Promise<MCPToolCallResponse>;
+
+  // ── Bookmarks ──────────────────────────────────────────────
+
+  /**
+   * List bookmarks for a channel
+   *
+   * @example
+   * ```typescript
+   * const bookmarks = await client.slack.listBookmarks({ channel: "C1234567890" });
+   * ```
+   */
+  listBookmarks(params: {
+    /** Channel ID */
+    channel: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Add a bookmark to a channel
+   *
+   * @example
+   * ```typescript
+   * await client.slack.addBookmark({
+   *   channel: "C1234567890",
+   *   title: "Design Docs",
+   *   link: "https://example.com/docs"
+   * });
+   * ```
+   */
+  addBookmark(params: {
+    /** Channel ID */
+    channel: string;
+    /** Bookmark title */
+    title: string;
+    /** URL to bookmark */
+    link: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Reminders ──────────────────────────────────────────────
+
+  /**
+   * List reminders for the authenticated user
+   *
+   * @example
+   * ```typescript
+   * const reminders = await client.slack.listReminders();
+   * ```
+   */
+  listReminders(params?: Record<string, never>): Promise<MCPToolCallResponse>;
+
+  /**
+   * Create a reminder for the authenticated user
+   *
+   * @example
+   * ```typescript
+   * await client.slack.addReminder({ text: "Review PR", time: "in 20 minutes" });
+   * ```
+   */
+  addReminder(params: {
+    /** Reminder text */
+    text: string;
+    /** When to send the reminder — Unix timestamp or natural language (e.g. "in 20 minutes") */
+    time: string;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── User groups ────────────────────────────────────────────
+
+  /**
+   * List user groups in the workspace
+   *
+   * @example
+   * ```typescript
+   * const groups = await client.slack.listUsergroups({ include_users: true });
+   * ```
+   */
+  listUsergroups(params?: {
+    /** Whether to include user lists for each group */
+    include_users?: boolean;
+    /** Whether to include disabled groups */
+    include_disabled?: boolean;
+  }): Promise<MCPToolCallResponse>;
 }

@@ -34,15 +34,61 @@ export interface FigmaIntegrationConfig {
  * These should match the tool names exposed by your MCP server
  */
 const FIGMA_TOOLS = [
+  // Files
   "figma_get_file",
   "figma_get_file_nodes",
+  "figma_get_file_meta",
+  "figma_get_image_fills",
   "figma_get_images",
+  "figma_get_file_versions",
+  "figma_get_oembed",
+  // Users
+  "figma_get_me",
+  // Comments
   "figma_get_comments",
   "figma_post_comment",
+  "figma_delete_comment",
+  "figma_get_comment_reactions",
+  "figma_post_comment_reaction",
+  "figma_delete_comment_reaction",
+  // Projects
   "figma_list_projects",
   "figma_get_project_files",
-  "figma_get_file_versions",
+  // Components
   "figma_get_team_components",
+  "figma_get_file_components",
+  "figma_get_component",
+  "figma_get_team_component_sets",
+  "figma_get_file_component_sets",
+  "figma_get_component_set",
+  // Styles
+  "figma_get_team_styles",
+  "figma_get_file_styles",
+  "figma_get_style",
+  // Webhooks
+  "figma_list_webhooks",
+  "figma_create_webhook",
+  "figma_get_webhook",
+  "figma_update_webhook",
+  "figma_delete_webhook",
+  "figma_get_team_webhooks",
+  "figma_get_webhook_requests",
+  // Variables
+  "figma_get_local_variables",
+  "figma_get_published_variables",
+  "figma_post_variables",
+  // Dev Resources
+  "figma_get_dev_resources",
+  "figma_post_dev_resources",
+  "figma_put_dev_resources",
+  "figma_delete_dev_resource",
+  // Payments
+  "figma_get_payments",
+  // Library Analytics
+  "figma_get_library_analytics_component_actions",
+  "figma_get_library_analytics_component_usages",
+  "figma_get_library_analytics_style_actions",
+  "figma_get_library_analytics_style_usages",
 ] as const;
 
 

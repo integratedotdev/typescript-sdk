@@ -65,6 +65,31 @@ const SLACK_TOOLS = [
   "slack_pin_message",
   "slack_unpin_message",
   "slack_list_pins",
+  // Channel management
+  "slack_set_channel_purpose",
+  "slack_rename_channel",
+  "slack_join_channel",
+  "slack_leave_channel",
+  "slack_kick_from_channel",
+  "slack_unarchive_channel",
+  "slack_open_dm",
+  // Users
+  "slack_get_user_presence",
+  "slack_get_dnd_info",
+  // Files
+  "slack_list_files",
+  "slack_get_file",
+  "slack_delete_file",
+  // Workspace
+  "slack_get_team_info",
+  // Bookmarks
+  "slack_list_bookmarks",
+  "slack_add_bookmark",
+  // Reminders
+  "slack_list_reminders",
+  "slack_add_reminder",
+  // User groups
+  "slack_list_usergroups",
 ] as const;
 
 

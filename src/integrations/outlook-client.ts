@@ -5,9 +5,10 @@
 
 import type { MCPToolCallResponse } from "../protocol/messages.js";
 
-/**
- * Outlook Message
- */
+// ══════════════════════════════════════════════════════════════
+// DOMAIN TYPES
+// ══════════════════════════════════════════════════════════════
+
 export interface OutlookMessage {
   id: string;
   createdDateTime: string;
@@ -21,136 +22,79 @@ export interface OutlookMessage {
   importance: "low" | "normal" | "high";
   parentFolderId?: string;
   conversationId?: string;
-  conversationIndex?: string;
-  isDeliveryReceiptRequested?: boolean;
-  isReadReceiptRequested?: boolean;
   isRead?: boolean;
   isDraft?: boolean;
   webLink?: string;
-  body?: {
-    contentType: "text" | "html";
-    content: string;
-  };
-  sender?: {
-    emailAddress: {
-      name?: string;
-      address: string;
-    };
-  };
-  from?: {
-    emailAddress: {
-      name?: string;
-      address: string;
-    };
-  };
-  toRecipients?: Array<{
-    emailAddress: {
-      name?: string;
-      address: string;
-    };
-  }>;
-  ccRecipients?: Array<{
-    emailAddress: {
-      name?: string;
-      address: string;
-    };
-  }>;
-  bccRecipients?: Array<{
-    emailAddress: {
-      name?: string;
-      address: string;
-    };
-  }>;
-  replyTo?: Array<{
-    emailAddress: {
-      name?: string;
-      address: string;
-    };
-  }>;
-  flag?: {
-    flagStatus: "notFlagged" | "complete" | "flagged";
-  };
+  body?: { contentType: "text" | "html"; content: string };
+  sender?: { emailAddress: { name?: string; address: string } };
+  from?: { emailAddress: { name?: string; address: string } };
+  toRecipients?: Array<{ emailAddress: { name?: string; address: string } }>;
+  ccRecipients?: Array<{ emailAddress: { name?: string; address: string } }>;
+  bccRecipients?: Array<{ emailAddress: { name?: string; address: string } }>;
+  flag?: { flagStatus: "notFlagged" | "complete" | "flagged" };
 }
 
-/**
- * Outlook Event
- */
+export interface OutlookMailFolder {
+  id: string;
+  displayName: string;
+  parentFolderId?: string;
+  childFolderCount: number;
+  unreadItemCount: number;
+  totalItemCount: number;
+  isHidden?: boolean;
+}
+
 export interface OutlookEvent {
   id: string;
   createdDateTime: string;
   lastModifiedDateTime: string;
   subject?: string;
   bodyPreview?: string;
-  body?: {
-    contentType: "text" | "html";
-    content: string;
-  };
-  start: {
-    dateTime: string;
-    timeZone: string;
-  };
-  end: {
-    dateTime: string;
-    timeZone: string;
-  };
+  body?: { contentType: "text" | "html"; content: string };
+  start: { dateTime: string; timeZone: string };
+  end: { dateTime: string; timeZone: string };
   location?: {
     displayName?: string;
-    locationType?: string;
-    address?: {
-      street?: string;
-      city?: string;
-      state?: string;
-      countryOrRegion?: string;
-      postalCode?: string;
-    };
+    address?: { street?: string; city?: string; state?: string; countryOrRegion?: string; postalCode?: string };
   };
   isAllDay?: boolean;
   isCancelled?: boolean;
   isOrganizer?: boolean;
-  recurrence?: {
-    pattern: {
-      type: "daily" | "weekly" | "absoluteMonthly" | "relativeMonthly" | "absoluteYearly" | "relativeYearly";
-      interval: number;
-      month?: number;
-      dayOfMonth?: number;
-      daysOfWeek?: string[];
-      firstDayOfWeek?: string;
-      index?: "first" | "second" | "third" | "fourth" | "last";
-    };
-    range: {
-      type: "endDate" | "noEnd" | "numbered";
-      startDate: string;
-      endDate?: string;
-      numberOfOccurrences?: number;
-    };
-  };
-  attendees?: Array<{
-    emailAddress: {
-      name?: string;
-      address: string;
-    };
-    type: "required" | "optional" | "resource";
-    status?: {
-      response: "none" | "organizer" | "tentativelyAccepted" | "accepted" | "declined" | "notResponded";
-      time?: string;
-    };
-  }>;
-  organizer?: {
-    emailAddress: {
-      name?: string;
-      address: string;
-    };
-  };
-  webLink?: string;
+  isOnlineMeeting?: boolean;
   onlineMeetingUrl?: string;
+  attendees?: Array<{
+    emailAddress: { name?: string; address: string };
+    type: "required" | "optional" | "resource";
+    status?: { response: "none" | "organizer" | "tentativelyAccepted" | "accepted" | "declined" | "notResponded"; time?: string };
+  }>;
+  organizer?: { emailAddress: { name?: string; address: string } };
+  webLink?: string;
   showAs?: "free" | "tentative" | "busy" | "oof" | "workingElsewhere" | "unknown";
-  importance?: "low" | "normal" | "high";
-  sensitivity?: "normal" | "personal" | "private" | "confidential";
 }
 
-/**
- * Outlook Contact
- */
+export interface OutlookCalendar {
+  id: string;
+  name: string;
+  color: string;
+  isDefaultCalendar: boolean;
+  canShare: boolean;
+  canEdit: boolean;
+  canViewPrivateItems: boolean;
+  owner?: { name?: string; address: string };
+}
+
+export interface OutlookMeetingTimeSuggestion {
+  meetingTimeSlot: {
+    start: { dateTime: string; timeZone: string };
+    end: { dateTime: string; timeZone: string };
+  };
+  confidence: number;
+  organizerAvailability: string;
+  attendeeAvailability: Array<{ attendee: { emailAddress: { name?: string; address: string } }; availability: string }>;
+  locations: Array<{ displayName: string }>;
+  suggestionReason?: string;
+}
+
 export interface OutlookContact {
   id: string;
   createdDateTime: string;
@@ -158,70 +102,32 @@ export interface OutlookContact {
   displayName?: string;
   givenName?: string;
   surname?: string;
-  middleName?: string;
-  nickName?: string;
-  title?: string;
-  yomiGivenName?: string;
-  yomiSurname?: string;
-  yomiCompanyName?: string;
-  generation?: string;
-  imAddresses?: string[];
   jobTitle?: string;
   companyName?: string;
   department?: string;
-  officeLocation?: string;
-  profession?: string;
-  businessHomePage?: string;
-  assistantName?: string;
-  manager?: string;
-  homePhones?: string[];
   mobilePhone?: string;
   businessPhones?: string[];
-  spouseName?: string;
-  personalNotes?: string;
-  children?: string[];
-  emailAddresses?: Array<{
-    name?: string;
-    address: string;
-  }>;
-  homeAddress?: {
-    street?: string;
-    city?: string;
-    state?: string;
-    countryOrRegion?: string;
-    postalCode?: string;
-  };
-  businessAddress?: {
-    street?: string;
-    city?: string;
-    state?: string;
-    countryOrRegion?: string;
-    postalCode?: string;
-  };
-  otherAddress?: {
-    street?: string;
-    city?: string;
-    state?: string;
-    countryOrRegion?: string;
-    postalCode?: string;
-  };
+  homePhones?: string[];
+  emailAddresses?: Array<{ name?: string; address: string }>;
+  businessAddress?: { street?: string; city?: string; state?: string; countryOrRegion?: string; postalCode?: string };
+  homeAddress?: { street?: string; city?: string; state?: string; countryOrRegion?: string; postalCode?: string };
   birthday?: string;
+  personalNotes?: string;
 }
 
-/**
- * Outlook Integration Client Interface
- * Provides type-safe methods for all Outlook operations
- */
+// ══════════════════════════════════════════════════════════════
+// CLIENT INTERFACE
+// ══════════════════════════════════════════════════════════════
+
 export interface OutlookIntegrationClient {
+  // ── Email ─────────────────────────────────────────────────
+
   /**
    * List messages in the mailbox
-   * 
+   *
    * @example
    * ```typescript
-   * const messages = await client.outlook.listMessages({
-   *   top: 25,
-   *   filter: "isRead eq false"
-   * });
+   * const messages = await client.outlook.listMessages({ top: 25, filter: "isRead eq false" });
    * ```
    */
   listMessages(params?: {
@@ -229,164 +135,424 @@ export interface OutlookIntegrationClient {
     top?: number;
     /** Number of messages to skip */
     skip?: number;
-    /** OData filter query */
+    /** OData filter expression */
     filter?: string;
-    /** OData orderby query */
-    orderby?: string;
-    /** OData select query */
+    /** OData select fields */
     select?: string;
-    /** Folder ID (default: inbox) */
-    folderId?: string;
+    /** Folder ID or well-known name (inbox, drafts, sentitems, deleteditems) */
+    folder_id?: string;
   }): Promise<MCPToolCallResponse>;
 
   /**
-   * Get a specific message
-   * 
+   * Get a specific message by ID
+   *
    * @example
    * ```typescript
-   * const message = await client.outlook.getMessage({
-   *   messageId: "AAMkAGI2..."
-   * });
+   * const msg = await client.outlook.getMessage({ message_id: "AAMkAGI2..." });
    * ```
    */
   getMessage(params: {
     /** Message ID */
-    messageId: string;
-    /** OData select query */
-    select?: string;
+    message_id: string;
   }): Promise<MCPToolCallResponse>;
 
   /**
-   * Send a new message
-   * 
+   * Send a new email message
+   *
    * @example
    * ```typescript
    * await client.outlook.sendMessage({
+   *   to: "alice@example.com,bob@example.com",
    *   subject: "Hello",
-   *   body: "This is the message body",
-   *   toRecipients: ["recipient@example.com"]
+   *   body: "Hi there!"
    * });
    * ```
    */
   sendMessage(params: {
+    /** Comma-separated recipient email addresses */
+    to: string;
     /** Email subject */
     subject: string;
-    /** Email body */
+    /** Email body content */
     body: string;
     /** Body content type */
-    bodyContentType?: "text" | "html";
-    /** To recipients (email addresses) */
-    toRecipients: string[];
-    /** CC recipients */
-    ccRecipients?: string[];
-    /** BCC recipients */
-    bccRecipients?: string[];
-    /** Importance level */
-    importance?: "low" | "normal" | "high";
-    /** Whether to save to sent items */
-    saveToSentItems?: boolean;
+    body_type?: "text" | "html";
+    /** Comma-separated CC email addresses */
+    cc?: string;
+    /** Comma-separated BCC email addresses */
+    bcc?: string;
   }): Promise<MCPToolCallResponse>;
 
   /**
+   * Search messages by keyword query
+   *
+   * @example
+   * ```typescript
+   * const results = await client.outlook.searchMessages({ query: "project update", top: 10 });
+   * ```
+   */
+  searchMessages(params: {
+    /** Search query string */
+    query: string;
+    /** Maximum number of results to return */
+    top?: number;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Reply to a message
+   *
+   * @example
+   * ```typescript
+   * await client.outlook.replyMessage({ message_id: "AAMkAGI2...", comment: "Thanks!" });
+   * ```
+   */
+  replyMessage(params: {
+    /** Message ID to reply to */
+    message_id: string;
+    /** Reply comment text */
+    comment: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Reply all to a message
+   *
+   * @example
+   * ```typescript
+   * await client.outlook.replyAllMessage({ message_id: "AAMkAGI2...", comment: "Thanks everyone!" });
+   * ```
+   */
+  replyAllMessage(params: {
+    /** Message ID to reply all to */
+    message_id: string;
+    /** Reply comment text */
+    comment: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Forward a message to one or more recipients
+   *
+   * @example
+   * ```typescript
+   * await client.outlook.forwardMessage({ message_id: "AAMkAGI2...", to: "charlie@example.com" });
+   * ```
+   */
+  forwardMessage(params: {
+    /** Message ID to forward */
+    message_id: string;
+    /** Comma-separated recipient email addresses */
+    to: string;
+    /** Optional comment to include with the forward */
+    comment?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Delete a message permanently
+   *
+   * @example
+   * ```typescript
+   * await client.outlook.deleteMessage({ message_id: "AAMkAGI2..." });
+   * ```
+   */
+  deleteMessage(params: {
+    /** Message ID to delete */
+    message_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Move a message to another folder
+   *
+   * @example
+   * ```typescript
+   * await client.outlook.moveMessage({ message_id: "AAMkAGI2...", destination_id: "deleteditems" });
+   * ```
+   */
+  moveMessage(params: {
+    /** Message ID to move */
+    message_id: string;
+    /** Destination folder ID or well-known name (inbox, drafts, sentitems, deleteditems) */
+    destination_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Mark a message as read or unread
+   *
+   * @example
+   * ```typescript
+   * await client.outlook.markMessageRead({ message_id: "AAMkAGI2...", is_read: true });
+   * ```
+   */
+  markMessageRead(params: {
+    /** Message ID */
+    message_id: string;
+    /** True to mark as read, false to mark as unread */
+    is_read: boolean;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Create a draft message (not sent)
+   *
+   * @example
+   * ```typescript
+   * await client.outlook.createDraft({ subject: "Draft email", body: "Work in progress..." });
+   * ```
+   */
+  createDraft(params: {
+    /** Email subject */
+    subject: string;
+    /** Email body content */
+    body: string;
+    /** Comma-separated recipient email addresses */
+    to?: string;
+    /** Comma-separated CC email addresses */
+    cc?: string;
+    /** Comma-separated BCC email addresses */
+    bcc?: string;
+    /** Body content type */
+    body_type?: "text" | "html";
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * List mail folders in the mailbox
+   *
+   * @example
+   * ```typescript
+   * const folders = await client.outlook.listMailFolders();
+   * ```
+   */
+  listMailFolders(params?: {
+    /** Number of folders to return */
+    top?: number;
+    /** Whether to include hidden folders */
+    include_hidden_folders?: boolean;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Calendar ──────────────────────────────────────────────
+
+  /**
    * List calendar events
-   * 
+   *
    * @example
    * ```typescript
    * const events = await client.outlook.listEvents({
-   *   startDateTime: "2024-01-01T00:00:00Z",
-   *   endDateTime: "2024-01-31T23:59:59Z"
+   *   start_datetime: "2024-01-01T00:00:00Z",
+   *   end_datetime: "2024-01-31T23:59:59Z"
    * });
    * ```
    */
   listEvents(params?: {
-    /** Start of time range (ISO 8601) */
-    startDateTime?: string;
-    /** End of time range (ISO 8601) */
-    endDateTime?: string;
     /** Number of events to return */
     top?: number;
-    /** Number of events to skip */
-    skip?: number;
-    /** OData filter query */
+    /** Start of time range (ISO 8601) */
+    start_datetime?: string;
+    /** End of time range (ISO 8601) */
+    end_datetime?: string;
+    /** OData filter expression */
     filter?: string;
-    /** OData orderby query */
-    orderby?: string;
-    /** OData select query */
-    select?: string;
-    /** Calendar ID (default: primary) */
-    calendarId?: string;
   }): Promise<MCPToolCallResponse>;
 
   /**
-   * Get a specific event
-   * 
+   * Get a specific calendar event by ID
+   *
    * @example
    * ```typescript
-   * const event = await client.outlook.getEvent({
-   *   eventId: "AAMkAGI2..."
-   * });
+   * const event = await client.outlook.getEvent({ event_id: "AAMkAGI2..." });
    * ```
    */
   getEvent(params: {
     /** Event ID */
-    eventId: string;
-    /** OData select query */
-    select?: string;
-    /** Calendar ID (default: primary) */
-    calendarId?: string;
+    event_id: string;
   }): Promise<MCPToolCallResponse>;
 
   /**
    * Create a new calendar event
-   * 
+   *
    * @example
    * ```typescript
-   * const event = await client.outlook.createEvent({
-   *   subject: "Team Meeting",
-   *   start: { dateTime: "2024-01-15T10:00:00", timeZone: "America/Los_Angeles" },
-   *   end: { dateTime: "2024-01-15T11:00:00", timeZone: "America/Los_Angeles" }
+   * await client.outlook.createEvent({
+   *   subject: "Team Sync",
+   *   start: "2024-01-15T10:00:00",
+   *   end: "2024-01-15T11:00:00",
+   *   timezone: "America/Los_Angeles"
    * });
    * ```
    */
   createEvent(params: {
-    /** Event subject */
+    /** Event subject/title */
     subject: string;
+    /** Start datetime (ISO 8601) */
+    start: string;
+    /** End datetime (ISO 8601) */
+    end: string;
+    /** Timezone for start/end (e.g. "America/Los_Angeles") */
+    timezone?: string;
     /** Event body/description */
     body?: string;
-    /** Body content type */
-    bodyContentType?: "text" | "html";
-    /** Event start */
-    start: {
-      dateTime: string;
-      timeZone: string;
-    };
-    /** Event end */
-    end: {
-      dateTime: string;
-      timeZone: string;
-    };
     /** Event location */
     location?: string;
-    /** Whether it's an all-day event */
-    isAllDay?: boolean;
-    /** Attendees (email addresses) */
-    attendees?: string[];
-    /** Whether to request responses */
-    responseRequested?: boolean;
-    /** Show as status */
-    showAs?: "free" | "tentative" | "busy" | "oof" | "workingElsewhere";
-    /** Calendar ID (default: primary) */
-    calendarId?: string;
+    /** Comma-separated attendee email addresses */
+    attendees?: string;
+    /** Whether to create a Teams online meeting */
+    is_online_meeting?: boolean;
   }): Promise<MCPToolCallResponse>;
 
   /**
-   * List contacts
-   * 
+   * Update an existing calendar event
+   *
    * @example
    * ```typescript
-   * const contacts = await client.outlook.listContacts({
-   *   top: 50
+   * await client.outlook.updateEvent({ event_id: "AAMkAGI2...", subject: "Updated Title" });
+   * ```
+   */
+  updateEvent(params: {
+    /** Event ID to update */
+    event_id: string;
+    /** New subject/title */
+    subject?: string;
+    /** New start datetime (ISO 8601) */
+    start?: string;
+    /** New end datetime (ISO 8601) */
+    end?: string;
+    /** Timezone for start/end */
+    timezone?: string;
+    /** New body/description */
+    body?: string;
+    /** New location */
+    location?: string;
+    /** Comma-separated attendee email addresses */
+    attendees?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Delete a calendar event
+   *
+   * @example
+   * ```typescript
+   * await client.outlook.deleteEvent({ event_id: "AAMkAGI2..." });
+   * ```
+   */
+  deleteEvent(params: {
+    /** Event ID to delete */
+    event_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * List all calendars for the authenticated user
+   *
+   * @example
+   * ```typescript
+   * const calendars = await client.outlook.listCalendars();
+   * ```
+   */
+  listCalendars(params?: Record<string, never>): Promise<MCPToolCallResponse>;
+
+  /**
+   * Accept a calendar event invitation
+   *
+   * @example
+   * ```typescript
+   * await client.outlook.acceptEvent({ event_id: "AAMkAGI2...", send_response: true });
+   * ```
+   */
+  acceptEvent(params: {
+    /** Event ID to accept */
+    event_id: string;
+    /** Optional response comment */
+    comment?: string;
+    /** Whether to send a response email to the organizer */
+    send_response?: boolean;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Decline a calendar event invitation
+   *
+   * @example
+   * ```typescript
+   * await client.outlook.declineEvent({ event_id: "AAMkAGI2...", comment: "Can't make it" });
+   * ```
+   */
+  declineEvent(params: {
+    /** Event ID to decline */
+    event_id: string;
+    /** Optional response comment */
+    comment?: string;
+    /** Whether to send a response email to the organizer */
+    send_response?: boolean;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Tentatively accept a calendar event invitation
+   *
+   * @example
+   * ```typescript
+   * await client.outlook.tentativelyAcceptEvent({ event_id: "AAMkAGI2..." });
+   * ```
+   */
+  tentativelyAcceptEvent(params: {
+    /** Event ID to tentatively accept */
+    event_id: string;
+    /** Optional response comment */
+    comment?: string;
+    /** Whether to send a response email to the organizer */
+    send_response?: boolean;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Find available meeting times for a set of attendees
+   *
+   * @example
+   * ```typescript
+   * const suggestions = await client.outlook.findMeetingTimes({
+   *   attendees: "alice@example.com,bob@example.com",
+   *   duration_minutes: 60
    * });
+   * ```
+   */
+  findMeetingTimes(params: {
+    /** Comma-separated attendee email addresses */
+    attendees: string;
+    /** Required meeting duration in minutes */
+    duration_minutes: number;
+    /** Start of search window (ISO 8601) */
+    time_constraint_start?: string;
+    /** End of search window (ISO 8601) */
+    time_constraint_end?: string;
+    /** Timezone for the results */
+    timezone?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Get free/busy schedule for a set of users or resources
+   *
+   * @example
+   * ```typescript
+   * const schedule = await client.outlook.getSchedule({
+   *   schedules: "alice@example.com,bob@example.com",
+   *   start_time: "2024-01-15T08:00:00",
+   *   end_time: "2024-01-15T18:00:00"
+   * });
+   * ```
+   */
+  getSchedule(params: {
+    /** Comma-separated email addresses to fetch schedules for */
+    schedules: string;
+    /** Start of the time window (ISO 8601) */
+    start_time: string;
+    /** End of the time window (ISO 8601) */
+    end_time: string;
+    /** Timezone for start/end times */
+    timezone?: string;
+    /** Granularity of availability view in minutes (default: 30) */
+    availability_view_interval?: number;
+  }): Promise<MCPToolCallResponse>;
+
+  // ── Contacts ──────────────────────────────────────────────
+
+  /**
+   * List contacts in the address book
+   *
+   * @example
+   * ```typescript
+   * const contacts = await client.outlook.listContacts({ top: 50 });
    * ```
    */
   listContacts(params?: {
@@ -394,53 +560,22 @@ export interface OutlookIntegrationClient {
     top?: number;
     /** Number of contacts to skip */
     skip?: number;
-    /** OData filter query */
+    /** OData filter expression */
     filter?: string;
-    /** OData orderby query */
-    orderby?: string;
-    /** OData select query */
+    /** OData select fields */
     select?: string;
-    /** Contact folder ID */
-    folderId?: string;
   }): Promise<MCPToolCallResponse>;
 
   /**
-   * Get a specific contact
-   * 
+   * Get a specific contact by ID
+   *
    * @example
    * ```typescript
-   * const contact = await client.outlook.getContact({
-   *   contactId: "AAMkAGI2..."
-   * });
+   * const contact = await client.outlook.getContact({ contact_id: "AAMkAGI2..." });
    * ```
    */
   getContact(params: {
     /** Contact ID */
-    contactId: string;
-    /** OData select query */
-    select?: string;
-  }): Promise<MCPToolCallResponse>;
-
-  /**
-   * Search across messages, events, and contacts
-   * 
-   * @example
-   * ```typescript
-   * const results = await client.outlook.search({
-   *   query: "important meeting",
-   *   entityTypes: ["message", "event"]
-   * });
-   * ```
-   */
-  search(params: {
-    /** Search query */
-    query: string;
-    /** Entity types to search */
-    entityTypes?: Array<"message" | "event" | "contact">;
-    /** Maximum results per entity type */
-    size?: number;
-    /** Start index for pagination */
-    from?: number;
+    contact_id: string;
   }): Promise<MCPToolCallResponse>;
 }
-

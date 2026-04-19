@@ -735,7 +735,7 @@ describe("Integration System", () => {
 
       expect(integration.tools).toContain("outlook_list_messages");
       expect(integration.tools).toContain("outlook_send_message");
-      expect(integration.tools).toContain("outlook_search");
+      expect(integration.tools).toContain("outlook_search_messages");
     });
 
     test("has lifecycle hooks defined", () => {
