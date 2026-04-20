@@ -38,6 +38,11 @@ const GMAIL_TOOLS = [
   "gmail_list_messages",
   "gmail_get_message",
   "gmail_search_messages",
+  "gmail_reply_message",
+  "gmail_list_threads",
+  "gmail_get_thread",
+  "gmail_modify_message",
+  "gmail_trash_message",
 ] as const;
 
 /**

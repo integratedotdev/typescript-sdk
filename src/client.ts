@@ -42,7 +42,9 @@ import type { WhatsAppIntegrationClient } from "./integrations/whatsapp-client.j
 import type { CalcomIntegrationClient } from "./integrations/calcom-client.js";
 import type { RampIntegrationClient } from "./integrations/ramp-client.js";
 import type { OneDriveIntegrationClient } from "./integrations/onedrive-client.js";
-import type { GWorkspaceIntegrationClient } from "./integrations/gworkspace-client.js";
+import type { GDocsIntegrationClient } from "./integrations/gdocs-client.js";
+import type { GSheetsIntegrationClient } from "./integrations/gsheets-client.js";
+import type { GSlidesIntegrationClient } from "./integrations/gslides-client.js";
 import type { PolarIntegrationClient } from "./integrations/polar-client.js";
 import type { FigmaIntegrationClient } from "./integrations/figma-client.js";
 import type { IntercomIntegrationClient } from "./integrations/intercom-client.js";
@@ -183,8 +185,12 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   ? "ramp"
   : K extends "onedrive"
   ? "onedrive"
-  : K extends "gworkspace"
-  ? "gworkspace"
+  : K extends "gdocs"
+  ? "gdocs"
+  : K extends "gsheets"
+  ? "gsheets"
+  : K extends "gslides"
+  ? "gslides"
   : K extends "polar"
   ? "polar"
   : K extends "figma"
@@ -214,7 +220,9 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   K extends "calcom" ? CalcomIntegrationClient :
   K extends "ramp" ? RampIntegrationClient :
   K extends "onedrive" ? OneDriveIntegrationClient :
-  K extends "gworkspace" ? GWorkspaceIntegrationClient :
+  K extends "gdocs" ? GDocsIntegrationClient :
+  K extends "gsheets" ? GSheetsIntegrationClient :
+  K extends "gslides" ? GSlidesIntegrationClient :
   K extends "polar" ? PolarIntegrationClient :
   K extends "figma" ? FigmaIntegrationClient :
   K extends "intercom" ? IntercomIntegrationClient :
@@ -465,6 +473,15 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     }
     if (integrationIds.includes("todoist")) {
       (this as any).todoist = this.createIntegrationProxy("todoist");
+    }
+    if (integrationIds.includes("gdocs")) {
+      (this as any).gdocs = this.createIntegrationProxy("gdocs");
+    }
+    if (integrationIds.includes("gsheets")) {
+      (this as any).gsheets = this.createIntegrationProxy("gsheets");
+    }
+    if (integrationIds.includes("gslides")) {
+      (this as any).gslides = this.createIntegrationProxy("gslides");
     }
 
     // Server namespace is always available

@@ -379,5 +379,21 @@ export interface GcalIntegrationClient {
     /** Whether to send notifications */
     sendUpdates?: "all" | "externalOnly" | "none";
   }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Create a new calendar
+   */
+  createCalendar(params: {
+    summary: string;
+    description?: string;
+    timezone?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Delete a calendar
+   */
+  deleteCalendar(params: {
+    calendar_id: string;
+  }): Promise<MCPToolCallResponse>;
 }
 

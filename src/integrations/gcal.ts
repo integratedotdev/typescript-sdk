@@ -43,6 +43,8 @@ const GCAL_TOOLS = [
   "gcal_delete_event",
   "gcal_list_attendees",
   "gcal_quick_add",
+  "gcal_create_calendar",
+  "gcal_delete_calendar",
 ] as const;
 
 
