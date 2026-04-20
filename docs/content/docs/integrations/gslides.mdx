@@ -1,0 +1,183 @@
+---
+title: Google Slides
+description: Create and edit Google Slides presentations
+---
+
+The Google Slides integration provides access to Google Slides through the Integrate MCP server.
+
+## Installation
+
+The Google Slides integration is included with the SDK:
+
+```typescript
+import { gslidesIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create Google OAuth Credentials
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new project or select an existing one
+3. Enable the **Google Slides API**
+4. Create OAuth 2.0 credentials (Web application)
+5. Add your redirect URI (e.g. `https://yourdomain.com/api/integrate/oauth/callback`)
+6. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Slides integration to your server configuration. The integration automatically reads `GSLIDES_CLIENT_ID` and `GSLIDES_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, gslidesIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    gslidesIntegration(),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+gslidesIntegration({
+  clientId: process.env.CUSTOM_GSLIDES_ID,
+  clientSecret: process.env.CUSTOM_GSLIDES_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("gslides");
+const presentations = await client.gslides.list({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, gslidesIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [gslidesIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/gslides.ts"
+  name="GSlidesIntegrationConfig"
+/>
+
+## Available Tools
+
+- **`gslides_list`** - List presentations
+- **`gslides_get`** - Get a presentation and its slides
+- **`gslides_get_page`** - Get a specific slide by page ID
+- **`gslides_create`** - Create a new presentation
+- **`gslides_add_slide`** - Add a slide to a presentation
+- **`gslides_delete_slide`** - Delete a slide from a presentation
+- **`gslides_update_text`** - Find and replace text across a presentation
+
+## Examples
+
+### List Presentations
+
+```typescript
+const result = await client.gslides.list({
+  page_size: 20,
+});
+```
+
+### Get a Presentation
+
+```typescript
+const presentation = await client.gslides.get({
+  presentation_id: "1EAYk18WDjIG-zp_0vLm3CsfQh_i8eXc67Jo2O9C6Bnc",
+});
+```
+
+### Get a Specific Slide
+
+```typescript
+const slide = await client.gslides.getPage({
+  presentation_id: "1EAYk18WDjIG-zp_0vLm3CsfQh_i8eXc67Jo2O9C6Bnc",
+  page_id: "g123abc456",
+});
+```
+
+### Create a Presentation
+
+```typescript
+const presentation = await client.gslides.create({
+  title: "Q4 Review",
+});
+```
+
+### Add a Slide
+
+```typescript
+await client.gslides.addSlide({
+  presentation_id: "1EAYk18WDjIG-zp_0vLm3CsfQh_i8eXc67Jo2O9C6Bnc",
+  insertion_index: 2,
+  layout: "TITLE_AND_BODY",
+});
+```
+
+### Find and Replace Text
+
+```typescript
+await client.gslides.updateText({
+  presentation_id: "1EAYk18WDjIG-zp_0vLm3CsfQh_i8eXc67Jo2O9C6Bnc",
+  find: "{{quarter}}",
+  replace: "Q4 2024",
+  match_case: false,
+});
+```
+
+### Delete a Slide
+
+```typescript
+await client.gslides.deleteSlide({
+  presentation_id: "1EAYk18WDjIG-zp_0vLm3CsfQh_i8eXc67Jo2O9C6Bnc",
+  page_id: "g123abc456",
+});
+```
+
+## OAuth Scopes
+
+The default scope provides full read/write access. You can restrict it:
+
+- **`https://www.googleapis.com/auth/presentations`** - Read and write presentations
+- **`https://www.googleapis.com/auth/presentations.readonly`** - Read-only access
+
+## Error Handling
+
+```typescript
+try {
+  const presentation = await client.gslides.get({
+    presentation_id: "1EAYk18WDjIG-zp_0vLm3CsfQh_i8eXc67Jo2O9C6Bnc",
+  });
+} catch (error) {
+  if (error.message.includes("404")) {
+    console.error("Presentation not found");
+  } else if (error.message.includes("403")) {
+    console.error("Insufficient permissions");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [Google Docs Integration](/docs/integrations/gdocs)
+- Explore the [Google Sheets Integration](/docs/integrations/gsheets)
+- Explore the [Google Drive Integration](/docs/integrations/gdrive)

@@ -1,0 +1,162 @@
+---
+title: Google Docs
+description: Create and edit Google Docs documents
+---
+
+The Google Docs integration provides access to Google Docs through the Integrate MCP server.
+
+## Installation
+
+The Google Docs integration is included with the SDK:
+
+```typescript
+import { gdocsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create Google OAuth Credentials
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new project or select an existing one
+3. Enable the **Google Docs API**
+4. Create OAuth 2.0 credentials (Web application)
+5. Add your redirect URI (e.g. `https://yourdomain.com/api/integrate/oauth/callback`)
+6. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Docs integration to your server configuration. The integration automatically reads `GDOCS_CLIENT_ID` and `GDOCS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, gdocsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    gdocsIntegration(),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+gdocsIntegration({
+  clientId: process.env.CUSTOM_GDOCS_ID,
+  clientSecret: process.env.CUSTOM_GDOCS_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("gdocs");
+const docs = await client.gdocs.list({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, gdocsIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [gdocsIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/gdocs.ts"
+  name="GDocsIntegrationConfig"
+/>
+
+## Available Tools
+
+- **`gdocs_list`** - List Google Docs documents
+- **`gdocs_get`** - Get a document and its content
+- **`gdocs_create`** - Create a new document
+- **`gdocs_append_text`** - Append text to a document
+- **`gdocs_replace_text`** - Find and replace text in a document
+
+## Examples
+
+### List Documents
+
+```typescript
+const result = await client.gdocs.list({
+  page_size: 20,
+});
+```
+
+### Get a Document
+
+```typescript
+const doc = await client.gdocs.get({
+  document_id: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
+});
+```
+
+### Create a Document
+
+```typescript
+const doc = await client.gdocs.create({
+  title: "Q4 Planning Notes",
+});
+```
+
+### Append Text
+
+```typescript
+await client.gdocs.appendText({
+  document_id: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
+  text: "\n## New Section\n\nContent goes here.",
+});
+```
+
+### Find and Replace Text
+
+```typescript
+await client.gdocs.replaceText({
+  document_id: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
+  find: "{{company_name}}",
+  replace: "Acme Corp",
+  match_case: false,
+});
+```
+
+## OAuth Scopes
+
+The default scope provides full read/write access to documents. You can restrict it:
+
+- **`https://www.googleapis.com/auth/documents`** - Read and write documents
+- **`https://www.googleapis.com/auth/documents.readonly`** - Read-only access
+
+## Error Handling
+
+```typescript
+try {
+  const doc = await client.gdocs.get({
+    document_id: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
+  });
+} catch (error) {
+  if (error.message.includes("404")) {
+    console.error("Document not found");
+  } else if (error.message.includes("403")) {
+    console.error("Insufficient permissions");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [Google Sheets Integration](/docs/integrations/gsheets)
+- Explore the [Google Slides Integration](/docs/integrations/gslides)
+- Explore the [Google Drive Integration](/docs/integrations/gdrive)

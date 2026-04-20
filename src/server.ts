@@ -81,6 +81,44 @@ function resolveProviderFromToolName(toolName: string, candidates: string[]): st
   return best;
 }
 
+const TOOL_ALIASES: Record<string, string> = {
+  // Known hallucinated → real tool name mappings (extend as discovered)
+  github_list_repo_contents: 'github_get_file_contents',
+  gdrive_list: 'gdrive_list_files',
+  gdrive_get: 'gdrive_get_file',
+  gdrive_delete: 'gdrive_delete_file',
+  gdrive_trash: 'gdrive_trash_file',
+  gdrive_upload: 'gdrive_upload_text_file',
+  gdrive_download: 'gdrive_download_file',
+};
+
+/**
+ * Normalize common client-side tool name mistakes before forwarding to mcp.integrate.dev:
+ * 1. Alias table for known hallucinated names
+ * 2. Strip integration prefix from MCP meta-tools: github___list_tools → ___list_tools
+ * 3. Strip duplicate integration prefix: github_github_X → github_X
+ */
+function normalizeToolName(toolName: string, candidates: string[]): string {
+  if (TOOL_ALIASES[toolName]) return TOOL_ALIASES[toolName];
+
+  const tripleIdx = toolName.indexOf('___');
+  if (tripleIdx > 0) {
+    const prefix = toolName.slice(0, tripleIdx);
+    if (candidates.some(c => c === prefix)) {
+      return toolName.slice(tripleIdx);
+    }
+  }
+
+  for (const candidate of candidates) {
+    const doublePrefix = `${candidate}_${candidate}_`;
+    if (toolName.startsWith(doublePrefix)) {
+      return `${candidate}_${toolName.slice(doublePrefix.length)}`;
+    }
+  }
+
+  return toolName;
+}
+
 const unauthenticatedCodeModeWarnings = new Set<string>();
 
 function warnUnauthenticatedCodeModeCallback(details: {
@@ -465,14 +503,19 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
     // The API key from createMCPServer config is automatically included in requests
     if (action === 'mcp' && method === 'POST') {
       try {
-        const body = await webRequest.json();
+        let body = await webRequest.json();
         let authHeader = webRequest.headers.get('authorization');
         const integrationsHeader = webRequest.headers.get('x-integrations');
         const codeModeHeader = webRequest.headers.get('x-integrate-code-mode');
         const contextHeader = webRequest.headers.get('x-integrate-context');
         const callbackApiKey = webRequest.headers.get('x-integrate-api-key');
         const tokensHeader = webRequest.headers.get('x-integrate-tokens');
-        const toolName = typeof body?.name === 'string' ? body.name : '';
+        const integrationCandidates: string[] = integrationsHeader
+          ? integrationsHeader.split(',').map((s: string) => s.trim()).filter(Boolean)
+          : (config.integrations ?? []).map((i: any) => i.id).filter(Boolean);
+        const rawToolName = typeof body?.name === 'string' ? body.name : '';
+        const toolName = rawToolName ? normalizeToolName(rawToolName, integrationCandidates) : rawToolName;
+        if (toolName !== rawToolName) body = { ...body, name: toolName };
         let tokensResolvedProvider: string | null = null;
 
         // Code Mode fallback: when the sandbox callback passes a multi-provider
@@ -1359,7 +1402,11 @@ export { whatsappIntegration } from './integrations/whatsapp.js';
 export { calcomIntegration } from './integrations/calcom.js';
 export { rampIntegration } from './integrations/ramp.js';
 export { onedriveIntegration } from './integrations/onedrive.js';
+export { wordIntegration } from './integrations/word.js';
+export { excelIntegration } from './integrations/excel.js';
+export { powerpointIntegration } from './integrations/powerpoint.js';
 export { gdocsIntegration } from './integrations/gdocs.js';
+export { gdriveIntegration } from './integrations/gdrive.js';
 export { gsheetsIntegration } from './integrations/gsheets.js';
 export { gslidesIntegration } from './integrations/gslides.js';
 export { polarIntegration } from './integrations/polar.js';

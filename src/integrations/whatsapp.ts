@@ -36,14 +36,35 @@ export interface WhatsAppIntegrationConfig {
  * These should match the tool names exposed by your MCP server
  */
 const WHATSAPP_TOOLS = [
+  // Messaging
   "whatsapp_send_message",
+  "whatsapp_reply_message",
   "whatsapp_send_template",
   "whatsapp_send_media",
-  "whatsapp_list_templates",
-  "whatsapp_get_phone_numbers",
-  "whatsapp_get_message_status",
+  "whatsapp_send_reaction",
+  "whatsapp_send_location",
+  "whatsapp_send_contact",
+  "whatsapp_send_interactive_buttons",
+  "whatsapp_send_interactive_list",
   "whatsapp_mark_read",
+  // Media
+  "whatsapp_get_media_url",
+  "whatsapp_delete_media",
+  // Templates
+  "whatsapp_list_templates",
+  "whatsapp_get_template",
+  "whatsapp_create_template",
+  "whatsapp_delete_template",
+  // Phone numbers
+  "whatsapp_get_phone_numbers",
+  "whatsapp_get_phone_number",
+  // Business profile
   "whatsapp_get_profile",
+  "whatsapp_update_profile",
+  // Misc
+  "whatsapp_get_message_status",
+  "whatsapp_create_qr_code",
+  "whatsapp_list_qr_codes",
 ] as const;
 
 

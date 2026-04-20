@@ -1,0 +1,152 @@
+---
+title: PowerPoint
+description: Manage Microsoft PowerPoint presentations stored in OneDrive
+---
+
+The PowerPoint integration provides access to PowerPoint presentations (.pptx) stored in OneDrive through the Integrate MCP server. It uses the Microsoft Graph API for file-level operations — the Graph API does not expose a slide-level editing API for PowerPoint.
+
+## Installation
+
+The PowerPoint integration is included with the SDK:
+
+```typescript
+import { powerpointIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Microsoft App Registration
+
+1. Go to [Azure Portal — App Registrations](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps)
+2. Create a new registration
+3. Add your redirect URI under **Authentication** (e.g. `https://yourdomain.com/api/integrate/oauth/callback`)
+4. Create a client secret under **Certificates & secrets**
+5. Note your Application (client) ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+The integration automatically reads `POWERPOINT_CLIENT_ID` and `POWERPOINT_CLIENT_SECRET` from your environment:
+
+```typescript
+import { createMCPServer, powerpointIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    powerpointIntegration(),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+powerpointIntegration({
+  clientId: process.env.CUSTOM_POWERPOINT_ID,
+  clientSecret: process.env.CUSTOM_POWERPOINT_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("powerpoint");
+const presentations = await client.powerpoint.list({});
+```
+
+For a custom client:
+
+```typescript
+import { createMCPClient, powerpointIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [powerpointIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/powerpoint.ts"
+  name="PowerPointIntegrationConfig"
+/>
+
+## Available Tools
+
+- **`powerpoint_list`** - Search for PowerPoint presentations
+- **`powerpoint_get`** - Get metadata for a presentation by item ID
+- **`powerpoint_create`** - Create a new empty .pptx file in OneDrive
+- **`powerpoint_copy`** - Copy a presentation (async for large files)
+- **`powerpoint_delete`** - Permanently delete a presentation
+- **`powerpoint_share`** - Create a sharing link
+
+## Examples
+
+### Search for Presentations
+
+```typescript
+const result = await client.powerpoint.list({ query: "quarterly review" });
+```
+
+### Create a Presentation
+
+```typescript
+const ppt = await client.powerpoint.create({
+  name: "Q4 Investor Deck",  // .pptx appended automatically
+  parent_id: "folderId123",  // optional, defaults to root
+});
+```
+
+### Copy a Presentation
+
+```typescript
+const result = await client.powerpoint.copy({
+  item_id: "ABC123",
+  name: "Q4 Investor Deck — Draft",
+  parent_id: "draftsFolderId",
+});
+
+// Large files return a pending status — poll monitor_url to confirm
+if (result.status === "pending") {
+  console.log("Copy in progress:", result.monitor_url);
+}
+```
+
+### Create a Sharing Link
+
+```typescript
+const link = await client.powerpoint.share({
+  item_id: "ABC123",
+  type: "view",
+  scope: "anonymous",
+});
+```
+
+## OAuth Scopes
+
+The default scope is `Files.ReadWrite.All`. Available scopes:
+
+- **`Files.ReadWrite.All`** - Read and write all files the user can access
+- **`Files.Read.All`** - Read-only access
+
+## Error Handling
+
+```typescript
+try {
+  const ppt = await client.powerpoint.get({ item_id: "ABC123" });
+} catch (error) {
+  if (error.message.includes("404")) {
+    console.error("Presentation not found");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Manage Word documents with the [Word Integration](/docs/integrations/word)
+- Manage Excel workbooks with the [Excel Integration](/docs/integrations/excel)
+- Manage files and folders with the [OneDrive Integration](/docs/integrations/onedrive)
