@@ -128,8 +128,14 @@ export type { RampIntegrationConfig, RampTools, RampIntegrationClient } from "./
 export { onedriveIntegration } from "./integrations/onedrive.js";
 export type { OneDriveIntegrationConfig, OneDriveTools, OneDriveIntegrationClient } from "./integrations/onedrive.js";
 
-export { gworkspaceIntegration } from "./integrations/gworkspace.js";
-export type { GWorkspaceIntegrationConfig, GWorkspaceTools, GWorkspaceIntegrationClient } from "./integrations/gworkspace.js";
+export { gdocsIntegration } from "./integrations/gdocs.js";
+export type { GDocsIntegrationConfig, GDocsTools, GDocsIntegrationClient } from "./integrations/gdocs.js";
+
+export { gsheetsIntegration } from "./integrations/gsheets.js";
+export type { GSheetsIntegrationConfig, GSheetsTools, GSheetsIntegrationClient } from "./integrations/gsheets.js";
+
+export { gslidesIntegration } from "./integrations/gslides.js";
+export type { GSlidesIntegrationConfig, GSlidesTools, GSlidesIntegrationClient } from "./integrations/gslides.js";
 
 export { polarIntegration } from "./integrations/polar.js";
 export type { PolarIntegrationConfig, PolarTools, PolarIntegrationClient } from "./integrations/polar.js";

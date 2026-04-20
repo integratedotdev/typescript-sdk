@@ -19,7 +19,9 @@ import { whatsappIntegration } from "../../src/integrations/whatsapp.js";
 import { calcomIntegration } from "../../src/integrations/calcom.js";
 import { rampIntegration } from "../../src/integrations/ramp.js";
 import { onedriveIntegration } from "../../src/integrations/onedrive.js";
-import { gworkspaceIntegration } from "../../src/integrations/gworkspace.js";
+import { gdocsIntegration } from "../../src/integrations/gdocs.js";
+import { gsheetsIntegration } from "../../src/integrations/gsheets.js";
+import { gslidesIntegration } from "../../src/integrations/gslides.js";
 import { polarIntegration } from "../../src/integrations/polar.js";
 import { figmaIntegration } from "../../src/integrations/figma.js";
 import { intercomIntegration } from "../../src/integrations/intercom.js";
@@ -1259,34 +1261,32 @@ describe("Integration System", () => {
     });
   });
 
-  describe("Google Workspace Integration", () => {
+  describe("Google Docs Integration", () => {
     test("creates integration with correct structure", () => {
-      const integration = gworkspaceIntegration({
+      const integration = gdocsIntegration({
         clientId: "test-client-id",
         clientSecret: "test-client-secret",
       });
 
-      expect(integration.id).toBe("gworkspace");
+      expect(integration.id).toBe("gdocs");
       expect(integration.tools).toBeArray();
       expect(integration.tools.length).toBeGreaterThan(0);
       expect(integration.oauth).toBeDefined();
     });
 
     test("includes OAuth configuration", () => {
-      const integration = gworkspaceIntegration({
+      const integration = gdocsIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
-        scopes: ["https://www.googleapis.com/auth/spreadsheets"],
       });
 
-      expect(integration.oauth?.provider).toBe("gworkspace");
+      expect(integration.oauth?.provider).toBe("gdocs");
       expect(integration.oauth?.clientId).toBe("test-id");
       expect(integration.oauth?.clientSecret).toBe("test-secret");
-      expect(integration.oauth?.scopes).toEqual(["https://www.googleapis.com/auth/spreadsheets"]);
     });
 
     test("does not set scopes when not provided (server provides defaults)", () => {
-      const integration = gworkspaceIntegration({
+      const integration = gdocsIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -1295,21 +1295,20 @@ describe("Integration System", () => {
     });
 
     test("includes expected tools", () => {
-      const integration = gworkspaceIntegration({
+      const integration = gdocsIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.tools).toContain("gworkspace_sheets_list");
-      expect(integration.tools).toContain("gworkspace_sheets_get_values");
-      expect(integration.tools).toContain("gworkspace_docs_list");
-      expect(integration.tools).toContain("gworkspace_docs_create");
-      expect(integration.tools).toContain("gworkspace_slides_list");
-      expect(integration.tools).toContain("gworkspace_slides_get_page");
+      expect(integration.tools).toContain("gdocs_list");
+      expect(integration.tools).toContain("gdocs_get");
+      expect(integration.tools).toContain("gdocs_create");
+      expect(integration.tools).toContain("gdocs_append_text");
+      expect(integration.tools).toContain("gdocs_replace_text");
     });
 
     test("has lifecycle hooks defined", () => {
-      const integration = gworkspaceIntegration({
+      const integration = gdocsIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -1319,7 +1318,146 @@ describe("Integration System", () => {
     });
 
     test("lifecycle hooks execute successfully", async () => {
-      const integration = gworkspaceIntegration({
+      const integration = gdocsIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      await expect(integration.onInit?.(null as any)).resolves.toBeUndefined();
+      await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+  });
+
+  describe("Google Sheets Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = gsheetsIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("gsheets");
+      expect(integration.tools).toBeArray();
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeDefined();
+    });
+
+    test("includes OAuth configuration", () => {
+      const integration = gsheetsIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.provider).toBe("gsheets");
+      expect(integration.oauth?.clientId).toBe("test-id");
+      expect(integration.oauth?.clientSecret).toBe("test-secret");
+    });
+
+    test("does not set scopes when not provided (server provides defaults)", () => {
+      const integration = gsheetsIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.scopes).toBeUndefined();
+    });
+
+    test("includes expected tools", () => {
+      const integration = gsheetsIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.tools).toContain("gsheets_list");
+      expect(integration.tools).toContain("gsheets_get");
+      expect(integration.tools).toContain("gsheets_get_values");
+      expect(integration.tools).toContain("gsheets_update_values");
+      expect(integration.tools).toContain("gsheets_create");
+      expect(integration.tools).toContain("gsheets_append_values");
+      expect(integration.tools).toContain("gsheets_clear_values");
+      expect(integration.tools).toContain("gsheets_batch_update_values");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = gsheetsIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+
+    test("lifecycle hooks execute successfully", async () => {
+      const integration = gsheetsIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      await expect(integration.onInit?.(null as any)).resolves.toBeUndefined();
+      await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+  });
+
+  describe("Google Slides Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = gslidesIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("gslides");
+      expect(integration.tools).toBeArray();
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeDefined();
+    });
+
+    test("includes OAuth configuration", () => {
+      const integration = gslidesIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.provider).toBe("gslides");
+      expect(integration.oauth?.clientId).toBe("test-id");
+      expect(integration.oauth?.clientSecret).toBe("test-secret");
+    });
+
+    test("does not set scopes when not provided (server provides defaults)", () => {
+      const integration = gslidesIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.scopes).toBeUndefined();
+    });
+
+    test("includes expected tools", () => {
+      const integration = gslidesIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.tools).toContain("gslides_list");
+      expect(integration.tools).toContain("gslides_get");
+      expect(integration.tools).toContain("gslides_get_page");
+      expect(integration.tools).toContain("gslides_create");
+      expect(integration.tools).toContain("gslides_add_slide");
+      expect(integration.tools).toContain("gslides_delete_slide");
+      expect(integration.tools).toContain("gslides_update_text");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = gslidesIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+
+    test("lifecycle hooks execute successfully", async () => {
+      const integration = gslidesIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });

@@ -110,5 +110,49 @@ export interface GmailIntegrationClient {
     pageToken?: string;
     includeSpamTrash?: boolean;
   }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Reply to a message in a thread
+   */
+  replyMessage(params: {
+    thread_id: string;
+    to: string;
+    subject: string;
+    body: string;
+    is_html?: boolean;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * List threads in the mailbox
+   */
+  listThreads(params?: {
+    query?: string;
+    max_results?: number;
+    page_token?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Get a specific thread by ID
+   */
+  getThread(params: {
+    thread_id: string;
+    format?: "full" | "metadata" | "minimal";
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Modify labels on a message
+   */
+  modifyMessage(params: {
+    message_id: string;
+    add_label_ids?: string;
+    remove_label_ids?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
+   * Move a message to trash
+   */
+  trashMessage(params: {
+    message_id: string;
+  }): Promise<MCPToolCallResponse>;
 }
 
