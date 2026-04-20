@@ -1,0 +1,152 @@
+---
+title: Word
+description: Manage Microsoft Word documents stored in OneDrive
+---
+
+The Word integration provides access to Word documents (.docx) stored in OneDrive through the Integrate MCP server. It uses the Microsoft Graph API for file-level operations — the Graph API does not support paragraph-level editing for Word.
+
+## Installation
+
+The Word integration is included with the SDK:
+
+```typescript
+import { wordIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Microsoft App Registration
+
+1. Go to [Azure Portal — App Registrations](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps)
+2. Create a new registration
+3. Add your redirect URI under **Authentication** (e.g. `https://yourdomain.com/api/integrate/oauth/callback`)
+4. Create a client secret under **Certificates & secrets**
+5. Note your Application (client) ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+The integration automatically reads `WORD_CLIENT_ID` and `WORD_CLIENT_SECRET` from your environment:
+
+```typescript
+import { createMCPServer, wordIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    wordIntegration(),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+wordIntegration({
+  clientId: process.env.CUSTOM_WORD_ID,
+  clientSecret: process.env.CUSTOM_WORD_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("word");
+const docs = await client.word.list({});
+```
+
+For a custom client:
+
+```typescript
+import { createMCPClient, wordIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [wordIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/word.ts"
+  name="WordIntegrationConfig"
+/>
+
+## Available Tools
+
+- **`word_list`** - Search for Word documents
+- **`word_get`** - Get metadata for a document by item ID
+- **`word_create`** - Create a new empty .docx file in OneDrive
+- **`word_copy`** - Copy a document (async for large files)
+- **`word_delete`** - Permanently delete a document
+- **`word_share`** - Create a sharing link
+
+## Examples
+
+### Search for Documents
+
+```typescript
+const result = await client.word.list({ query: "meeting notes" });
+```
+
+### Create a Document
+
+```typescript
+const doc = await client.word.create({
+  name: "Project Brief",       // .docx appended automatically
+  parent_id: "folderId123",    // optional, defaults to root
+});
+```
+
+### Copy a Document
+
+```typescript
+const result = await client.word.copy({
+  item_id: "ABC123",
+  name: "Project Brief — Copy",
+  parent_id: "archiveFolderId",
+});
+
+// Large files return a pending status — poll monitor_url to confirm
+if (result.status === "pending") {
+  console.log("Copy in progress:", result.monitor_url);
+}
+```
+
+### Create a Sharing Link
+
+```typescript
+const link = await client.word.share({
+  item_id: "ABC123",
+  type: "edit",
+  scope: "organization",
+});
+```
+
+## OAuth Scopes
+
+The default scope is `Files.ReadWrite.All`. Available scopes:
+
+- **`Files.ReadWrite.All`** - Read and write all files the user can access
+- **`Files.Read.All`** - Read-only access
+
+## Error Handling
+
+```typescript
+try {
+  const doc = await client.word.get({ item_id: "ABC123" });
+} catch (error) {
+  if (error.message.includes("404")) {
+    console.error("Document not found");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Manage spreadsheets with the [Excel Integration](/docs/integrations/excel)
+- Manage presentations with the [PowerPoint Integration](/docs/integrations/powerpoint)
+- Manage files and folders with the [OneDrive Integration](/docs/integrations/onedrive)

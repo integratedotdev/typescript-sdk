@@ -41,11 +41,6 @@ const ONEDRIVE_TOOLS = [
   "onedrive_delete_file",
   "onedrive_search_files",
   "onedrive_share_file",
-  "onedrive_word_get_content",
-  "onedrive_excel_get_worksheets",
-  "onedrive_excel_get_range",
-  "onedrive_excel_update_range",
-  "onedrive_powerpoint_get_slides",
 ] as const;
 
 

@@ -1,0 +1,174 @@
+---
+title: Google Sheets
+description: Read and write Google Sheets spreadsheets
+---
+
+The Google Sheets integration provides access to Google Sheets through the Integrate MCP server.
+
+## Installation
+
+The Google Sheets integration is included with the SDK:
+
+```typescript
+import { gsheetsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create Google OAuth Credentials
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new project or select an existing one
+3. Enable the **Google Sheets API**
+4. Create OAuth 2.0 credentials (Web application)
+5. Add your redirect URI (e.g. `https://yourdomain.com/api/integrate/oauth/callback`)
+6. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Sheets integration to your server configuration. The integration automatically reads `GSHEETS_CLIENT_ID` and `GSHEETS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, gsheetsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    gsheetsIntegration(),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+gsheetsIntegration({
+  clientId: process.env.CUSTOM_GSHEETS_ID,
+  clientSecret: process.env.CUSTOM_GSHEETS_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("gsheets");
+const sheets = await client.gsheets.list({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, gsheetsIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [gsheetsIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/gsheets.ts"
+  name="GSheetsIntegrationConfig"
+/>
+
+## Available Tools
+
+- **`gsheets_list`** - List spreadsheets
+- **`gsheets_get`** - Get spreadsheet metadata and sheet names
+- **`gsheets_get_values`** - Read cell values from a range
+- **`gsheets_update_values`** - Write cell values to a range
+- **`gsheets_create`** - Create a new spreadsheet
+- **`gsheets_append_values`** - Append rows to a sheet
+- **`gsheets_clear_values`** - Clear a range of cells
+- **`gsheets_batch_update_values`** - Write to multiple ranges in one call
+
+## Examples
+
+### Read Cell Values
+
+```typescript
+const result = await client.gsheets.getValues({
+  spreadsheet_id: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
+  range: "Sheet1!A1:C10",
+});
+```
+
+### Update Cell Values
+
+```typescript
+await client.gsheets.updateValues({
+  spreadsheet_id: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
+  range: "Sheet1!A1:B2",
+  values: JSON.stringify([["Name", "Score"], ["Alice", 95]]),
+  value_input_option: "USER_ENTERED",
+});
+```
+
+### Append Rows
+
+```typescript
+await client.gsheets.appendValues({
+  spreadsheet_id: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
+  range: "Sheet1!A:B",
+  values: JSON.stringify([["Bob", 88], ["Carol", 92]]),
+});
+```
+
+### Create a Spreadsheet
+
+```typescript
+const sheet = await client.gsheets.create({
+  title: "Monthly Report",
+  sheet_titles: JSON.stringify(["Summary", "Details", "Raw Data"]),
+});
+```
+
+### Batch Update Multiple Ranges
+
+```typescript
+await client.gsheets.batchUpdateValues({
+  spreadsheet_id: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
+  data: JSON.stringify([
+    { range: "Sheet1!A1", values: [["Updated"]] },
+    { range: "Sheet2!B2", values: [["Also updated"]] },
+  ]),
+  value_input_option: "USER_ENTERED",
+});
+```
+
+## OAuth Scopes
+
+The default scope provides full read/write access. You can restrict it:
+
+- **`https://www.googleapis.com/auth/spreadsheets`** - Read and write spreadsheets
+- **`https://www.googleapis.com/auth/spreadsheets.readonly`** - Read-only access
+
+## Error Handling
+
+```typescript
+try {
+  const result = await client.gsheets.getValues({
+    spreadsheet_id: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
+    range: "Sheet1!A1:B10",
+  });
+} catch (error) {
+  if (error.message.includes("404")) {
+    console.error("Spreadsheet not found");
+  } else if (error.message.includes("403")) {
+    console.error("Insufficient permissions");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [Google Docs Integration](/docs/integrations/gdocs)
+- Explore the [Google Slides Integration](/docs/integrations/gslides)
+- Explore the [Google Drive Integration](/docs/integrations/gdrive)

@@ -1,0 +1,218 @@
+---
+title: Excel
+description: Read and write Microsoft Excel workbooks stored in OneDrive
+---
+
+The Excel integration provides full workbook access to Excel files (.xlsx) in OneDrive through the Microsoft Graph API workbook endpoint.
+
+## Installation
+
+The Excel integration is included with the SDK:
+
+```typescript
+import { excelIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Microsoft App Registration
+
+1. Go to [Azure Portal — App Registrations](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps)
+2. Create a new registration
+3. Add your redirect URI under **Authentication** (e.g. `https://yourdomain.com/api/integrate/oauth/callback`)
+4. Create a client secret under **Certificates & secrets**
+5. Note your Application (client) ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+The integration automatically reads `EXCEL_CLIENT_ID` and `EXCEL_CLIENT_SECRET` from your environment:
+
+```typescript
+import { createMCPServer, excelIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    excelIntegration(),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+excelIntegration({
+  clientId: process.env.CUSTOM_EXCEL_ID,
+  clientSecret: process.env.CUSTOM_EXCEL_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("excel");
+const workbooks = await client.excel.list({});
+```
+
+For a custom client:
+
+```typescript
+import { createMCPClient, excelIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [excelIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/excel.ts"
+  name="ExcelIntegrationConfig"
+/>
+
+## Available Tools
+
+### Workbook Management
+
+- **`excel_list`** - Search for Excel workbooks
+- **`excel_get`** - Get workbook metadata by item ID
+- **`excel_create`** - Create a new empty .xlsx workbook
+- **`excel_delete`** - Permanently delete a workbook
+- **`excel_share`** - Create a sharing link
+
+### Worksheets
+
+- **`excel_list_worksheets`** - List all sheets in a workbook
+- **`excel_add_worksheet`** - Add a new worksheet
+- **`excel_delete_worksheet`** - Delete a worksheet
+
+### Cell Ranges
+
+- **`excel_get_range`** - Get values, formulas, and formatting from a range
+- **`excel_update_range`** - Write values to a range (2D JSON array)
+- **`excel_clear_range`** - Clear contents and/or formatting
+- **`excel_get_used_range`** - Get the bounding range of all data (Ctrl+End equivalent)
+
+### Tables
+
+- **`excel_list_tables`** - List tables in a worksheet
+- **`excel_create_table`** - Create a table from a cell range
+- **`excel_get_table_rows`** - Get rows from a table (supports pagination)
+- **`excel_add_table_rows`** - Append rows to a table
+
+## Examples
+
+### Read Cell Values
+
+```typescript
+const data = await client.excel.getRange({
+  item_id: "ABC123",
+  worksheet: "Sheet1",
+  range: "A1:C10",
+});
+```
+
+### Write Values to a Range
+
+```typescript
+await client.excel.updateRange({
+  item_id: "ABC123",
+  worksheet: "Sheet1",
+  range: "A1:B3",
+  values: JSON.stringify([
+    ["Name", "Score"],
+    ["Alice", 95],
+    ["Bob",   88],
+  ]),
+});
+```
+
+### Get All Data in a Sheet
+
+```typescript
+// Returns bounding range of all non-empty cells
+const used = await client.excel.getUsedRange({
+  item_id: "ABC123",
+  worksheet: "Sheet1",
+});
+```
+
+### Work with Tables
+
+```typescript
+// Create a table from existing data
+await client.excel.createTable({
+  item_id: "ABC123",
+  worksheet: "Sheet1",
+  range: "A1:D10",
+  has_headers: true,
+});
+
+// Append rows to the table
+await client.excel.addTableRows({
+  item_id: "ABC123",
+  worksheet: "Sheet1",
+  table: "Table1",
+  values: JSON.stringify([["Carol", 92, "Engineering", true]]),
+});
+```
+
+### Add a Worksheet
+
+```typescript
+await client.excel.addWorksheet({
+  item_id: "ABC123",
+  name: "Q4 Summary",
+});
+```
+
+### Create a Workbook
+
+```typescript
+const wb = await client.excel.create({
+  name: "Monthly Report",   // .xlsx appended automatically
+  parent_id: "folderId123", // optional
+});
+```
+
+## Notes
+
+- `values` parameters accept a **JSON string** (not a pre-parsed array) — use `JSON.stringify(yourArray)`.
+- The `worksheet` parameter accepts either the display name (`"Sheet1"`) or the Graph worksheet ID.
+- Item IDs are Graph API drive item IDs. Use `excel_list` or `onedrive_search_files` to find them.
+
+## OAuth Scopes
+
+The default scope is `Files.ReadWrite.All`. Available scopes:
+
+- **`Files.ReadWrite.All`** - Read and write all files the user can access
+- **`Files.Read.All`** - Read-only access
+
+## Error Handling
+
+```typescript
+try {
+  const data = await client.excel.getRange({
+    item_id: "ABC123",
+    worksheet: "Sheet1",
+    range: "A1:B10",
+  });
+} catch (error) {
+  if (error.message.includes("404")) {
+    console.error("Workbook or worksheet not found");
+  } else if (error.message.includes("423")) {
+    console.error("Workbook is locked by another session");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Manage Word documents with the [Word Integration](/docs/integrations/word)
+- Manage PowerPoint presentations with the [PowerPoint Integration](/docs/integrations/powerpoint)
+- Manage files and folders with the [OneDrive Integration](/docs/integrations/onedrive)

@@ -1235,9 +1235,9 @@ describe("Integration System", () => {
       expect(integration.tools).toContain("onedrive_list_files");
       expect(integration.tools).toContain("onedrive_get_file");
       expect(integration.tools).toContain("onedrive_upload_file");
-      expect(integration.tools).toContain("onedrive_excel_get_worksheets");
-      expect(integration.tools).toContain("onedrive_word_get_content");
-      expect(integration.tools).toContain("onedrive_powerpoint_get_slides");
+      expect(integration.tools).toContain("onedrive_delete_file");
+      expect(integration.tools).toContain("onedrive_search_files");
+      expect(integration.tools).toContain("onedrive_share_file");
     });
 
     test("has lifecycle hooks defined", () => {

@@ -48,7 +48,11 @@ import { whatsappIntegration } from './src/integrations/whatsapp.js';
 import { calcomIntegration } from './src/integrations/calcom.js';
 import { rampIntegration } from './src/integrations/ramp.js';
 import { onedriveIntegration } from './src/integrations/onedrive.js';
+import { wordIntegration } from './src/integrations/word.js';
+import { excelIntegration } from './src/integrations/excel.js';
+import { powerpointIntegration } from './src/integrations/powerpoint.js';
 import { gdocsIntegration } from './src/integrations/gdocs.js';
+import { gdriveIntegration } from './src/integrations/gdrive.js';
 import { gsheetsIntegration } from './src/integrations/gsheets.js';
 import { gslidesIntegration } from './src/integrations/gslides.js';
 import { polarIntegration } from './src/integrations/polar.js';
@@ -111,7 +115,11 @@ export const client = createMCPClient({
     calcomIntegration(),
     rampIntegration(),
     onedriveIntegration(),
+    wordIntegration(),
+    excelIntegration(),
+    powerpointIntegration(),
     gdocsIntegration(),
+    gdriveIntegration(),
     gsheetsIntegration(),
     gslidesIntegration(),
     polarIntegration(),

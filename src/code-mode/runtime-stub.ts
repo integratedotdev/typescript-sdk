@@ -77,7 +77,11 @@ function createIntegrationProxy(integrationId) {
   return new Proxy({}, {
     get(_target, methodName) {
       if (typeof methodName !== 'string') return undefined;
-      return (args) => callTool(integrationId + '_' + camelToSnake(methodName), args);
+      return (args) => {
+        const alreadyFull = methodName.startsWith(integrationId + '_') || methodName.startsWith('___');
+        const toolName = alreadyFull ? methodName : integrationId + '_' + camelToSnake(methodName);
+        return callTool(toolName, args);
+      };
     },
   });
 }

@@ -21,7 +21,7 @@ export interface YouTubeIntegrationConfig {
   clientId?: string;
   /** YouTube OAuth client secret (defaults to YOUTUBE_CLIENT_SECRET env var) */
   clientSecret?: string;
-  /** Additional OAuth scopes (default: ['https://www.googleapis.com/auth/youtube.readonly']) */
+  /** Additional OAuth scopes (default: ['https://www.googleapis.com/auth/youtube.force-ssl']) */
   scopes?: string[];
   /** Optional OAuth scopes (user may choose to grant or deny) */
   optionalScopes?: string[];
@@ -34,15 +34,34 @@ export interface YouTubeIntegrationConfig {
  * These should match the tool names exposed by your MCP server
  */
 const YOUTUBE_TOOLS = [
+  // Read
   "youtube_search",
   "youtube_get_video",
+  "youtube_get_my_channel",
+  "youtube_get_channel",
+  "youtube_list_my_videos",
+  "youtube_get_video_rating",
   "youtube_list_playlists",
   "youtube_get_playlist",
   "youtube_list_playlist_items",
-  "youtube_get_channel",
   "youtube_list_subscriptions",
   "youtube_list_comments",
+  "youtube_list_comment_replies",
   "youtube_get_captions",
+  // Write — engagement
+  "youtube_rate_video",
+  "youtube_subscribe",
+  "youtube_unsubscribe",
+  "youtube_add_comment",
+  "youtube_reply_to_comment",
+  // Write — playlists
+  "youtube_create_playlist",
+  "youtube_update_playlist",
+  "youtube_delete_playlist",
+  "youtube_add_to_playlist",
+  "youtube_remove_from_playlist",
+  // Write — video management
+  "youtube_update_video",
 ] as const;
 
 

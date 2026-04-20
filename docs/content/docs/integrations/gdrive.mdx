@@ -1,0 +1,244 @@
+---
+title: Google Drive
+description: Manage files, folders, and sharing permissions in Google Drive
+---
+
+The Google Drive integration provides access to Google Drive through the Integrate MCP server.
+
+## Installation
+
+The Google Drive integration is included with the SDK:
+
+```typescript
+import { gdriveIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create Google OAuth Credentials
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new project or select an existing one
+3. Enable the **Google Drive API**
+4. Create OAuth 2.0 credentials (Web application)
+5. Add your redirect URI (e.g. `https://yourdomain.com/api/integrate/oauth/callback`)
+6. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Drive integration to your server configuration. The integration automatically reads `GDRIVE_CLIENT_ID` and `GDRIVE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, gdriveIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    gdriveIntegration(),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+gdriveIntegration({
+  clientId: process.env.CUSTOM_GDRIVE_ID,
+  clientSecret: process.env.CUSTOM_GDRIVE_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("gdrive");
+const files = await client.gdrive.listFiles({});
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, gdriveIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [gdriveIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/gdrive.ts"
+  name="GDriveIntegrationConfig"
+/>
+
+## Available Tools
+
+### Files & Folders
+
+- **`gdrive_list_files`** - List files and folders (supports query, pagination, sorting)
+- **`gdrive_get_file`** - Get metadata for a file or folder
+- **`gdrive_create_folder`** - Create a new folder
+- **`gdrive_rename_file`** - Rename a file or folder
+- **`gdrive_move_file`** - Move a file or folder to a different parent
+- **`gdrive_copy_file`** - Copy a file
+- **`gdrive_delete_file`** - Permanently delete a file or folder
+- **`gdrive_trash_file`** - Move a file or folder to trash (recoverable)
+
+### Content
+
+- **`gdrive_upload_text_file`** - Create a new file with text content
+- **`gdrive_download_file`** - Download file content as text (Google Workspace files are auto-exported)
+
+### Sharing & Permissions
+
+- **`gdrive_list_permissions`** - List sharing permissions on a file or folder
+- **`gdrive_share_file`** - Share a file or folder with a user, group, domain, or anyone
+- **`gdrive_remove_permission`** - Remove a sharing permission
+
+### Account
+
+- **`gdrive_get_about`** - Get current user info and storage quota
+
+## Examples
+
+### List Recent Files
+
+```typescript
+const result = await client.gdrive.listFiles({
+  order_by: "modifiedTime desc",
+  page_size: 20,
+});
+```
+
+### Search for Files
+
+```typescript
+const result = await client.gdrive.listFiles({
+  query: "name contains 'budget' and mimeType != 'application/vnd.google-apps.folder'",
+});
+```
+
+### List Files in a Folder
+
+```typescript
+const result = await client.gdrive.listFiles({
+  parent_id: "folderId123",
+  order_by: "name",
+});
+```
+
+### Create a Folder
+
+```typescript
+const folder = await client.gdrive.createFolder({
+  name: "Q4 Reports",
+  parent_id: "parentFolderId", // optional, defaults to root
+});
+```
+
+### Upload a Text File
+
+```typescript
+const file = await client.gdrive.uploadTextFile({
+  name: "notes.md",
+  content: "# Meeting Notes\n\n- Item 1\n- Item 2",
+  mime_type: "text/markdown",
+  parent_id: "folderId123",
+});
+```
+
+### Download a File
+
+```typescript
+const result = await client.gdrive.downloadFile({
+  file_id: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
+});
+
+// For Google Docs/Sheets/Slides, content is auto-exported as plain text or CSV
+console.log(result);
+```
+
+### Move and Rename a File
+
+```typescript
+// Move to a different folder
+await client.gdrive.moveFile({
+  file_id: "fileId123",
+  new_parent_id: "destinationFolderId",
+});
+
+// Rename
+await client.gdrive.renameFile({
+  file_id: "fileId123",
+  name: "Final Report Q4 2024",
+});
+```
+
+### Share a File
+
+```typescript
+// Share with a specific user
+await client.gdrive.shareFile({
+  file_id: "fileId123",
+  role: "writer",
+  type: "user",
+  email: "colleague@example.com",
+});
+
+// Share with anyone who has the link
+await client.gdrive.shareFile({
+  file_id: "fileId123",
+  role: "reader",
+  type: "anyone",
+  send_notification: false,
+});
+```
+
+### Check Storage Quota
+
+```typescript
+const about = await client.gdrive.getAbout();
+// storageQuota values are returned as strings (bytes)
+console.log("Storage used:", about);
+```
+
+## OAuth Scopes
+
+The default scope is `https://www.googleapis.com/auth/drive`. You can restrict access with narrower scopes:
+
+- **`https://www.googleapis.com/auth/drive`** - Full Drive access
+- **`https://www.googleapis.com/auth/drive.file`** - Access only files created or opened by the app
+- **`https://www.googleapis.com/auth/drive.readonly`** - Read-only access to files and metadata
+- **`https://www.googleapis.com/auth/drive.metadata`** - Read/write file metadata only (no content)
+- **`https://www.googleapis.com/auth/drive.metadata.readonly`** - Read-only file metadata
+
+## Error Handling
+
+```typescript
+try {
+  const file = await client.gdrive.getFile({
+    file_id: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
+  });
+} catch (error) {
+  if (error.message.includes("404")) {
+    console.error("File not found");
+  } else if (error.message.includes("403")) {
+    console.error("Insufficient permissions");
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore the [Google Docs Integration](/docs/integrations/gdocs)
+- Explore the [Google Sheets Integration](/docs/integrations/gsheets)
+- Explore the [Google Slides Integration](/docs/integrations/gslides)
+- Explore the [Google Calendar Integration](/docs/integrations/gcal)
+- Explore the [OneDrive Integration](/docs/integrations/onedrive)
