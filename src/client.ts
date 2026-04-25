@@ -65,6 +65,7 @@ import type {
   AuthDisconnectEvent,
 } from "./oauth/types.js";
 
+// Promise assimilation and object inspection should not become MCP calls.
 const NON_TOOL_PROXY_PROPERTIES = new Set<PropertyKey>([
   "then",
   "catch",
