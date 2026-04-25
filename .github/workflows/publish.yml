@@ -46,8 +46,7 @@ permissions:
 
 jobs:
   check-version:
-    # Only run version check for push events (not workflow_call)
-    if: github.event_name == 'push'
+    # Also run for workflow_call so reusable callers satisfy downstream needs.
     runs-on: ubuntu-latest
     outputs:
       version-changed: ${{ steps.check.outputs.changed }}

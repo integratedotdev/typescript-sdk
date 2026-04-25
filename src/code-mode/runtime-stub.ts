@@ -30,6 +30,7 @@ function camelToSnake(str) {
 }
 
 const NON_TOOL_PROPERTIES = new Set([
+  // Promise assimilation and object inspection should not become MCP calls.
   'then',
   'catch',
   'finally',
