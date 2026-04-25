@@ -65,6 +65,36 @@ import type {
   AuthDisconnectEvent,
 } from "./oauth/types.js";
 
+const NON_TOOL_PROXY_PROPERTIES = new Set<PropertyKey>([
+  "then",
+  "catch",
+  "finally",
+  "constructor",
+  "prototype",
+  "toString",
+  "valueOf",
+  "toJSON",
+  "inspect",
+  "hasOwnProperty",
+  "isPrototypeOf",
+  "propertyIsEnumerable",
+  "__proto__",
+  "__defineGetter__",
+  "__defineSetter__",
+  "__lookupGetter__",
+  "__lookupSetter__",
+  "__esModule",
+  Symbol.toStringTag,
+  Symbol.toPrimitive,
+  Symbol.iterator,
+  Symbol.asyncIterator,
+  Symbol.for("nodejs.util.inspect.custom"),
+]);
+
+function isToolProxyProperty(property: string | symbol): property is string {
+  return typeof property === "string" && !NON_TOOL_PROXY_PROPERTIES.has(property);
+}
+
 /**
  * Simple EventEmitter implementation for OAuth events
  */
@@ -548,7 +578,9 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     }
 
     return new Proxy({}, {
-      get: (_target, methodName: string) => {
+      get: (_target, methodName: string | symbol) => {
+        if (!isToolProxyProperty(methodName)) return undefined;
+
         // Return a function that calls the tool
         return async (args?: Record<string, unknown>, options?: ToolCallOptions) => {
           // When routing through API handlers, skip ensureConnected
@@ -572,7 +604,9 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
    */
   private createServerProxy(): any {
     return new Proxy({}, {
-      get: (_target, methodName: string) => {
+      get: (_target, methodName: string | symbol) => {
+        if (!isToolProxyProperty(methodName)) return undefined;
+
         // List configured integrations
         // Behavior depends on useServerConfig flag:
         // - useServerConfig: true (default client) → fetch from server

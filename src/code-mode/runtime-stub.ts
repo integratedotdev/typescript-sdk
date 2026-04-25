@@ -29,6 +29,31 @@ function camelToSnake(str) {
   return str.replace(/[A-Z]/g, (letter) => '_' + letter.toLowerCase());
 }
 
+const NON_TOOL_PROPERTIES = new Set([
+  'then',
+  'catch',
+  'finally',
+  'constructor',
+  'prototype',
+  'toString',
+  'valueOf',
+  'toJSON',
+  'inspect',
+  'hasOwnProperty',
+  'isPrototypeOf',
+  'propertyIsEnumerable',
+  '__proto__',
+  '__defineGetter__',
+  '__defineSetter__',
+  '__lookupGetter__',
+  '__lookupSetter__',
+  '__esModule',
+]);
+
+function isToolProperty(property) {
+  return typeof property === 'string' && !NON_TOOL_PROPERTIES.has(property);
+}
+
 async function callTool(toolName, args) {
   const headers = {
     'Content-Type': 'application/json',
@@ -76,7 +101,7 @@ async function callTool(toolName, args) {
 function createIntegrationProxy(integrationId) {
   return new Proxy({}, {
     get(_target, methodName) {
-      if (typeof methodName !== 'string') return undefined;
+      if (!isToolProperty(methodName)) return undefined;
       return (args) => {
         const alreadyFull = methodName.startsWith(integrationId + '_') || methodName.startsWith('___');
         const toolName = alreadyFull ? methodName : integrationId + '_' + camelToSnake(methodName);

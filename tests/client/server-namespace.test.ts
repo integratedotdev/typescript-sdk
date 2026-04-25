@@ -23,6 +23,34 @@ describe("Server Namespace", () => {
     expect(typeof client.server.listAllProviders).toBe("function");
   });
 
+  test("integration and server proxies are non-thenable", async () => {
+    const mockFetch = mock(async () => {
+      throw new Error("Fetch should not be called");
+    }) as any;
+    global.fetch = mockFetch;
+
+    const client = createMCPClient({
+      integrations: [
+        githubIntegration({
+          clientId: "test-id",
+        }),
+      ],
+      connectionMode: 'manual',
+      singleton: false,
+    });
+
+    const github = (client as any).github;
+    const server = (client as any).server;
+
+    expect(github.then).toBeUndefined();
+    expect(github.catch).toBeUndefined();
+    expect(server.then).toBeUndefined();
+    expect(server.finally).toBeUndefined();
+    expect(await Promise.resolve(github)).toBe(github);
+    expect(await Promise.resolve(server)).toBe(server);
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
   test("server methods work through API handler without initialization", async () => {
     const mockFetch = mock(async (url: string, options?: any) => {
       if (url.includes("/api/integrate/mcp")) {
