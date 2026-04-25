@@ -1183,6 +1183,31 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   }
 
   /**
+   * Seed the local tool metadata cache without connecting to the MCP server.
+   *
+   * Serverless applications can persist tool metadata from a previous discovery
+   * pass, then hydrate it on cold start so AI adapters can build tool schemas
+   * without fanning out to list_tools_by_integration.
+   */
+  hydrateToolCache(tools: readonly MCPTool[]): void {
+    for (const tool of tools) {
+      if (tool?.name && tool.inputSchema) {
+        this.availableTools.set(tool.name, tool);
+      }
+    }
+  }
+
+  /**
+   * Return enabled tools from the local cache only.
+   *
+   * This never performs network requests. Use getEnabledToolsAsync() when
+   * missing schemas should be fetched from the server.
+   */
+  getCachedEnabledTools(): MCPTool[] {
+    return this.getEnabledTools();
+  }
+
+  /**
    * Set a custom HTTP header for all requests to the MCP server
    * 
    * @internal Used by createMCPServer() to set the API key header
