@@ -65,6 +65,37 @@ import type {
   AuthDisconnectEvent,
 } from "./oauth/types.js";
 
+// Promise assimilation and object inspection should not become MCP calls.
+const NON_TOOL_PROXY_PROPERTIES = new Set<PropertyKey>([
+  "then",
+  "catch",
+  "finally",
+  "constructor",
+  "prototype",
+  "toString",
+  "valueOf",
+  "toJSON",
+  "inspect",
+  "hasOwnProperty",
+  "isPrototypeOf",
+  "propertyIsEnumerable",
+  "__proto__",
+  "__defineGetter__",
+  "__defineSetter__",
+  "__lookupGetter__",
+  "__lookupSetter__",
+  "__esModule",
+  Symbol.toStringTag,
+  Symbol.toPrimitive,
+  Symbol.iterator,
+  Symbol.asyncIterator,
+  Symbol.for("nodejs.util.inspect.custom"),
+]);
+
+function isToolProxyProperty(property: string | symbol): property is string {
+  return typeof property === "string" && !NON_TOOL_PROXY_PROPERTIES.has(property);
+}
+
 /**
  * Simple EventEmitter implementation for OAuth events
  */
@@ -548,7 +579,9 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     }
 
     return new Proxy({}, {
-      get: (_target, methodName: string) => {
+      get: (_target, methodName: string | symbol) => {
+        if (!isToolProxyProperty(methodName)) return undefined;
+
         // Return a function that calls the tool
         return async (args?: Record<string, unknown>, options?: ToolCallOptions) => {
           // When routing through API handlers, skip ensureConnected
@@ -572,7 +605,9 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
    */
   private createServerProxy(): any {
     return new Proxy({}, {
-      get: (_target, methodName: string) => {
+      get: (_target, methodName: string | symbol) => {
+        if (!isToolProxyProperty(methodName)) return undefined;
+
         // List configured integrations
         // Behavior depends on useServerConfig flag:
         // - useServerConfig: true (default client) → fetch from server
@@ -1205,6 +1240,31 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
    */
   getAvailableTools(): MCPTool[] {
     return Array.from(this.availableTools.values());
+  }
+
+  /**
+   * Seed the local tool metadata cache without connecting to the MCP server.
+   *
+   * Serverless applications can persist tool metadata from a previous discovery
+   * pass, then hydrate it on cold start so AI adapters can build tool schemas
+   * without fanning out to list_tools_by_integration.
+   */
+  hydrateToolCache(tools: readonly MCPTool[]): void {
+    for (const tool of tools) {
+      if (tool?.name && tool.inputSchema) {
+        this.availableTools.set(tool.name, tool);
+      }
+    }
+  }
+
+  /**
+   * Return enabled tools from the local cache only.
+   *
+   * This never performs network requests. Use getEnabledToolsAsync() when
+   * missing schemas should be fetched from the server.
+   */
+  getCachedEnabledTools(): MCPTool[] {
+    return this.getEnabledTools();
   }
 
   /**

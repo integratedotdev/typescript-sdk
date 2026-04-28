@@ -5,13 +5,14 @@
  * real `@vercel/sandbox` peer dep.
  */
 
-import { describe, test, expect, afterEach } from "bun:test";
+import { describe, test, expect, afterEach, mock } from "bun:test";
 import {
   executeSandboxCode,
   __setSandboxFactoryForTests,
   __setSandboxUnavailableForTests,
   isSandboxAvailable,
 } from "../../src/code-mode/executor.js";
+import { RUNTIME_STUB_SOURCE } from "../../src/code-mode/runtime-stub.js";
 
 interface RecordedCommand {
   cmd: string;
@@ -62,6 +63,13 @@ function makeFakeSandbox(opts: {
   } as any;
 
   return factory;
+}
+
+async function importRuntimeStub(): Promise<any> {
+  const source = RUNTIME_STUB_SOURCE
+    .replace("export const client = new Proxy", "const client = new Proxy")
+    .replace("export { callTool };", "return { client, callTool };");
+  return new Function("process", "fetch", source)(process, global.fetch);
 }
 
 describe("executeSandboxCode", () => {
@@ -145,6 +153,43 @@ describe("executeSandboxCode", () => {
     expect(JSON.parse(env.INTEGRATE_PROVIDER_TOKENS)).toEqual({ github: "ghp_xyz" });
     expect(env.INTEGRATE_INTEGRATIONS).toBe("github,gmail");
     expect(JSON.parse(env.INTEGRATE_CONTEXT)).toEqual({ userId: "u_1" });
+  });
+
+  test("runtime integration proxies are non-thenable but still call tools", async () => {
+    const previousMcpUrl = process.env.INTEGRATE_MCP_URL;
+    process.env.INTEGRATE_MCP_URL = "https://myapp.example.com/api/integrate/mcp";
+    const toolCalls: string[] = [];
+    const mockFetch = mock(async (_url: string, options?: any) => {
+      const body = JSON.parse(options?.body || "{}");
+      toolCalls.push(body.name);
+      return {
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({
+          content: [{ type: "text", text: "ok" }],
+        }),
+      } as Response;
+    }) as any;
+    global.fetch = mockFetch;
+
+    try {
+      const { client } = await importRuntimeStub();
+      const github = client.github;
+
+      expect(github.then).toBeUndefined();
+      expect(await Promise.resolve(github)).toBe(github);
+      expect(mockFetch).not.toHaveBeenCalled();
+
+      await github.listRepos();
+
+      expect(toolCalls).toEqual(["github_list_repos"]);
+    } finally {
+      if (previousMcpUrl === undefined) {
+        delete process.env.INTEGRATE_MCP_URL;
+      } else {
+        process.env.INTEGRATE_MCP_URL = previousMcpUrl;
+      }
+    }
   });
 
   test("calls sandbox.stop() in finally even on success", async () => {
