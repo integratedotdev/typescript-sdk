@@ -15,19 +15,19 @@ describe("Automatic skipLocalStorage Detection", () => {
   beforeEach(() => {
     mockLocalStorage.clear();
 
-    // Mock global window object if it doesn't exist
-    if (typeof globalThis.window === 'undefined') {
-      (globalThis as any).window = {
-        localStorage: {
-          getItem: (key: string) => mockLocalStorage.get(key) || null,
-          setItem: (key: string, value: string) => mockLocalStorage.set(key, value),
-          removeItem: (key: string) => mockLocalStorage.delete(key),
-          clear: () => mockLocalStorage.clear(),
-          get length() { return mockLocalStorage.size; },
-          key: (index: number) => Array.from(mockLocalStorage.keys())[index] || null,
-        },
-      };
-    }
+    // Always install the test localStorage mock. In the full suite, other test files
+    // may leave a window object behind, so only checking for undefined is not enough.
+    (globalThis as any).window = {
+      ...(globalThis as any).window,
+      localStorage: {
+        getItem: (key: string) => mockLocalStorage.get(key) || null,
+        setItem: (key: string, value: string) => mockLocalStorage.set(key, value),
+        removeItem: (key: string) => mockLocalStorage.delete(key),
+        clear: () => mockLocalStorage.clear(),
+        get length() { return mockLocalStorage.size; },
+        key: (index: number) => Array.from(mockLocalStorage.keys())[index] || null,
+      },
+    };
   });
 
   afterEach(() => {
@@ -549,4 +549,3 @@ describe("Automatic skipLocalStorage Detection", () => {
     });
   });
 });
-

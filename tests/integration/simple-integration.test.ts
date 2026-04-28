@@ -3,14 +3,25 @@
  * Tests that don't require a full HTTP streaming server
  */
 
-import { describe, test, expect, mock } from "bun:test";
-import { createMCPClient } from "../../src/client.js";
+import { describe, test, expect, mock, beforeEach, afterEach } from "bun:test";
+import { createMCPClient, clearClientCache } from "../../src/client.js";
 import { createSimpleIntegration, genericOAuthIntegration } from "../../src/integrations/generic.js";
 import { githubIntegration } from "../../src/integrations/github.js";
 import { gmailIntegration } from "../../src/integrations/gmail.js";
 import { granolaIntegration } from "../../src/integrations/granola.js";
 import { dropboxIntegration } from "../../src/integrations/dropbox.js";
 import { mercuryIntegration } from "../../src/integrations/mercury.js";
+
+const originalFetch = global.fetch;
+
+beforeEach(() => {
+  global.fetch = originalFetch;
+});
+
+afterEach(async () => {
+  global.fetch = originalFetch;
+  await clearClientCache();
+});
 
 describe("Integration - Client Configuration", () => {
   test("creates client with multiple integrations", () => {
