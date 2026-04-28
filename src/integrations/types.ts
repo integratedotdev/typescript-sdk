@@ -62,8 +62,14 @@ export interface MCPIntegration<TId extends string = string> {
   /** List of tool names this integration enables */
   tools: string[];
 
+  /** Authentication type used by this integration */
+  authType?: "oauth" | "apiKey";
+
   /** OAuth configuration for this integration */
   oauth?: OAuthConfig;
+
+  /** Static headers to attach when calling this integration's tools */
+  getHeaders?: () => Record<string, string>;
 
   /** Called when the integration is initialized with the client */
   onInit?: (client: MCPClientBase<any>) => Promise<void> | void;
@@ -96,4 +102,3 @@ export function hasOAuthConfig(
 ): integration is MCPIntegration & { oauth: OAuthConfig } {
   return integration.oauth !== undefined;
 }
-

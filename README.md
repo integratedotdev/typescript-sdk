@@ -132,6 +132,88 @@ const result = await client.github.createIssue({
 console.log("Issue created:", result);
 ```
 
+### API Key Integrations
+
+Use API-key integrations like Granola by passing the credential directly to the integration helper:
+
+```typescript
+import { createMCPClient, granolaIntegration } from "integrate-sdk";
+
+const client = createMCPClient({
+  integrations: [
+    granolaIntegration({
+      apiKey: process.env.GRANOLA_API_KEY!,
+    }),
+  ],
+});
+
+const notes = await client.callTool("granola_list_notes", {
+  page_size: 10,
+});
+
+const note = await client.callTool("granola_get_note", {
+  note_id: "not_123",
+  include_transcript: true,
+});
+
+const folders = await client.callTool("granola_list_folders", {
+  page_size: 10,
+});
+```
+
+Mercury uses the same API-token pattern:
+
+```typescript
+import { createMCPClient, mercuryIntegration } from "integrate-sdk";
+
+const client = createMCPClient({
+  integrations: [
+    mercuryIntegration({
+      apiKey: process.env.MERCURY_API_KEY!,
+    }),
+  ],
+});
+
+const org = await client.callTool("mercury_get_organization");
+const accounts = await client.callTool("mercury_list_accounts", {
+  limit: 50,
+});
+const txns = await client.callTool("mercury_list_transactions", {
+  start: "2026-01-01",
+  end: "2026-01-31",
+  limit: 100,
+});
+```
+
+### OAuth File Storage Integrations
+
+Dropbox follows the standard OAuth integration flow:
+
+```typescript
+import { createMCPClient, dropboxIntegration } from "integrate-sdk";
+
+const client = createMCPClient({
+  integrations: [
+    dropboxIntegration({
+      scopes: [
+        "account_info.read",
+        "files.metadata.read",
+        "files.content.read",
+        "files.content.write",
+        "sharing.read",
+        "sharing.write",
+      ],
+    }),
+  ],
+});
+
+const account = await client.callTool("dropbox_get_current_account");
+const files = await client.callTool("dropbox_list_folder", {
+  path: "/",
+  limit: 50,
+});
+```
+
 **That's it!** The SDK automatically:
 
 - ✅ Connects on first method call (no manual `connect()` needed)

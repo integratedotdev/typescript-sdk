@@ -928,6 +928,17 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   }
 
   /**
+   * Call an enabled tool by its MCP tool name.
+   */
+  async callTool(
+    name: string,
+    args?: Record<string, unknown>,
+    options?: ToolCallOptions
+  ): Promise<MCPToolCallResponse> {
+    return await this.callToolWithRetry(name, args, 0, options);
+  }
+
+  /**
    * Call any available tool on the server by name, bypassing integration restrictions
    * Useful for server-level tools like 'list_tools_by_integration' that don't belong to a specific integration
    * 
@@ -966,6 +977,8 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     provider?: string,
     options?: ToolCallOptions
   ): Promise<MCPToolCallResponse> {
+    const integrationHeaders = this.getHeadersForTool(name);
+
     // Check if this is a server-side client (has API key in transport headers)
     const transportHeaders = (this.transport as any).headers || {};
     const hasApiKey = !!transportHeaders['X-API-KEY'];
@@ -975,39 +988,37 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
       // Ensure transport is connected before any direct sendRequest() call
       await this.ensureConnected();
 
+      const temporaryHeaders = { ...integrationHeaders };
+
       // Add provider token to transport if available
       if (provider) {
         const tokenData = await this.oauthManager.getProviderToken(provider, undefined, options?.context);
-        if (tokenData && this.transport.setHeader) {
-          const previousAuthHeader = transportHeaders['Authorization'];
-
-          try {
-            // Temporarily set the authorization header
-            this.transport.setHeader('Authorization', `Bearer ${tokenData.accessToken}`);
-
-            // Call through transport (goes directly to MCP server with API key)
-            const result = await this.transport.sendRequest('tools/call', {
-              name,
-              arguments: args || {},
-            });
-            return result as MCPToolCallResponse;
-          } finally {
-            // Restore previous auth header
-            if (previousAuthHeader && this.transport.setHeader) {
-              this.transport.setHeader('Authorization', previousAuthHeader);
-            } else if (this.transport.removeHeader) {
-              this.transport.removeHeader('Authorization');
-            }
-          }
+        if (tokenData) {
+          temporaryHeaders["Authorization"] = `Bearer ${tokenData.accessToken}`;
         }
       }
 
-      // No provider token needed or available - call directly
-      const result = await this.transport.sendRequest('tools/call', {
-        name,
-        arguments: args || {},
-      });
-      return result as MCPToolCallResponse;
+      const previousHeaders = new Map<string, string | undefined>();
+      for (const [key, value] of Object.entries(temporaryHeaders)) {
+        previousHeaders.set(key, transportHeaders[key]);
+        this.transport.setHeader(key, value);
+      }
+
+      try {
+        const result = await this.transport.sendRequest('tools/call', {
+          name,
+          arguments: args || {},
+        });
+        return result as MCPToolCallResponse;
+      } finally {
+        for (const [key, previousValue] of previousHeaders.entries()) {
+          if (previousValue !== undefined) {
+            this.transport.setHeader(key, previousValue);
+          } else {
+            this.transport.removeHeader(key);
+          }
+        }
+      }
     }
 
     // Browser clients (no API key) - route through API handler
@@ -1026,6 +1037,8 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     if (integrationsHeader) {
       headers['X-Integrations'] = integrationsHeader;
     }
+
+    Object.assign(headers, integrationHeaders);
 
     // Add provider token if available
     if (provider) {
@@ -1166,6 +1179,18 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
       }
     }
     return undefined;
+  }
+
+  /**
+   * Get static integration headers for a given tool.
+   */
+  private getHeadersForTool(toolName: string): Record<string, string> {
+    for (const integration of this.integrations) {
+      if (integration.tools.includes(toolName) && integration.getHeaders) {
+        return integration.getHeaders();
+      }
+    }
+    return {};
   }
 
   /**

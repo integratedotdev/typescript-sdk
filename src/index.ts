@@ -128,6 +128,9 @@ export type { RampIntegrationConfig, RampTools, RampIntegrationClient } from "./
 export { onedriveIntegration } from "./integrations/onedrive.js";
 export type { OneDriveIntegrationConfig, OneDriveTools, OneDriveIntegrationClient } from "./integrations/onedrive.js";
 
+export { dropboxIntegration } from "./integrations/dropbox.js";
+export type { DropboxIntegrationOptions, DropboxTools } from "./integrations/dropbox.js";
+
 export { gdocsIntegration } from "./integrations/gdocs.js";
 export type { GDocsIntegrationConfig, GDocsTools, GDocsIntegrationClient } from "./integrations/gdocs.js";
 
@@ -154,6 +157,12 @@ export type { YouTubeIntegrationConfig, YouTubeTools, YouTubeIntegrationClient }
 
 export { cursorIntegration } from "./integrations/cursor.js";
 export type { CursorIntegrationConfig, CursorTools, CursorIntegrationClient } from "./integrations/cursor.js";
+
+export { granolaIntegration } from "./integrations/granola.js";
+export type { GranolaIntegrationOptions, GranolaTools } from "./integrations/granola.js";
+
+export { mercuryIntegration } from "./integrations/mercury.js";
+export type { MercuryIntegrationOptions, MercuryTools } from "./integrations/mercury.js";
 
 // Server client
 export type { ServerIntegrationClient } from "./integrations/server-client.js";
@@ -214,4 +223,3 @@ export type {
   MessageHandler,
   HttpSessionTransportOptions,
 } from "./transport/http-session.js";
-

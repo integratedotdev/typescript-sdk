@@ -19,6 +19,7 @@ import { whatsappIntegration } from "../../src/integrations/whatsapp.js";
 import { calcomIntegration } from "../../src/integrations/calcom.js";
 import { rampIntegration } from "../../src/integrations/ramp.js";
 import { onedriveIntegration } from "../../src/integrations/onedrive.js";
+import { dropboxIntegration } from "../../src/integrations/dropbox.js";
 import { gdocsIntegration } from "../../src/integrations/gdocs.js";
 import { gsheetsIntegration } from "../../src/integrations/gsheets.js";
 import { gslidesIntegration } from "../../src/integrations/gslides.js";
@@ -28,6 +29,8 @@ import { intercomIntegration } from "../../src/integrations/intercom.js";
 import { hubspotIntegration } from "../../src/integrations/hubspot.js";
 import { youtubeIntegration } from "../../src/integrations/youtube.js";
 import { cursorIntegration } from "../../src/integrations/cursor.js";
+import { granolaIntegration } from "../../src/integrations/granola.js";
+import { mercuryIntegration } from "../../src/integrations/mercury.js";
 import { genericOAuthIntegration, createSimpleIntegration } from "../../src/integrations/generic.js";
 import { hasOAuthConfig } from "../../src/integrations/types.js";
 
@@ -99,6 +102,81 @@ describe("Integration System", () => {
 
       // Test onAfterConnect
       await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+  });
+
+  describe("Granola Integration", () => {
+    test("creates Granola integration with apiKey", () => {
+      const integration = granolaIntegration({
+        apiKey: "gr_test_key",
+      });
+
+      expect(integration.id).toBe("granola");
+      expect(integration.authType).toBe("apiKey");
+      expect(integration.tools).toEqual([
+        "granola_list_notes",
+        "granola_get_note",
+        "granola_list_folders",
+      ]);
+    });
+
+    test("throws when apiKey is missing", () => {
+      expect(() => granolaIntegration({
+        apiKey: "",
+      })).toThrow("granolaIntegration requires an apiKey");
+    });
+
+    test("sends Authorization bearer header", () => {
+      const integration = granolaIntegration({
+        apiKey: "gr_test_key",
+      });
+
+      expect(integration.getHeaders?.()).toEqual({
+        Authorization: "Bearer gr_test_key",
+      });
+    });
+  });
+
+  describe("Mercury Integration", () => {
+    test("requires apiKey", () => {
+      expect(() =>
+        mercuryIntegration({
+          apiKey: "",
+        })
+      ).toThrow("mercuryIntegration requires an apiKey");
+    });
+
+    test("sends Authorization bearer header", () => {
+      const integration = mercuryIntegration({
+        apiKey: "secret-token:mercury_test",
+      });
+
+      expect(integration.getHeaders?.()).toEqual({
+        Authorization: "Bearer secret-token:mercury_test",
+      });
+    });
+
+    test("registers provider name mercury", () => {
+      const integration = mercuryIntegration({
+        apiKey: "secret-token:mercury_test",
+      });
+
+      expect(integration.id).toBe("mercury");
+      expect(integration.name).toBe("Mercury");
+      expect(integration.authType).toBe("apiKey");
+    });
+
+    test("includes expected tools", () => {
+      const integration = mercuryIntegration({
+        apiKey: "secret-token:mercury_test",
+      });
+
+      expect(integration.tools).toContain("mercury_get_organization");
+      expect(integration.tools).toContain("mercury_list_accounts");
+      expect(integration.tools).toContain("mercury_list_transactions");
+      expect(integration.tools).toContain("mercury_list_cards");
+      expect(integration.tools).toContain("mercury_list_recipients");
+      expect(integration.tools).toContain("mercury_create_internal_transfer");
     });
   });
 
@@ -1261,6 +1339,102 @@ describe("Integration System", () => {
     });
   });
 
+  describe("Dropbox Integration", () => {
+    test("registers provider name dropbox", () => {
+      const integration = dropboxIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.id).toBe("dropbox");
+      expect(integration.oauth?.provider).toBe("dropbox");
+    });
+
+    test("uses OAuth flow, not API key auth", () => {
+      const integration = dropboxIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.authType).toBe("oauth");
+      expect(integration.oauth).toBeDefined();
+      expect(integration.getHeaders).toBeUndefined();
+    });
+
+    test("passes custom scopes through correctly", () => {
+      const integration = dropboxIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+        scopes: [
+          "account_info.read",
+          "files.metadata.read",
+          "sharing.read",
+        ],
+      });
+
+      expect(integration.oauth?.scopes).toEqual([
+        "account_info.read",
+        "files.metadata.read",
+        "sharing.read",
+      ]);
+    });
+
+    test("defaults cleanly when scopes are omitted", () => {
+      const integration = dropboxIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.scopes).toBeUndefined();
+    });
+
+    test("validates scopes input", () => {
+      expect(() =>
+        dropboxIntegration({
+          scopes: "not-an-array" as any,
+        })
+      ).toThrow("dropboxIntegration scopes must be an array of strings");
+
+      expect(() =>
+        dropboxIntegration({
+          scopes: ["ok", 123 as any],
+        })
+      ).toThrow("dropboxIntegration scopes must be an array of strings");
+    });
+
+    test("includes expected tools", () => {
+      const integration = dropboxIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.tools).toContain("dropbox_get_current_account");
+      expect(integration.tools).toContain("dropbox_list_folder");
+      expect(integration.tools).toContain("dropbox_upload_text_file");
+      expect(integration.tools).toContain("dropbox_create_shared_link");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = dropboxIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+
+    test("lifecycle hooks execute successfully", async () => {
+      const integration = dropboxIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      await expect(integration.onInit?.(null as any)).resolves.toBeUndefined();
+      await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+  });
+
   describe("Google Docs Integration", () => {
     test("creates integration with correct structure", () => {
       const integration = gdocsIntegration({
@@ -1979,4 +2153,3 @@ describe("Integration System", () => {
     });
   });
 });
-
