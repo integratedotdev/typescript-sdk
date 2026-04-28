@@ -203,6 +203,8 @@ integrations.forEach((integration) => {
     {
       id: "github",
       name: "GitHub",
+      description: "Manage GitHub repos, issues, and pull requests",
+      category: "Engineering",
       tools: ["github_create_issue", "github_list_repos", ...],
       hasOAuth: true,
       scopes: ["repo", "user"],
@@ -211,6 +213,8 @@ integrations.forEach((integration) => {
     {
       id: "gmail",
       name: "Gmail",
+      description: "Send, read, and search Gmail messages",
+      category: "Communication",
       tools: ["gmail_send_email", "gmail_list_messages", ...],
       hasOAuth: true,
       scopes: ["gmail.readonly"],
@@ -228,6 +232,8 @@ integrations.forEach((integration) => {
     {
       id: "github",
       name: "GitHub",
+      description: "Manage GitHub repos, issues, and pull requests",
+      category: "Engineering",
       tools: ["github_create_issue", "github_list_repos", ...],
       hasOAuth: true,
       scopes: ["repo", "user"],

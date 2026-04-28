@@ -61,6 +61,10 @@ export interface ConfiguredIntegration {
   name: string;
   /** URL to the integration's logo image */
   logoUrl?: string;
+  /** Library / marketing one-liner (from integration config or built-in catalog). */
+  description?: string;
+  /** Library category for grouping (from integration config or built-in catalog). */
+  category?: string;
   tools: readonly string[];
   hasOAuth: boolean;
   scopes?: readonly string[];
