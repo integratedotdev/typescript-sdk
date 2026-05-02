@@ -102,6 +102,14 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     description: "Manage Railway workspaces, projects, services, deployments, variables, domains, and volumes",
     category: "Infrastructure",
   },
+  sentry: {
+    description: "Monitor Sentry errors, issues, releases, and projects",
+    category: "Engineering",
+  },
+  netlify: {
+    description: "Manage Netlify sites, deploys, builds, and environment variables",
+    category: "Infrastructure",
+  },
   slack: {
     description: "Send and manage Slack messages and channels",
     category: "Communication",

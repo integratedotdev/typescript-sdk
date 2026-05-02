@@ -167,6 +167,12 @@ export type { CursorIntegrationConfig, CursorTools, CursorIntegrationClient } fr
 export { posthogIntegration } from "./integrations/posthog.js";
 export type { PostHogIntegrationConfig, PostHogTools, PostHogScopes, PostHogIntegrationClient } from "./integrations/posthog.js";
 
+export { sentryIntegration } from "./integrations/sentry.js";
+export type { SentryIntegrationConfig, SentryTools, SentryScopes, SentryIntegrationClient } from "./integrations/sentry.js";
+
+export { netlifyIntegration } from "./integrations/netlify.js";
+export type { NetlifyIntegrationConfig, NetlifyTools, NetlifyIntegrationClient } from "./integrations/netlify.js";
+
 export { granolaIntegration } from "./integrations/granola.js";
 export type { GranolaIntegrationOptions, GranolaTools } from "./integrations/granola.js";
 

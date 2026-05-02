@@ -62,6 +62,8 @@ import { hubspotIntegration } from './src/integrations/hubspot.js';
 import { youtubeIntegration } from './src/integrations/youtube.js';
 import { cursorIntegration } from './src/integrations/cursor.js';
 import { posthogIntegration } from './src/integrations/posthog.js';
+import { sentryIntegration } from './src/integrations/sentry.js';
+import { netlifyIntegration } from './src/integrations/netlify.js';
 
 /**
  * Default MCP Client with all integrations pre-configured
@@ -130,6 +132,8 @@ export const client = createMCPClient({
     youtubeIntegration(),
     cursorIntegration(),
     posthogIntegration(),
+    sentryIntegration(),
+    netlifyIntegration(),
   ],
   // Fetch configured integrations from server since default client has all integrations
   // but only some may be configured on the server with OAuth credentials
