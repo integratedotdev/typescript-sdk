@@ -115,6 +115,8 @@ export interface ProviderTokenData {
   email?: string;
   /** Account ID (provider + email hash) */
   accountId?: string;
+  /** Provider-specific token context such as selected API host/base URL */
+  providerConfig?: Record<string, unknown>;
 }
 
 /**

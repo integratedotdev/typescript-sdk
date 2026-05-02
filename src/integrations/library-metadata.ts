@@ -4,10 +4,12 @@
  */
 
 export type IntegrationCategory =
+  | "Analytics"
   | "Business"
   | "Productivity"
   | "Communication"
   | "Engineering"
+  | "Infrastructure"
   | "Storage"
   | "Other";
 
@@ -18,10 +20,12 @@ type LibraryEntry = {
 
 /** Display order for library section headers (categories not listed sort before "Other"). */
 export const INTEGRATION_CATEGORY_ORDER: readonly IntegrationCategory[] = [
+  "Analytics",
   "Productivity",
   "Business",
   "Communication",
   "Engineering",
+  "Infrastructure",
   "Storage",
   "Other",
 ] as const;
@@ -86,9 +90,17 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     description: "Manage Polar products, orders, and subscriptions",
     category: "Business",
   },
+  posthog: {
+    description: "Read PostHog organizations, projects, insights, and feature flags",
+    category: "Analytics",
+  },
   ramp: {
     description: "Manage Ramp corporate cards, bills, and spend",
     category: "Business",
+  },
+  railway: {
+    description: "Manage Railway workspaces, projects, services, deployments, variables, domains, and volumes",
+    category: "Infrastructure",
   },
   slack: {
     description: "Send and manage Slack messages and channels",

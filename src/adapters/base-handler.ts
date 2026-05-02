@@ -16,6 +16,35 @@ import { createLogger, type LogContext } from '../utils/logger.js';
 const SERVER_LOG_CONTEXT: LogContext = 'server';
 const logger = createLogger('OAuthHandler', SERVER_LOG_CONTEXT);
 
+const OAUTH_CONFIG_FIELDS = new Set([
+  'clientId', 'clientSecret', 'scopes', 'optionalScopes', 'redirectUri',
+  'client_id', 'client_secret', 'scope', 'optional_scope', 'redirect_uri',
+  'provider',
+]);
+
+function getForwardableProviderConfig(config?: Record<string, any>): Record<string, string> {
+  if (!config) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(config)
+      .filter(([key, value]) => value !== undefined && value !== null && !OAUTH_CONFIG_FIELDS.has(key))
+      .map(([key, value]) => [key, String(value)])
+  );
+}
+
+function getStoredProviderConfig(config?: Record<string, any>): Record<string, unknown> | undefined {
+  const baseUrl = config?.baseUrl || config?.apiBaseUrl;
+  if (!baseUrl) {
+    return undefined;
+  }
+
+  return {
+    baseUrl: String(baseUrl),
+  };
+}
+
 /**
  * MCP Server URL - managed by Integrate
  */
@@ -370,18 +399,9 @@ export class OAuthHandler {
     // Add provider-specific config parameters (e.g., Notion's 'owner' parameter)
     // Fields already handled explicitly above — skip them if they accidentally
     // appear in the provider-specific config (e.g., from a ...config spread)
-    const OAUTH_FIELDS = new Set([
-      'clientId', 'clientSecret', 'scopes', 'optionalScopes', 'redirectUri',
-      'client_id', 'client_secret', 'scope', 'optional_scope', 'redirect_uri',
-      'provider',
-    ]);
-
-    if (providerConfig.config) {
-      for (const [key, value] of Object.entries(providerConfig.config)) {
-        if (value !== undefined && value !== null && !OAUTH_FIELDS.has(key)) {
-          url.searchParams.set(key, String(value));
-        }
-      }
+    const extraConfig = getForwardableProviderConfig(providerConfig.config);
+    for (const [key, value] of Object.entries(extraConfig)) {
+      url.searchParams.set(key, value);
     }
 
     // Forward to MCP server
@@ -530,6 +550,7 @@ export class OAuthHandler {
         client_id: providerConfig.clientId,
         client_secret: providerConfig.clientSecret,
         redirect_uri: providerConfig.redirectUri,
+        ...getForwardableProviderConfig(providerConfig.config),
       }),
     });
 
@@ -559,6 +580,7 @@ export class OAuthHandler {
           scopes: result.scopes
             ? result.scopes.flatMap((s: string) => s.split(' ').filter(Boolean))
             : result.scopes,
+          providerConfig: getStoredProviderConfig(providerConfig.config),
         };
 
         // Prefer email returned directly from the callback response (e.g. Google id_token),
@@ -755,6 +777,13 @@ export class OAuthHandler {
       body.subdomain = providerConfig.config.subdomain;
     }
 
+    const extraConfig = getForwardableProviderConfig(providerConfig.config);
+    for (const [key, value] of Object.entries(extraConfig)) {
+      if (body[key] === undefined) {
+        body[key] = value;
+      }
+    }
+
     // Forward to MCP server for token refresh
     const url = new URL('/oauth/refresh', this.serverUrl);
 
@@ -790,6 +819,7 @@ export class OAuthHandler {
           scopes: result.scopes
             ? result.scopes.flatMap((s: string) => s.split(' ').filter(Boolean))
             : result.scopes,
+          providerConfig: getStoredProviderConfig(providerConfig.config),
         };
 
         const email = result.email || await fetchUserEmail(refreshRequest.provider, tokenData);

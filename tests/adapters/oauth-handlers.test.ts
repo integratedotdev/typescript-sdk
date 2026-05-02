@@ -321,6 +321,116 @@ describe("OAuthHandler", () => {
         undefined
       );
     });
+
+    it("forwards provider-specific config during callback and stores baseUrl metadata", async () => {
+      const setProviderToken = mock(async () => {});
+      const posthogHandler = new OAuthHandler({
+        providers: {
+          posthog: {
+            clientId: "posthog-client-id",
+            clientSecret: "posthog-client-secret",
+            redirectUri: "https://app.com/callback",
+            config: {
+              baseUrl: "https://eu.posthog.com",
+              token_endpoint: "https://eu.posthog.com/oauth/token/",
+            },
+          },
+        },
+        setProviderToken,
+      });
+
+      const mockFetch = mock(async (_url: string, options?: any) => {
+        const body = JSON.parse(options?.body);
+        expect(body.baseUrl).toBe("https://eu.posthog.com");
+        expect(body.token_endpoint).toBe("https://eu.posthog.com/oauth/token/");
+
+        return {
+          ok: true,
+          json: async () => ({
+            accessToken: "phx_token",
+            tokenType: "Bearer",
+            expiresIn: 3600,
+          }),
+        } as Response;
+      });
+
+      global.fetch = mockFetch as any;
+
+      await posthogHandler.handleCallback({
+        provider: "posthog",
+        code: "code-123",
+        codeVerifier: "verifier-123",
+        state: "state-123",
+      });
+
+      expect(setProviderToken).toHaveBeenCalledWith(
+        "posthog",
+        expect.objectContaining({
+          providerConfig: {
+            baseUrl: "https://eu.posthog.com",
+          },
+        }),
+        undefined,
+        undefined
+      );
+    });
+  });
+
+  describe("handleRefresh", () => {
+    it("forwards provider-specific config during refresh and stores baseUrl metadata", async () => {
+      const setProviderToken = mock(async () => {});
+      const posthogHandler = new OAuthHandler({
+        providers: {
+          posthog: {
+            clientId: "posthog-client-id",
+            clientSecret: "posthog-client-secret",
+            config: {
+              baseUrl: "https://eu.posthog.com",
+              token_endpoint: "https://eu.posthog.com/oauth/token/",
+            },
+          },
+        },
+        setProviderToken,
+      });
+
+      const mockFetch = mock(async (_url: string, options?: any) => {
+        const body = JSON.parse(options?.body);
+        expect(body.client_id).toBe("posthog-client-id");
+        expect(body.client_secret).toBe("posthog-client-secret");
+        expect(body.refresh_token).toBe("refresh-123");
+        expect(body.baseUrl).toBe("https://eu.posthog.com");
+        expect(body.token_endpoint).toBe("https://eu.posthog.com/oauth/token/");
+
+        return {
+          ok: true,
+          json: async () => ({
+            accessToken: "phx_refreshed",
+            refreshToken: "refresh-456",
+            tokenType: "Bearer",
+            expiresIn: 3600,
+          }),
+        } as Response;
+      });
+
+      global.fetch = mockFetch as any;
+
+      const result = await posthogHandler.handleRefresh({
+        provider: "posthog",
+        refreshToken: "refresh-123",
+      });
+
+      expect(result.accessToken).toBe("phx_refreshed");
+      expect(setProviderToken).toHaveBeenCalledWith(
+        "posthog",
+        expect.objectContaining({
+          providerConfig: {
+            baseUrl: "https://eu.posthog.com",
+          },
+        }),
+        undefined,
+        undefined
+      );
+    });
   });
 
   describe("handleStatus", () => {

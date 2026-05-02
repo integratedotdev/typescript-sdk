@@ -98,6 +98,9 @@ export type { SlackIntegrationConfig, SlackTools, SlackIntegrationClient } from 
 export { linearIntegration } from "./integrations/linear.js";
 export type { LinearIntegrationConfig, LinearTools, LinearIntegrationClient } from "./integrations/linear.js";
 
+export { railwayIntegration } from "./integrations/railway.js";
+export type { RailwayIntegrationConfig, RailwayTools, RailwayScopes, RailwayIntegrationClient } from "./integrations/railway.js";
+
 export { vercelIntegration } from "./integrations/vercel.js";
 export type { VercelIntegrationConfig, VercelTools, VercelIntegrationClient } from "./integrations/vercel.js";
 
@@ -160,6 +163,9 @@ export type { YouTubeIntegrationConfig, YouTubeTools, YouTubeIntegrationClient }
 
 export { cursorIntegration } from "./integrations/cursor.js";
 export type { CursorIntegrationConfig, CursorTools, CursorIntegrationClient } from "./integrations/cursor.js";
+
+export { posthogIntegration } from "./integrations/posthog.js";
+export type { PostHogIntegrationConfig, PostHogTools, PostHogScopes, PostHogIntegrationClient } from "./integrations/posthog.js";
 
 export { granolaIntegration } from "./integrations/granola.js";
 export type { GranolaIntegrationOptions, GranolaTools } from "./integrations/granola.js";

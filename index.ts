@@ -61,6 +61,7 @@ import { intercomIntegration } from './src/integrations/intercom.js';
 import { hubspotIntegration } from './src/integrations/hubspot.js';
 import { youtubeIntegration } from './src/integrations/youtube.js';
 import { cursorIntegration } from './src/integrations/cursor.js';
+import { posthogIntegration } from './src/integrations/posthog.js';
 
 /**
  * Default MCP Client with all integrations pre-configured
@@ -128,9 +129,9 @@ export const client = createMCPClient({
     hubspotIntegration(),
     youtubeIntegration(),
     cursorIntegration(),
+    posthogIntegration(),
   ],
   // Fetch configured integrations from server since default client has all integrations
   // but only some may be configured on the server with OAuth credentials
   useServerConfig: true,
 });
-

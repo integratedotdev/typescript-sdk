@@ -8,6 +8,7 @@ import { gmailIntegration } from "../../src/integrations/gmail.js";
 import { notionIntegration } from "../../src/integrations/notion.js";
 import { slackIntegration } from "../../src/integrations/slack.js";
 import { linearIntegration } from "../../src/integrations/linear.js";
+import { railwayIntegration } from "../../src/integrations/railway.js";
 import { vercelIntegration } from "../../src/integrations/vercel.js";
 import { zendeskIntegration } from "../../src/integrations/zendesk.js";
 import { stripeIntegration } from "../../src/integrations/stripe.js";
@@ -29,6 +30,7 @@ import { intercomIntegration } from "../../src/integrations/intercom.js";
 import { hubspotIntegration } from "../../src/integrations/hubspot.js";
 import { youtubeIntegration } from "../../src/integrations/youtube.js";
 import { cursorIntegration } from "../../src/integrations/cursor.js";
+import { posthogIntegration } from "../../src/integrations/posthog.js";
 import { granolaIntegration } from "../../src/integrations/granola.js";
 import { mercuryIntegration } from "../../src/integrations/mercury.js";
 import { genericOAuthIntegration, createSimpleIntegration } from "../../src/integrations/generic.js";
@@ -237,6 +239,82 @@ describe("Integration System", () => {
 
       // Test onAfterConnect
       await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+  });
+
+  describe("PostHog Integration", () => {
+    test("creates integration with default PostHog OAuth configuration", () => {
+      const integration = posthogIntegration({
+        clientId: "posthog-client-id",
+        clientSecret: "posthog-client-secret",
+      });
+
+      expect(integration.id).toBe("posthog");
+      expect(integration.name).toBe("PostHog");
+      expect(integration.category).toBe("Analytics");
+      expect(integration.oauth?.provider).toBe("posthog");
+      expect(integration.oauth?.scopes).toContain("query:read");
+      expect((integration.oauth?.config as any).baseUrl).toBe("https://us.posthog.com");
+      expect((integration.oauth?.config as any).authorization_endpoint).toBe("https://us.posthog.com/oauth/authorize/");
+      expect((integration.oauth?.config as any).token_endpoint).toBe("https://us.posthog.com/oauth/token/");
+      expect(integration.tools).toContain("posthog_run_hogql_query");
+      expect(integration.tools).toContain("posthog_get_session_recording");
+    });
+
+    test("normalizes custom PostHog hosts for EU or self-hosted deployments", () => {
+      const integration = posthogIntegration({
+        clientId: "posthog-client-id",
+        clientSecret: "posthog-client-secret",
+        baseUrl: "eu.posthog.com/",
+      });
+
+      expect((integration.oauth?.config as any).baseUrl).toBe("https://eu.posthog.com");
+      expect((integration.oauth?.config as any).authorization_endpoint).toBe("https://eu.posthog.com/oauth/authorize/");
+      expect((integration.oauth?.config as any).token_endpoint).toBe("https://eu.posthog.com/oauth/token/");
+    });
+  });
+
+  describe("Railway Integration", () => {
+    test("creates integration with default Railway OAuth configuration", () => {
+      const integration = railwayIntegration({
+        clientId: "railway-client-id",
+        clientSecret: "railway-client-secret",
+      });
+
+      expect(integration.id).toBe("railway");
+      expect(integration.name).toBe("Railway");
+      expect(integration.category).toBe("Infrastructure");
+      expect(integration.oauth?.provider).toBe("railway");
+      expect(integration.oauth?.scopes).toEqual([
+        "openid",
+        "profile",
+        "email",
+        "workspace:admin",
+        "project:member",
+      ]);
+      expect((integration.oauth?.config as any).authorization_endpoint).toBe(
+        "https://backboard.railway.com/oauth/auth"
+      );
+      expect((integration.oauth?.config as any).token_endpoint).toBe(
+        "https://backboard.railway.com/oauth/token"
+      );
+      expect((integration.oauth?.config as any).apiBaseUrl).toBe(
+        "https://backboard.railway.com/graphql/v2"
+      );
+      expect(integration.tools).toContain("railway_get_current_user");
+      expect(integration.tools).toContain("railway_create_project");
+      expect(integration.tools).toContain("railway_list_tcp_proxies");
+      expect(integration.tools).toHaveLength(68);
+    });
+
+    test("allows overriding Railway scopes", () => {
+      const integration = railwayIntegration({
+        clientId: "railway-client-id",
+        clientSecret: "railway-client-secret",
+        scopes: ["openid", "workspace:admin"],
+      });
+
+      expect(integration.oauth?.scopes).toEqual(["openid", "workspace:admin"]);
     });
   });
 

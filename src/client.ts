@@ -33,6 +33,7 @@ import type { GmailIntegrationClient } from "./integrations/gmail-client.js";
 import type { NotionIntegrationClient } from "./integrations/notion-client.js";
 import type { SlackIntegrationClient } from "./integrations/slack-client.js";
 import type { LinearIntegrationClient } from "./integrations/linear-client.js";
+import type { RailwayIntegrationClient } from "./integrations/railway-client.js";
 import type { VercelIntegrationClient } from "./integrations/vercel-client.js";
 import type { ZendeskIntegrationClient } from "./integrations/zendesk-client.js";
 import type { StripeIntegrationClient } from "./integrations/stripe-client.js";
@@ -53,6 +54,7 @@ import type { IntercomIntegrationClient } from "./integrations/intercom-client.j
 import type { HubSpotIntegrationClient } from "./integrations/hubspot-client.js";
 import type { YouTubeIntegrationClient } from "./integrations/youtube-client.js";
 import type { CursorIntegrationClient } from "./integrations/cursor-client.js";
+import type { PostHogIntegrationClient } from "./integrations/posthog-client.js";
 import type { ServerIntegrationClient } from "./integrations/server-client.js";
 import { TriggerClient } from "./triggers/client.js";
 import { OAuthManager } from "./oauth/manager.js";
@@ -196,6 +198,8 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   ? "slack"
   : K extends "linear"
   ? "linear"
+  : K extends "railway"
+  ? "railway"
   : K extends "vercel"
   ? "vercel"
   : K extends "zendesk"
@@ -236,12 +240,15 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   ? "youtube"
   : K extends "cursor"
   ? "cursor"
+  : K extends "posthog"
+  ? "posthog"
   : never]:
   K extends "github" ? GitHubIntegrationClient :
   K extends "gmail" ? GmailIntegrationClient :
   K extends "notion" ? NotionIntegrationClient :
   K extends "slack" ? SlackIntegrationClient :
   K extends "linear" ? LinearIntegrationClient :
+  K extends "railway" ? RailwayIntegrationClient :
   K extends "vercel" ? VercelIntegrationClient :
   K extends "zendesk" ? ZendeskIntegrationClient :
   K extends "stripe" ? StripeIntegrationClient :
@@ -262,6 +269,7 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   K extends "hubspot" ? HubSpotIntegrationClient :
   K extends "youtube" ? YouTubeIntegrationClient :
   K extends "cursor" ? CursorIntegrationClient :
+  K extends "posthog" ? PostHogIntegrationClient :
   never;
 };
 
@@ -495,6 +503,9 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     if (integrationIds.includes("linear")) {
       (this as any).linear = this.createIntegrationProxy("linear");
     }
+    if (integrationIds.includes("railway")) {
+      (this as any).railway = this.createIntegrationProxy("railway");
+    }
     if (integrationIds.includes("vercel")) {
       (this as any).vercel = this.createIntegrationProxy("vercel");
     }
@@ -524,6 +535,9 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     }
     if (integrationIds.includes("gslides")) {
       (this as any).gslides = this.createIntegrationProxy("gslides");
+    }
+    if (integrationIds.includes("posthog")) {
+      (this as any).posthog = this.createIntegrationProxy("posthog");
     }
 
     // Server namespace is always available

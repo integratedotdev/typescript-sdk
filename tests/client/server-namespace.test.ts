@@ -6,6 +6,7 @@
 import { describe, test, expect, mock } from "bun:test";
 import { createMCPClient } from "../../src/client.js";
 import { githubIntegration } from "../../src/integrations/github.js";
+import { railwayIntegration } from "../../src/integrations/railway.js";
 
 describe("Server Namespace", () => {
   test("server namespace is always available", () => {
@@ -49,6 +50,41 @@ describe("Server Namespace", () => {
     expect(await Promise.resolve(github)).toBe(github);
     expect(await Promise.resolve(server)).toBe(server);
     expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  test("railway namespace is available when configured", async () => {
+    const mockFetch = mock(async (url: string, options?: any) => {
+      if (url.includes("/api/integrate/mcp")) {
+        expect(options?.headers?.["X-Integrations"]).toBe("railway");
+        expect(JSON.parse(String(options?.body)).name).toBe("railway_list_projects");
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            content: [{ type: "text", text: "railway result" }],
+          }),
+          headers: new Headers(),
+        } as Response;
+      }
+      return { ok: false } as Response;
+    }) as any;
+
+    global.fetch = mockFetch;
+
+    const client = createMCPClient({
+      integrations: [
+        railwayIntegration({
+          clientId: "test-id",
+          clientSecret: "test-secret",
+        }),
+      ],
+      connectionMode: "manual",
+      singleton: false,
+    });
+
+    expect((client as any).railway).toBeDefined();
+    const result = await (client as any).railway.listProjects({ workspace_id: "ws_123" });
+    expect(result.content[0].text).toBe("railway result");
   });
 
   test("server methods work through API handler without initialization", async () => {
@@ -472,4 +508,3 @@ describe("Server Namespace", () => {
     expect(typeof result.integrations[0].logoUrl).toBe("string");
   });
 });
-
