@@ -10,22 +10,54 @@ import { createSimpleIntegration } from "../../src/integrations/generic.js";
 
 describe("MCP Client - API Routing", () => {
   let originalFetch: typeof fetch;
+  let originalLocalStorage: Storage | undefined;
+  let originalWindow: Window & typeof globalThis | undefined;
+  const mockStorageData = new Map<string, string>();
 
   beforeEach(() => {
     originalFetch = global.fetch;
-    // Mock localStorage
-    global.localStorage = {
-      getItem: mock(() => null),
-      setItem: mock(() => { }),
-      removeItem: mock(() => { }),
-      clear: mock(() => { }),
-      length: 0,
-      key: mock(() => null),
-    } as any;
+    originalLocalStorage = global.localStorage;
+    originalWindow = global.window;
+    mockStorageData.clear();
+
+    const mockStorage = {
+      getItem: mock((key: string) => mockStorageData.get(key) ?? null),
+      setItem: mock((key: string, value: string) => {
+        mockStorageData.set(key, value);
+      }),
+      removeItem: mock((key: string) => {
+        mockStorageData.delete(key);
+      }),
+      clear: mock(() => {
+        mockStorageData.clear();
+      }),
+      get length() {
+        return mockStorageData.size;
+      },
+      key: mock((index: number) => Array.from(mockStorageData.keys())[index] ?? null),
+    };
+
+    global.localStorage = mockStorage as any;
+    (global as any).window = {
+      localStorage: mockStorage,
+      sessionStorage: mockStorage,
+    };
   });
 
   afterEach(() => {
     global.fetch = originalFetch;
+
+    if (originalLocalStorage) {
+      global.localStorage = originalLocalStorage;
+    } else {
+      delete (global as any).localStorage;
+    }
+
+    if (originalWindow) {
+      global.window = originalWindow;
+    } else {
+      delete (global as any).window;
+    }
   });
 
   it("should route tool calls through API handler instead of MCP server", async () => {
