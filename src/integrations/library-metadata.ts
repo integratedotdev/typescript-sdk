@@ -6,11 +6,13 @@
 export type IntegrationCategory =
   | "Analytics"
   | "Business"
+  | "Finance"
   | "Productivity"
   | "Communication"
   | "Engineering"
   | "Infrastructure"
   | "Storage"
+  | "Social Media"
   | "Other";
 
 type LibraryEntry = {
@@ -23,10 +25,12 @@ export const INTEGRATION_CATEGORY_ORDER: readonly IntegrationCategory[] = [
   "Analytics",
   "Productivity",
   "Business",
+  "Finance",
   "Communication",
   "Engineering",
   "Infrastructure",
   "Storage",
+  "Social Media",
   "Other",
 ] as const;
 
@@ -40,7 +44,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   calcom: {
     description: "Manage Cal.com bookings and schedules",
-    category: "Productivity",
+    category: "Business",
   },
   cursor: {
     description: "Manage Cursor Cloud Agents and background tasks",
@@ -88,7 +92,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   polar: {
     description: "Manage Polar products, orders, and subscriptions",
-    category: "Business",
+    category: "Finance",
   },
   posthog: {
     description: "Read PostHog organizations, projects, insights, and feature flags",
@@ -116,7 +120,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   stripe: {
     description: "Manage Stripe customers, payments, and subscriptions",
-    category: "Business",
+    category: "Finance",
   },
   todoist: {
     description: "Manage Todoist tasks, projects, and labels",
@@ -140,7 +144,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   vercel: {
     description: "Manage Vercel projects, deployments, and domains",
-    category: "Engineering",
+    category: "Infrastructure",
   },
   whatsapp: {
     description: "Send WhatsApp messages and templates",
@@ -148,7 +152,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   youtube: {
     description: "Search and access YouTube videos and channels",
-    category: "Communication",
+    category: "Social Media",
   },
   powerpoint: {
     description: "Manage PowerPoint presentations and sharing",
@@ -172,7 +176,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   mercury: {
     description: "Manage Mercury bank accounts, cards, and transactions",
-    category: "Business",
+    category: "Finance",
   },
   zendesk: {
     description: "Manage Zendesk tickets, users, and help center content",
