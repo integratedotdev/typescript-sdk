@@ -4,6 +4,8 @@
  */
 
 import type { MCPContext } from '../config/types.js';
+import type { MCPIntegration } from '../integrations/types.js';
+import { toConfiguredIntegrationSummary } from '../integrations/integration-summary.js';
 import type { ProviderTokenData } from '../oauth/types.js';
 import { fetchUserEmail } from '../oauth/email-fetcher.js';
 import { createLogger, type LogContext } from '../utils/logger.js';
@@ -264,18 +266,12 @@ export class OAuthHandler {
    * Handle integrations list request
    * Returns the list of server-configured integrations
    */
-  handleIntegrations(): { integrations: Array<{ id: string; name: string; logoUrl?: string; tools: readonly string[]; hasOAuth: boolean; scopes?: string[]; optionalScopes?: string[]; provider?: string }> } {
+  handleIntegrations(): { integrations: Array<{ id: string; name: string; logoUrl?: string; description?: string; category?: string; tools: readonly string[]; hasOAuth: boolean; scopes?: readonly string[]; optionalScopes?: readonly string[]; provider?: string }> } {
     const integrations = this.config.integrations || [];
     return {
       integrations: integrations.map((integration) => ({
-        id: integration.id,
-        name: (integration as any).name || integration.id,
-        logoUrl: (integration as any).logoUrl,
-        tools: integration.tools,
-        hasOAuth: !!integration.oauth,
-        scopes: integration.oauth?.scopes,
+        ...toConfiguredIntegrationSummary(integration as MCPIntegration),
         optionalScopes: integration.oauth?.optionalScopes,
-        provider: integration.oauth?.provider,
       })),
     };
   }

@@ -7,6 +7,7 @@ import { MCPClient } from './client.js';
 import { MCPClientBase } from './client.js';
 import type { MCPContext, MCPServerConfig } from './config/types.js';
 import type { MCPIntegration } from './integrations/types.js';
+import { toConfiguredIntegrationSummary } from './integrations/integration-summary.js';
 import { createNextOAuthHandler } from './adapters/nextjs.js';
 import { getEnv } from './utils/env.js';
 import { toWebRequest, sendWebResponse } from './adapters/node.js';
@@ -693,14 +694,8 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
     // Used by the default client (useServerConfig: true) to fetch what's actually configured
     if (action === 'integrations' && method === 'GET') {
       const integrations = updatedIntegrations.map((integration) => ({
-        id: integration.id,
-        name: (integration as any).name || integration.id,
-        logoUrl: (integration as any).logoUrl,
-        tools: integration.tools,
-        hasOAuth: !!integration.oauth,
-        scopes: integration.oauth?.scopes,
+        ...toConfiguredIntegrationSummary(integration),
         optionalScopes: integration.oauth?.optionalScopes,
-        provider: integration.oauth?.provider,
       }));
       return Response.json({ integrations });
     }

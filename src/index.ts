@@ -79,6 +79,9 @@ export type {
   ExtractIntegrationTools,
 } from "./integrations/types.js";
 
+export { INTEGRATION_CATEGORY_ORDER } from "./integrations/library-metadata.js";
+export type { IntegrationCategory } from "./integrations/library-metadata.js";
+
 // Built-in integrations
 export { githubIntegration } from "./integrations/github.js";
 export type { GitHubIntegrationConfig, GitHubTools, GitHubIntegrationClient } from "./integrations/github.js";

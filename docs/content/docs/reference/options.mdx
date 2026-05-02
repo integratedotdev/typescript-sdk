@@ -489,6 +489,8 @@ async listConfiguredIntegrations(options?: {
   - `hasOAuth` (boolean) - Whether the integration requires OAuth
   - `scopes` (readonly string[] | undefined) - OAuth scopes if applicable
   - `provider` (string | undefined) - OAuth provider name if applicable
+  - `description` (string | undefined) - Short library blurb from the integration or the SDK catalog
+  - `category` (string | undefined) - Library grouping label (e.g. Productivity, Business) from the integration or the SDK catalog
   - `toolMetadata` (ToolMetadata[] | undefined) - Full tool metadata when `includeToolMetadata: true` is passed
 
 **Example (default client - fetches from server):**

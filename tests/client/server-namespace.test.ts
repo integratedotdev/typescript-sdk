@@ -176,6 +176,10 @@ describe("Server Namespace", () => {
     expect(result.integrations[0].hasOAuth).toBe(true);
     expect(result.integrations[0].tools.length).toBeGreaterThan(0);
     expect(result.integrations[0].scopes).toEqual(["repo"]);
+    expect(result.integrations[0].description).toBe(
+      "Manage GitHub repos, issues, and pull requests"
+    );
+    expect(result.integrations[0].category).toBe("Engineering");
   });
 
   test("listConfiguredIntegrations fetches from server when useServerConfig is true", async () => {
@@ -224,6 +228,10 @@ describe("Server Namespace", () => {
     expect(result.integrations[0].id).toBe("linear");
     expect(result.integrations[0].hasOAuth).toBe(true);
     expect(result.integrations[0].scopes).toEqual(["read", "write"]);
+    expect(result.integrations[0].description).toBe(
+      "Manage Linear issues, projects, and cycles"
+    );
+    expect(result.integrations[0].category).toBe("Engineering");
   });
 
   test("listConfiguredIntegrations falls back to local config when server request fails", async () => {
@@ -372,6 +380,10 @@ describe("Server Namespace", () => {
     expect(result.integrations[0].toolMetadata?.[0].description).toBe("Create an issue in github");
     expect(result.integrations[0].toolMetadata?.[0].inputSchema).toBeDefined();
     expect(result.integrations[0].toolMetadata?.[1].name).toBe("github_list_issues");
+    expect(result.integrations[0].description).toBe(
+      "Manage GitHub repos, issues, and pull requests"
+    );
+    expect(result.integrations[0].category).toBe("Engineering");
   });
 
   test("listConfiguredIntegrations with includeToolMetadata handles errors gracefully", async () => {

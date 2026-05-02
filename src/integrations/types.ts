@@ -59,6 +59,16 @@ export interface MCPIntegration<TId extends string = string> {
   /** URL to the integration's logo image */
   logoUrl?: string;
 
+  /**
+   * Short human-readable blurb for library / marketing UI (overrides built-in catalog when set).
+   */
+  description?: string;
+
+  /**
+   * Library grouping label (e.g. Productivity, Business); overrides built-in catalog when set.
+   */
+  category?: string;
+
   /** List of tool names this integration enables */
   tools: string[];
 

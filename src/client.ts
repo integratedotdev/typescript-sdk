@@ -13,6 +13,8 @@ import type {
 } from "./protocol/messages.js";
 import { MCPMethod } from "./protocol/messages.js";
 import type { MCPIntegration, OAuthConfig } from "./integrations/types.js";
+import { toConfiguredIntegrationSummary, toConfiguredIntegrationWithToolMetadata } from "./integrations/integration-summary.js";
+import { integrationLibraryPresentationFields } from "./integrations/library-metadata.js";
 import type { MCPClientConfig, ReauthHandler, ToolCallOptions, MCPContext } from "./config/types.js";
 import {
   parseServerError,
@@ -636,15 +638,9 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
 
             // Helper to format local integrations
             const formatLocalIntegrations = (integrations: readonly MCPIntegration[]) => ({
-              integrations: integrations.map((integration: MCPIntegration) => ({
-                id: integration.id,
-                name: (integration as any).name || integration.id,
-                logoUrl: (integration as any).logoUrl,
-                tools: integration.tools,
-                hasOAuth: !!integration.oauth,
-                scopes: integration.oauth?.scopes,
-                provider: integration.oauth?.provider,
-              })),
+              integrations: integrations.map((integration: MCPIntegration) =>
+                toConfiguredIntegrationSummary(integration)
+              ),
             });
 
             // Server clients always use local config (they ARE the server)
@@ -660,16 +656,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
                     .map(toolName => this.availableTools.get(toolName))
                     .filter((tool): tool is MCPTool => !!tool);
 
-                  return {
-                    id: integration.id,
-                    name: (integration as any).name || integration.id,
-                    logoUrl: (integration as any).logoUrl,
-                    tools: integration.tools,
-                    hasOAuth: !!integration.oauth,
-                    scopes: integration.oauth?.scopes,
-                    provider: integration.oauth?.provider,
-                    toolMetadata,
-                  };
+                  return toConfiguredIntegrationWithToolMetadata(integration, toolMetadata);
                 });
 
                 return { integrations: integrationsWithMetadata };
@@ -706,28 +693,10 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
                         }
                       }
 
-                      return {
-                        id: integration.id,
-                        name: (integration as any).name || integration.id,
-                        logoUrl: (integration as any).logoUrl,
-                        tools: integration.tools,
-                        hasOAuth: !!integration.oauth,
-                        scopes: integration.oauth?.scopes,
-                        provider: integration.oauth?.provider,
-                        toolMetadata,
-                      };
+                      return toConfiguredIntegrationWithToolMetadata(integration, toolMetadata);
                     } catch (error) {
                       logger.error(`Failed to fetch tool metadata for ${integration.id}:`, error);
-                      return {
-                        id: integration.id,
-                        name: (integration as any).name || integration.id,
-                        logoUrl: (integration as any).logoUrl,
-                        tools: integration.tools,
-                        hasOAuth: !!integration.oauth,
-                        scopes: integration.oauth?.scopes,
-                        provider: integration.oauth?.provider,
-                        toolMetadata: [],
-                      };
+                      return toConfiguredIntegrationWithToolMetadata(integration, []);
                     }
                   },
                   3
@@ -762,6 +731,13 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
 
               const result = await response.json();
 
+              if (result.integrations && Array.isArray(result.integrations)) {
+                result.integrations = result.integrations.map((row: Record<string, unknown>) => ({
+                  ...row,
+                  ...integrationLibraryPresentationFields(row),
+                }));
+              }
+
               // If includeToolMetadata is true, enrich with tool metadata
               if (options?.includeToolMetadata && result.integrations) {
                 const { parallelWithLimit } = await import('./utils/concurrency.js');
@@ -794,12 +770,14 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
 
                       return {
                         ...integration,
+                        ...integrationLibraryPresentationFields(integration as Record<string, unknown>),
                         toolMetadata,
                       };
                     } catch (error) {
                       logger.error(`Failed to fetch tool metadata for ${integration.id}:`, error);
                       return {
                         ...integration,
+                        ...integrationLibraryPresentationFields(integration as Record<string, unknown>),
                         toolMetadata: [],
                       };
                     }
