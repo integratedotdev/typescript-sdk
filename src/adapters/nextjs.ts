@@ -522,10 +522,9 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
         const tokensHeader = req.headers.get('x-integrate-tokens');
         const toolName = typeof body?.name === 'string' ? body.name : '';
 
-        // Code Mode: synthesize Authorization from x-integrate-tokens.
-        // The sandbox sends provider tokens as a JSON map; we resolve the
-        // correct provider from the tool name prefix and set the Bearer token.
-        if (codeModeHeader === '1' && tokensHeader && toolName) {
+        // Code Mode: synthesize Authorization from x-integrate-tokens only when
+        // the sandbox did not already provide a stable session credential.
+        if (codeModeHeader === '1' && !authHeader && tokensHeader && toolName) {
           try {
             const tokens = JSON.parse(tokensHeader) as Record<string, string>;
             // Find the provider whose id is a prefix of the tool name (longest match wins)
@@ -758,4 +757,3 @@ export function createNextOAuthHandler(config: OAuthHandlerConfig) {
 
   return handlers;
 }
-

@@ -289,6 +289,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   private authState: Map<string, { authenticated: boolean; lastError?: AuthenticationError }> = new Map();
   private oauthManager: OAuthManager;
   private eventEmitter: SimpleEventEmitter = new SimpleEventEmitter();
+  private sessionToken?: string;
   private apiRouteBase: string;
   private apiBaseUrl?: string;
   private databaseDetected: boolean = false;
@@ -383,6 +384,8 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
       }
     );
 
+    this.setSessionToken(config.sessionToken || this.loadSessionTokenFromStorage());
+
     // Collect all enabled tool names from integrations
     for (const integration of this.integrations) {
       for (const toolName of integration.tools) {
@@ -423,6 +426,9 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
             try {
               // getProviderToken returns from cache after loadAllProviderTokens
               const tokenData = await this.oauthManager.getProviderToken(provider);
+              if (tokenData?.sessionToken && !this.sessionToken) {
+                this.setSessionToken(tokenData.sessionToken);
+              }
               // Only update if state is still at initial false value (not changed by other methods)
               const currentState = this.authState.get(provider);
               if (currentState && !currentState.authenticated && !currentState.lastError) {
@@ -461,6 +467,9 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
           // Get token from cache synchronously (cache was just populated above)
           const tokenData = this.oauthManager.getProviderTokenFromCache(provider);
           if (tokenData) {
+            if (tokenData.sessionToken && !this.sessionToken) {
+              this.setSessionToken(tokenData.sessionToken);
+            }
             this.authState.set(provider, { authenticated: true });
           }
         }
@@ -1068,20 +1077,17 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
       'Content-Type': 'application/json',
     };
 
+    if (this.sessionToken) {
+      headers['Authorization'] = `Bearer ${this.sessionToken}`;
+      headers['X-Session-Token'] = this.sessionToken;
+    }
+
     const integrationsHeader = this.getIntegrationHeaderValue();
     if (integrationsHeader) {
       headers['X-Integrations'] = integrationsHeader;
     }
 
     Object.assign(headers, integrationHeaders);
-
-    // Add provider token if available
-    if (provider) {
-      const tokenData = await this.oauthManager.getProviderToken(provider, undefined, options?.context);
-      if (tokenData) {
-        headers['Authorization'] = `Bearer ${tokenData.accessToken}`;
-      }
-    }
 
     // Make request to API handler
     const response = await fetch(url, {
@@ -1474,12 +1480,47 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     this.eventEmitter.off(event, handler);
   }
 
+  private loadSessionTokenFromStorage(): string | undefined {
+    if (typeof window === 'undefined' || !window.sessionStorage) {
+      return undefined;
+    }
+
+    try {
+      return window.sessionStorage.getItem('integrate_session_token') || undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  private setSessionToken(sessionToken?: string): void {
+    this.sessionToken = sessionToken;
+
+    if (sessionToken) {
+      this.transport.setHeader('X-Session-Token', sessionToken);
+    } else {
+      this.transport.removeHeader('X-Session-Token');
+    }
+
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      try {
+        if (sessionToken) {
+          window.sessionStorage.setItem('integrate_session_token', sessionToken);
+        } else {
+          window.sessionStorage.removeItem('integrate_session_token');
+        }
+      } catch {
+        // Ignore storage errors and keep the in-memory token.
+      }
+    }
+  }
+
 
   /**
-   * Clear all provider tokens from localStorage
+   * Clear the persisted session token and all stored provider tokens
    * Also updates authState to reflect that all providers are disconnected
    */
   clearSessionToken(): void {
+    this.setSessionToken(undefined);
     this.oauthManager.clearAllProviderTokens();
 
     // Update authState to reflect that tokens are cleared
@@ -1902,6 +1943,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
           // Emit auth:complete event with existing token
           this.eventEmitter.emit('auth:complete', {
             provider,
+            sessionToken: tokenData.sessionToken || this.sessionToken,
             accessToken: tokenData.accessToken,
             expiresAt: tokenData.expiresAt
           });
@@ -1929,6 +1971,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
         // Emit auth:complete event
         this.eventEmitter.emit('auth:complete', {
           provider,
+          sessionToken: tokenData.sessionToken || this.sessionToken,
           accessToken: tokenData.accessToken,
           expiresAt: tokenData.expiresAt
         });
@@ -1969,12 +2012,17 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
         ? await this.oauthManager.handleCallbackWithToken(params.code, params.state, params.tokenData)
         : await this.oauthManager.handleCallback(params.code, params.state);
 
+      if (result.sessionToken) {
+        this.setSessionToken(result.sessionToken);
+      }
+
       // Update auth state for this specific provider
       this.authState.set(result.provider, { authenticated: true });
 
       // Emit auth:complete event for the provider
       this.eventEmitter.emit('auth:complete', {
         provider: result.provider,
+        sessionToken: result.sessionToken || this.sessionToken,
         accessToken: result.accessToken,
         expiresAt: result.expiresAt
       });

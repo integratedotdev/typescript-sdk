@@ -157,6 +157,7 @@ export interface CallbackRequest {
  * Response from callback endpoint
  */
 export interface CallbackResponse {
+  sessionToken?: string;
   accessToken: string;
   refreshToken?: string;
   tokenType: string;
@@ -550,6 +551,7 @@ export class OAuthHandler {
     if (this.config.setProviderToken) {
       try {
         const tokenData: ProviderTokenData = {
+          sessionToken: result.sessionToken,
           accessToken: result.accessToken,
           refreshToken: result.refreshToken,
           tokenType: result.tokenType,

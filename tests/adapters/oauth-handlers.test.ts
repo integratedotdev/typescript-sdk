@@ -1384,6 +1384,68 @@ describe("Server-Side toNextJsHandler", () => {
     expect(callbackArgs.some((entry) => entry.context?.userId === "victim")).toBe(false);
     expect(downstreamAuthorization).toBeUndefined();
   });
+
+  it("should preserve session Authorization for code mode when provider tokens are also present", async () => {
+    let downstreamAuthorization: string | undefined;
+
+    const mockFetch = mock(async (url: string, options?: any) => {
+      if (url.includes("/api/v1/mcp")) {
+        downstreamAuthorization = options?.headers?.Authorization;
+        return {
+          ok: true,
+          json: async () => ({
+            jsonrpc: "2.0",
+            id: 1,
+            result: {
+              content: [{ type: "text", text: "session auth result" }],
+            },
+          }),
+          text: async () => "error text",
+        } as Response;
+      }
+      return { ok: false, text: async () => "error" } as Response;
+    }) as any;
+
+    global.fetch = mockFetch;
+    (global as any).window = undefined;
+
+    const { client } = createMCPServer({
+      apiKey: "test-api-key-context",
+      integrations: [{
+        id: "github",
+        tools: [],
+        oauth: {
+          clientId: "test-id",
+          clientSecret: "test-secret",
+          provider: "github",
+        },
+      }] as any,
+    });
+
+    const request = {
+      url: "http://localhost:3000/api/integrate/mcp",
+      method: "POST",
+      headers: {
+        get: (key: string) => {
+          if (key === "authorization") return "Bearer sess_123";
+          if (key === "x-integrate-code-mode") return "1";
+          if (key === "x-integrate-tokens") return JSON.stringify({ github: "ghp_fallback" });
+          return null;
+        },
+      },
+      json: async () => ({
+        name: "github_list_own_repos",
+        arguments: {},
+      }),
+    } as any;
+
+    const response = await (client as any).handler(request, { params: { all: ["mcp"] } });
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.content[0].text).toBe("session auth result");
+    expect(downstreamAuthorization).toBe("Bearer sess_123");
+  });
 });
 
 describe("SvelteKit Handler - toSvelteKitHandler", () => {

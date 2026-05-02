@@ -36,6 +36,7 @@ describe("Client OAuth Methods", () => {
     // Always set up window with localStorage before creating clients
     (global as any).window = {
       localStorage: mockStorage,
+      sessionStorage: mockStorage,
     };
   });
 
@@ -413,6 +414,42 @@ describe("Client OAuth Methods", () => {
         })
       ).rejects.toThrow();
     });
+
+    test("stores session token from callback result for future MCP calls", async () => {
+      const client = createMCPClient({
+        integrations: [
+          githubIntegration({
+            clientId: "test-id",
+            clientSecret: "test-secret",
+          }),
+        ],
+        singleton: false,
+      });
+
+      (client as any).oauthManager = {
+        handleCallbackWithToken: mock(async () => ({
+          provider: "github",
+          sessionToken: "new-session-token",
+          accessToken: "provider-access-token",
+          tokenType: "Bearer",
+          expiresIn: 3600,
+        })),
+      };
+
+      await client.handleOAuthCallback({
+        code: "test-code",
+        state: "test-state",
+        tokenData: {
+          sessionToken: "new-session-token",
+          accessToken: "provider-access-token",
+          tokenType: "Bearer",
+          expiresIn: 3600,
+        },
+      });
+
+      expect((global as any).window.sessionStorage.getItem("integrate_session_token")).toBe("new-session-token");
+      expect(((client as any).transport.getHeaders())["X-Session-Token"]).toBe("new-session-token");
+    });
   });
 
   describe("OAuth Flow Configuration", () => {
@@ -477,4 +514,3 @@ describe("Client OAuth Methods", () => {
     });
   });
 });
-

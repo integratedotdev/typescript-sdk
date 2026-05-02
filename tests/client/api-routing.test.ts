@@ -39,7 +39,8 @@ describe("MCP Client - API Routing", () => {
         apiHandlerCalled = true;
         expect(options?.method).toBe("POST");
         expect(options?.headers?.["Content-Type"]).toBe("application/json");
-        expect(options?.headers?.["Authorization"]).toBe("Bearer github-token-123");
+        expect(options?.headers?.["Authorization"]).toBe("Bearer session-token-123");
+        expect(options?.headers?.["X-Session-Token"]).toBe("session-token-123");
 
         const body = JSON.parse(options?.body);
         expect(body.name).toBe("github_list_own_repos");
@@ -100,6 +101,7 @@ describe("MCP Client - API Routing", () => {
     const client = new MCPClientBase({
       integrations: [integration],
       apiRouteBase,
+      sessionToken: "session-token-123",
       connectionMode: "manual",
     });
 
@@ -192,7 +194,7 @@ describe("MCP Client - API Routing", () => {
     expect(apiHandlerCalled).toBe(true);
   });
 
-  it("should include provider token in Authorization header when available", async () => {
+  it("should include session token in Authorization header when available", async () => {
     let authHeader: string | undefined;
 
     global.fetch = mock(async (url: string, options?: any) => {
@@ -221,15 +223,7 @@ describe("MCP Client - API Routing", () => {
     }) as any;
 
     const mockOAuthManager = {
-      getProviderToken: mock((provider: string) => {
-        if (provider === "github") {
-          return {
-            accessToken: "github-token-456",
-            expiresAt: Date.now() + 3600000,
-          };
-        }
-        return null;
-      }),
+      getProviderToken: mock(() => null),
       loadAllProviderTokens: mock(() => { }),
       getAllProviderTokens: mock(() => new Map()),
       setProviderToken: mock(() => { }),
@@ -248,6 +242,7 @@ describe("MCP Client - API Routing", () => {
     const client = new MCPClientBase({
       integrations: [integration],
       apiRouteBase: "/api/integrate",
+      sessionToken: "session-token-456",
       connectionMode: "manual",
     });
 
@@ -263,10 +258,10 @@ describe("MCP Client - API Routing", () => {
 
     await (client as any).github.listOwnRepos({});
 
-    expect(authHeader).toBe("Bearer github-token-456");
+    expect(authHeader).toBe("Bearer session-token-456");
   });
 
-  it("should not include Authorization header when provider token is not available", async () => {
+  it("should not include Authorization header when session token is not available", async () => {
     let authHeader: string | undefined;
 
     global.fetch = mock(async (url: string, options?: any) => {
@@ -557,4 +552,3 @@ describe("MCP Client - API Routing", () => {
     expect((client as any).databaseDetected).toBe(true);
   });
 });
-

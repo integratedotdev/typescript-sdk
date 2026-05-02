@@ -75,6 +75,8 @@ export interface AuthorizationUrlResponse {
  * Contains access token after successful authorization
  */
 export interface OAuthCallbackResponse {
+  /** Stable session token for MCP requests */
+  sessionToken?: string;
   /** OAuth access token */
   accessToken: string;
   /** OAuth refresh token */
@@ -95,6 +97,8 @@ export interface OAuthCallbackResponse {
  * Stored token data for a provider
  */
 export interface ProviderTokenData {
+  /** Stable session token for MCP requests */
+  sessionToken?: string;
   /** OAuth access token */
   accessToken: string;
   /** OAuth refresh token */
@@ -155,6 +159,8 @@ export interface AuthStartedEvent {
 export interface AuthCompleteEvent {
   /** Provider that was authorized */
   provider: string;
+  /** Stable session token for authenticated MCP requests */
+  sessionToken?: string;
   /** Access token for authenticated requests */
   accessToken: string;
   /** Token expiration timestamp */
@@ -195,4 +201,3 @@ export type OAuthEventType = 'auth:started' | 'auth:complete' | 'auth:error' | '
  * Event handler function type
  */
 export type OAuthEventHandler<T = any> = (payload: T) => void;
-

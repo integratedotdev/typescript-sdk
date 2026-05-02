@@ -183,6 +183,7 @@ export class OAuthManager {
 
     // 2. Store provider token
     const tokenDataToStore: ProviderTokenData = {
+      sessionToken: tokenData.sessionToken,
       accessToken: tokenData.accessToken,
       refreshToken: tokenData.refreshToken,
       tokenType: tokenData.tokenType,
@@ -267,6 +268,7 @@ export class OAuthManager {
 
       // 3. Store provider token
       const tokenData: ProviderTokenData = {
+        sessionToken: response.sessionToken,
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
         tokenType: response.tokenType,

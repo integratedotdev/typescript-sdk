@@ -520,10 +520,8 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
 
         // Code Mode fallback: when the sandbox callback passes a multi-provider
         // `x-integrate-tokens` map, synthesize the single-provider `Authorization`
-        // header expected by `handleToolCall` based on the tool's integration
-        // prefix. This keeps the sandbox → /mcp round trip on the same auth plane
-        // existing clients use without leaking the whole token map.
-        if (codeModeHeader === '1' && tokensHeader && toolName) {
+        // header only if the sandbox did not already send a stable session token.
+        if (codeModeHeader === '1' && !authHeader && tokensHeader && toolName) {
           try {
             const tokens = JSON.parse(tokensHeader) as Record<string, string>;
             const provider = resolveProviderFromToolName(toolName, Object.keys(tokens));
@@ -1262,6 +1260,7 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
           // Build redirect URL with token data in hash
           const frontendUrl = new URL(returnUrl, frontendOrigin);
           const tokenData = {
+            sessionToken: callbackResult.sessionToken,
             accessToken: callbackResult.accessToken,
             refreshToken: callbackResult.refreshToken,
             tokenType: callbackResult.tokenType,
