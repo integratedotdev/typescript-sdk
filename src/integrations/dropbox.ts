@@ -64,6 +64,9 @@ export function dropboxIntegration(
   return {
     id: "dropbox",
     name: "Dropbox",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/dropbox.png",
+    description: "Manage Dropbox files, folders, and sharing",
+    category: "Storage",
     tools: [...DROPBOX_TOOLS],
     authType: "oauth",
     oauth,
