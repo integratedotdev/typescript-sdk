@@ -31,6 +31,9 @@ import { hubspotIntegration } from "../../src/integrations/hubspot.js";
 import { youtubeIntegration } from "../../src/integrations/youtube.js";
 import { cursorIntegration } from "../../src/integrations/cursor.js";
 import { posthogIntegration } from "../../src/integrations/posthog.js";
+import { sentryIntegration } from "../../src/integrations/sentry.js";
+import { netlifyIntegration } from "../../src/integrations/netlify.js";
+import { jiraIntegration } from "../../src/integrations/jira.js";
 import { granolaIntegration } from "../../src/integrations/granola.js";
 import { mercuryIntegration } from "../../src/integrations/mercury.js";
 import { genericOAuthIntegration, createSimpleIntegration } from "../../src/integrations/generic.js";
@@ -2208,6 +2211,86 @@ describe("Integration System", () => {
 
       expect(initCalled).toBe(true);
       expect(connectCalled).toBe(true);
+    });
+  });
+
+  describe("Sentry Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = sentryIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("sentry");
+      expect(integration.tools).toBeArray();
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeDefined();
+      expect(integration.oauth?.provider).toBe("sentry");
+    });
+
+    test("includes default scopes", () => {
+      const integration = sentryIntegration({ clientId: "id", clientSecret: "secret" });
+      expect(integration.oauth?.scopes).toContain("org:read");
+      expect(integration.oauth?.scopes).toContain("event:read");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = sentryIntegration({ clientId: "id", clientSecret: "secret" });
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+  });
+
+  describe("Netlify Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = netlifyIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("netlify");
+      expect(integration.tools).toBeArray();
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeDefined();
+      expect(integration.oauth?.provider).toBe("netlify");
+    });
+
+    test("has empty scopes (full access token)", () => {
+      const integration = netlifyIntegration({ clientId: "id", clientSecret: "secret" });
+      expect(integration.oauth?.scopes).toEqual([]);
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = netlifyIntegration({ clientId: "id", clientSecret: "secret" });
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+  });
+
+  describe("Jira Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = jiraIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("jira");
+      expect(integration.tools).toBeArray();
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeDefined();
+      expect(integration.oauth?.provider).toBe("jira");
+    });
+
+    test("includes default scopes", () => {
+      const integration = jiraIntegration({ clientId: "id", clientSecret: "secret" });
+      expect(integration.oauth?.scopes).toContain("read:jira-work");
+      expect(integration.oauth?.scopes).toContain("write:jira-work");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = jiraIntegration({ clientId: "id", clientSecret: "secret" });
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
     });
   });
 

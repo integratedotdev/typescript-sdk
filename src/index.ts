@@ -173,6 +173,9 @@ export type { SentryIntegrationConfig, SentryTools, SentryScopes, SentryIntegrat
 export { netlifyIntegration } from "./integrations/netlify.js";
 export type { NetlifyIntegrationConfig, NetlifyTools, NetlifyIntegrationClient } from "./integrations/netlify.js";
 
+export { jiraIntegration } from "./integrations/jira.js";
+export type { JiraIntegrationConfig, JiraTools, JiraScopes, JiraIntegrationClient } from "./integrations/jira.js";
+
 export { granolaIntegration } from "./integrations/granola.js";
 export type { GranolaIntegrationOptions, GranolaTools } from "./integrations/granola.js";
 

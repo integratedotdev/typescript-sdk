@@ -55,6 +55,9 @@ import type { HubSpotIntegrationClient } from "./integrations/hubspot-client.js"
 import type { YouTubeIntegrationClient } from "./integrations/youtube-client.js";
 import type { CursorIntegrationClient } from "./integrations/cursor-client.js";
 import type { PostHogIntegrationClient } from "./integrations/posthog-client.js";
+import type { SentryIntegrationClient } from "./integrations/sentry-client.js";
+import type { NetlifyIntegrationClient } from "./integrations/netlify-client.js";
+import type { JiraIntegrationClient } from "./integrations/jira-client.js";
 import type { ServerIntegrationClient } from "./integrations/server-client.js";
 import { TriggerClient } from "./triggers/client.js";
 import { OAuthManager } from "./oauth/manager.js";
@@ -242,6 +245,12 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   ? "cursor"
   : K extends "posthog"
   ? "posthog"
+  : K extends "sentry"
+  ? "sentry"
+  : K extends "netlify"
+  ? "netlify"
+  : K extends "jira"
+  ? "jira"
   : never]:
   K extends "github" ? GitHubIntegrationClient :
   K extends "gmail" ? GmailIntegrationClient :
@@ -270,6 +279,9 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   K extends "youtube" ? YouTubeIntegrationClient :
   K extends "cursor" ? CursorIntegrationClient :
   K extends "posthog" ? PostHogIntegrationClient :
+  K extends "sentry" ? SentryIntegrationClient :
+  K extends "netlify" ? NetlifyIntegrationClient :
+  K extends "jira" ? JiraIntegrationClient :
   never;
 };
 

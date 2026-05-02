@@ -114,6 +114,10 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     description: "Manage Netlify sites, deploys, builds, and environment variables",
     category: "Infrastructure",
   },
+  jira: {
+    description: "Manage Jira issues, projects, sprints, and boards",
+    category: "Engineering",
+  },
   slack: {
     description: "Send and manage Slack messages and channels",
     category: "Communication",
