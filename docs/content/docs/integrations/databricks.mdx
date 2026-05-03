@@ -1,0 +1,71 @@
+---
+title: "Databricks"
+description: "Run Databricks jobs, list clusters and SQL warehouses, and inspect workspace paths"
+---
+
+The Databricks integration provides access to run databricks jobs, list clusters and sql warehouses, and inspect workspace paths through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { databricksIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Databricks to your server configuration. The integration automatically reads OAuth credentials from your environment (`DATABRICKS_WORKSPACE_HOST`, `DATABRICKS_CLIENT_ID`, `DATABRICKS_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, databricksIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    databricksIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("databricks");
+const result = await client.databricks.currentUser({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/databricks.ts"
+  name="DatabricksIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `DATABRICKS_WORKSPACE_HOST`
+- `DATABRICKS_CLIENT_ID`
+- `DATABRICKS_CLIENT_SECRET`
+
+## Available Tools
+
+- `databricks_current_user`
+- `databricks_clusters_list`
+- `databricks_clusters_get`
+- `databricks_jobs_list`
+- `databricks_jobs_get`
+- `databricks_jobs_run_now`
+- `databricks_sql_warehouses_list`
+- `databricks_workspace_get_status`
+
+## Notes
+
+- Category: Engineering
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

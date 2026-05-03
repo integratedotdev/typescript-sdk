@@ -37,7 +37,7 @@ export function linkedinIntegration(config: LinkedInIntegrationConfig = {}): MCP
     name: "LinkedIn",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/linkedin.png",
     description: "Read LinkedIn OpenID profile data and publish member posts",
-    category: "Social",
+    category: "Social Media",
     tools: [...LINKEDIN_TOOLS],
     oauth,
     async onInit(_client) {

@@ -1,0 +1,69 @@
+---
+title: "Postman"
+description: "Manage Postman workspaces, collections, and environments via the Postman API"
+---
+
+The Postman integration provides access to manage postman workspaces, collections, and environments via the postman api through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { postmanIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Postman to your server configuration. This integration can read credentials from environment variables automatically (`POSTMAN_API_KEY`):
+
+```typescript
+import { createMCPServer, postmanIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    postmanIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+const result = await client.postman.getMe({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/postman.ts"
+  name="PostmanIntegrationOptions"
+/>
+
+## Environment Variables
+
+- `POSTMAN_API_KEY`
+
+## Available Tools
+
+- `postman_get_me`
+- `postman_list_workspaces`
+- `postman_get_workspace`
+- `postman_list_collections`
+- `postman_get_collection`
+- `postman_delete_collection`
+- `postman_list_environments`
+- `postman_get_environment`
+- `postman_create_collection`
+
+## Notes
+
+- Category: Engineering
+- Authentication mode: API key
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

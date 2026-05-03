@@ -290,6 +290,118 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     description: "Manage Wix site stores, products, and e-commerce orders via REST",
     category: "Business",
   },
+  astronomer: {
+    description: "Manage Apache Airflow DAGs and deployments on Astronomer",
+    category: "Engineering",
+  },
+  auth0: {
+    description: "Manage Auth0 users, applications, and tenant configuration",
+    category: "Infrastructure",
+  },
+  betterstack: {
+    description: "Monitor uptime, logs, and incident alerts with BetterStack",
+    category: "Engineering",
+  },
+  clerk: {
+    description: "Manage Clerk users, organizations, and authentication",
+    category: "Infrastructure",
+  },
+  clickup: {
+    description: "Manage ClickUp tasks, lists, spaces, and workspaces",
+    category: "Productivity",
+  },
+  convex: {
+    description: "Run Convex functions, manage tables, and query your app backend",
+    category: "Engineering",
+  },
+  datadog: {
+    description: "Monitor Datadog metrics, logs, dashboards, and alerts",
+    category: "Engineering",
+  },
+  discord: {
+    description: "Send messages and manage Discord channels and servers",
+    category: "Communication",
+  },
+  etoro: {
+    description: "Read eToro portfolio data and market instruments",
+    category: "Finance",
+  },
+  ga4: {
+    description: "Read Google Analytics 4 reports, properties, and events",
+    category: "Analytics",
+  },
+  gchat: {
+    description: "Send messages and manage Google Chat spaces and memberships",
+    category: "Communication",
+  },
+  gitlab: {
+    description: "Manage GitLab repositories, issues, and merge requests",
+    category: "Engineering",
+  },
+  linkedin: {
+    description: "Post updates and manage LinkedIn profile and company pages",
+    category: "Social Media",
+  },
+  neon: {
+    description: "Manage Neon Postgres projects, branches, and databases",
+    category: "Infrastructure",
+  },
+  planetscale: {
+    description: "Manage PlanetScale databases, branches, and schema changes",
+    category: "Infrastructure",
+  },
+  salesforce: {
+    description: "Manage Salesforce accounts, contacts, opportunities, and cases",
+    category: "Business",
+  },
+  sharepoint: {
+    description: "Manage SharePoint sites, lists, documents, and permissions",
+    category: "Productivity",
+  },
+  shopify: {
+    description: "Manage Shopify products, orders, customers, and inventory",
+    category: "Business",
+  },
+  teams: {
+    description: "Send messages and manage Microsoft Teams channels and meetings",
+    category: "Communication",
+  },
+  threads: {
+    description: "Post and manage content on Threads (Meta)",
+    category: "Social Media",
+  },
+  tiktok: {
+    description: "Manage TikTok videos, account info, and creator analytics",
+    category: "Social Media",
+  },
+  tldraw: {
+    description: "Create and manage tldraw collaborative whiteboards",
+    category: "Productivity",
+  },
+  trello: {
+    description: "Manage Trello boards, lists, and cards",
+    category: "Productivity",
+  },
+  typeform: {
+    description: "Create and manage Typeform surveys and responses",
+    category: "Business",
+  },
+  webflow: {
+    description: "Manage Webflow sites, collections, and CMS content",
+    category: "Engineering",
+  },
+  workday: {
+    description: "Read Workday HR data including workers, organizations, and pay",
+    category: "Business",
+  },
+  xero: {
+    description: "Manage Xero invoices, contacts, and accounting data",
+    category: "Finance",
+  },
+  zapier: {
+    description: "Trigger and manage Zapier automation workflows",
+    category: "Engineering",
+  },
 };
 
 export type IntegrationLibraryPresentation = {

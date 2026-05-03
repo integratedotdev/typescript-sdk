@@ -1,0 +1,78 @@
+---
+title: "Dropbox"
+description: "Manage Dropbox files, folders, and sharing"
+---
+
+The Dropbox integration provides access to manage dropbox files, folders, and sharing through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { dropboxIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Dropbox to your server configuration. The integration automatically reads OAuth credentials from your environment (`DROPBOX_CLIENT_ID`, `DROPBOX_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, dropboxIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    dropboxIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("dropbox");
+const result = await client.dropbox.getCurrentAccount({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/dropbox.ts"
+  name="DropboxIntegrationOptions"
+/>
+
+## Environment Variables
+
+- `DROPBOX_CLIENT_ID`
+- `DROPBOX_CLIENT_SECRET`
+
+## Available Tools
+
+- `dropbox_get_current_account`
+- `dropbox_get_space_usage`
+- `dropbox_list_folder`
+- `dropbox_list_folder_continue`
+- `dropbox_get_metadata`
+- `dropbox_search_files`
+- `dropbox_create_folder`
+- `dropbox_delete_path`
+- `dropbox_move_path`
+- `dropbox_copy_path`
+- `dropbox_upload_text_file`
+- `dropbox_download_file`
+- `dropbox_get_temporary_link`
+- `dropbox_create_shared_link`
+- `dropbox_list_shared_links`
+- `dropbox_revoke_shared_link`
+
+## Notes
+
+- Category: Storage
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

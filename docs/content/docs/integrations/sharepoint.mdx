@@ -1,0 +1,73 @@
+---
+title: "SharePoint"
+description: "Manage SharePoint sites, lists, documents, and permissions"
+---
+
+The SharePoint integration provides access to manage sharepoint sites, lists, documents, and permissions through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { sharepointIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add SharePoint to your server configuration. The integration automatically reads OAuth credentials from your environment (`SHAREPOINT_CLIENT_ID`, `SHAREPOINT_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, sharepointIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    sharepointIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("sharepoint");
+const result = await client.sharepoint.createFolder({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/sharepoint.ts"
+  name="SharePointIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `SHAREPOINT_CLIENT_ID`
+- `SHAREPOINT_CLIENT_SECRET`
+
+## Available Tools
+
+- `sharepoint_create_folder`
+- `sharepoint_delete_item`
+- `sharepoint_get_item`
+- `sharepoint_get_site`
+- `sharepoint_list_drives`
+- `sharepoint_list_items`
+- `sharepoint_search_files`
+- `sharepoint_search_sites`
+- `sharepoint_share_item`
+- `sharepoint_update_item`
+- `sharepoint_upload_file`
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

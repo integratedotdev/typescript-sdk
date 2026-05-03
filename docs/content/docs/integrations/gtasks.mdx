@@ -1,0 +1,74 @@
+---
+title: "Google Tasks"
+description: "Manage Google Tasks lists and to-dos"
+---
+
+The Google Tasks integration provides access to manage google tasks lists and to-dos through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { gtasksIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Google Tasks to your server configuration. The integration automatically reads OAuth credentials from your environment (`GTASKS_CLIENT_ID`, `GTASKS_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, gtasksIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    gtasksIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("gtasks");
+const result = await client.gtasks.clearCompleted({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/gtasks.ts"
+  name="GtasksIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `GTASKS_CLIENT_ID`
+- `GTASKS_CLIENT_SECRET`
+
+## Available Tools
+
+- `gtasks_clear_completed`
+- `gtasks_create_task`
+- `gtasks_create_tasklist`
+- `gtasks_delete_task`
+- `gtasks_delete_tasklist`
+- `gtasks_get_task`
+- `gtasks_get_tasklist`
+- `gtasks_list_tasklists`
+- `gtasks_list_tasks`
+- `gtasks_move_task`
+- `gtasks_update_task`
+- `gtasks_update_tasklist`
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

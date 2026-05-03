@@ -1,0 +1,65 @@
+---
+title: "TikTok"
+description: "Manage TikTok videos, account info, and creator analytics"
+---
+
+The TikTok integration provides access to manage tiktok videos, account info, and creator analytics through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { tiktokIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add TikTok to your server configuration. The integration automatically reads OAuth credentials from your environment (`TIKTOK_CLIENT_ID`, `TIKTOK_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, tiktokIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    tiktokIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("tiktok");
+const result = await client.tiktok.getUserInfo({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/tiktok.ts"
+  name="TikTokIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `TIKTOK_CLIENT_ID`
+- `TIKTOK_CLIENT_SECRET`
+
+## Available Tools
+
+- `tiktok_get_user_info`
+- `tiktok_list_videos`
+- `tiktok_query_videos`
+
+## Notes
+
+- Category: Social Media
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

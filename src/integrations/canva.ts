@@ -53,6 +53,8 @@ export function canvaIntegration(config: CanvaIntegrationConfig = {}): MCPIntegr
     id: "canva",
     name: "Canva",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/canva.png",
+    description: "List and create Canva designs, manage folders, and export assets",
+    category: "Productivity",
     tools: [...CANVA_TOOLS],
     oauth,
 

@@ -1,0 +1,66 @@
+---
+title: "tldraw"
+description: "Create and manage tldraw collaborative whiteboards"
+---
+
+The tldraw integration provides access to create and manage tldraw collaborative whiteboards through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { tldrawIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add tldraw to your server configuration. The integration automatically reads OAuth credentials from your environment (`TLDRAW_API_KEY`):
+
+```typescript
+import { createMCPServer, tldrawIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    tldrawIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("tldraw");
+const result = await client.tldraw.unfurlUrl({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/tldraw.ts"
+  name="TldrawIntegrationOptions"
+/>
+
+## Environment Variables
+
+- `TLDRAW_API_KEY`
+
+## Available Tools
+
+- `tldraw_unfurl_url`
+- `tldraw_create_room_snapshot`
+- `tldraw_get_room_snapshot`
+- `tldraw_get_published_snapshot`
+- `tldraw_get_readonly_slug`
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

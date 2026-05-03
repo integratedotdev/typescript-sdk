@@ -62,7 +62,7 @@ export function threadsIntegration(config: ThreadsIntegrationConfig = {}): MCPIn
     name: "Threads",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/threads.png",
     description: "Publish Threads posts and manage media, replies, conversations, and keyword search",
-    category: "Social",
+    category: "Social Media",
     tools: [...THREADS_TOOLS],
     oauth,
     async onInit(_client) {

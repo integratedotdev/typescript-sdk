@@ -1,0 +1,65 @@
+---
+title: "Workday"
+description: "Read Workday HR data including workers, organizations, and pay"
+---
+
+The Workday integration provides access to read workday hr data including workers, organizations, and pay through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { workdayIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Workday to your server configuration. The integration automatically reads OAuth credentials from your environment (`WORKDAY_CLIENT_ID`, `WORKDAY_CLIENT_SECRET`, `WORKDAY_TENANT_DESCRIPTOR`):
+
+```typescript
+import { createMCPServer, workdayIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    workdayIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("workday");
+const result = await client.workday.listWorkers({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/workday.ts"
+  name="WorkdayIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `WORKDAY_CLIENT_ID`
+- `WORKDAY_CLIENT_SECRET`
+- `WORKDAY_TENANT_DESCRIPTOR`
+
+## Available Tools
+
+- `workday_list_workers`
+- `workday_get_worker`
+
+## Notes
+
+- Category: Business
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

@@ -1,0 +1,79 @@
+---
+title: "Salesforce"
+description: "Manage Salesforce accounts, contacts, opportunities, and cases"
+---
+
+The Salesforce integration provides access to manage salesforce accounts, contacts, opportunities, and cases through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { salesforceIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Salesforce to your server configuration. The integration automatically reads OAuth credentials from your environment (`SALESFORCE_CLIENT_ID`, `SALESFORCE_CLIENT_SECRET`, `SALESFORCE_SUBDOMAIN`):
+
+```typescript
+import { createMCPServer, salesforceIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    salesforceIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("salesforce");
+const result = await client.salesforce.query({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/salesforce.ts"
+  name="SalesforceIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `SALESFORCE_CLIENT_ID`
+- `SALESFORCE_CLIENT_SECRET`
+- `SALESFORCE_SUBDOMAIN`
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `api`
+- `refresh_token`
+- `offline_access`
+
+## Available Tools
+
+- `salesforce_query`
+- `salesforce_get_limits`
+- `salesforce_describe_global`
+- `salesforce_sobject_describe`
+- `salesforce_sobject_get`
+- `salesforce_sobject_create`
+- `salesforce_sobject_update`
+- `salesforce_sobject_delete`
+
+## Notes
+
+- Category: Business
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

@@ -1,0 +1,80 @@
+---
+title: "Supabase"
+description: "Manage Supabase organizations, projects, Postgres, API keys, secrets, and branches"
+---
+
+The Supabase integration provides access to manage supabase organizations, projects, postgres, api keys, secrets, and branches through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { supabaseIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Supabase to your server configuration. This integration supports OAuth and alternate token-based configuration; the config table below shows the available options.
+
+```typescript
+import { createMCPServer, supabaseIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    supabaseIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("supabase");
+const result = await client.supabase.getProfile({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/supabase.ts"
+  name="SupabaseIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `SUPABASE_ACCESS_TOKEN`
+- `SUPABASE_CLIENT_ID`
+- `SUPABASE_CLIENT_SECRET`
+
+## Available Tools
+
+- `supabase_get_profile`
+- `supabase_list_organizations`
+- `supabase_get_organization`
+- `supabase_list_organization_projects`
+- `supabase_list_projects`
+- `supabase_get_project`
+- `supabase_create_project`
+- `supabase_update_project`
+- `supabase_delete_project`
+- `supabase_list_project_api_keys`
+- `supabase_create_project_api_key`
+- `supabase_delete_project_api_key`
+- `supabase_list_project_secrets`
+- `supabase_list_project_branches`
+- `supabase_get_project_health`
+- `supabase_get_database_postgres_config`
+- `supabase_list_available_regions`
+
+## Notes
+
+- Category: Infrastructure
+- Authentication mode: OAuth or token-based
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

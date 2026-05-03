@@ -1,0 +1,73 @@
+---
+title: "Binance"
+description: "Read Binance Spot prices, order books, and account data with read-only API keys"
+---
+
+The Binance integration provides access to read binance spot prices, order books, and account data with read-only api keys through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { binanceIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Binance to your server configuration. This integration can read credentials from environment variables automatically (`BINANCE_API_KEY`, `BINANCE_SECRET_KEY`):
+
+```typescript
+import { createMCPServer, binanceIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    binanceIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+const result = await client.binance.ping({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/binance.ts"
+  name="BinanceIntegrationOptions"
+/>
+
+## Environment Variables
+
+- `BINANCE_API_KEY`
+- `BINANCE_SECRET_KEY`
+
+## Available Tools
+
+- `binance_ping`
+- `binance_get_server_time`
+- `binance_get_exchange_info`
+- `binance_get_ticker_price`
+- `binance_get_ticker_24hr`
+- `binance_get_order_book`
+- `binance_get_recent_trades`
+- `binance_get_klines`
+- `binance_get_account`
+- `binance_get_open_orders`
+- `binance_get_all_orders`
+- `binance_get_my_trades`
+
+## Notes
+
+- Category: Finance
+- Authentication mode: API key
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

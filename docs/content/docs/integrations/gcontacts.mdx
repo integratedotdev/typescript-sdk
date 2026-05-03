@@ -1,0 +1,72 @@
+---
+title: "Google Contacts"
+description: "List, search, create, update, and delete Google Contacts via the People API"
+---
+
+The Google Contacts integration provides access to list, search, create, update, and delete google contacts via the people api through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { gcontactsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Google Contacts to your server configuration. The integration automatically reads OAuth credentials from your environment (`GCONTACTS_CLIENT_ID`, `GCONTACTS_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, gcontactsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    gcontactsIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("gcontacts");
+const result = await client.gcontacts.batchGetContacts({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/gcontacts.ts"
+  name="GcontactsIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `GCONTACTS_CLIENT_ID`
+- `GCONTACTS_CLIENT_SECRET`
+
+## Available Tools
+
+- `gcontacts_batch_get_contacts`
+- `gcontacts_copy_other_contact`
+- `gcontacts_create_contact`
+- `gcontacts_delete_contact`
+- `gcontacts_get_person`
+- `gcontacts_get_self`
+- `gcontacts_list_connections`
+- `gcontacts_list_other_contacts`
+- `gcontacts_search_contacts`
+- `gcontacts_update_contact`
+
+## Notes
+
+- Category: Communication
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

@@ -1,0 +1,71 @@
+---
+title: "Typeform"
+description: "Create and manage Typeform surveys and responses"
+---
+
+The Typeform integration provides access to create and manage typeform surveys and responses through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { typeformIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Typeform to your server configuration. The integration automatically reads OAuth credentials from your environment (`TYPEFORM_CLIENT_ID`, `TYPEFORM_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, typeformIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    typeformIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("typeform");
+const result = await client.typeform.getMe({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/typeform.ts"
+  name="TypeformIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `TYPEFORM_CLIENT_ID`
+- `TYPEFORM_CLIENT_SECRET`
+
+## Available Tools
+
+- `typeform_get_me`
+- `typeform_list_workspaces`
+- `typeform_get_workspace`
+- `typeform_list_forms`
+- `typeform_get_form`
+- `typeform_create_form`
+- `typeform_update_form`
+- `typeform_delete_form`
+- `typeform_list_responses`
+
+## Notes
+
+- Category: Business
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

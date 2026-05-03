@@ -1,0 +1,73 @@
+---
+title: "Google Analytics 4"
+description: "Read Google Analytics 4 reports, properties, and events"
+---
+
+The Google Analytics 4 integration provides access to read google analytics 4 reports, properties, and events through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { ga4Integration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Google Analytics 4 to your server configuration. The integration automatically reads OAuth credentials from your environment (`GA4_CLIENT_ID`, `GA4_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, ga4Integration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    ga4Integration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("ga4");
+const result = await client.ga4.batchRunReports({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/ga4.ts"
+  name="Ga4IntegrationConfig"
+/>
+
+## Environment Variables
+
+- `GA4_CLIENT_ID`
+- `GA4_CLIENT_SECRET`
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `https://www.googleapis.com/auth/analytics.readonly`
+
+## Available Tools
+
+- `ga4_batch_run_reports`
+- `ga4_get_property`
+- `ga4_list_account_summaries`
+- `ga4_run_realtime_report`
+- `ga4_run_report`
+
+## Notes
+
+- Category: Analytics
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

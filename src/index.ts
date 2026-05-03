@@ -368,6 +368,63 @@ export type {
 export { wixIntegration } from "./integrations/wix.js";
 export type { WixIntegrationOptions, WixTools, WixIntegrationClient } from "./integrations/wix.js";
 
+export { auth0Integration } from "./integrations/auth0.js";
+export type { Auth0IntegrationOptions, Auth0Tools, Auth0IntegrationClient } from "./integrations/auth0.js";
+
+export { binanceIntegration } from "./integrations/binance.js";
+export type { BinanceIntegrationOptions, BinanceTools, BinanceIntegrationClient } from "./integrations/binance.js";
+
+export { canvaIntegration } from "./integrations/canva.js";
+export type { CanvaIntegrationConfig, CanvaTools, CanvaIntegrationClient } from "./integrations/canva.js";
+
+export { clerkIntegration } from "./integrations/clerk.js";
+export type { ClerkIntegrationOptions, ClerkTools, ClerkIntegrationClient } from "./integrations/clerk.js";
+
+export { cloudflareIntegration } from "./integrations/cloudflare.js";
+export type { CloudflareIntegrationConfig, CloudflareTools, CloudflareIntegrationClient } from "./integrations/cloudflare.js";
+
+export { clickupIntegration } from "./integrations/clickup.js";
+export type { ClickUpIntegrationConfig, ClickUpTools, ClickUpIntegrationClient } from "./integrations/clickup.js";
+
+export { excelIntegration } from "./integrations/excel.js";
+export type { ExcelIntegrationConfig, ExcelTools, ExcelIntegrationClient } from "./integrations/excel.js";
+
+export { ga4Integration } from "./integrations/ga4.js";
+export type { Ga4IntegrationConfig, Ga4Tools, Ga4IntegrationClient } from "./integrations/ga4.js";
+
+export { gdriveIntegration } from "./integrations/gdrive.js";
+export type { GDriveIntegrationConfig, GDriveTools, GDriveIntegrationClient } from "./integrations/gdrive.js";
+
+export { gitlabIntegration } from "./integrations/gitlab.js";
+export type { GitLabIntegrationConfig, GitLabTools, GitLabIntegrationClient } from "./integrations/gitlab.js";
+
+export { gmeetIntegration } from "./integrations/gmeet.js";
+export type { GmeetIntegrationConfig, GmeetTools, GmeetIntegrationClient } from "./integrations/gmeet.js";
+
+export { mondayIntegration } from "./integrations/monday.js";
+export type { MondayIntegrationConfig, MondayTools, MondayIntegrationClient } from "./integrations/monday.js";
+
+export { planetscaleIntegration } from "./integrations/planetscale.js";
+export type { PlanetScaleIntegrationConfig, PlanetScaleTools, PlanetScaleIntegrationClient } from "./integrations/planetscale.js";
+
+export { powerpointIntegration } from "./integrations/powerpoint.js";
+export type { PowerPointIntegrationConfig, PowerPointTools, PowerPointIntegrationClient } from "./integrations/powerpoint.js";
+
+export { redditIntegration } from "./integrations/reddit.js";
+export type { RedditIntegrationConfig, RedditTools, RedditIntegrationClient } from "./integrations/reddit.js";
+
+export { resendIntegration } from "./integrations/resend.js";
+export type { ResendIntegrationOptions, ResendTools, ResendIntegrationClient } from "./integrations/resend.js";
+
+export { wordIntegration } from "./integrations/word.js";
+export type { WordIntegrationConfig, WordTools, WordIntegrationClient } from "./integrations/word.js";
+
+export { zapierIntegration } from "./integrations/zapier.js";
+export type { ZapierIntegrationConfig, ZapierTools, ZapierIntegrationClient } from "./integrations/zapier.js";
+
+export { zoomIntegration } from "./integrations/zoom.js";
+export type { ZoomIntegrationConfig, ZoomTools, ZoomIntegrationClient } from "./integrations/zoom.js";
+
 // Server client
 export type { ServerIntegrationClient } from "./integrations/server-client.js";
 

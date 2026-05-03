@@ -1,0 +1,79 @@
+---
+title: "PlanetScale"
+description: "Manage PlanetScale databases, branches, and schema changes"
+---
+
+The PlanetScale integration provides access to manage planetscale databases, branches, and schema changes through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { planetscaleIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add PlanetScale to your server configuration. The integration automatically reads OAuth credentials from your environment (`PLANETSCALE_CLIENT_ID`, `PLANETSCALE_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, planetscaleIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    planetscaleIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("planetscale");
+const result = await client.planetscale.getCurrentUser({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/planetscale.ts"
+  name="PlanetScaleIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `PLANETSCALE_CLIENT_ID`
+- `PLANETSCALE_CLIENT_SECRET`
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `database:read_branches`
+- `database:read_deploy_requests`
+- `organization:read`
+
+## Available Tools
+
+- `planetscale_get_current_user`
+- `planetscale_list_organizations`
+- `planetscale_get_organization`
+- `planetscale_list_databases`
+- `planetscale_get_database`
+- `planetscale_list_branches`
+- `planetscale_get_branch`
+- `planetscale_list_deploy_requests`
+- `planetscale_get_deploy_request`
+
+## Notes
+
+- Category: Infrastructure
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

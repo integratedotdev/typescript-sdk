@@ -105,6 +105,13 @@ import type { TldrawIntegrationClient } from "./integrations/tldraw-client.js";
 import type { RedditIntegrationClient } from "./integrations/reddit-client.js";
 import type { UpstashIntegrationClient } from "./integrations/upstash-client.js";
 import type { WorkOSIntegrationClient } from "./integrations/workos-client.js";
+import type { CanvaIntegrationClient } from "./integrations/canva-client.js";
+import type { DiscordIntegrationClient } from "./integrations/discord-client.js";
+import type { ExcelIntegrationClient } from "./integrations/excel-client.js";
+import type { GDriveIntegrationClient } from "./integrations/gdrive-client.js";
+import type { GitLabIntegrationClient } from "./integrations/gitlab-client.js";
+import type { PowerPointIntegrationClient } from "./integrations/powerpoint-client.js";
+import type { WordIntegrationClient } from "./integrations/word-client.js";
 import type { ServerIntegrationClient } from "./integrations/server-client.js";
 import { TriggerClient } from "./triggers/client.js";
 import { OAuthManager } from "./oauth/manager.js";
@@ -378,6 +385,32 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   ? "paper"
   : K extends "astronomer"
   ? "astronomer"
+  : K extends "gtasks"
+  ? "gtasks"
+  : K extends "instagram"
+  ? "instagram"
+  : K extends "alpaca"
+  ? "alpaca"
+  : K extends "monday"
+  ? "monday"
+  : K extends "auth0"
+  ? "auth0"
+  : K extends "workday"
+  ? "workday"
+  : K extends "canva"
+  ? "canva"
+  : K extends "discord"
+  ? "discord"
+  : K extends "excel"
+  ? "excel"
+  : K extends "gdrive"
+  ? "gdrive"
+  : K extends "gitlab"
+  ? "gitlab"
+  : K extends "powerpoint"
+  ? "powerpoint"
+  : K extends "word"
+  ? "word"
   : never]:
   K extends "github" ? GitHubIntegrationClient :
   K extends "gmail" ? GmailIntegrationClient :
@@ -456,6 +489,13 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   K extends "paper" ? PaperIntegrationClient :
   K extends "workos" ? WorkOSIntegrationClient :
   K extends "astronomer" ? AstronomerIntegrationClient :
+  K extends "canva" ? CanvaIntegrationClient :
+  K extends "discord" ? DiscordIntegrationClient :
+  K extends "excel" ? ExcelIntegrationClient :
+  K extends "gdrive" ? GDriveIntegrationClient :
+  K extends "gitlab" ? GitLabIntegrationClient :
+  K extends "powerpoint" ? PowerPointIntegrationClient :
+  K extends "word" ? WordIntegrationClient :
   never;
 };
 

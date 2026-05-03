@@ -27,7 +27,7 @@ export function phantomIntegration(_options: PhantomIntegrationOptions = {}): MC
     name: "Phantom",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/phantom.png",
     description: "Build Phantom mobile universal links and expose provider deeplink reference data",
-    category: "Crypto",
+    category: "Other",
     tools: [...PHANTOM_TOOLS],
     async onInit(_client) {
       logger.debug("Phantom integration initialized");

@@ -1,0 +1,73 @@
+---
+title: "Monday.com"
+description: "Manage Monday.com boards, items, columns, and updates"
+---
+
+The Monday.com integration provides access to manage monday.com boards, items, columns, and updates through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { mondayIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Monday.com to your server configuration. The integration automatically reads OAuth credentials from your environment (`MONDAY_CLIENT_ID`, `MONDAY_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, mondayIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    mondayIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("monday");
+const result = await client.monday.me({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/monday.ts"
+  name="MondayIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `MONDAY_CLIENT_ID`
+- `MONDAY_CLIENT_SECRET`
+
+## Available Tools
+
+- `monday_me`
+- `monday_list_workspaces`
+- `monday_list_boards`
+- `monday_get_board`
+- `monday_list_board_items`
+- `monday_next_items_page`
+- `monday_get_items`
+- `monday_create_item`
+- `monday_update_item_columns`
+- `monday_create_update`
+- `monday_delete_item`
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

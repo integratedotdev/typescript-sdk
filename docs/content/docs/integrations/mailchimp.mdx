@@ -1,0 +1,70 @@
+---
+title: "Mailchimp"
+description: "Manage Mailchimp audiences, members, and campaigns"
+---
+
+The Mailchimp integration provides access to manage mailchimp audiences, members, and campaigns through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { mailchimpIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Mailchimp to your server configuration. The integration automatically reads OAuth credentials from your environment (`MAILCHIMP_CLIENT_ID`, `MAILCHIMP_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, mailchimpIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    mailchimpIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("mailchimp");
+const result = await client.mailchimp.ping({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/mailchimp.ts"
+  name="MailchimpIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `MAILCHIMP_CLIENT_ID`
+- `MAILCHIMP_CLIENT_SECRET`
+
+## Available Tools
+
+- `mailchimp_ping`
+- `mailchimp_list_audiences`
+- `mailchimp_get_audience`
+- `mailchimp_list_members`
+- `mailchimp_get_member`
+- `mailchimp_add_or_update_member`
+- `mailchimp_archive_member`
+- `mailchimp_list_campaigns`
+
+## Notes
+
+- Category: Communication
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

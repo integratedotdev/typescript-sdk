@@ -1,0 +1,78 @@
+---
+title: "Neon"
+description: "Manage Neon Postgres projects, branches, and databases"
+---
+
+The Neon integration provides access to manage neon postgres projects, branches, and databases through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { neonIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Neon to your server configuration. This integration can read credentials from environment variables automatically (`NEON_API_KEY`):
+
+```typescript
+import { createMCPServer, neonIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    neonIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+const result = await client.neon.listApiKeys({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/neon.ts"
+  name="NeonIntegrationOptions"
+/>
+
+## Environment Variables
+
+- `NEON_API_KEY`
+
+## Available Tools
+
+- `neon_list_api_keys`
+- `neon_create_api_key`
+- `neon_revoke_api_key`
+- `neon_list_organizations`
+- `neon_list_projects`
+- `neon_list_shared_projects`
+- `neon_create_project`
+- `neon_get_project`
+- `neon_update_project`
+- `neon_delete_project`
+- `neon_recover_project`
+- `neon_list_branches`
+- `neon_create_branch`
+- `neon_get_branch`
+- `neon_delete_branch`
+- `neon_list_operations`
+- `neon_get_operation`
+- `neon_get_connection_uri`
+
+## Notes
+
+- Category: Infrastructure
+- Authentication mode: API key
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

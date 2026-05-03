@@ -1458,6 +1458,19 @@ export { awsIntegration } from './integrations/aws.js';
 export { wixIntegration } from './integrations/wix.js';
 export { mailchimpIntegration } from './integrations/mailchimp.js';
 export { mondayIntegration } from './integrations/monday.js';
+export { binanceIntegration } from './integrations/binance.js';
+export { canvaIntegration } from './integrations/canva.js';
+export { clerkIntegration } from './integrations/clerk.js';
+export { clickupIntegration } from './integrations/clickup.js';
+export { cloudflareIntegration } from './integrations/cloudflare.js';
+export { instagramIntegration } from './integrations/instagram.js';
+export { facebookIntegration } from './integrations/facebook.js';
+export { ga4Integration } from './integrations/ga4.js';
+export { resendIntegration } from './integrations/resend.js';
+export { tldrawIntegration } from './integrations/tldraw.js';
+export { workdayIntegration } from './integrations/workday.js';
+export { workosIntegration } from './integrations/workos.js';
+export { planetscaleIntegration } from './integrations/planetscale.js';
 export { genericOAuthIntegration, createSimpleIntegration } from './integrations/generic.js';
 
 /**

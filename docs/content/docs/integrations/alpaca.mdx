@@ -1,0 +1,74 @@
+---
+title: "Alpaca"
+description: "Trade equities with Alpaca: account, orders, positions, and market clock"
+---
+
+The Alpaca integration provides access to trade equities with alpaca: account, orders, positions, and market clock through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { alpacaIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Alpaca to your server configuration. This integration can read credentials from environment variables automatically (`ALPACA_API_KEY_ID`, `ALPACA_API_SECRET_KEY`):
+
+```typescript
+import { createMCPServer, alpacaIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    alpacaIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+const result = await client.alpaca.getAccount({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/alpaca.ts"
+  name="AlpacaIntegrationOptions"
+/>
+
+## Environment Variables
+
+- `ALPACA_API_KEY_ID`
+- `ALPACA_API_SECRET_KEY`
+
+## Available Tools
+
+- `alpaca_get_account`
+- `alpaca_list_positions`
+- `alpaca_get_position`
+- `alpaca_list_orders`
+- `alpaca_get_order`
+- `alpaca_create_order`
+- `alpaca_cancel_order`
+- `alpaca_cancel_all_orders`
+- `alpaca_get_clock`
+- `alpaca_get_calendar`
+- `alpaca_list_assets`
+- `alpaca_get_asset`
+- `alpaca_get_portfolio_history`
+
+## Notes
+
+- Category: Finance
+- Authentication mode: API key
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

@@ -1,0 +1,69 @@
+---
+title: "Shopify"
+description: "Manage Shopify products, orders, customers, and inventory"
+---
+
+The Shopify integration provides access to manage shopify products, orders, customers, and inventory through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { shopifyIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Shopify to your server configuration. The integration automatically reads OAuth credentials from your environment (`SHOPIFY_CLIENT_ID`, `SHOPIFY_CLIENT_SECRET`, `SHOPIFY_SHOP`):
+
+```typescript
+import { createMCPServer, shopifyIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    shopifyIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("shopify");
+const result = await client.shopify.adminGraphql({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/shopify.ts"
+  name="ShopifyIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `SHOPIFY_CLIENT_ID`
+- `SHOPIFY_CLIENT_SECRET`
+- `SHOPIFY_SHOP`
+
+## Available Tools
+
+- `shopify_admin_graphql`
+- `shopify_rest_get`
+- `shopify_rest_post`
+- `shopify_rest_put`
+- `shopify_rest_delete`
+- `shopify_get_shop`
+
+## Notes
+
+- Category: Business
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

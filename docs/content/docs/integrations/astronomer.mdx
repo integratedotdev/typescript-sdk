@@ -1,0 +1,74 @@
+---
+title: "Astronomer"
+description: "Manage Apache Airflow DAGs and deployments on Astronomer"
+---
+
+The Astronomer integration provides access to manage apache airflow dags and deployments on astronomer through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { astronomerIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Astronomer to your server configuration. This integration can read credentials from environment variables automatically (`ASTRO_API_TOKEN`, `ASTRONOMER_API_TOKEN`):
+
+```typescript
+import { createMCPServer, astronomerIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    astronomerIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+const result = await client.astronomer.getSelf({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/astronomer.ts"
+  name="AstronomerIntegrationOptions"
+/>
+
+## Environment Variables
+
+- `ASTRO_API_TOKEN`
+- `ASTRONOMER_API_TOKEN`
+
+## Available Tools
+
+- `astronomer_get_self`
+- `astronomer_list_organizations`
+- `astronomer_get_organization`
+- `astronomer_list_workspaces`
+- `astronomer_get_workspace`
+- `astronomer_list_clusters`
+- `astronomer_get_cluster`
+- `astronomer_list_deployments`
+- `astronomer_get_deployment`
+- `astronomer_create_deployment`
+- `astronomer_update_deployment`
+- `astronomer_list_deploys`
+- `astronomer_get_deploy`
+
+## Notes
+
+- Category: Engineering
+- Authentication mode: API key
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

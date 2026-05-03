@@ -1,0 +1,73 @@
+---
+title: "Auth0"
+description: "Manage Auth0 users, applications, and tenant configuration"
+---
+
+The Auth0 integration provides access to manage auth0 users, applications, and tenant configuration through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { auth0Integration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Auth0 to your server configuration. This integration can read credentials from environment variables automatically (`AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`, `AUTH0_ACCESS_TOKEN`):
+
+```typescript
+import { createMCPServer, auth0Integration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    auth0Integration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+const result = await client.auth0.listUsers({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/auth0.ts"
+  name="Auth0IntegrationOptions"
+/>
+
+## Environment Variables
+
+- `AUTH0_CLIENT_ID`
+- `AUTH0_CLIENT_SECRET`
+- `AUTH0_ACCESS_TOKEN`
+
+## Available Tools
+
+- `auth0_list_users`
+- `auth0_get_user`
+- `auth0_create_user`
+- `auth0_patch_user`
+- `auth0_delete_user`
+- `auth0_list_connections`
+- `auth0_get_connection`
+- `auth0_list_clients`
+- `auth0_get_client`
+- `auth0_create_client`
+- `auth0_patch_client`
+
+## Notes
+
+- Category: Infrastructure
+- Authentication mode: API key
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

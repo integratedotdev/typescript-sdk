@@ -1,0 +1,68 @@
+---
+title: "Zoom"
+description: "Manage Zoom user profile and meetings"
+---
+
+The Zoom integration provides access to manage zoom user profile and meetings through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { zoomIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Zoom to your server configuration. The integration automatically reads OAuth credentials from your environment (`ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, zoomIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    zoomIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("zoom");
+const result = await client.zoom.getUser({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/zoom.ts"
+  name="ZoomIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `ZOOM_CLIENT_ID`
+- `ZOOM_CLIENT_SECRET`
+
+## Available Tools
+
+- `zoom_get_user`
+- `zoom_list_meetings`
+- `zoom_create_meeting`
+- `zoom_get_meeting`
+- `zoom_update_meeting`
+- `zoom_delete_meeting`
+
+## Notes
+
+- Category: Communication
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

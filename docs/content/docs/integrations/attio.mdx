@@ -1,0 +1,75 @@
+---
+title: "Attio"
+description: "Manage Attio people, companies, tasks, and CRM records"
+---
+
+The Attio integration provides access to manage attio people, companies, tasks, and crm records through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { attioIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Attio to your server configuration. The integration automatically reads OAuth credentials from your environment (`ATTIO_CLIENT_ID`, `ATTIO_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, attioIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    attioIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("attio");
+const result = await client.attio.getSelf({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/attio.ts"
+  name="AttioIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `ATTIO_CLIENT_ID`
+- `ATTIO_CLIENT_SECRET`
+
+## Available Tools
+
+- `attio_get_self`
+- `attio_query_people`
+- `attio_get_person`
+- `attio_create_person`
+- `attio_update_person`
+- `attio_assert_person`
+- `attio_query_companies`
+- `attio_get_company`
+- `attio_create_company`
+- `attio_update_company`
+- `attio_assert_company`
+- `attio_list_tasks`
+- `attio_get_task`
+
+## Notes
+
+- Category: Business
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

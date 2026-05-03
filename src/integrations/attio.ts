@@ -56,7 +56,7 @@ export function attioIntegration(config: AttioIntegrationConfig = {}): MCPIntegr
     name: "Attio",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/attio.png",
     description: "Manage Attio people, companies, records, and tasks",
-    category: "CRM",
+    category: "Business",
     tools: [...ATTIO_TOOLS],
     oauth,
     async onInit(_client) {

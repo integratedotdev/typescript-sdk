@@ -1,0 +1,73 @@
+---
+title: "Clerk"
+description: "Manage Clerk users, organizations, and authentication"
+---
+
+The Clerk integration provides access to manage clerk users, organizations, and authentication through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { clerkIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Clerk to your server configuration. This integration can read credentials from environment variables automatically (`CLERK_SECRET_KEY`):
+
+```typescript
+import { createMCPServer, clerkIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    clerkIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+const result = await client.clerk.listUsers({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/clerk.ts"
+  name="ClerkIntegrationOptions"
+/>
+
+## Environment Variables
+
+- `CLERK_SECRET_KEY`
+
+## Available Tools
+
+- `clerk_list_users`
+- `clerk_get_user`
+- `clerk_create_user`
+- `clerk_update_user`
+- `clerk_delete_user`
+- `clerk_list_organizations`
+- `clerk_get_organization`
+- `clerk_create_organization`
+- `clerk_update_organization`
+- `clerk_delete_organization`
+- `clerk_list_sessions`
+- `clerk_get_session`
+- `clerk_revoke_session`
+
+## Notes
+
+- Category: Infrastructure
+- Authentication mode: API key
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+
