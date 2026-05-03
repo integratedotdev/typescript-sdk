@@ -53,6 +53,15 @@ export interface PowerPointIntegrationClient {
     parent_id?: string;
   }): Promise<MCPToolCallResponse>;
 
+  updateContent(params: {
+    /** Presentation item ID */
+    item_id: string;
+    /** Base64-encoded .pptx bytes */
+    content: string;
+    /** MIME type override */
+    content_type?: string;
+  }): Promise<MCPToolCallResponse>;
+
   /**
    * Copy a presentation
    *

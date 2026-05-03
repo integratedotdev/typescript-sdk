@@ -51,6 +51,7 @@ const GITHUB_TOOLS = [
   "github_create_repo",
   "github_list_branches",
   "github_create_branch",
+  "github_get_authenticated_user",
   "github_get_user",
   "github_list_commits",
   "github_get_commit",
@@ -126,4 +127,3 @@ export type GitHubTools = typeof GITHUB_TOOLS[number];
  * Export GitHub client types
  */
 export type { GitHubIntegrationClient } from "./github-client.js";
-

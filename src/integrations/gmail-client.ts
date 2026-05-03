@@ -83,6 +83,18 @@ export interface GmailIntegrationClient {
   }): Promise<MCPToolCallResponse>;
 
   /**
+   * Create a draft message
+   */
+  createDraft(params: {
+    to: string;
+    subject: string;
+    body: string;
+    cc?: string;
+    bcc?: string;
+    is_html?: boolean;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
    * List messages in the mailbox
    */
   listMessages(params?: {
@@ -154,5 +166,12 @@ export interface GmailIntegrationClient {
   trashMessage(params: {
     message_id: string;
   }): Promise<MCPToolCallResponse>;
-}
 
+  /**
+   * Get a message attachment payload
+   */
+  getAttachment(params: {
+    message_id: string;
+    attachment_id: string;
+  }): Promise<MCPToolCallResponse>;
+}

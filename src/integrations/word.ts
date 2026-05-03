@@ -23,12 +23,13 @@ export interface WordIntegrationConfig {
 }
 
 const WORD_TOOLS = [
-  "word_list",
-  "word_get",
-  "word_create",
   "word_copy",
+  "word_create",
   "word_delete",
+  "word_get",
+  "word_list",
   "word_share",
+  "word_update_content",
 ] as const;
 
 export function wordIntegration(config: WordIntegrationConfig = {}): MCPIntegration<"word"> {

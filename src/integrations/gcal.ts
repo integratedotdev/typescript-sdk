@@ -34,17 +34,18 @@ export interface GcalIntegrationConfig {
  * These should match the tool names exposed by your MCP server
  */
 const GCAL_TOOLS = [
-  "gcal_list_calendars",
-  "gcal_get_calendar",
-  "gcal_list_events",
-  "gcal_get_event",
-  "gcal_create_event",
-  "gcal_update_event",
-  "gcal_delete_event",
-  "gcal_list_attendees",
-  "gcal_quick_add",
   "gcal_create_calendar",
+  "gcal_create_event",
   "gcal_delete_calendar",
+  "gcal_delete_event",
+  "gcal_freebusy",
+  "gcal_get_calendar",
+  "gcal_get_event",
+  "gcal_list_attendees",
+  "gcal_list_calendars",
+  "gcal_list_events",
+  "gcal_quick_add",
+  "gcal_update_event",
 ] as const;
 
 

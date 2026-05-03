@@ -55,6 +55,7 @@ const STRIPE_TOOLS = [
   "stripe_cancel_subscription",
   // Invoices
   "stripe_list_invoices",
+  "stripe_get_invoice",
   "stripe_create_invoice",
   "stripe_finalize_invoice",
   "stripe_pay_invoice",
@@ -120,4 +121,3 @@ export type StripeTools = typeof STRIPE_TOOLS[number];
  * Export Stripe client types
  */
 export type { StripeIntegrationClient } from "./stripe-client.js";
-

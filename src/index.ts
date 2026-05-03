@@ -95,6 +95,9 @@ export type { NotionIntegrationConfig, NotionTools, NotionIntegrationClient } fr
 export { slackIntegration } from "./integrations/slack.js";
 export type { SlackIntegrationConfig, SlackTools, SlackIntegrationClient } from "./integrations/slack.js";
 
+export { discordIntegration } from "./integrations/discord.js";
+export type { DiscordIntegrationConfig, DiscordTools, DiscordIntegrationClient } from "./integrations/discord.js";
+
 export { linearIntegration } from "./integrations/linear.js";
 export type { LinearIntegrationConfig, LinearTools, LinearIntegrationClient } from "./integrations/linear.js";
 
@@ -113,11 +116,34 @@ export type { StripeIntegrationConfig, StripeTools, StripeIntegrationClient } fr
 export { gcalIntegration } from "./integrations/gcal.js";
 export type { GcalIntegrationConfig, GcalTools, GcalIntegrationClient } from "./integrations/gcal.js";
 
+export { gtasksIntegration } from "./integrations/gtasks.js";
+export type { GtasksIntegrationConfig, GtasksTools, GtasksIntegrationClient } from "./integrations/gtasks.js";
+
+export { gcontactsIntegration } from "./integrations/gcontacts.js";
+export type {
+  GcontactsIntegrationConfig,
+  GcontactsTools,
+  GcontactsIntegrationClient,
+} from "./integrations/gcontacts.js";
+
 export { outlookIntegration } from "./integrations/outlook.js";
 export type { OutlookIntegrationConfig, OutlookTools, OutlookIntegrationClient } from "./integrations/outlook.js";
 
+export { teamsIntegration } from "./integrations/teams.js";
+export type { TeamsIntegrationConfig, TeamsTools, TeamsScopes, TeamsIntegrationClient } from "./integrations/teams.js";
+
 export { airtableIntegration } from "./integrations/airtable.js";
 export type { AirtableIntegrationConfig, AirtableTools, AirtableIntegrationClient } from "./integrations/airtable.js";
+
+export { astronomerIntegration } from "./integrations/astronomer.js";
+export type { AstronomerIntegrationOptions, AstronomerTools, AstronomerIntegrationClient } from "./integrations/astronomer.js";
+
+export { betterstackIntegration } from "./integrations/betterstack.js";
+export type {
+  BetterStackIntegrationOptions,
+  BetterStackTools,
+  BetterStackIntegrationClient,
+} from "./integrations/betterstack.js";
 
 export { todoistIntegration } from "./integrations/todoist.js";
 export type { TodoistIntegrationConfig, TodoistTools, TodoistIntegrationClient } from "./integrations/todoist.js";
@@ -134,8 +160,23 @@ export type { RampIntegrationConfig, RampTools, RampIntegrationClient } from "./
 export { onedriveIntegration } from "./integrations/onedrive.js";
 export type { OneDriveIntegrationConfig, OneDriveTools, OneDriveIntegrationClient } from "./integrations/onedrive.js";
 
+export { plannerIntegration } from "./integrations/planner.js";
+export type {
+  PlannerIntegrationConfig,
+  PlannerTools,
+  PlannerIntegrationClient,
+} from "./integrations/planner.js";
+
 export { dropboxIntegration } from "./integrations/dropbox.js";
 export type { DropboxIntegrationOptions, DropboxTools } from "./integrations/dropbox.js";
+
+export { paperIntegration } from "./integrations/paper.js";
+export type {
+  PaperIntegrationConfig,
+  PaperTools,
+  PaperScopes,
+  PaperIntegrationClient,
+} from "./integrations/paper.js";
 
 export { gdocsIntegration } from "./integrations/gdocs.js";
 export type { GDocsIntegrationConfig, GDocsTools, GDocsIntegrationClient } from "./integrations/gdocs.js";
@@ -149,6 +190,20 @@ export type { GSlidesIntegrationConfig, GSlidesTools, GSlidesIntegrationClient }
 export { polarIntegration } from "./integrations/polar.js";
 export type { PolarIntegrationConfig, PolarTools, PolarIntegrationClient } from "./integrations/polar.js";
 
+export { supabaseIntegration } from "./integrations/supabase.js";
+export type { SupabaseIntegrationConfig, SupabaseTools, SupabaseIntegrationClient } from "./integrations/supabase.js";
+
+export { phantomIntegration, buildPhantomBrowseDeeplink } from "./integrations/phantom.js";
+export type { PhantomTools, PhantomIntegrationClient } from "./integrations/phantom.js";
+
+export { facebookIntegration } from "./integrations/facebook.js";
+export type {
+  FacebookIntegrationConfig,
+  FacebookTools,
+  FacebookScopes,
+  FacebookIntegrationClient,
+} from "./integrations/facebook.js";
+
 export { figmaIntegration } from "./integrations/figma.js";
 export type { FigmaIntegrationConfig, FigmaTools, FigmaIntegrationClient } from "./integrations/figma.js";
 
@@ -158,29 +213,160 @@ export type { IntercomIntegrationConfig, IntercomTools, IntercomIntegrationClien
 export { hubspotIntegration } from "./integrations/hubspot.js";
 export type { HubSpotIntegrationConfig, HubSpotTools, HubSpotIntegrationClient } from "./integrations/hubspot.js";
 
+export { instagramIntegration } from "./integrations/instagram.js";
+export type {
+  InstagramIntegrationConfig,
+  InstagramTools,
+  InstagramScopes,
+  InstagramIntegrationClient,
+} from "./integrations/instagram.js";
+
 export { youtubeIntegration } from "./integrations/youtube.js";
 export type { YouTubeIntegrationConfig, YouTubeTools, YouTubeIntegrationClient } from "./integrations/youtube.js";
 
 export { cursorIntegration } from "./integrations/cursor.js";
 export type { CursorIntegrationConfig, CursorTools, CursorIntegrationClient } from "./integrations/cursor.js";
 
+export { databricksIntegration } from "./integrations/databricks.js";
+export type {
+  DatabricksIntegrationConfig,
+  DatabricksTools,
+  DatabricksScopes,
+  DatabricksIntegrationClient,
+} from "./integrations/databricks.js";
+
 export { posthogIntegration } from "./integrations/posthog.js";
 export type { PostHogIntegrationConfig, PostHogTools, PostHogScopes, PostHogIntegrationClient } from "./integrations/posthog.js";
+
+export { postmanIntegration } from "./integrations/postman.js";
+export type { PostmanTools, PostmanIntegrationClient } from "./integrations/postman.js";
 
 export { sentryIntegration } from "./integrations/sentry.js";
 export type { SentryIntegrationConfig, SentryTools, SentryScopes, SentryIntegrationClient } from "./integrations/sentry.js";
 
+export { datadogIntegration } from "./integrations/datadog.js";
+export type { DatadogIntegrationConfig, DatadogTools, DatadogScopes, DatadogIntegrationClient } from "./integrations/datadog.js";
+
 export { netlifyIntegration } from "./integrations/netlify.js";
 export type { NetlifyIntegrationConfig, NetlifyTools, NetlifyIntegrationClient } from "./integrations/netlify.js";
 
+export { redisIntegration, encodeRedisCloudBearerToken } from "./integrations/redis.js";
+export type { RedisIntegrationOptions, RedisTools, RedisIntegrationClient } from "./integrations/redis.js";
+
+export { webflowIntegration } from "./integrations/webflow.js";
+export type { WebflowIntegrationConfig, WebflowTools, WebflowIntegrationClient } from "./integrations/webflow.js";
+
 export { jiraIntegration } from "./integrations/jira.js";
 export type { JiraIntegrationConfig, JiraTools, JiraScopes, JiraIntegrationClient } from "./integrations/jira.js";
+
+export { linkedinIntegration } from "./integrations/linkedin.js";
+export type {
+  LinkedInIntegrationConfig,
+  LinkedInTools,
+  LinkedInScopes,
+  LinkedInIntegrationClient,
+} from "./integrations/linkedin.js";
+
+export { threadsIntegration } from "./integrations/threads.js";
+export type {
+  ThreadsIntegrationConfig,
+  ThreadsTools,
+  ThreadsScopes,
+  ThreadsIntegrationClient,
+} from "./integrations/threads.js";
+
+export { tiktokIntegration } from "./integrations/tiktok.js";
+export type { TikTokIntegrationConfig, TikTokTools, TikTokScopes, TikTokIntegrationClient } from "./integrations/tiktok.js";
+
+export { trelloIntegration } from "./integrations/trello.js";
+export type { TrelloIntegrationOptions, TrelloTools, TrelloIntegrationClient } from "./integrations/trello.js";
+
+export { typeformIntegration } from "./integrations/typeform.js";
+export type {
+  TypeformIntegrationConfig,
+  TypeformTools,
+  TypeformScopes,
+  TypeformIntegrationClient,
+} from "./integrations/typeform.js";
+
+export { sharepointIntegration } from "./integrations/sharepoint.js";
+export type {
+  SharePointIntegrationConfig,
+  SharePointTools,
+  SharePointScopes,
+  SharePointIntegrationClient,
+} from "./integrations/sharepoint.js";
+
+export { xeroIntegration } from "./integrations/xero.js";
+export type { XeroIntegrationConfig, XeroTools, XeroScopes, XeroIntegrationClient } from "./integrations/xero.js";
+
+export { salesforceIntegration } from "./integrations/salesforce.js";
+export type {
+  SalesforceIntegrationConfig,
+  SalesforceTools,
+  SalesforceIntegrationClient,
+} from "./integrations/salesforce.js";
+
+export { attioIntegration } from "./integrations/attio.js";
+export type { AttioIntegrationConfig, AttioTools, AttioScopes, AttioIntegrationClient } from "./integrations/attio.js";
+
+export { gchatIntegration } from "./integrations/gchat.js";
+export type { GchatIntegrationConfig, GchatTools, GchatScopes, GchatIntegrationClient } from "./integrations/gchat.js";
+
+export { shopifyIntegration } from "./integrations/shopify.js";
+export type { ShopifyIntegrationConfig, ShopifyTools, ShopifyScopes, ShopifyIntegrationClient } from "./integrations/shopify.js";
+
+export { convexIntegration } from "./integrations/convex.js";
+export type { ConvexIntegrationOptions, ConvexTools, ConvexIntegrationClient } from "./integrations/convex.js";
+
+export { etoroIntegration } from "./integrations/etoro.js";
+export type { EtoroIntegrationOptions, EtoroTools, EtoroIntegrationClient } from "./integrations/etoro.js";
+
+export { alpacaIntegration } from "./integrations/alpaca.js";
+export type { AlpacaIntegrationOptions, AlpacaTools, AlpacaIntegrationClient } from "./integrations/alpaca.js";
+
+export { neonIntegration } from "./integrations/neon.js";
+export type { NeonIntegrationOptions, NeonTools, NeonIntegrationClient } from "./integrations/neon.js";
+
+export { workosIntegration } from "./integrations/workos.js";
+export type { WorkOSIntegrationOptions, WorkOSTools, WorkOSIntegrationClient } from "./integrations/workos.js";
+
+export { workdayIntegration } from "./integrations/workday.js";
+export type { WorkdayIntegrationConfig, WorkdayTools, WorkdayIntegrationClient } from "./integrations/workday.js";
+
+export { tldrawIntegration } from "./integrations/tldraw.js";
+export type { TldrawIntegrationOptions, TldrawTools, TldrawIntegrationClient } from "./integrations/tldraw.js";
+
+export { upstashIntegration } from "./integrations/upstash.js";
+export type {
+  UpstashIntegrationOptions,
+  UpstashTools,
+  UpstashIntegrationClient,
+} from "./integrations/upstash.js";
 
 export { granolaIntegration } from "./integrations/granola.js";
 export type { GranolaIntegrationOptions, GranolaTools } from "./integrations/granola.js";
 
 export { mercuryIntegration } from "./integrations/mercury.js";
 export type { MercuryIntegrationOptions, MercuryTools } from "./integrations/mercury.js";
+
+export { mailchimpIntegration } from "./integrations/mailchimp.js";
+export type {
+  MailchimpIntegrationConfig,
+  MailchimpTools,
+  MailchimpIntegrationClient,
+} from "./integrations/mailchimp.js";
+
+export { awsIntegration } from "./integrations/aws.js";
+export type {
+  AwsIntegrationOptions,
+  AwsIntegrationCredentials,
+  AwsTools,
+  AwsIntegrationClient,
+} from "./integrations/aws.js";
+
+export { wixIntegration } from "./integrations/wix.js";
+export type { WixIntegrationOptions, WixTools, WixIntegrationClient } from "./integrations/wix.js";
 
 // Server client
 export type { ServerIntegrationClient } from "./integrations/server-client.js";

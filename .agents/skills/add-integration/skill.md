@@ -4,7 +4,7 @@ Implements a new third-party integration into the Integrate TypeScript SDK from 
 
 ## Working directory
 
-`/Users/jessdaniel/Developer/Projects/integrate/typescript-sdk`
+`/Users/jeremy/Documents/github/typescript-sdk` (or the caller’s clone of the integrate TypeScript SDK).
 
 ## What you receive
 
@@ -384,6 +384,7 @@ To add a new category: extend the `IntegrationCategory` union type AND the `INTE
 |---|---|
 | `{PROVIDER_UPPERCASE}_CLIENT_ID` | `SENTRY_CLIENT_ID` |
 | `{PROVIDER_UPPERCASE}_CLIENT_SECRET` | `SENTRY_CLIENT_SECRET` |
+| `{PROVIDER_UPPERCASE}_ACCESS_TOKEN` | `AUTH0_ACCESS_TOKEN` (optional pre-issued Management API token) |
 
 Multi-word providers: `GOOGLE_CALENDAR` → `GCAL`, `WHATSAPP` → `WHATSAPP`. Use the shortest unambiguous uppercase form.
 
@@ -394,6 +395,10 @@ Multi-word providers: `GOOGLE_CALENDAR` → `GCAL`, `WHATSAPP` → `WHATSAPP`. U
 **No OAuth scopes** (e.g. Netlify): set `scopes: []`, omit `{PROVIDER}_SCOPES` const and `{Name}Scopes` type export, and skip scope-related tests.
 
 **API key auth instead of OAuth** (e.g. Cursor, Granola, Mercury): use `authType: "apiKey"` and `getHeaders()` instead of `oauth`. See `src/integrations/cursor.ts` or `src/integrations/granola.ts` for the pattern. These integrations do NOT go in `IntegrationNamespaces` in `client.ts` unless a typed client interface is defined.
+
+**Amazon Web Services (SigV4, IAM credentials)** — use `authType: "apiKey"` and `getHeaders()` returning `Authorization: Bearer` followed by **compact JSON**: `accessKeyId`, `secretAccessKey`, optional `sessionToken`, optional `region`. The MCP server parses JSON only from the bearer payload, loads `aws-sdk-go-v2` credentials, and signs control-plane requests (never log or echo secrets). Pair with Go tools under `tools/aws/` (see `parseCredentialsPayload` / `loadAWSConfig`). On the client, method names must map to tools via `methodToToolName`: e.g. `stsGetCallerIdentity` → `aws_sts_get_caller_identity`. Prefer env vars `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` (and optional session/region) on the server. Omit from the root default `client` in `index.ts` unless the integration can construct without secrets (AWS cannot).
+
+**Auth0-style: Management API + OAuth client credentials** — use `authType: "apiKey"` (bearer token), `getHeaders()` returning `Authorization` and a tenant header such as `X-Auth0-Domain` (must match the MCP server's expected header). Implement `onBeforeConnect` to exchange `client_credentials` at `https://{domain}/oauth/token` with `audience` `https://{domain}/api/v2/` (or a caller-supplied audience). Also support a pre-issued `AUTH0_ACCESS_TOKEN` / `accessToken` option. See `src/integrations/auth0.ts`. Omit from the root default `client` in `index.ts` if the factory requires secrets.
 
 **Configurable base URL** (e.g. PostHog self-hosted): add `baseUrl?` to config, write a `normalize{Name}BaseUrl()` helper, and pass `baseUrl` and `apiBaseUrl` in `oauth.config`. See `src/integrations/posthog.ts`.
 
@@ -412,7 +417,7 @@ Before reporting the integration as complete, verify every item:
 - [ ] `src/client.ts` — import added, key-remap clause added, value clause added
 - [ ] `src/index.ts` — factory and types exported
 - [ ] `src/server.ts` — factory exported
-- [ ] `index.ts` (root) — import added, factory added to default client
+- [ ] `index.ts` (root) — import added, factory added to default client **only if** the integration does not require secrets at construction time (otherwise export via `src/index.ts` only)
 - [ ] `src/integrations/library-metadata.ts` — catalog entry added
 - [ ] `bun run type-check` passes with zero errors
 - [ ] All new tests pass

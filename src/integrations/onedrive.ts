@@ -34,13 +34,16 @@ export interface OneDriveIntegrationConfig {
  * These should match the tool names exposed by your MCP server
  */
 const ONEDRIVE_TOOLS = [
-  "onedrive_list_files",
-  "onedrive_get_file",
-  "onedrive_download_file",
-  "onedrive_upload_file",
+  "onedrive_create_folder",
   "onedrive_delete_file",
+  "onedrive_download_file",
+  "onedrive_get_file",
+  "onedrive_list_files",
+  "onedrive_list_permissions",
+  "onedrive_remove_permission",
   "onedrive_search_files",
   "onedrive_share_file",
+  "onedrive_upload_file",
 ] as const;
 
 

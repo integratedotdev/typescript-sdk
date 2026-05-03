@@ -23,12 +23,13 @@ export interface PowerPointIntegrationConfig {
 }
 
 const POWERPOINT_TOOLS = [
-  "powerpoint_list",
-  "powerpoint_get",
-  "powerpoint_create",
   "powerpoint_copy",
+  "powerpoint_create",
   "powerpoint_delete",
+  "powerpoint_get",
+  "powerpoint_list",
   "powerpoint_share",
+  "powerpoint_update_content",
 ] as const;
 
 export function powerpointIntegration(config: PowerPointIntegrationConfig = {}): MCPIntegration<"powerpoint"> {

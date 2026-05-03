@@ -34,33 +34,29 @@ export interface YouTubeIntegrationConfig {
  * These should match the tool names exposed by your MCP server
  */
 const YOUTUBE_TOOLS = [
-  // Read
-  "youtube_search",
-  "youtube_get_video",
-  "youtube_get_my_channel",
-  "youtube_get_channel",
-  "youtube_list_my_videos",
-  "youtube_get_video_rating",
-  "youtube_list_playlists",
-  "youtube_get_playlist",
-  "youtube_list_playlist_items",
-  "youtube_list_subscriptions",
-  "youtube_list_comments",
-  "youtube_list_comment_replies",
+  "youtube_add_comment",
+  "youtube_add_to_playlist",
+  "youtube_create_playlist",
+  "youtube_delete_playlist",
   "youtube_get_captions",
-  // Write — engagement
+  "youtube_get_channel",
+  "youtube_get_my_channel",
+  "youtube_get_playlist",
+  "youtube_get_video",
+  "youtube_get_video_rating",
+  "youtube_list_comment_replies",
+  "youtube_list_comments",
+  "youtube_list_my_videos",
+  "youtube_list_playlist_items",
+  "youtube_list_playlists",
+  "youtube_list_subscriptions",
   "youtube_rate_video",
+  "youtube_remove_from_playlist",
+  "youtube_reply_to_comment",
+  "youtube_search",
   "youtube_subscribe",
   "youtube_unsubscribe",
-  "youtube_add_comment",
-  "youtube_reply_to_comment",
-  // Write — playlists
-  "youtube_create_playlist",
   "youtube_update_playlist",
-  "youtube_delete_playlist",
-  "youtube_add_to_playlist",
-  "youtube_remove_from_playlist",
-  // Write — video management
   "youtube_update_video",
 ] as const;
 

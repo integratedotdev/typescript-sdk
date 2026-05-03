@@ -395,5 +395,11 @@ export interface GcalIntegrationClient {
   deleteCalendar(params: {
     calendar_id: string;
   }): Promise<MCPToolCallResponse>;
-}
 
+  freebusy(params: {
+    calendar_ids: string;
+    time_min: string;
+    time_max: string;
+    timezone?: string;
+  }): Promise<MCPToolCallResponse>;
+}

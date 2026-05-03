@@ -23,20 +23,20 @@ export interface GDriveIntegrationConfig {
 }
 
 const GDRIVE_TOOLS = [
-  "gdrive_list_files",
-  "gdrive_get_file",
-  "gdrive_create_folder",
-  "gdrive_rename_file",
-  "gdrive_move_file",
   "gdrive_copy_file",
+  "gdrive_create_folder",
   "gdrive_delete_file",
+  "gdrive_download_file",
+  "gdrive_get_about",
+  "gdrive_get_file",
+  "gdrive_list_files",
+  "gdrive_list_permissions",
+  "gdrive_move_file",
+  "gdrive_remove_permission",
+  "gdrive_rename_file",
+  "gdrive_share_file",
   "gdrive_trash_file",
   "gdrive_upload_text_file",
-  "gdrive_download_file",
-  "gdrive_list_permissions",
-  "gdrive_share_file",
-  "gdrive_remove_permission",
-  "gdrive_get_about",
 ] as const;
 
 export function gdriveIntegration(config: GDriveIntegrationConfig = {}): MCPIntegration<"gdrive"> {

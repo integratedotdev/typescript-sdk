@@ -42,17 +42,41 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     description: "Manage Airtable bases, tables, and records",
     category: "Business",
   },
+  aws: {
+    description: "Inspect AWS accounts and resources with SigV4 (control-plane APIs)",
+    category: "Infrastructure",
+  },
+  attio: {
+    description: "Manage Attio people, companies, tasks, and CRM records",
+    category: "Business",
+  },
   calcom: {
     description: "Manage Cal.com bookings and schedules",
     category: "Business",
+  },
+  canva: {
+    description: "List and create Canva designs, manage folders, and export assets",
+    category: "Productivity",
+  },
+  cloudflare: {
+    description: "Manage Cloudflare zones, DNS, CDN cache, and Workers",
+    category: "Infrastructure",
   },
   cursor: {
     description: "Manage Cursor Cloud Agents and background tasks",
     category: "Engineering",
   },
+  databricks: {
+    description: "Run Databricks jobs, list clusters and SQL warehouses, and inspect workspace paths",
+    category: "Engineering",
+  },
   figma: {
     description: "Access Figma files, comments, and components",
     category: "Engineering",
+  },
+  facebook: {
+    description: "Manage Facebook Page posts, comments, reactions, and insights via the Graph API",
+    category: "Social Media",
   },
   github: {
     description: "Manage GitHub repos, issues, and pull requests",
@@ -66,9 +90,25 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     description: "Manage Google Calendar events and schedules",
     category: "Productivity",
   },
+  gtasks: {
+    description: "Manage Google Tasks lists and to-dos",
+    category: "Productivity",
+  },
+  gmeet: {
+    description: "Create Google Meet links and manage meeting events via Calendar",
+    category: "Communication",
+  },
+  gcontacts: {
+    description: "List, search, create, update, and delete Google Contacts via the People API",
+    category: "Communication",
+  },
   hubspot: {
     description: "Manage HubSpot contacts, deals, and tickets",
     category: "Business",
+  },
+  instagram: {
+    description: "Instagram Graph API — media, comments, insights, stories, and publishing",
+    category: "Social Media",
   },
   intercom: {
     description: "Manage Intercom contacts and conversations",
@@ -86,6 +126,10 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     description: "Manage OneDrive files, folders, and sharing",
     category: "Storage",
   },
+  planner: {
+    description: "Manage Microsoft Planner plans, buckets, and tasks",
+    category: "Productivity",
+  },
   outlook: {
     description: "Manage Outlook mail, calendars, and contacts",
     category: "Communication",
@@ -94,16 +138,36 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     description: "Manage Polar products, orders, and subscriptions",
     category: "Finance",
   },
+  phantom: {
+    description: "Build Phantom mobile browse universal links and deeplink provider documentation (Solana)",
+    category: "Other",
+  },
   posthog: {
     description: "Read PostHog organizations, projects, insights, and feature flags",
     category: "Analytics",
+  },
+  postman: {
+    description: "Manage Postman workspaces, collections, and environments via the Postman API",
+    category: "Engineering",
   },
   ramp: {
     description: "Manage Ramp corporate cards, bills, and spend",
     category: "Business",
   },
+  resend: {
+    description: "Send email and manage domains with the Resend API",
+    category: "Communication",
+  },
+  mailchimp: {
+    description: "Manage Mailchimp audiences, members, and campaigns",
+    category: "Communication",
+  },
   railway: {
     description: "Manage Railway workspaces, projects, services, deployments, variables, domains, and volumes",
+    category: "Infrastructure",
+  },
+  supabase: {
+    description: "Manage Supabase organizations, projects, Postgres, API keys, secrets, and branches",
     category: "Infrastructure",
   },
   sentry: {
@@ -112,6 +176,14 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   netlify: {
     description: "Manage Netlify sites, deploys, builds, and environment variables",
+    category: "Infrastructure",
+  },
+  redis: {
+    description: "Manage Redis Cloud subscriptions, databases, async tasks, and audit logs",
+    category: "Infrastructure",
+  },
+  upstash: {
+    description: "Use Upstash Redis REST, QStash messaging, and related HTTP APIs",
     category: "Infrastructure",
   },
   jira: {
@@ -150,12 +222,24 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     description: "Manage Vercel projects, deployments, and domains",
     category: "Infrastructure",
   },
+  workos: {
+    description: "Manage WorkOS organizations, users, directory sync, and AuthKit",
+    category: "Infrastructure",
+  },
   whatsapp: {
     description: "Send WhatsApp messages and templates",
     category: "Communication",
   },
   youtube: {
     description: "Search and access YouTube videos and channels",
+    category: "Social Media",
+  },
+  zoom: {
+    description: "Manage Zoom user profile and meetings",
+    category: "Communication",
+  },
+  reddit: {
+    description: "Browse subreddits, search posts, submit content, and vote on Reddit",
     category: "Social Media",
   },
   powerpoint: {
@@ -174,16 +258,36 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     description: "Manage Dropbox files, folders, and sharing",
     category: "Storage",
   },
+  paper: {
+    description: "Create, update, and export Dropbox Paper documents",
+    category: "Productivity",
+  },
   granola: {
     description: "List and read Granola meeting notes and folders",
     category: "Productivity",
+  },
+  alpaca: {
+    description: "Trade equities with Alpaca: account, orders, positions, and market clock",
+    category: "Finance",
+  },
+  binance: {
+    description: "Read Binance Spot prices, order books, and account data with read-only API keys",
+    category: "Finance",
   },
   mercury: {
     description: "Manage Mercury bank accounts, cards, and transactions",
     category: "Finance",
   },
+  monday: {
+    description: "Manage Monday.com boards, items, columns, and updates",
+    category: "Productivity",
+  },
   zendesk: {
     description: "Manage Zendesk tickets, users, and help center content",
+    category: "Business",
+  },
+  wix: {
+    description: "Manage Wix site stores, products, and e-commerce orders via REST",
     category: "Business",
   },
 };

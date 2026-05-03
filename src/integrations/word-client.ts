@@ -53,6 +53,15 @@ export interface WordIntegrationClient {
     parent_id?: string;
   }): Promise<MCPToolCallResponse>;
 
+  updateContent(params: {
+    /** Document item ID */
+    item_id: string;
+    /** Base64-encoded .docx bytes */
+    content: string;
+    /** MIME type override */
+    content_type?: string;
+  }): Promise<MCPToolCallResponse>;
+
   /**
    * Copy a Word document
    *

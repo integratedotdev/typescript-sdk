@@ -88,6 +88,13 @@ export interface OneDriveIntegrationClient {
     content: string;
   }): Promise<MCPToolCallResponse>;
 
+  createFolder(params: {
+    /** Folder name */
+    name: string;
+    /** Parent folder item ID (defaults to root) */
+    parent_id?: string;
+  }): Promise<MCPToolCallResponse>;
+
   /**
    * Delete a file or folder permanently
    *
@@ -131,5 +138,17 @@ export interface OneDriveIntegrationClient {
     type?: "view" | "edit" | "embed";
     /** anonymous or organization (default: anonymous) */
     scope?: "anonymous" | "organization";
+  }): Promise<MCPToolCallResponse>;
+
+  listPermissions(params: {
+    /** File or folder item ID */
+    item_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  removePermission(params: {
+    /** File or folder item ID */
+    item_id: string;
+    /** Permission ID to remove */
+    permission_id: string;
   }): Promise<MCPToolCallResponse>;
 }

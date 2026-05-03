@@ -514,6 +514,15 @@ export interface WhatsAppIntegrationClient {
     phone_number_id: string;
     /** Message text to prefill when QR is scanned */
     prefilled_message: string;
+    /** Optional image generation format */
+    generate_qr_image?: "PNG" | "SVG";
+  }): Promise<MCPToolCallResponse>;
+
+  updateQrCode(params: {
+    phone_number_id: string;
+    code: string;
+    prefilled_message?: string;
+    generate_qr_image?: "PNG" | "SVG";
   }): Promise<MCPToolCallResponse>;
 
   /**
@@ -527,5 +536,21 @@ export interface WhatsAppIntegrationClient {
   listQrCodes(params: {
     /** Phone number ID */
     phone_number_id: string;
+    fields?: string;
+    code?: string;
+    limit?: number;
+    after?: string;
+    before?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  getQrCode(params: {
+    phone_number_id: string;
+    code: string;
+    fields?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  deleteQrCode(params: {
+    phone_number_id: string;
+    code: string;
   }): Promise<MCPToolCallResponse>;
 }
