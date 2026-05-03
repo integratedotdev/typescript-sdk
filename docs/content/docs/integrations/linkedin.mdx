@@ -1,0 +1,64 @@
+---
+title: "LinkedIn"
+description: "Post updates and manage LinkedIn profile and company pages"
+---
+
+The LinkedIn integration provides access to post updates and manage linkedin profile and company pages through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { linkedinIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add LinkedIn to your server configuration. The integration automatically reads OAuth credentials from your environment (`LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, linkedinIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    linkedinIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("linkedin");
+const result = await client.linkedin.getUserinfo({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/linkedin.ts"
+  name="LinkedInIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `LINKEDIN_CLIENT_ID`
+- `LINKEDIN_CLIENT_SECRET`
+
+## Available Tools
+
+- `linkedin_get_userinfo`
+- `linkedin_create_post`
+
+## Notes
+
+- Category: Social Media
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

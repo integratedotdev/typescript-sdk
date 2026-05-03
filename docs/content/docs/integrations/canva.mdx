@@ -1,0 +1,77 @@
+---
+title: "Canva"
+description: "List and create Canva designs, manage folders, and export assets"
+---
+
+The Canva integration provides access to list and create canva designs, manage folders, and export assets through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { canvaIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Canva to your server configuration. The integration automatically reads OAuth credentials from your environment (`CANVA_CLIENT_ID`, `CANVA_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, canvaIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    canvaIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("canva");
+const result = await client.canva.getMe({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/canva.ts"
+  name="CanvaIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `CANVA_CLIENT_ID`
+- `CANVA_CLIENT_SECRET`
+
+## Available Tools
+
+- `canva_get_me`
+- `canva_get_profile`
+- `canva_list_designs`
+- `canva_get_design`
+- `canva_get_design_export_formats`
+- `canva_create_design`
+- `canva_get_folder`
+- `canva_list_folder_items`
+- `canva_create_folder`
+- `canva_update_folder`
+- `canva_delete_folder`
+- `canva_list_brand_templates`
+- `canva_get_brand_template`
+- `canva_create_export_job`
+- `canva_get_export_job`
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

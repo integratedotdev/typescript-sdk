@@ -1,0 +1,83 @@
+---
+title: "Microsoft Planner"
+description: "Manage Microsoft Planner plans, buckets, and tasks"
+---
+
+The Microsoft Planner integration provides access to manage microsoft planner plans, buckets, and tasks through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { plannerIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Microsoft Planner to your server configuration. The integration automatically reads OAuth credentials from your environment (`PLANNER_CLIENT_ID`, `PLANNER_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, plannerIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    plannerIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("planner");
+const result = await client.planner.createBucket({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/planner.ts"
+  name="PlannerIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `PLANNER_CLIENT_ID`
+- `PLANNER_CLIENT_SECRET`
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `Tasks.ReadWrite`
+- `Group.Read.All`
+- `offline_access`
+
+## Available Tools
+
+- `planner_create_bucket`
+- `planner_create_plan`
+- `planner_create_task`
+- `planner_delete_task`
+- `planner_get_plan`
+- `planner_get_task`
+- `planner_get_task_details`
+- `planner_list_buckets`
+- `planner_list_group_plans`
+- `planner_list_my_plans`
+- `planner_list_my_tasks`
+- `planner_list_plan_tasks`
+- `planner_update_task`
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

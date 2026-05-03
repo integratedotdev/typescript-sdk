@@ -23,10 +23,15 @@ export interface GDocsIntegrationConfig {
 }
 
 const GDOCS_TOOLS = [
-  "gdocs_list",
-  "gdocs_get",
-  "gdocs_create",
   "gdocs_append_text",
+  "gdocs_batch_update",
+  "gdocs_create",
+  "gdocs_create_comment",
+  "gdocs_delete",
+  "gdocs_delete_comment",
+  "gdocs_get",
+  "gdocs_list",
+  "gdocs_list_comments",
   "gdocs_replace_text",
 ] as const;
 

@@ -1,0 +1,68 @@
+---
+title: "Zapier"
+description: "Trigger and manage Zapier automation workflows"
+---
+
+The Zapier integration provides access to trigger and manage zapier automation workflows through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { zapierIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Zapier to your server configuration. The integration automatically reads OAuth credentials from your environment (`ZAPIER_CLIENT_ID`, `ZAPIER_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, zapierIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    zapierIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("zapier");
+const result = await client.zapier.getProfile({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/zapier.ts"
+  name="ZapierIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `ZAPIER_CLIENT_ID`
+- `ZAPIER_CLIENT_SECRET`
+
+## Available Tools
+
+- `zapier_get_profile`
+- `zapier_list_zaps`
+- `zapier_list_apps`
+- `zapier_list_actions`
+- `zapier_list_authentications`
+- `zapier_list_zap_runs`
+
+## Notes
+
+- Category: Engineering
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

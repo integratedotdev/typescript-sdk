@@ -1,0 +1,76 @@
+---
+title: "Instagram"
+description: "Instagram Graph API — media, comments, insights, stories, and publishing"
+---
+
+The Instagram integration provides access to instagram graph api — media, comments, insights, stories, and publishing through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { instagramIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Instagram to your server configuration. The integration automatically reads OAuth credentials from your environment (`INSTAGRAM_CLIENT_ID`, `INSTAGRAM_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, instagramIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    instagramIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("instagram");
+const result = await client.instagram.listPages({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/instagram.ts"
+  name="InstagramIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `INSTAGRAM_CLIENT_ID`
+- `INSTAGRAM_CLIENT_SECRET`
+
+## Available Tools
+
+- `instagram_list_pages`
+- `instagram_get_profile`
+- `instagram_list_media`
+- `instagram_get_media`
+- `instagram_list_comments`
+- `instagram_reply_comment`
+- `instagram_delete_comment`
+- `instagram_hide_comment`
+- `instagram_get_media_insights`
+- `instagram_get_user_insights`
+- `instagram_create_media_container`
+- `instagram_publish_media`
+- `instagram_list_stories`
+- `instagram_list_tagged_media`
+
+## Notes
+
+- Category: Social Media
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

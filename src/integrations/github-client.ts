@@ -489,6 +489,11 @@ export interface GitHubIntegrationClient {
   }): Promise<MCPToolCallResponse>;
 
   /**
+   * Get information about the authenticated user
+   */
+  getAuthenticatedUser(params?: Record<string, never>): Promise<MCPToolCallResponse>;
+
+  /**
    * Get information about a user
    */
   getUser(params: {
@@ -838,4 +843,3 @@ export interface GitHubIntegrationClient {
     due_on?: string;
   }): Promise<MCPToolCallResponse>;
 }
-

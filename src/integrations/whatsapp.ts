@@ -64,7 +64,10 @@ const WHATSAPP_TOOLS = [
   // Misc
   "whatsapp_get_message_status",
   "whatsapp_create_qr_code",
+  "whatsapp_update_qr_code",
   "whatsapp_list_qr_codes",
+  "whatsapp_get_qr_code",
+  "whatsapp_delete_qr_code",
 ] as const;
 
 

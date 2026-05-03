@@ -13,29 +13,52 @@ import { vercelIntegration } from "../../src/integrations/vercel.js";
 import { zendeskIntegration } from "../../src/integrations/zendesk.js";
 import { stripeIntegration } from "../../src/integrations/stripe.js";
 import { gcalIntegration } from "../../src/integrations/gcal.js";
+import { gcontactsIntegration } from "../../src/integrations/gcontacts.js";
+import { gtasksIntegration } from "../../src/integrations/gtasks.js";
+import { gmeetIntegration } from "../../src/integrations/gmeet.js";
 import { outlookIntegration } from "../../src/integrations/outlook.js";
+import { teamsIntegration } from "../../src/integrations/teams.js";
 import { airtableIntegration } from "../../src/integrations/airtable.js";
+import { alpacaIntegration } from "../../src/integrations/alpaca.js";
+import { auth0Integration } from "../../src/integrations/auth0.js";
 import { todoistIntegration } from "../../src/integrations/todoist.js";
 import { whatsappIntegration } from "../../src/integrations/whatsapp.js";
 import { calcomIntegration } from "../../src/integrations/calcom.js";
+import { canvaIntegration } from "../../src/integrations/canva.js";
 import { rampIntegration } from "../../src/integrations/ramp.js";
 import { onedriveIntegration } from "../../src/integrations/onedrive.js";
 import { dropboxIntegration } from "../../src/integrations/dropbox.js";
+import { paperIntegration } from "../../src/integrations/paper.js";
 import { gdocsIntegration } from "../../src/integrations/gdocs.js";
 import { gsheetsIntegration } from "../../src/integrations/gsheets.js";
 import { gslidesIntegration } from "../../src/integrations/gslides.js";
 import { polarIntegration } from "../../src/integrations/polar.js";
+import { planetscaleIntegration } from "../../src/integrations/planetscale.js";
+import { supabaseIntegration } from "../../src/integrations/supabase.js";
+import { facebookIntegration } from "../../src/integrations/facebook.js";
 import { figmaIntegration } from "../../src/integrations/figma.js";
 import { intercomIntegration } from "../../src/integrations/intercom.js";
 import { hubspotIntegration } from "../../src/integrations/hubspot.js";
+import { instagramIntegration } from "../../src/integrations/instagram.js";
 import { youtubeIntegration } from "../../src/integrations/youtube.js";
 import { cursorIntegration } from "../../src/integrations/cursor.js";
+import { databricksIntegration } from "../../src/integrations/databricks.js";
 import { posthogIntegration } from "../../src/integrations/posthog.js";
 import { sentryIntegration } from "../../src/integrations/sentry.js";
+import { datadogIntegration } from "../../src/integrations/datadog.js";
 import { netlifyIntegration } from "../../src/integrations/netlify.js";
 import { jiraIntegration } from "../../src/integrations/jira.js";
+import { clickupIntegration } from "../../src/integrations/clickup.js";
+import { tiktokIntegration } from "../../src/integrations/tiktok.js";
+import { threadsIntegration } from "../../src/integrations/threads.js";
+import { resendIntegration } from "../../src/integrations/resend.js";
+import { wixIntegration } from "../../src/integrations/wix.js";
+import { redisIntegration } from "../../src/integrations/redis.js";
 import { granolaIntegration } from "../../src/integrations/granola.js";
 import { mercuryIntegration } from "../../src/integrations/mercury.js";
+import { awsIntegration } from "../../src/integrations/aws.js";
+import { betterstackIntegration } from "../../src/integrations/betterstack.js";
+import { mondayIntegration } from "../../src/integrations/monday.js";
 import { genericOAuthIntegration, createSimpleIntegration } from "../../src/integrations/generic.js";
 import { hasOAuthConfig } from "../../src/integrations/types.js";
 
@@ -182,6 +205,175 @@ describe("Integration System", () => {
       expect(integration.tools).toContain("mercury_list_cards");
       expect(integration.tools).toContain("mercury_list_recipients");
       expect(integration.tools).toContain("mercury_create_internal_transfer");
+    });
+  });
+
+  describe("AWS Integration", () => {
+    test("requires credentials or env", () => {
+      const prevId = process.env.AWS_ACCESS_KEY_ID;
+      const prevSecret = process.env.AWS_SECRET_ACCESS_KEY;
+      delete process.env.AWS_ACCESS_KEY_ID;
+      delete process.env.AWS_SECRET_ACCESS_KEY;
+      try {
+        expect(() => awsIntegration()).toThrow();
+      } finally {
+        if (prevId === undefined) delete process.env.AWS_ACCESS_KEY_ID;
+        else process.env.AWS_ACCESS_KEY_ID = prevId;
+        if (prevSecret === undefined) delete process.env.AWS_SECRET_ACCESS_KEY;
+        else process.env.AWS_SECRET_ACCESS_KEY = prevSecret;
+      }
+    });
+
+    test("registers provider id aws", () => {
+      const integration = awsIntegration({
+        credentials: { accessKeyId: "A", secretAccessKey: "B" },
+      });
+      expect(integration.id).toBe("aws");
+      expect(integration.authType).toBe("apiKey");
+    });
+
+    test("includes expected tools", () => {
+      const integration = awsIntegration({
+        credentials: { accessKeyId: "A", secretAccessKey: "B" },
+      });
+      expect(integration.tools).toContain("aws_sts_get_caller_identity");
+      expect(integration.tools).toContain("aws_lambda_list_functions");
+    });
+  });
+
+  describe("Monday.com Integration", () => {
+    test("registers provider monday", () => {
+      const integration = mondayIntegration({
+        clientId: "cid",
+        clientSecret: "sec",
+      });
+      expect(integration.id).toBe("monday");
+      expect(integration.oauth?.provider).toBe("monday");
+    });
+
+    test("includes GraphQL tool names", () => {
+      const integration = mondayIntegration({
+        clientId: "cid",
+        clientSecret: "sec",
+      });
+      expect(integration.tools).toContain("monday_me");
+      expect(integration.tools).toContain("monday_list_board_items");
+      expect(integration.tools).toContain("monday_next_items_page");
+    });
+  });
+
+  describe("Auth0 Integration", () => {
+    test("uses apiKey auth with tenant header", () => {
+      const integration = auth0Integration({
+        domain: "dev-x.us.auth0.com",
+        accessToken: "mgmt",
+      });
+      expect(integration.id).toBe("auth0");
+      expect(integration.authType).toBe("apiKey");
+      expect(integration.getHeaders?.()).toEqual({
+        Authorization: "Bearer mgmt",
+        "X-Auth0-Domain": "dev-x.us.auth0.com",
+      });
+    });
+
+    test("includes management tools", () => {
+      const integration = auth0Integration({
+        domain: "dev.us.auth0.com",
+        accessToken: "t",
+      });
+      expect(integration.tools).toContain("auth0_list_clients");
+      expect(integration.tools).toContain("auth0_patch_user");
+    });
+  });
+
+  describe("Better Stack Integration", () => {
+    test("requires apiKey or env", () => {
+      expect(() => betterstackIntegration()).toThrow();
+    });
+
+    test("sends Telemetry API token as bearer", () => {
+      const integration = betterstackIntegration({
+        apiKey: "bs_telemetry_token",
+      });
+
+      expect(integration.getHeaders?.()).toEqual({
+        Authorization: "Bearer bs_telemetry_token",
+      });
+      expect(integration.id).toBe("betterstack");
+      expect(integration.authType).toBe("apiKey");
+    });
+
+    test("includes expected tools", () => {
+      const integration = betterstackIntegration({ apiKey: "k" });
+
+      expect(integration.tools).toContain("betterstack_list_sources");
+      expect(integration.tools).toContain("betterstack_ingest_logs");
+    });
+  });
+
+  describe("Alpaca Integration", () => {
+    test("requires API keys", () => {
+      expect(() =>
+        alpacaIntegration({
+          apiKeyId: "",
+          apiSecretKey: "sec",
+        })
+      ).toThrow();
+      expect(() =>
+        alpacaIntegration({
+          apiKeyId: "pk",
+          apiSecretKey: "",
+        })
+      ).toThrow();
+    });
+
+    test("sends Alpaca auth headers", () => {
+      const integration = alpacaIntegration({
+        apiKeyId: "PKTEST",
+        apiSecretKey: "SKTEST",
+      });
+
+      expect(integration.getHeaders?.()).toEqual({
+        "APCA-API-KEY-ID": "PKTEST",
+        "APCA-API-SECRET-KEY": "SKTEST",
+      });
+    });
+
+    test("sends live environment header", () => {
+      const integration = alpacaIntegration({
+        apiKeyId: "PK",
+        apiSecretKey: "SK",
+        environment: "live",
+      });
+
+      expect(integration.getHeaders?.()).toEqual({
+        "APCA-API-KEY-ID": "PK",
+        "APCA-API-SECRET-KEY": "SK",
+        "X-Integrate-Alpaca-Environment": "live",
+      });
+    });
+
+    test("registers provider id alpaca", () => {
+      const integration = alpacaIntegration({
+        apiKeyId: "PK",
+        apiSecretKey: "SK",
+      });
+
+      expect(integration.id).toBe("alpaca");
+      expect(integration.name).toBe("Alpaca");
+      expect(integration.authType).toBe("apiKey");
+    });
+
+    test("includes expected tools", () => {
+      const integration = alpacaIntegration({
+        apiKeyId: "PK",
+        apiSecretKey: "SK",
+      });
+
+      expect(integration.tools).toContain("alpaca_get_account");
+      expect(integration.tools).toContain("alpaca_create_order");
+      expect(integration.tools).toContain("alpaca_list_orders");
+      expect(integration.tools).toContain("alpaca_get_clock");
     });
   });
 
@@ -855,6 +1047,175 @@ describe("Integration System", () => {
     });
   });
 
+  describe("Google Contacts Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = gcontactsIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("gcontacts");
+      expect(integration.tools).toBeArray();
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeDefined();
+      expect(integration.logoUrl).toBeDefined();
+      expect(integration.description).toBeDefined();
+      expect(integration.category).toBeDefined();
+    });
+
+    test("includes OAuth configuration", () => {
+      const integration = gcontactsIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.provider).toBe("gcontacts");
+      expect(integration.oauth?.clientId).toBe("test-id");
+      expect(integration.oauth?.clientSecret).toBe("test-secret");
+    });
+
+    test("does not set scopes when not provided (server provides defaults)", () => {
+      const integration = gcontactsIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.scopes).toBeUndefined();
+    });
+
+    test("includes expected tools", () => {
+      const integration = gcontactsIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.tools).toContain("gcontacts_list_connections");
+      expect(integration.tools).toContain("gcontacts_create_contact");
+      expect(integration.tools).toContain("gcontacts_search_contacts");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = gcontactsIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+
+    test("lifecycle hooks execute successfully", async () => {
+      const integration = gcontactsIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      await expect(integration.onInit?.(null as any)).resolves.toBeUndefined();
+      await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+  });
+
+  describe("Google Tasks Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = gtasksIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("gtasks");
+      expect(integration.tools).toBeArray();
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeDefined();
+    });
+
+    test("includes OAuth configuration", () => {
+      const integration = gtasksIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.provider).toBe("gtasks");
+      expect(integration.oauth?.clientId).toBe("test-id");
+      expect(integration.oauth?.clientSecret).toBe("test-secret");
+    });
+
+    test("does not set scopes when not provided (server provides defaults)", () => {
+      const integration = gtasksIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.scopes).toBeUndefined();
+    });
+
+    test("includes expected tools", () => {
+      const integration = gtasksIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.tools).toContain("gtasks_list_tasklists");
+      expect(integration.tools).toContain("gtasks_create_task");
+      expect(integration.tools).toContain("gtasks_clear_completed");
+    });
+
+    test("lifecycle hooks execute successfully", async () => {
+      const integration = gtasksIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      await expect(integration.onInit?.(null as any)).resolves.toBeUndefined();
+      await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+  });
+
+  describe("Google Meet Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = gmeetIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("gmeet");
+      expect(integration.tools).toBeArray();
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeDefined();
+    });
+
+    test("includes OAuth configuration", () => {
+      const integration = gmeetIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.provider).toBe("gmeet");
+      expect(integration.oauth?.clientId).toBe("test-id");
+      expect(integration.oauth?.clientSecret).toBe("test-secret");
+    });
+
+    test("includes expected tools", () => {
+      const integration = gmeetIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.tools).toContain("gmeet_create_meeting");
+      expect(integration.tools).toContain("gmeet_list_meetings");
+      expect(integration.tools).toContain("gmeet_add_meet_to_event");
+    });
+
+    test("lifecycle hooks execute successfully", async () => {
+      const integration = gmeetIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      await expect(integration.onInit?.(null as any)).resolves.toBeUndefined();
+      await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+  });
+
   describe("Outlook Integration", () => {
     test("creates integration with correct structure", () => {
       const integration = outlookIntegration({
@@ -911,6 +1272,86 @@ describe("Integration System", () => {
 
     test("lifecycle hooks execute successfully", async () => {
       const integration = outlookIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      await expect(integration.onInit?.(null as any)).resolves.toBeUndefined();
+      await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+  });
+
+  describe("Microsoft Teams Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = teamsIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("teams");
+      expect(integration.name).toBe("Microsoft Teams");
+      expect(integration.tools).toBeArray();
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeDefined();
+      expect(integration.logoUrl).toBeDefined();
+      expect(integration.description).toBeDefined();
+      expect(integration.category).toBeDefined();
+    });
+
+    test("includes OAuth configuration", () => {
+      const integration = teamsIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.provider).toBe("teams");
+      expect(integration.oauth?.clientId).toBe("test-id");
+      expect(integration.oauth?.clientSecret).toBe("test-secret");
+    });
+
+    test("uses default scopes when none provided", () => {
+      const integration = teamsIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.scopes).toBeArray();
+      expect(integration.oauth?.scopes?.length).toBeGreaterThan(0);
+    });
+
+    test("accepts custom scopes", () => {
+      const integration = teamsIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+        scopes: ["User.Read"],
+      });
+
+      expect(integration.oauth?.scopes).toEqual(["User.Read"]);
+    });
+
+    test("includes expected tools", () => {
+      const integration = teamsIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.tools).toContain("teams_list_teams");
+      expect(integration.tools).toContain("teams_send_channel_message");
+      expect(integration.tools).toContain("teams_get_profile");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = teamsIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+
+    test("lifecycle hooks execute successfully", async () => {
+      const integration = teamsIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -1125,6 +1566,11 @@ describe("Integration System", () => {
       expect(integration.tools).toContain("whatsapp_get_message_status");
       expect(integration.tools).toContain("whatsapp_mark_read");
       expect(integration.tools).toContain("whatsapp_get_profile");
+      expect(integration.tools).toContain("whatsapp_create_qr_code");
+      expect(integration.tools).toContain("whatsapp_update_qr_code");
+      expect(integration.tools).toContain("whatsapp_list_qr_codes");
+      expect(integration.tools).toContain("whatsapp_get_qr_code");
+      expect(integration.tools).toContain("whatsapp_delete_qr_code");
     });
 
     test("has lifecycle hooks defined", () => {
@@ -1268,6 +1714,54 @@ describe("Integration System", () => {
 
     test("lifecycle hooks execute successfully", async () => {
       const integration = calcomIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      await expect(integration.onInit?.(null as any)).resolves.toBeUndefined();
+      await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+  });
+
+  describe("Canva Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = canvaIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("canva");
+      expect(integration.tools).toBeArray();
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeDefined();
+    });
+
+    test("includes OAuth configuration", () => {
+      const integration = canvaIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+        scopes: ["design:meta:read", "folder:read"],
+      });
+
+      expect(integration.oauth?.provider).toBe("canva");
+      expect(integration.oauth?.clientId).toBe("test-id");
+      expect(integration.oauth?.clientSecret).toBe("test-secret");
+      expect(integration.oauth?.scopes).toEqual(["design:meta:read", "folder:read"]);
+    });
+
+    test("includes expected tools", () => {
+      const integration = canvaIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.tools).toContain("canva_list_designs");
+      expect(integration.tools).toContain("canva_get_design");
+      expect(integration.tools).toContain("canva_create_export_job");
+    });
+
+    test("lifecycle hooks execute successfully", async () => {
+      const integration = canvaIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -1513,6 +2007,121 @@ describe("Integration System", () => {
 
       await expect(integration.onInit?.(null as any)).resolves.toBeUndefined();
       await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+  });
+
+  describe("Dropbox Paper Integration", () => {
+    test("registers provider name paper", () => {
+      const integration = paperIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.id).toBe("paper");
+      expect(integration.oauth?.provider).toBe("paper");
+    });
+
+    test("uses OAuth flow, not API key auth", () => {
+      const integration = paperIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.authType).toBe("oauth");
+      expect(integration.oauth).toBeDefined();
+      expect(integration.getHeaders).toBeUndefined();
+    });
+
+    test("uses default scopes when none provided", () => {
+      const integration = paperIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.scopes).toBeArray();
+      expect(integration.oauth?.scopes?.length).toBe(4);
+      expect(integration.oauth?.scopes).toContain("files.content.write");
+    });
+
+    test("accepts custom scopes", () => {
+      const integration = paperIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+        scopes: ["files.content.read"],
+      });
+
+      expect(integration.oauth?.scopes).toEqual(["files.content.read"]);
+    });
+
+    test("validates scopes input", () => {
+      expect(() =>
+        paperIntegration({
+          scopes: "not-an-array" as any,
+        })
+      ).toThrow("paperIntegration scopes must be an array of strings");
+
+      expect(() =>
+        paperIntegration({
+          scopes: ["ok", 123 as any],
+        })
+      ).toThrow("paperIntegration scopes must be an array of strings");
+    });
+
+    test("includes expected tools", () => {
+      const integration = paperIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.tools).toContain("paper_create_doc");
+      expect(integration.tools).toContain("paper_update_doc");
+      expect(integration.tools).toContain("paper_export_doc");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = paperIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+
+    test("lifecycle hooks execute successfully", async () => {
+      const integration = paperIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      await expect(integration.onInit?.(null as any)).resolves.toBeUndefined();
+      await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+
+    test("falls back to Dropbox env credentials", () => {
+      const origPaperId = process.env.PAPER_CLIENT_ID;
+      const origPaperSecret = process.env.PAPER_CLIENT_SECRET;
+      const origDbId = process.env.DROPBOX_CLIENT_ID;
+      const origDbSecret = process.env.DROPBOX_CLIENT_SECRET;
+
+      delete process.env.PAPER_CLIENT_ID;
+      delete process.env.PAPER_CLIENT_SECRET;
+      process.env.DROPBOX_CLIENT_ID = "from-dropbox-id";
+      process.env.DROPBOX_CLIENT_SECRET = "from-dropbox-secret";
+
+      const integration = paperIntegration();
+
+      expect(integration.oauth?.clientId).toBe("from-dropbox-id");
+      expect(integration.oauth?.clientSecret).toBe("from-dropbox-secret");
+
+      if (origPaperId === undefined) delete process.env.PAPER_CLIENT_ID;
+      else process.env.PAPER_CLIENT_ID = origPaperId;
+      if (origPaperSecret === undefined) delete process.env.PAPER_CLIENT_SECRET;
+      else process.env.PAPER_CLIENT_SECRET = origPaperSecret;
+      if (origDbId === undefined) delete process.env.DROPBOX_CLIENT_ID;
+      else process.env.DROPBOX_CLIENT_ID = origDbId;
+      if (origDbSecret === undefined) delete process.env.DROPBOX_CLIENT_SECRET;
+      else process.env.DROPBOX_CLIENT_SECRET = origDbSecret;
     });
   });
 
@@ -1793,6 +2402,87 @@ describe("Integration System", () => {
     });
   });
 
+  describe("PlanetScale Integration", () => {
+    test("creates integration with default OAuth configuration", () => {
+      const integration = planetscaleIntegration({
+        clientId: "pscale-client-id",
+        clientSecret: "pscale-client-secret",
+      });
+
+      expect(integration.id).toBe("planetscale");
+      expect(integration.name).toBe("PlanetScale");
+      expect(integration.category).toBe("Infrastructure");
+      expect(integration.oauth?.provider).toBe("planetscale");
+      expect(integration.oauth?.scopes).toContain("database:read_branches");
+      expect((integration.oauth?.config as any).authorization_endpoint).toBe(
+        "https://auth.planetscale.com/oauth/authorize"
+      );
+      expect((integration.oauth?.config as any).token_endpoint).toBe("https://auth.planetscale.com/oauth/token");
+      expect((integration.oauth?.config as any).apiBaseUrl).toBe("https://api.planetscale.com/v1");
+      expect(integration.tools).toContain("planetscale_list_organizations");
+      expect(integration.tools).toContain("planetscale_get_deploy_request");
+      expect(integration.tools).toHaveLength(9);
+    });
+  });
+
+  describe("Facebook Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = facebookIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("facebook");
+      expect(integration.tools).toBeArray();
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeDefined();
+    });
+
+    test("includes OAuth configuration", () => {
+      const integration = facebookIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+        scopes: ["public_profile", "pages_show_list"],
+      });
+
+      expect(integration.oauth?.provider).toBe("facebook");
+      expect(integration.oauth?.clientId).toBe("test-id");
+      expect(integration.oauth?.clientSecret).toBe("test-secret");
+      expect(integration.oauth?.scopes).toEqual(["public_profile", "pages_show_list"]);
+    });
+
+    test("includes expected tools", () => {
+      const integration = facebookIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.tools).toContain("facebook_get_me");
+      expect(integration.tools).toContain("facebook_list_pages");
+      expect(integration.tools).toContain("facebook_create_page_post");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = facebookIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+
+    test("lifecycle hooks execute successfully", async () => {
+      const integration = facebookIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      await expect(integration.onInit?.(null as any)).resolves.toBeUndefined();
+      await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+  });
+
   describe("Figma Integration", () => {
     test("creates integration with correct structure", () => {
       const integration = figmaIntegration({
@@ -2002,6 +2692,72 @@ describe("Integration System", () => {
     });
   });
 
+  describe("Instagram Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = instagramIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("instagram");
+      expect(integration.tools).toBeArray();
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeDefined();
+    });
+
+    test("includes OAuth configuration", () => {
+      const integration = instagramIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+        scopes: ["pages_show_list"],
+      });
+
+      expect(integration.oauth?.provider).toBe("instagram");
+      expect(integration.oauth?.clientId).toBe("test-id");
+      expect(integration.oauth?.clientSecret).toBe("test-secret");
+      expect(integration.oauth?.scopes).toEqual(["pages_show_list"]);
+    });
+
+    test("uses default scopes when none provided", () => {
+      const integration = instagramIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.scopes).toContain("instagram_basic");
+    });
+
+    test("includes expected tools", () => {
+      const integration = instagramIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.tools).toContain("instagram_list_pages");
+      expect(integration.tools).toContain("instagram_list_media");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = instagramIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+
+    test("lifecycle hooks execute successfully", async () => {
+      const integration = instagramIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      await expect(integration.onInit?.(null as any)).resolves.toBeUndefined();
+      await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+  });
+
   describe("YouTube Integration", () => {
     test("creates integration with correct structure", () => {
       const integration = youtubeIntegration({
@@ -2066,6 +2822,74 @@ describe("Integration System", () => {
 
     test("lifecycle hooks execute successfully", async () => {
       const integration = youtubeIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      await expect(integration.onInit?.(null as any)).resolves.toBeUndefined();
+      await expect(integration.onAfterConnect?.(null as any)).resolves.toBeUndefined();
+    });
+  });
+
+  describe("TikTok Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = tiktokIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("tiktok");
+      expect(integration.tools).toBeArray();
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeDefined();
+    });
+
+    test("includes OAuth configuration", () => {
+      const integration = tiktokIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+        scopes: ["user.info.basic"],
+      });
+
+      expect(integration.oauth?.provider).toBe("tiktok");
+      expect(integration.oauth?.clientId).toBe("test-id");
+      expect(integration.oauth?.clientSecret).toBe("test-secret");
+      expect(integration.oauth?.scopes).toEqual(["user.info.basic"]);
+    });
+
+    test("uses default scopes when none provided", () => {
+      const integration = tiktokIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.oauth?.scopes).toContain("user.info.basic");
+      expect(integration.oauth?.scopes).toContain("video.list");
+    });
+
+    test("includes expected tools", () => {
+      const integration = tiktokIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.tools).toContain("tiktok_get_user_info");
+      expect(integration.tools).toContain("tiktok_list_videos");
+      expect(integration.tools).toContain("tiktok_query_videos");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = tiktokIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+
+    test("lifecycle hooks execute successfully", async () => {
+      const integration = tiktokIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -2241,6 +3065,31 @@ describe("Integration System", () => {
     });
   });
 
+  describe("Datadog Integration", () => {
+    test("creates OAuth integration with correct structure", () => {
+      const integration = datadogIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("datadog");
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeDefined();
+      expect(integration.oauth?.provider).toBe("datadog");
+    });
+
+    test("includes default scopes", () => {
+      const integration = datadogIntegration({ clientId: "id", clientSecret: "secret" });
+      expect(integration.oauth?.scopes).toContain("metrics_read");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = datadogIntegration({ clientId: "id", clientSecret: "secret" });
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+  });
+
   describe("Netlify Integration", () => {
     test("creates integration with correct structure", () => {
       const integration = netlifyIntegration({
@@ -2262,6 +3111,64 @@ describe("Integration System", () => {
 
     test("has lifecycle hooks defined", () => {
       const integration = netlifyIntegration({ clientId: "id", clientSecret: "secret" });
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+  });
+
+  describe("Supabase Integration", () => {
+    test("creates OAuth integration with correct structure", () => {
+      const originalPat = process.env.SUPABASE_ACCESS_TOKEN;
+      delete process.env.SUPABASE_ACCESS_TOKEN;
+
+      const integration = supabaseIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("supabase");
+      expect(integration.tools.length).toBeGreaterThan(0);
+      expect(integration.oauth).toBeDefined();
+      expect(integration.oauth?.provider).toBe("supabase");
+
+      if (originalPat === undefined) delete process.env.SUPABASE_ACCESS_TOKEN;
+      else process.env.SUPABASE_ACCESS_TOKEN = originalPat;
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const originalPat = process.env.SUPABASE_ACCESS_TOKEN;
+      delete process.env.SUPABASE_ACCESS_TOKEN;
+
+      const integration = supabaseIntegration({
+        clientId: "id",
+        clientSecret: "secret",
+      });
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+
+      if (originalPat === undefined) delete process.env.SUPABASE_ACCESS_TOKEN;
+      else process.env.SUPABASE_ACCESS_TOKEN = originalPat;
+    });
+  });
+
+  describe("Databricks Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = databricksIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+        workspaceHost: "https://dbc-test.cloud.databricks.com",
+      });
+
+      expect(integration.id).toBe("databricks");
+      expect(integration.oauth?.provider).toBe("databricks");
+      expect(integration.tools.length).toBeGreaterThan(0);
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = databricksIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
       expect(integration.onInit).toBeDefined();
       expect(integration.onAfterConnect).toBeDefined();
     });
@@ -2289,6 +3196,105 @@ describe("Integration System", () => {
 
     test("has lifecycle hooks defined", () => {
       const integration = jiraIntegration({ clientId: "id", clientSecret: "secret" });
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+  });
+
+  describe("ClickUp Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = clickupIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("clickup");
+      expect(integration.oauth?.provider).toBe("clickup");
+      expect(integration.tools.length).toBeGreaterThan(0);
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = clickupIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+  });
+
+  describe("Threads Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = threadsIntegration({
+        clientId: "test-client-id",
+        clientSecret: "test-client-secret",
+      });
+
+      expect(integration.id).toBe("threads");
+      expect(integration.oauth?.provider).toBe("threads");
+      expect(integration.tools.length).toBeGreaterThan(0);
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = threadsIntegration({
+        clientId: "test-id",
+        clientSecret: "test-secret",
+      });
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+  });
+
+  describe("Resend Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = resendIntegration({ apiKey: "re_test" });
+      expect(integration.id).toBe("resend");
+      expect(integration.authType).toBe("apiKey");
+      expect(integration.tools).toContain("resend_send_email");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = resendIntegration({ apiKey: "re_k" });
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+  });
+
+  describe("Wix Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = wixIntegration({
+        apiKey: "key",
+        siteId: "550e8400-e29b-41d4-a716-446655440000",
+      });
+      expect(integration.id).toBe("wix");
+      expect(integration.authType).toBe("apiKey");
+      expect(integration.tools).toContain("wix_query_products");
+      expect(integration.tools).toContain("wix_search_orders");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = wixIntegration({ apiKey: "k", siteId: "s" });
+      expect(integration.onInit).toBeDefined();
+      expect(integration.onAfterConnect).toBeDefined();
+    });
+  });
+
+  describe("Redis Cloud Integration", () => {
+    test("creates integration with correct structure", () => {
+      const integration = redisIntegration({
+        accountKey: "acc",
+        secretKey: "sec",
+      });
+      expect(integration.id).toBe("redis");
+      expect(integration.authType).toBe("apiKey");
+      expect(integration.tools).toContain("redis_list_subscriptions");
+    });
+
+    test("has lifecycle hooks defined", () => {
+      const integration = redisIntegration({
+        accountKey: "a",
+        secretKey: "b",
+      });
       expect(integration.onInit).toBeDefined();
       expect(integration.onAfterConnect).toBeDefined();
     });

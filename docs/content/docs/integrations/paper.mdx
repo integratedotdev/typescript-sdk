@@ -1,0 +1,67 @@
+---
+title: "Dropbox Paper"
+description: "Create, update, and export Dropbox Paper documents"
+---
+
+The Dropbox Paper integration provides access to create, update, and export dropbox paper documents through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { paperIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Dropbox Paper to your server configuration. The integration automatically reads OAuth credentials from your environment (`PAPER_CLIENT_ID`, `DROPBOX_CLIENT_ID`, `PAPER_CLIENT_SECRET`, `DROPBOX_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, paperIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    paperIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("paper");
+const result = await client.paper.createDoc({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/paper.ts"
+  name="PaperIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `PAPER_CLIENT_ID`
+- `DROPBOX_CLIENT_ID`
+- `PAPER_CLIENT_SECRET`
+- `DROPBOX_CLIENT_SECRET`
+
+## Available Tools
+
+- `paper_create_doc`
+- `paper_update_doc`
+- `paper_export_doc`
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

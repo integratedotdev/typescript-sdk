@@ -1,0 +1,77 @@
+---
+title: "Redis Cloud"
+description: "Manage Redis Cloud subscriptions, databases, async tasks, and audit logs"
+---
+
+The Redis Cloud integration provides access to manage redis cloud subscriptions, databases, async tasks, and audit logs through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { encodeRedisCloudBearerToken } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Redis Cloud to your server configuration. This integration can read credentials from environment variables automatically (`REDIS_CLOUD_ACCOUNT_KEY`, `REDIS_CLOUD_SECRET_KEY`):
+
+```typescript
+import { createMCPServer, encodeRedisCloudBearerToken } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    encodeRedisCloudBearerToken(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+const result = await client.redis.listSubscriptions({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/redis.ts"
+  name="RedisIntegrationOptions"
+/>
+
+## Environment Variables
+
+- `REDIS_CLOUD_ACCOUNT_KEY`
+- `REDIS_CLOUD_SECRET_KEY`
+
+## Available Tools
+
+- `redis_list_subscriptions`
+- `redis_get_subscription`
+- `redis_list_fixed_subscriptions`
+- `redis_get_fixed_subscription`
+- `redis_list_databases`
+- `redis_get_database`
+- `redis_create_database`
+- `redis_update_database`
+- `redis_delete_database`
+- `redis_list_essentials_databases`
+- `redis_get_essentials_database`
+- `redis_create_essentials_database`
+- `redis_update_essentials_database`
+- `redis_delete_essentials_database`
+- `redis_get_task`
+- `redis_list_logs`
+
+## Notes
+
+- Category: Infrastructure
+- Authentication mode: API key
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

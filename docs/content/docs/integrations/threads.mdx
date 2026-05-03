@@ -1,0 +1,74 @@
+---
+title: "Threads"
+description: "Post and manage content on Threads (Meta)"
+---
+
+The Threads integration provides access to post and manage content on threads (meta) through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { threadsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Threads to your server configuration. The integration automatically reads OAuth credentials from your environment (`THREADS_CLIENT_ID`, `THREADS_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, threadsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    threadsIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("threads");
+const result = await client.threads.getMe({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/threads.ts"
+  name="ThreadsIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `THREADS_CLIENT_ID`
+- `THREADS_CLIENT_SECRET`
+
+## Available Tools
+
+- `threads_get_me`
+- `threads_list_user_media`
+- `threads_get_media`
+- `threads_keyword_search`
+- `threads_create_media_container`
+- `threads_publish_media_container`
+- `threads_get_container_status`
+- `threads_list_replies`
+- `threads_get_conversation`
+- `threads_manage_reply`
+- `threads_repost`
+- `threads_delete_media`
+
+## Notes
+
+- Category: Social Media
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

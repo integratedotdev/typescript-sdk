@@ -1,0 +1,92 @@
+---
+title: "GitLab"
+description: "Manage GitLab repositories, issues, and merge requests"
+---
+
+The GitLab integration provides access to manage gitlab repositories, issues, and merge requests through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { gitlabIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add GitLab to your server configuration. The integration automatically reads OAuth credentials from your environment (`GITLAB_CLIENT_ID`, `GITLAB_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, gitlabIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    gitlabIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("gitlab");
+const result = await client.gitlab.listProjects({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/gitlab.ts"
+  name="GitLabIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `GITLAB_CLIENT_ID`
+- `GITLAB_CLIENT_SECRET`
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `read_api`
+- `write_api`
+- `read_user`
+
+## Available Tools
+
+- `gitlab_list_projects`
+- `gitlab_list_own_projects`
+- `gitlab_get_project`
+- `gitlab_create_project`
+- `gitlab_create_issue`
+- `gitlab_list_issues`
+- `gitlab_get_issue`
+- `gitlab_update_issue`
+- `gitlab_close_issue`
+- `gitlab_create_merge_request`
+- `gitlab_list_merge_requests`
+- `gitlab_get_merge_request`
+- `gitlab_accept_merge_request`
+- `gitlab_list_branches`
+- `gitlab_create_branch`
+- `gitlab_list_commits`
+- `gitlab_get_commit`
+- `gitlab_list_issue_notes`
+- `gitlab_create_issue_note`
+- `gitlab_list_milestones`
+- `gitlab_create_milestone`
+- `gitlab_get_current_user`
+
+## Notes
+
+- Category: Engineering
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

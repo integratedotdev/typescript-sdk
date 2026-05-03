@@ -56,6 +56,10 @@ export interface GSheetsIntegrationClient {
     sheet_titles?: string;
   }): Promise<MCPToolCallResponse>;
 
+  delete(params: {
+    spreadsheet_id: string;
+  }): Promise<MCPToolCallResponse>;
+
   appendValues(params: {
     spreadsheet_id: string;
     range: string;
@@ -72,5 +76,13 @@ export interface GSheetsIntegrationClient {
     spreadsheet_id: string;
     data: string;
     value_input_option?: "RAW" | "USER_ENTERED";
+  }): Promise<MCPToolCallResponse>;
+
+  batchUpdate(params: {
+    spreadsheet_id: string;
+    requests: string;
+    include_spreadsheet_in_response?: boolean;
+    response_ranges?: string;
+    response_include_grid_data?: boolean;
   }): Promise<MCPToolCallResponse>;
 }

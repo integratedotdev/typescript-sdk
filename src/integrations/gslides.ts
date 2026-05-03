@@ -23,12 +23,14 @@ export interface GSlidesIntegrationConfig {
 }
 
 const GSLIDES_TOOLS = [
-  "gslides_list",
+  "gslides_add_slide",
+  "gslides_batch_update",
+  "gslides_create",
+  "gslides_delete",
+  "gslides_delete_slide",
   "gslides_get",
   "gslides_get_page",
-  "gslides_create",
-  "gslides_add_slide",
-  "gslides_delete_slide",
+  "gslides_list",
   "gslides_update_text",
 ] as const;
 

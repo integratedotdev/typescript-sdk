@@ -1,0 +1,67 @@
+---
+title: "Wix"
+description: "Manage Wix site stores, products, and e-commerce orders via REST"
+---
+
+The Wix integration provides access to manage wix site stores, products, and e-commerce orders via rest through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { wixIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Wix to your server configuration. This integration can read credentials from environment variables automatically (`WIX_API_KEY`, `WIX_SITE_ID`):
+
+```typescript
+import { createMCPServer, wixIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    wixIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+const result = await client.wix.queryProducts({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/wix.ts"
+  name="WixIntegrationOptions"
+/>
+
+## Environment Variables
+
+- `WIX_API_KEY`
+- `WIX_SITE_ID`
+
+## Available Tools
+
+- `wix_query_products`
+- `wix_get_product`
+- `wix_create_product`
+- `wix_update_product`
+- `wix_search_orders`
+- `wix_get_order`
+
+## Notes
+
+- Category: Business
+- Authentication mode: API key
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

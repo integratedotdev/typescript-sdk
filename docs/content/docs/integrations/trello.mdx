@@ -1,0 +1,73 @@
+---
+title: "Trello"
+description: "Manage Trello boards, lists, and cards"
+---
+
+The Trello integration provides access to manage trello boards, lists, and cards through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { trelloIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Trello to your server configuration. This integration can read credentials from environment variables automatically (`TRELLO_API_KEY`, `TRELLO_TOKEN`):
+
+```typescript
+import { createMCPServer, trelloIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    trelloIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+const result = await client.trello.getMember({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/trello.ts"
+  name="TrelloIntegrationOptions"
+/>
+
+## Environment Variables
+
+- `TRELLO_API_KEY`
+- `TRELLO_TOKEN`
+
+## Available Tools
+
+- `trello_get_member`
+- `trello_list_boards`
+- `trello_get_board`
+- `trello_list_lists`
+- `trello_get_list`
+- `trello_list_cards`
+- `trello_get_card`
+- `trello_create_card`
+- `trello_update_card`
+- `trello_delete_card`
+- `trello_add_card_comment`
+- `trello_search`
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: API key
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

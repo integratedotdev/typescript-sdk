@@ -23,22 +23,22 @@ export interface ExcelIntegrationConfig {
 }
 
 const EXCEL_TOOLS = [
-  "excel_list",
-  "excel_get",
-  "excel_create",
-  "excel_delete",
-  "excel_share",
-  "excel_list_worksheets",
-  "excel_add_worksheet",
-  "excel_delete_worksheet",
-  "excel_get_range",
-  "excel_update_range",
-  "excel_clear_range",
-  "excel_get_used_range",
-  "excel_list_tables",
-  "excel_create_table",
-  "excel_get_table_rows",
   "excel_add_table_rows",
+  "excel_add_worksheet",
+  "excel_clear_range",
+  "excel_create",
+  "excel_create_table",
+  "excel_delete",
+  "excel_delete_worksheet",
+  "excel_get",
+  "excel_get_range",
+  "excel_get_table_rows",
+  "excel_get_used_range",
+  "excel_list",
+  "excel_list_tables",
+  "excel_list_worksheets",
+  "excel_share",
+  "excel_update_range",
 ] as const;
 
 export function excelIntegration(config: ExcelIntegrationConfig = {}): MCPIntegration<"excel"> {

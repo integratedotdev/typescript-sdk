@@ -23,14 +23,16 @@ export interface GSheetsIntegrationConfig {
 }
 
 const GSHEETS_TOOLS = [
-  "gsheets_list",
+  "gsheets_append_values",
+  "gsheets_batch_update",
+  "gsheets_batch_update_values",
+  "gsheets_clear_values",
+  "gsheets_create",
+  "gsheets_delete",
   "gsheets_get",
   "gsheets_get_values",
+  "gsheets_list",
   "gsheets_update_values",
-  "gsheets_create",
-  "gsheets_append_values",
-  "gsheets_clear_values",
-  "gsheets_batch_update_values",
 ] as const;
 
 export function gsheetsIntegration(config: GSheetsIntegrationConfig = {}): MCPIntegration<"gsheets"> {

@@ -1,0 +1,75 @@
+---
+title: "ClickUp"
+description: "Manage ClickUp tasks, lists, spaces, and workspaces"
+---
+
+The ClickUp integration provides access to manage clickup tasks, lists, spaces, and workspaces through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { clickupIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add ClickUp to your server configuration. The integration automatically reads OAuth credentials from your environment (`CLICKUP_CLIENT_ID`, `CLICKUP_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, clickupIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    clickupIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("clickup");
+const result = await client.clickup.getAuthorizedUser({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/clickup.ts"
+  name="ClickUpIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `CLICKUP_CLIENT_ID`
+- `CLICKUP_CLIENT_SECRET`
+
+## Available Tools
+
+- `clickup_get_authorized_user`
+- `clickup_list_teams`
+- `clickup_list_spaces`
+- `clickup_list_folders`
+- `clickup_list_lists_in_folder`
+- `clickup_list_folderless_lists`
+- `clickup_list_tasks`
+- `clickup_get_task`
+- `clickup_create_task`
+- `clickup_update_task`
+- `clickup_delete_task`
+- `clickup_list_task_comments`
+- `clickup_create_task_comment`
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

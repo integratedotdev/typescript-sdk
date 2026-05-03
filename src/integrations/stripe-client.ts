@@ -357,6 +357,19 @@ export interface StripeIntegrationClient {
   }): Promise<MCPToolCallResponse>;
 
   /**
+   * Get an invoice by ID
+   *
+   * @example
+   * ```typescript
+   * const invoice = await client.stripe.getInvoice({ invoice_id: "in_xxxxx" });
+   * ```
+   */
+  getInvoice(params: {
+    /** Invoice ID */
+    invoice_id: string;
+  }): Promise<MCPToolCallResponse>;
+
+  /**
    * List subscriptions
    * 
    * @example
@@ -824,4 +837,3 @@ export interface StripeIntegrationClient {
     limit?: number;
   }): Promise<MCPToolCallResponse>;
 }
-

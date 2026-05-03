@@ -1,0 +1,82 @@
+---
+title: "Reddit"
+description: "Browse subreddits, search posts, submit content, and vote on Reddit"
+---
+
+The Reddit integration provides access to browse subreddits, search posts, submit content, and vote on reddit through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { redditIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Reddit to your server configuration. The integration automatically reads OAuth credentials from your environment (`REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, redditIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    redditIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("reddit");
+const result = await client.reddit.getMe({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/reddit.ts"
+  name="RedditIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `REDDIT_CLIENT_ID`
+- `REDDIT_CLIENT_SECRET`
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `identity`
+- `read`
+- `submit`
+- `vote`
+- `mysubreddits`
+
+## Available Tools
+
+- `reddit_get_me`
+- `reddit_get_subreddit_about`
+- `reddit_list_subreddit_posts`
+- `reddit_get_post_thread`
+- `reddit_search`
+- `reddit_submit_post`
+- `reddit_comment`
+- `reddit_vote`
+- `reddit_list_my_subreddits`
+- `reddit_list_popular_subreddits`
+
+## Notes
+
+- Category: Social Media
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

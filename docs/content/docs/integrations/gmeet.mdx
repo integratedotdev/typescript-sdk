@@ -1,0 +1,68 @@
+---
+title: "Google Meet"
+description: "Create Google Meet links and manage meeting events via Calendar"
+---
+
+The Google Meet integration provides access to create google meet links and manage meeting events via calendar through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { gmeetIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Google Meet to your server configuration. The integration automatically reads OAuth credentials from your environment (`GMEET_CLIENT_ID`, `GMEET_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, gmeetIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    gmeetIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("gmeet");
+const result = await client.gmeet.addMeetToEvent({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/gmeet.ts"
+  name="GmeetIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `GMEET_CLIENT_ID`
+- `GMEET_CLIENT_SECRET`
+
+## Available Tools
+
+- `gmeet_add_meet_to_event`
+- `gmeet_create_meeting`
+- `gmeet_delete_meeting`
+- `gmeet_get_meeting`
+- `gmeet_list_meetings`
+- `gmeet_update_meeting`
+
+## Notes
+
+- Category: Communication
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

@@ -55,6 +55,10 @@ export interface GDocsIntegrationClient {
     title: string;
   }): Promise<MCPToolCallResponse>;
 
+  delete(params: {
+    document_id: string;
+  }): Promise<MCPToolCallResponse>;
+
   appendText(params: {
     document_id: string;
     text: string;
@@ -65,5 +69,28 @@ export interface GDocsIntegrationClient {
     find: string;
     replace: string;
     match_case?: boolean;
+  }): Promise<MCPToolCallResponse>;
+
+  batchUpdate(params: {
+    document_id: string;
+    requests: string;
+    write_control?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  listComments(params: {
+    document_id: string;
+    page_size?: number;
+    page_token?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  createComment(params: {
+    document_id: string;
+    content: string;
+    anchor?: string;
+  }): Promise<MCPToolCallResponse>;
+
+  deleteComment(params: {
+    document_id: string;
+    comment_id: string;
   }): Promise<MCPToolCallResponse>;
 }

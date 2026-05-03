@@ -1,0 +1,70 @@
+---
+title: "Datadog"
+description: "Monitor Datadog metrics, logs, dashboards, and alerts"
+---
+
+The Datadog integration provides access to monitor datadog metrics, logs, dashboards, and alerts through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { datadogIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Datadog to your server configuration. This integration supports OAuth and alternate token-based configuration; the config table below shows the available options.
+
+```typescript
+import { createMCPServer, datadogIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    datadogIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("datadog");
+const result = await client.datadog.listMonitors({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/datadog.ts"
+  name="DatadogIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `DATADOG_SITE`
+- `DATADOG_API_KEY`
+- `DATADOG_APPLICATION_KEY`
+- `DATADOG_CLIENT_ID`
+- `DATADOG_CLIENT_SECRET`
+
+## Available Tools
+
+- `datadog_list_monitors`
+- `datadog_get_monitor`
+- `datadog_list_dashboards`
+- `datadog_get_dashboard`
+- `datadog_search_logs`
+
+## Notes
+
+- Category: Engineering
+- Authentication mode: OAuth or token-based
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

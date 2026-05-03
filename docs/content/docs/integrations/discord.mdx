@@ -1,0 +1,81 @@
+---
+title: "Discord"
+description: "Send messages and manage Discord channels and servers"
+---
+
+The Discord integration provides access to send messages and manage discord channels and servers through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { discordIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Discord to your server configuration. The integration automatically reads OAuth credentials from your environment (`DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, discordIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    discordIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("discord");
+const result = await client.discord.getCurrentUser({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/discord.ts"
+  name="DiscordIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `DISCORD_CLIENT_ID`
+- `DISCORD_CLIENT_SECRET`
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `identify`
+- `email`
+- `guilds`
+- `bot`
+- `applications.commands`
+
+## Available Tools
+
+- `discord_get_current_user`
+- `discord_list_my_guilds`
+- `discord_get_guild`
+- `discord_list_guild_channels`
+- `discord_get_channel`
+- `discord_send_message`
+- `discord_list_messages`
+- `discord_edit_message`
+- `discord_delete_message`
+
+## Notes
+
+- Category: Communication
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

@@ -1,0 +1,59 @@
+---
+title: "Phantom"
+description: "Build Phantom mobile browse universal links and deeplink provider documentation (Solana)"
+---
+
+The Phantom integration provides access to build phantom mobile browse universal links and deeplink provider documentation (solana) through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { buildPhantomBrowseDeeplink } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Phantom to your server configuration. The integration automatically reads OAuth credentials from your environment:
+
+```typescript
+import { createMCPServer, buildPhantomBrowseDeeplink } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    buildPhantomBrowseDeeplink(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("phantom");
+const result = await client.phantom.buildBrowseDeeplink({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/phantom.ts"
+  name="PhantomIntegrationOptions"
+/>
+
+## Available Tools
+
+- `phantom_build_browse_deeplink`
+- `phantom_deeplink_provider_reference`
+
+## Notes
+
+- Category: Other
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

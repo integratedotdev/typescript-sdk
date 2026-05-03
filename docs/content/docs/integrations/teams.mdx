@@ -1,0 +1,74 @@
+---
+title: "Microsoft Teams"
+description: "Send messages and manage Microsoft Teams channels and meetings"
+---
+
+The Microsoft Teams integration provides access to send messages and manage microsoft teams channels and meetings through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { teamsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Microsoft Teams to your server configuration. The integration automatically reads OAuth credentials from your environment (`TEAMS_CLIENT_ID`, `TEAMS_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, teamsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    teamsIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("teams");
+const result = await client.teams.getChannel({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/teams.ts"
+  name="TeamsIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `TEAMS_CLIENT_ID`
+- `TEAMS_CLIENT_SECRET`
+
+## Available Tools
+
+- `teams_get_channel`
+- `teams_get_chat`
+- `teams_get_profile`
+- `teams_get_team`
+- `teams_list_channel_messages`
+- `teams_list_channels`
+- `teams_list_chat_messages`
+- `teams_list_chats`
+- `teams_list_teams`
+- `teams_reply_channel_message`
+- `teams_send_channel_message`
+- `teams_send_chat_message`
+
+## Notes
+
+- Category: Communication
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

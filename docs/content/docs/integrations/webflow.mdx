@@ -1,0 +1,80 @@
+---
+title: "Webflow"
+description: "Manage Webflow sites, collections, and CMS content"
+---
+
+The Webflow integration provides access to manage webflow sites, collections, and cms content through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { webflowIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Webflow to your server configuration. The integration automatically reads OAuth credentials from your environment (`WEBFLOW_CLIENT_ID`, `WEBFLOW_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, webflowIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    webflowIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("webflow");
+const result = await client.webflow.tokenIntrospect({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/webflow.ts"
+  name="WebflowIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `WEBFLOW_CLIENT_ID`
+- `WEBFLOW_CLIENT_SECRET`
+
+## Available Tools
+
+- `webflow_token_introspect`
+- `webflow_get_authorized_user`
+- `webflow_list_sites`
+- `webflow_get_site`
+- `webflow_get_site_custom_domains`
+- `webflow_publish_site`
+- `webflow_list_site_pages`
+- `webflow_list_site_collections`
+- `webflow_get_collection`
+- `webflow_list_collection_items`
+- `webflow_list_live_collection_items`
+- `webflow_get_collection_item`
+- `webflow_create_collection_items`
+- `webflow_update_collection_items`
+- `webflow_delete_collection_items`
+- `webflow_publish_collection_items`
+- `webflow_list_site_forms`
+- `webflow_list_site_webhooks`
+
+## Notes
+
+- Category: Engineering
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

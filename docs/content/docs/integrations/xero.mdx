@@ -1,0 +1,72 @@
+---
+title: "Xero"
+description: "Manage Xero invoices, contacts, and accounting data"
+---
+
+The Xero integration provides access to manage xero invoices, contacts, and accounting data through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { xeroIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Xero to your server configuration. The integration automatically reads OAuth credentials from your environment (`XERO_CLIENT_ID`, `XERO_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, xeroIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    xeroIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("xero");
+const result = await client.xero.listConnections({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/xero.ts"
+  name="XeroIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `XERO_CLIENT_ID`
+- `XERO_CLIENT_SECRET`
+
+## Available Tools
+
+- `xero_list_connections`
+- `xero_get_organisation`
+- `xero_list_accounts`
+- `xero_list_contacts`
+- `xero_get_contact`
+- `xero_create_contact`
+- `xero_list_invoices`
+- `xero_get_invoice`
+- `xero_create_invoice`
+- `xero_list_bank_transactions`
+
+## Notes
+
+- Category: Finance
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

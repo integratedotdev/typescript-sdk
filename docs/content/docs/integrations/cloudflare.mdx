@@ -1,0 +1,75 @@
+---
+title: "Cloudflare"
+description: "Manage Cloudflare zones, DNS, CDN cache, and Workers"
+---
+
+The Cloudflare integration provides access to manage cloudflare zones, dns, cdn cache, and workers through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { cloudflareIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Cloudflare to your server configuration. This integration supports OAuth and alternate token-based configuration; the config table below shows the available options.
+
+```typescript
+import { createMCPServer, cloudflareIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    cloudflareIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("cloudflare");
+const result = await client.cloudflare.verifyToken({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/cloudflare.ts"
+  name="CloudflareIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_CLIENT_ID`
+- `CLOUDFLARE_CLIENT_SECRET`
+
+## Available Tools
+
+- `cloudflare_verify_token`
+- `cloudflare_get_user`
+- `cloudflare_list_accounts`
+- `cloudflare_get_account`
+- `cloudflare_list_zones`
+- `cloudflare_get_zone`
+- `cloudflare_list_dns_records`
+- `cloudflare_create_dns_record`
+- `cloudflare_update_dns_record`
+- `cloudflare_delete_dns_record`
+- `cloudflare_purge_zone_cache`
+- `cloudflare_list_worker_scripts`
+
+## Notes
+
+- Category: Infrastructure
+- Authentication mode: OAuth or token-based
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

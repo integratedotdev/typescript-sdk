@@ -38,6 +38,10 @@ import type { VercelIntegrationClient } from "./integrations/vercel-client.js";
 import type { ZendeskIntegrationClient } from "./integrations/zendesk-client.js";
 import type { StripeIntegrationClient } from "./integrations/stripe-client.js";
 import type { GcalIntegrationClient } from "./integrations/gcal-client.js";
+import type { GcontactsIntegrationClient } from "./integrations/gcontacts-client.js";
+import type { GtasksIntegrationClient } from "./integrations/gtasks-client.js";
+import type { Ga4IntegrationClient } from "./integrations/ga4-client.js";
+import type { GmeetIntegrationClient } from "./integrations/gmeet-client.js";
 import type { OutlookIntegrationClient } from "./integrations/outlook-client.js";
 import type { AirtableIntegrationClient } from "./integrations/airtable-client.js";
 import type { TodoistIntegrationClient } from "./integrations/todoist-client.js";
@@ -45,19 +49,69 @@ import type { WhatsAppIntegrationClient } from "./integrations/whatsapp-client.j
 import type { CalcomIntegrationClient } from "./integrations/calcom-client.js";
 import type { RampIntegrationClient } from "./integrations/ramp-client.js";
 import type { OneDriveIntegrationClient } from "./integrations/onedrive-client.js";
+import type { PlannerIntegrationClient } from "./integrations/planner-client.js";
+import type { SharePointIntegrationClient } from "./integrations/sharepoint-client.js";
 import type { GDocsIntegrationClient } from "./integrations/gdocs-client.js";
 import type { GSheetsIntegrationClient } from "./integrations/gsheets-client.js";
 import type { GSlidesIntegrationClient } from "./integrations/gslides-client.js";
 import type { PolarIntegrationClient } from "./integrations/polar-client.js";
+import type { FacebookIntegrationClient } from "./integrations/facebook-client.js";
+import type { PlanetScaleIntegrationClient } from "./integrations/planetscale-client.js";
 import type { FigmaIntegrationClient } from "./integrations/figma-client.js";
 import type { IntercomIntegrationClient } from "./integrations/intercom-client.js";
 import type { HubSpotIntegrationClient } from "./integrations/hubspot-client.js";
+import type { InstagramIntegrationClient } from "./integrations/instagram-client.js";
 import type { YouTubeIntegrationClient } from "./integrations/youtube-client.js";
+import type { TikTokIntegrationClient } from "./integrations/tiktok-client.js";
+import type { ThreadsIntegrationClient } from "./integrations/threads-client.js";
+import type { LinkedInIntegrationClient } from "./integrations/linkedin-client.js";
 import type { CursorIntegrationClient } from "./integrations/cursor-client.js";
+import type { DatabricksIntegrationClient } from "./integrations/databricks-client.js";
 import type { PostHogIntegrationClient } from "./integrations/posthog-client.js";
+import type { PostmanIntegrationClient } from "./integrations/postman-client.js";
+import type { PaperIntegrationClient } from "./integrations/paper-client.js";
 import type { SentryIntegrationClient } from "./integrations/sentry-client.js";
 import type { NetlifyIntegrationClient } from "./integrations/netlify-client.js";
+import type { SupabaseIntegrationClient } from "./integrations/supabase-client.js";
+import type { WebflowIntegrationClient } from "./integrations/webflow-client.js";
+import type { MondayIntegrationClient } from "./integrations/monday-client.js";
 import type { JiraIntegrationClient } from "./integrations/jira-client.js";
+import type { TrelloIntegrationClient } from "./integrations/trello-client.js";
+import type { ClickUpIntegrationClient } from "./integrations/clickup-client.js";
+import type { WorkdayIntegrationClient } from "./integrations/workday-client.js";
+import type { AlpacaIntegrationClient } from "./integrations/alpaca-client.js";
+import type { Auth0IntegrationClient } from "./integrations/auth0-client.js";
+import type { ResendIntegrationClient } from "./integrations/resend-client.js";
+import type { ZapierIntegrationClient } from "./integrations/zapier-client.js";
+import type { MailchimpIntegrationClient } from "./integrations/mailchimp-client.js";
+import type { RedisIntegrationClient } from "./integrations/redis-client.js";
+import type { ClerkIntegrationClient } from "./integrations/clerk-client.js";
+import type { CloudflareIntegrationClient } from "./integrations/cloudflare-client.js";
+import type { TypeformIntegrationClient } from "./integrations/typeform-client.js";
+import type { ZoomIntegrationClient } from "./integrations/zoom-client.js";
+import type { EtoroIntegrationClient } from "./integrations/etoro-client.js";
+import type { XeroIntegrationClient } from "./integrations/xero-client.js";
+import type { AttioIntegrationClient } from "./integrations/attio-client.js";
+import type { GchatIntegrationClient } from "./integrations/gchat-client.js";
+import type { ShopifyIntegrationClient } from "./integrations/shopify-client.js";
+import type { ConvexIntegrationClient } from "./integrations/convex-client.js";
+import type { NeonIntegrationClient } from "./integrations/neon-client.js";
+import type { BinanceIntegrationClient } from "./integrations/binance-client.js";
+import type { BetterStackIntegrationClient } from "./integrations/betterstack-client.js";
+import type { AwsIntegrationClient } from "./integrations/aws-client.js";
+import type { AstronomerIntegrationClient } from "./integrations/astronomer-client.js";
+import type { PhantomIntegrationClient } from "./integrations/phantom-client.js";
+import type { TldrawIntegrationClient } from "./integrations/tldraw-client.js";
+import type { RedditIntegrationClient } from "./integrations/reddit-client.js";
+import type { UpstashIntegrationClient } from "./integrations/upstash-client.js";
+import type { WorkOSIntegrationClient } from "./integrations/workos-client.js";
+import type { CanvaIntegrationClient } from "./integrations/canva-client.js";
+import type { DiscordIntegrationClient } from "./integrations/discord-client.js";
+import type { ExcelIntegrationClient } from "./integrations/excel-client.js";
+import type { GDriveIntegrationClient } from "./integrations/gdrive-client.js";
+import type { GitLabIntegrationClient } from "./integrations/gitlab-client.js";
+import type { PowerPointIntegrationClient } from "./integrations/powerpoint-client.js";
+import type { WordIntegrationClient } from "./integrations/word-client.js";
 import type { ServerIntegrationClient } from "./integrations/server-client.js";
 import { TriggerClient } from "./triggers/client.js";
 import { OAuthManager } from "./oauth/manager.js";
@@ -211,6 +265,12 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   ? "stripe"
   : K extends "gcal"
   ? "gcal"
+  : K extends "gcontacts"
+  ? "gcontacts"
+  : K extends "ga4"
+  ? "ga4"
+  : K extends "gmeet"
+  ? "gmeet"
   : K extends "outlook"
   ? "outlook"
   : K extends "airtable"
@@ -225,6 +285,10 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   ? "ramp"
   : K extends "onedrive"
   ? "onedrive"
+  : K extends "planner"
+  ? "planner"
+  : K extends "sharepoint"
+  ? "sharepoint"
   : K extends "gdocs"
   ? "gdocs"
   : K extends "gsheets"
@@ -233,6 +297,12 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   ? "gslides"
   : K extends "polar"
   ? "polar"
+  : K extends "planetscale"
+  ? "planetscale"
+  : K extends "supabase"
+  ? "supabase"
+  : K extends "facebook"
+  ? "facebook"
   : K extends "figma"
   ? "figma"
   : K extends "intercom"
@@ -243,14 +313,104 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   ? "youtube"
   : K extends "cursor"
   ? "cursor"
+  : K extends "databricks"
+  ? "databricks"
   : K extends "posthog"
   ? "posthog"
+  : K extends "postman"
+  ? "postman"
   : K extends "sentry"
   ? "sentry"
   : K extends "netlify"
   ? "netlify"
   : K extends "jira"
   ? "jira"
+  : K extends "clickup"
+  ? "clickup"
+  : K extends "threads"
+  ? "threads"
+  : K extends "zapier"
+  ? "zapier"
+  : K extends "linkedin"
+  ? "linkedin"
+  : K extends "tiktok"
+  ? "tiktok"
+  : K extends "trello"
+  ? "trello"
+  : K extends "neon"
+  ? "neon"
+  : K extends "resend"
+  ? "resend"
+  : K extends "mailchimp"
+  ? "mailchimp"
+  : K extends "typeform"
+  ? "typeform"
+  : K extends "xero"
+  ? "xero"
+  : K extends "attio"
+  ? "attio"
+  : K extends "gchat"
+  ? "gchat"
+  : K extends "shopify"
+  ? "shopify"
+  : K extends "convex"
+  ? "convex"
+  : K extends "etoro"
+  ? "etoro"
+  : K extends "zoom"
+  ? "zoom"
+  : K extends "clerk"
+  ? "clerk"
+  : K extends "reddit"
+  ? "reddit"
+  : K extends "betterstack"
+  ? "betterstack"
+  : K extends "phantom"
+  ? "phantom"
+  : K extends "aws"
+  ? "aws"
+  : K extends "workos"
+  ? "workos"
+  : K extends "redis"
+  ? "redis"
+  : K extends "binance"
+  ? "binance"
+  : K extends "tldraw"
+  ? "tldraw"
+  : K extends "upstash"
+  ? "upstash"
+  : K extends "cloudflare"
+  ? "cloudflare"
+  : K extends "paper"
+  ? "paper"
+  : K extends "astronomer"
+  ? "astronomer"
+  : K extends "gtasks"
+  ? "gtasks"
+  : K extends "instagram"
+  ? "instagram"
+  : K extends "alpaca"
+  ? "alpaca"
+  : K extends "monday"
+  ? "monday"
+  : K extends "auth0"
+  ? "auth0"
+  : K extends "workday"
+  ? "workday"
+  : K extends "canva"
+  ? "canva"
+  : K extends "discord"
+  ? "discord"
+  : K extends "excel"
+  ? "excel"
+  : K extends "gdrive"
+  ? "gdrive"
+  : K extends "gitlab"
+  ? "gitlab"
+  : K extends "powerpoint"
+  ? "powerpoint"
+  : K extends "word"
+  ? "word"
   : never]:
   K extends "github" ? GitHubIntegrationClient :
   K extends "gmail" ? GmailIntegrationClient :
@@ -262,6 +422,10 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   K extends "zendesk" ? ZendeskIntegrationClient :
   K extends "stripe" ? StripeIntegrationClient :
   K extends "gcal" ? GcalIntegrationClient :
+  K extends "gcontacts" ? GcontactsIntegrationClient :
+  K extends "gtasks" ? GtasksIntegrationClient :
+  K extends "ga4" ? Ga4IntegrationClient :
+  K extends "gmeet" ? GmeetIntegrationClient :
   K extends "outlook" ? OutlookIntegrationClient :
   K extends "airtable" ? AirtableIntegrationClient :
   K extends "todoist" ? TodoistIntegrationClient :
@@ -269,19 +433,69 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   K extends "calcom" ? CalcomIntegrationClient :
   K extends "ramp" ? RampIntegrationClient :
   K extends "onedrive" ? OneDriveIntegrationClient :
+  K extends "planner" ? PlannerIntegrationClient :
+  K extends "sharepoint" ? SharePointIntegrationClient :
   K extends "gdocs" ? GDocsIntegrationClient :
   K extends "gsheets" ? GSheetsIntegrationClient :
   K extends "gslides" ? GSlidesIntegrationClient :
   K extends "polar" ? PolarIntegrationClient :
+  K extends "planetscale" ? PlanetScaleIntegrationClient :
+  K extends "supabase" ? SupabaseIntegrationClient :
+  K extends "facebook" ? FacebookIntegrationClient :
   K extends "figma" ? FigmaIntegrationClient :
   K extends "intercom" ? IntercomIntegrationClient :
   K extends "hubspot" ? HubSpotIntegrationClient :
+  K extends "instagram" ? InstagramIntegrationClient :
   K extends "youtube" ? YouTubeIntegrationClient :
+  K extends "tiktok" ? TikTokIntegrationClient :
   K extends "cursor" ? CursorIntegrationClient :
+  K extends "databricks" ? DatabricksIntegrationClient :
   K extends "posthog" ? PostHogIntegrationClient :
+  K extends "postman" ? PostmanIntegrationClient :
   K extends "sentry" ? SentryIntegrationClient :
   K extends "netlify" ? NetlifyIntegrationClient :
+  K extends "webflow" ? WebflowIntegrationClient :
   K extends "jira" ? JiraIntegrationClient :
+  K extends "clickup" ? ClickUpIntegrationClient :
+  K extends "zapier" ? ZapierIntegrationClient :
+  K extends "threads" ? ThreadsIntegrationClient :
+  K extends "alpaca" ? AlpacaIntegrationClient :
+  K extends "linkedin" ? LinkedInIntegrationClient :
+  K extends "trello" ? TrelloIntegrationClient :
+  K extends "monday" ? MondayIntegrationClient :
+  K extends "resend" ? ResendIntegrationClient :
+  K extends "mailchimp" ? MailchimpIntegrationClient :
+  K extends "neon" ? NeonIntegrationClient :
+  K extends "typeform" ? TypeformIntegrationClient :
+  K extends "xero" ? XeroIntegrationClient :
+  K extends "attio" ? AttioIntegrationClient :
+  K extends "gchat" ? GchatIntegrationClient :
+  K extends "shopify" ? ShopifyIntegrationClient :
+  K extends "convex" ? ConvexIntegrationClient :
+  K extends "etoro" ? EtoroIntegrationClient :
+  K extends "binance" ? BinanceIntegrationClient :
+  K extends "betterstack" ? BetterStackIntegrationClient :
+  K extends "aws" ? AwsIntegrationClient :
+  K extends "phantom" ? PhantomIntegrationClient :
+  K extends "reddit" ? RedditIntegrationClient :
+  K extends "zoom" ? ZoomIntegrationClient :
+  K extends "clerk" ? ClerkIntegrationClient :
+  K extends "auth0" ? Auth0IntegrationClient :
+  K extends "workday" ? WorkdayIntegrationClient :
+  K extends "redis" ? RedisIntegrationClient :
+  K extends "upstash" ? UpstashIntegrationClient :
+  K extends "tldraw" ? TldrawIntegrationClient :
+  K extends "cloudflare" ? CloudflareIntegrationClient :
+  K extends "paper" ? PaperIntegrationClient :
+  K extends "workos" ? WorkOSIntegrationClient :
+  K extends "astronomer" ? AstronomerIntegrationClient :
+  K extends "canva" ? CanvaIntegrationClient :
+  K extends "discord" ? DiscordIntegrationClient :
+  K extends "excel" ? ExcelIntegrationClient :
+  K extends "gdrive" ? GDriveIntegrationClient :
+  K extends "gitlab" ? GitLabIntegrationClient :
+  K extends "powerpoint" ? PowerPointIntegrationClient :
+  K extends "word" ? WordIntegrationClient :
   never;
 };
 
@@ -500,56 +714,8 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
 
     // Initialize integration namespaces dynamically based on configuration
     const integrationIds = this.integrations.map(i => i.id);
-    if (integrationIds.includes("github")) {
-      (this as any).github = this.createIntegrationProxy("github");
-    }
-    if (integrationIds.includes("gmail")) {
-      (this as any).gmail = this.createIntegrationProxy("gmail");
-    }
-    if (integrationIds.includes("notion")) {
-      (this as any).notion = this.createIntegrationProxy("notion");
-    }
-    if (integrationIds.includes("slack")) {
-      (this as any).slack = this.createIntegrationProxy("slack");
-    }
-    if (integrationIds.includes("linear")) {
-      (this as any).linear = this.createIntegrationProxy("linear");
-    }
-    if (integrationIds.includes("railway")) {
-      (this as any).railway = this.createIntegrationProxy("railway");
-    }
-    if (integrationIds.includes("vercel")) {
-      (this as any).vercel = this.createIntegrationProxy("vercel");
-    }
-    if (integrationIds.includes("zendesk")) {
-      (this as any).zendesk = this.createIntegrationProxy("zendesk");
-    }
-    if (integrationIds.includes("stripe")) {
-      (this as any).stripe = this.createIntegrationProxy("stripe");
-    }
-    if (integrationIds.includes("gcal")) {
-      (this as any).gcal = this.createIntegrationProxy("gcal");
-    }
-    if (integrationIds.includes("outlook")) {
-      (this as any).outlook = this.createIntegrationProxy("outlook");
-    }
-    if (integrationIds.includes("airtable")) {
-      (this as any).airtable = this.createIntegrationProxy("airtable");
-    }
-    if (integrationIds.includes("todoist")) {
-      (this as any).todoist = this.createIntegrationProxy("todoist");
-    }
-    if (integrationIds.includes("gdocs")) {
-      (this as any).gdocs = this.createIntegrationProxy("gdocs");
-    }
-    if (integrationIds.includes("gsheets")) {
-      (this as any).gsheets = this.createIntegrationProxy("gsheets");
-    }
-    if (integrationIds.includes("gslides")) {
-      (this as any).gslides = this.createIntegrationProxy("gslides");
-    }
-    if (integrationIds.includes("posthog")) {
-      (this as any).posthog = this.createIntegrationProxy("posthog");
+    for (const id of integrationIds) {
+      (this as any)[id] = this.createIntegrationProxy(id);
     }
 
     // Server namespace is always available

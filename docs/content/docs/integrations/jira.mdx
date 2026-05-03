@@ -1,0 +1,75 @@
+---
+title: "Jira"
+description: "Manage Jira issues, projects, sprints, and boards"
+---
+
+The Jira integration provides access to manage jira issues, projects, sprints, and boards through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { jiraIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Jira to your server configuration. The integration automatically reads OAuth credentials from your environment (`JIRA_CLIENT_ID`, `JIRA_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, jiraIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    jiraIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("jira");
+const result = await client.jira.listProjects({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/jira.ts"
+  name="JiraIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `JIRA_CLIENT_ID`
+- `JIRA_CLIENT_SECRET`
+
+## Available Tools
+
+- `jira_list_projects`
+- `jira_get_project`
+- `jira_get_issue_types`
+- `jira_search_issues`
+- `jira_get_issue`
+- `jira_create_issue`
+- `jira_update_issue`
+- `jira_get_transitions`
+- `jira_transition_issue`
+- `jira_add_comment`
+- `jira_assign_issue`
+- `jira_list_boards`
+- `jira_list_sprints`
+
+## Notes
+
+- Category: Engineering
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

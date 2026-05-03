@@ -1,0 +1,67 @@
+---
+title: "Upstash"
+description: "Use Upstash Redis REST, QStash messaging, and related HTTP APIs"
+---
+
+The Upstash integration provides access to use upstash redis rest, qstash messaging, and related http apis through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { upstashIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Upstash to your server configuration. This integration can read credentials from environment variables automatically (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `QSTASH_TOKEN`):
+
+```typescript
+import { createMCPServer, upstashIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    upstashIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+const result = await client.upstash.redisRun({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/upstash.ts"
+  name="UpstashIntegrationOptions"
+/>
+
+## Environment Variables
+
+- `UPSTASH_REDIS_REST_URL`
+- `UPSTASH_REDIS_REST_TOKEN`
+- `QSTASH_TOKEN`
+
+## Available Tools
+
+- `upstash_redis_run`
+- `upstash_redis_get`
+- `upstash_redis_set`
+- `upstash_redis_del`
+- `upstash_qstash_publish`
+
+## Notes
+
+- Category: Infrastructure
+- Authentication mode: API key
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

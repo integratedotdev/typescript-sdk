@@ -1,0 +1,73 @@
+---
+title: "Facebook"
+description: "Manage Facebook Page posts, comments, reactions, and insights via the Graph API"
+---
+
+The Facebook integration provides access to manage facebook page posts, comments, reactions, and insights via the graph api through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { facebookIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Facebook to your server configuration. The integration automatically reads OAuth credentials from your environment (`FACEBOOK_CLIENT_ID`, `FACEBOOK_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, facebookIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    facebookIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("facebook");
+const result = await client.facebook.getMe({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/facebook.ts"
+  name="FacebookIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `FACEBOOK_CLIENT_ID`
+- `FACEBOOK_CLIENT_SECRET`
+
+## Available Tools
+
+- `facebook_get_me`
+- `facebook_list_pages`
+- `facebook_list_page_posts`
+- `facebook_get_object`
+- `facebook_create_page_post`
+- `facebook_delete_object`
+- `facebook_list_comments`
+- `facebook_publish_comment`
+- `facebook_get_insights`
+- `facebook_set_comment_visibility`
+- `facebook_like_object`
+
+## Notes
+
+- Category: Social Media
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+

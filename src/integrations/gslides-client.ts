@@ -49,6 +49,10 @@ export interface GSlidesIntegrationClient {
     title: string;
   }): Promise<MCPToolCallResponse>;
 
+  delete(params: {
+    presentation_id: string;
+  }): Promise<MCPToolCallResponse>;
+
   addSlide(params: {
     presentation_id: string;
     insertion_index?: number;
@@ -65,5 +69,11 @@ export interface GSlidesIntegrationClient {
     find: string;
     replace: string;
     match_case?: boolean;
+  }): Promise<MCPToolCallResponse>;
+
+  batchUpdate(params: {
+    presentation_id: string;
+    requests: string;
+    write_control?: string;
   }): Promise<MCPToolCallResponse>;
 }

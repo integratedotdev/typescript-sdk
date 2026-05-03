@@ -1,0 +1,88 @@
+---
+title: "PostHog"
+description: "Read PostHog organizations, projects, insights, and feature flags"
+---
+
+The PostHog integration provides access to read posthog organizations, projects, insights, and feature flags through the Integrate MCP server.
+
+## Installation
+
+```typescript
+import { posthogIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add PostHog to your server configuration. The integration automatically reads OAuth credentials from your environment (`POSTHOG_CLIENT_ID`, `POSTHOG_CLIENT_SECRET`):
+
+```typescript
+import { createMCPServer, posthogIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    posthogIntegration(),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("posthog");
+const result = await client.posthog.getCurrentUser({
+  // Add the parameters required by this tool
+});
+
+console.log(result);
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/posthog.ts"
+  name="PostHogIntegrationConfig"
+/>
+
+## Environment Variables
+
+- `POSTHOG_CLIENT_ID`
+- `POSTHOG_CLIENT_SECRET`
+
+## Available Tools
+
+- `posthog_get_current_user`
+- `posthog_list_organizations`
+- `posthog_get_organization`
+- `posthog_list_projects`
+- `posthog_get_project`
+- `posthog_run_hogql_query`
+- `posthog_list_insights`
+- `posthog_get_insight`
+- `posthog_list_dashboards`
+- `posthog_get_dashboard`
+- `posthog_list_feature_flags`
+- `posthog_get_feature_flag`
+- `posthog_list_experiments`
+- `posthog_get_experiment`
+- `posthog_list_annotations`
+- `posthog_get_annotation`
+- `posthog_list_cohorts`
+- `posthog_get_cohort`
+- `posthog_list_event_definitions`
+- `posthog_get_event_definition`
+- `posthog_list_property_definitions`
+- `posthog_get_property_definition`
+- `posthog_list_persons`
+- `posthog_get_person`
+- `posthog_list_session_recordings`
+- `posthog_get_session_recording`
+
+## Notes
+
+- Category: Analytics
+- Authentication mode: OAuth
+- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
+
