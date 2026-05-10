@@ -12,6 +12,19 @@ export type { ToolInvocationOptions } from "./client.js";
 export { OAuthManager } from "./oauth/manager.js";
 export { OAuthWindowManager, sendCallbackToOpener } from "./oauth/window-manager.js";
 export { generateCodeVerifier, generateCodeChallenge, generateState, generateStateWithReturnUrl, parseState } from "./oauth/pkce.js";
+export {
+  resolveAccessToken,
+  refreshViaMcp,
+  shouldRefreshToken,
+  RefreshRejectedError,
+  RefreshTransientError,
+  DEFAULT_REFRESH_WINDOW_MS,
+} from "./oauth/refresh.js";
+export type {
+  RefreshResult,
+  RefreshViaMcpOptions,
+  ResolveAccessTokenOptions,
+} from "./oauth/refresh.js";
 export type {
   OAuthFlowConfig,
   PopupOptions,

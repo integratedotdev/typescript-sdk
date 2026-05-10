@@ -12,6 +12,8 @@ import { createNextOAuthHandler } from './adapters/nextjs.js';
 import { getEnv } from './utils/env.js';
 import { toWebRequest, sendWebResponse } from './adapters/node.js';
 import { setLogLevel, createLogger, type LogContext } from './utils/logger.js';
+import { resolveAccessToken as resolveAccessTokenHelper, RefreshRejectedError } from './oauth/refresh.js';
+import type { ProviderTokenData } from './oauth/types.js';
 
 /**
  * Logger context for server-side logging
@@ -23,6 +25,55 @@ import type { IncomingMessage, ServerResponse } from 'http';
  * Logger instances
  */
 const logger = createLogger('MCPServer', SERVER_LOG_CONTEXT);
+
+/**
+ * Refresh the stored access token if it is near expiry, using the
+ * MCP server's /oauth/refresh endpoint. Returns the access token that
+ * should be forwarded on the next call.
+ *
+ * - When the consumer hasn't configured provider credentials for this
+ *   provider, returns the current access token unchanged (no refresh
+ *   possible).
+ * - When the provider issues `invalid_grant`, the stored token is cleared
+ *   via the consumer's setProviderToken callback and the original access
+ *   token is returned. The downstream tool call will fail with 401 and the
+ *   client UI can surface a reconnect prompt.
+ * - Transient refresh failures fall back to the current access token.
+ */
+async function refreshTokenIfNeeded(
+  provider: string,
+  tokenData: ProviderTokenData,
+  providers: Record<string, { clientId: string; clientSecret: string; config?: Record<string, any> }>,
+  config: { serverUrl?: string; apiKey?: string; setProviderToken?: (provider: string, tokenData: ProviderTokenData | null, email?: string, context?: MCPContext) => Promise<void> | void },
+  context?: MCPContext
+): Promise<string> {
+  const credentials = providers[provider];
+  if (!credentials || !config.serverUrl) {
+    return tokenData.accessToken;
+  }
+  try {
+    return await resolveAccessTokenHelper({
+      provider,
+      currentTokens: tokenData,
+      providerOAuth: {
+        clientId: credentials.clientId,
+        clientSecret: credentials.clientSecret,
+        subdomain: credentials.config?.subdomain as string | undefined,
+      },
+      serverUrl: config.serverUrl,
+      apiKey: config.apiKey,
+      setProviderToken: config.setProviderToken,
+      context,
+    });
+  } catch (err) {
+    if (err instanceof RefreshRejectedError) {
+      logger.warn(`[Token Refresh] Refresh token rejected for ${provider}; integration marked disconnected.`);
+    } else {
+      logger.warn(`[Token Refresh] Failed to refresh ${provider} token: ${(err as Error).message}`);
+    }
+    return tokenData.accessToken;
+  }
+}
 
 /**
  * Server client with attached handler, POST, and GET route handlers
@@ -559,7 +610,14 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
             if (provider) {
               const tokenData = await config.getProviderToken(provider, undefined, context);
               if (tokenData?.accessToken) {
-                authHeader = `Bearer ${tokenData.accessToken}`;
+                const accessToken = await refreshTokenIfNeeded(
+                  provider,
+                  tokenData,
+                  providers,
+                  config,
+                  context
+                );
+                authHeader = `Bearer ${accessToken}`;
               }
             }
           } catch {

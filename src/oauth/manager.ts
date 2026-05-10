@@ -18,7 +18,18 @@ import { generateCodeVerifier, generateCodeChallenge, generateStateWithReturnUrl
 import { OAuthWindowManager } from "./window-manager.js";
 import { IndexedDBStorage } from "./indexeddb-storage.js";
 import { fetchUserEmail } from "./email-fetcher.js";
+import { resolveAccessToken as resolveAccessTokenHelper, shouldRefreshToken, RefreshRejectedError } from "./refresh.js";
 import { createLogger } from "../utils/logger.js";
+
+/**
+ * Provider OAuth credentials needed to refresh tokens server-side.
+ * Mirrors the shape exposed by createMCPServer's `providers` map.
+ */
+export interface ProviderOAuthCredentials {
+  clientId: string;
+  clientSecret?: string;
+  config?: Record<string, unknown>;
+}
 
 /**
  * Logger instance
@@ -41,6 +52,19 @@ export class OAuthManager {
   private removeTokenCallback?: (provider: string, email?: string, context?: MCPContext) => Promise<void> | void;
   private indexedDBStorage: IndexedDBStorage;
   private skipLocalStorage: boolean = false;
+  /**
+   * Per-provider OAuth credentials, when configured. When present, the
+   * manager will proactively refresh expiring tokens via the MCP server
+   * before returning them from getProviderToken().
+   */
+  private providerOAuth: Record<string, ProviderOAuthCredentials> = {};
+  /**
+   * MCP server base URL used for refresh exchanges. Falls back to
+   * oauthApiBase when not explicitly provided.
+   */
+  private mcpServerUrl?: string;
+  /** Optional API key forwarded as X-API-KEY to /oauth/refresh. */
+  private mcpApiKey?: string;
 
   constructor(
     oauthApiBase: string,
@@ -50,6 +74,11 @@ export class OAuthManager {
       getProviderToken?: (provider: string, email?: string, context?: MCPContext) => Promise<ProviderTokenData | undefined> | ProviderTokenData | undefined;
       setProviderToken?: (provider: string, tokenData: ProviderTokenData | null, email?: string, context?: MCPContext) => Promise<void> | void;
       removeProviderToken?: (provider: string, email?: string, context?: MCPContext) => Promise<void> | void;
+    },
+    refreshConfig?: {
+      providers?: Record<string, ProviderOAuthCredentials>;
+      mcpServerUrl?: string;
+      apiKey?: string;
     }
   ) {
     this.oauthApiBase = oauthApiBase;
@@ -63,6 +92,9 @@ export class OAuthManager {
     this.getTokenCallback = tokenCallbacks?.getProviderToken;
     this.setTokenCallback = tokenCallbacks?.setProviderToken;
     this.removeTokenCallback = tokenCallbacks?.removeProviderToken;
+    this.providerOAuth = refreshConfig?.providers ?? {};
+    this.mcpServerUrl = refreshConfig?.mcpServerUrl;
+    this.mcpApiKey = refreshConfig?.apiKey;
 
     // Initialize IndexedDB storage (only used when callbacks are not configured)
     this.indexedDBStorage = new IndexedDBStorage();
@@ -501,9 +533,11 @@ export class OAuthManager {
     if (this.getTokenCallback) {
       try {
         const tokenData = await this.getTokenCallback(provider, email, context);
-        // Update in-memory cache for performance
         if (tokenData) {
-          this.providerTokens.set(provider, tokenData);
+          const refreshed = await this.maybeRefreshTokenData(provider, tokenData, context);
+          // Update in-memory cache for performance
+          this.providerTokens.set(provider, refreshed);
+          return refreshed;
         }
         return tokenData;
       } catch (error) {
@@ -571,6 +605,89 @@ export class OAuthManager {
       this.providerTokens.set(provider, tokenData);
     }
     await this.saveProviderToken(provider, tokenData, tokenEmail, context);
+  }
+
+  /**
+   * Configure or update the per-provider OAuth credentials used to refresh
+   * tokens. Safe to call after construction; existing tokens remain valid
+   * and are refreshed lazily on next retrieval.
+   */
+  configureTokenRefresh(refreshConfig: {
+    providers?: Record<string, ProviderOAuthCredentials>;
+    mcpServerUrl?: string;
+    apiKey?: string;
+  }): void {
+    if (refreshConfig.providers) {
+      this.providerOAuth = refreshConfig.providers;
+    }
+    if (refreshConfig.mcpServerUrl !== undefined) {
+      this.mcpServerUrl = refreshConfig.mcpServerUrl;
+    }
+    if (refreshConfig.apiKey !== undefined) {
+      this.mcpApiKey = refreshConfig.apiKey;
+    }
+  }
+
+  /**
+   * Refresh the provider token if it is near expiry and we have the
+   * credentials needed to call /oauth/refresh. Returns the (possibly
+   * refreshed) ProviderTokenData. Falls back to the original on transient
+   * failure; throws RefreshRejectedError on permanent rejection so callers
+   * can surface a reconnect prompt.
+   */
+  private async maybeRefreshTokenData(
+    provider: string,
+    tokenData: ProviderTokenData,
+    context?: MCPContext
+  ): Promise<ProviderTokenData> {
+    const credentials = this.providerOAuth[provider];
+    const serverUrl = this.mcpServerUrl;
+    if (!credentials || !serverUrl) {
+      return tokenData;
+    }
+    if (!shouldRefreshToken(tokenData)) {
+      return tokenData;
+    }
+
+    try {
+      const newAccessToken = await resolveAccessTokenHelper({
+        provider,
+        currentTokens: tokenData,
+        providerOAuth: {
+          clientId: credentials.clientId,
+          clientSecret: credentials.clientSecret,
+          subdomain: (credentials.config?.subdomain as string | undefined),
+        },
+        serverUrl,
+        apiKey: this.mcpApiKey,
+        setProviderToken: this.setTokenCallback,
+        context,
+      });
+
+      if (newAccessToken === tokenData.accessToken) {
+        return tokenData;
+      }
+      // The helper persisted via setProviderToken; reload the canonical
+      // value from the consumer's store if we can, so subsequent reads see
+      // the refreshed row.
+      if (this.getTokenCallback) {
+        try {
+          const reloaded = await this.getTokenCallback(provider, tokenData.email, context);
+          if (reloaded) {
+            return reloaded;
+          }
+        } catch {
+          // ignore — fall through to constructed view
+        }
+      }
+      return { ...tokenData, accessToken: newAccessToken };
+    } catch (err) {
+      if (err instanceof RefreshRejectedError) {
+        throw err;
+      }
+      // Transient — return the existing token; caller will see provider 401 if expired.
+      return tokenData;
+    }
   }
 
   /**

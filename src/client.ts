@@ -608,7 +608,22 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     this.onReauthRequired = config.onReauthRequired;
     this.maxReauthRetries = config.maxReauthRetries ?? 1;
 
-    // Initialize OAuth manager with token callbacks (server-side only)
+    // Initialize OAuth manager with token callbacks (server-side only).
+    // When the consumer also passed integration-level OAuth credentials,
+    // forward them so the manager can transparently refresh expiring tokens
+    // against the MCP server's /oauth/refresh endpoint.
+    const refreshProviders: Record<string, { clientId: string; clientSecret?: string; config?: Record<string, unknown> }> = {};
+    for (const integration of this.integrations as readonly any[]) {
+      const oauth = integration?.oauth;
+      if (oauth?.clientId && oauth?.provider) {
+        refreshProviders[oauth.provider] = {
+          clientId: oauth.clientId,
+          clientSecret: oauth.clientSecret,
+          config: oauth.config,
+        };
+      }
+    }
+    const mcpServerUrl = (config as any).serverUrl as string | undefined;
     this.oauthManager = new OAuthManager(
       oauthApiBase,
       config.oauthFlow,
@@ -617,6 +632,11 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
         getProviderToken: (config as any).getProviderToken,
         setProviderToken: (config as any).setProviderToken,
         removeProviderToken: (config as any).removeProviderToken,
+      },
+      {
+        providers: refreshProviders,
+        mcpServerUrl,
+        apiKey: (config as any).apiKey,
       }
     );
 
