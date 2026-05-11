@@ -42,7 +42,7 @@ export function gmeetIntegration(config: GmeetIntegrationConfig = {}): MCPIntegr
   return {
     id: "gmeet",
     name: "Google Meet",
-    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/google_meet.webp",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/google_meet.png",
     description: "Create and manage Google Meet links via Calendar conference data",
     category: "Communication",
     tools: [...GMEET_TOOLS],
