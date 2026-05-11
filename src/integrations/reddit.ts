@@ -35,6 +35,7 @@ export function redditIntegration(config: RedditIntegrationConfig = {}): MCPInte
   return {
     id: "reddit",
     name: "Reddit",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/reddit.png",
     tools: [...REDDIT_TOOLS],
     oauth,
   };

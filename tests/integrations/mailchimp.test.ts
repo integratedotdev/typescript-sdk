@@ -13,6 +13,7 @@ describe("Mailchimp Integration", () => {
     expect(integration.tools).toBeArray();
     expect(integration.tools.length).toBeGreaterThan(0);
     expect(integration.oauth).toBeDefined();
+    expect(integration.logoUrl).toBeDefined();
   });
 
   test("uses empty default scopes", () => {

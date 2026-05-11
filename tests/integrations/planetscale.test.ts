@@ -14,6 +14,7 @@ describe("PlanetScale Integration", () => {
     expect(integration.tools.length).toBeGreaterThan(0);
     expect(integration.oauth).toBeDefined();
     expect(integration.category).toBe("Infrastructure");
+    expect(integration.logoUrl).toBeDefined();
   });
 
   test("includes OAuth configuration", () => {

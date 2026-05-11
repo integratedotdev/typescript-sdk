@@ -45,6 +45,7 @@ export function clickupIntegration(config: ClickUpIntegrationConfig = {}): MCPIn
   return {
     id: "clickup",
     name: "ClickUp",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/clickup.png",
     tools: [...CLICKUP_TOOLS],
     oauth,
     async onInit(_client) {

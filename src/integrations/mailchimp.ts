@@ -33,6 +33,7 @@ export function mailchimpIntegration(config: MailchimpIntegrationConfig = {}): M
   return {
     id: "mailchimp",
     name: "Mailchimp",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/mailchimp.png",
     tools: [...MAILCHIMP_TOOLS],
     oauth,
   };

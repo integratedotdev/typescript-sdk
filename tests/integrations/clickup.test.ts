@@ -13,6 +13,7 @@ describe("ClickUp Integration", () => {
     expect(integration.tools).toBeArray();
     expect(integration.tools.length).toBeGreaterThan(0);
     expect(integration.oauth).toBeDefined();
+    expect(integration.logoUrl).toBeDefined();
   });
 
   test("includes OAuth configuration", () => {

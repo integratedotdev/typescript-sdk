@@ -41,6 +41,7 @@ export function planetscaleIntegration(config: PlanetScaleIntegrationConfig = {}
     id: "planetscale",
     name: "PlanetScale",
     category: "Infrastructure",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/planetscale.png",
     tools: [...PLANETSCALE_TOOLS],
     oauth,
   };
