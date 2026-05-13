@@ -51,7 +51,7 @@ export function gcontactsIntegration(config: GcontactsIntegrationConfig = {}): M
   return {
     id: "gcontacts",
     name: "Google Contacts",
-    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/gcontacts.png",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/google_contacts.png",
     description: "List, search, create, update, and delete Google Contacts via the People API",
     category: "Communication",
     tools: [...GCONTACTS_TOOLS],

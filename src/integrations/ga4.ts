@@ -29,7 +29,8 @@ export function ga4Integration(config: Ga4IntegrationConfig = {}): MCPIntegratio
 
   return {
     id: "ga4",
-    name: "Google Analytics 4",
+    name: "Google Analytics",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/google_analytics.png",
     tools: [...GA4_TOOLS],
     oauth,
   };

@@ -9,10 +9,11 @@ describe("GA4 Integration", () => {
     });
 
     expect(integration.id).toBe("ga4");
-    expect(integration.name).toBe("Google Analytics 4");
+    expect(integration.name).toBe("Google Analytics");
     expect(integration.tools).toBeArray();
     expect(integration.tools.length).toBeGreaterThan(0);
     expect(integration.oauth).toBeDefined();
+    expect(integration.logoUrl).toBeDefined();
   });
 
   test("includes OAuth configuration", () => {

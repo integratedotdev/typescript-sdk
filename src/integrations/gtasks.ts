@@ -53,7 +53,7 @@ export function gtasksIntegration(config: GtasksIntegrationConfig = {}): MCPInte
   return {
     id: "gtasks",
     name: "Google Tasks",
-    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/google_tasks.webp",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/google_tasks.png",
     description: "Manage Google Tasks lists and to-dos synced with your Google account",
     category: "Productivity",
     tools: [...GTASKS_TOOLS],

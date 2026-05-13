@@ -327,7 +327,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     category: "Finance",
   },
   ga4: {
-    description: "Read Google Analytics 4 reports, properties, and events",
+    description: "Read Google Analytics reports, properties, and events",
     category: "Analytics",
   },
   gchat: {

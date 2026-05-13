@@ -51,7 +51,7 @@ export function mondayIntegration(config: MondayIntegrationConfig = {}): MCPInte
   return {
     id: "monday",
     name: "Monday.com",
-    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/monday.png",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/mondaycom.png",
     description: "Manage Monday.com boards, items, columns, and updates",
     category: "Productivity",
     tools: [...MONDAY_TOOLS],

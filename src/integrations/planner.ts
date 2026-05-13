@@ -38,6 +38,7 @@ export function plannerIntegration(config: PlannerIntegrationConfig = {}): MCPIn
   return {
     id: "planner",
     name: "Microsoft Planner",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/microsoft_planner.png",
     tools: [...PLANNER_TOOLS],
     oauth,
   };
