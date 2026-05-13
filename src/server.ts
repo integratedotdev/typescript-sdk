@@ -609,7 +609,9 @@ export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>
             const provider = resolveProviderFromToolName(toolName, candidates);
             if (provider) {
               const tokenData = await config.getProviderToken(provider, undefined, context);
-              if (tokenData?.accessToken) {
+              if (tokenData?.sessionToken) {
+                authHeader = `Bearer ${tokenData.sessionToken}`;
+              } else if (tokenData?.accessToken) {
                 const accessToken = await refreshTokenIfNeeded(
                   provider,
                   tokenData,

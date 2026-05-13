@@ -1228,7 +1228,12 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
       if (provider) {
         const tokenData = await this.oauthManager.getProviderToken(provider, undefined, options?.context);
         if (tokenData) {
-          temporaryHeaders["Authorization"] = `Bearer ${tokenData.accessToken}`;
+          if (tokenData.sessionToken) {
+            temporaryHeaders["Authorization"] = `Bearer ${tokenData.sessionToken}`;
+            temporaryHeaders["X-Session-Token"] = tokenData.sessionToken;
+          } else {
+            temporaryHeaders["Authorization"] = `Bearer ${tokenData.accessToken}`;
+          }
         }
       }
 

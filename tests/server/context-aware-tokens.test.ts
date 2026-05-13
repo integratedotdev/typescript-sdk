@@ -85,6 +85,40 @@ describe('Context-Aware Token Storage', () => {
       expect(getProviderToken).toHaveBeenCalledWith('github', undefined, context); // Method call with context
     });
 
+    it('should prefer session token over access token for server-side MCP calls', async () => {
+      const getProviderToken = vi.fn().mockResolvedValue({
+        ...mockTokenData,
+        sessionToken: 'sess_github_123',
+      });
+
+      const config: MCPClientConfig<[typeof mockIntegration]> = {
+        integrations: [mockIntegration],
+        apiKey: 'test-api-key',
+        apiBaseUrl: 'https://api.test.com',
+        getProviderToken,
+      };
+
+      const client = new MCPClientBase(config);
+
+      (client as any).enabledToolNames.add('github_list_repos');
+      if (!(client as any).transport.headers) {
+        (client as any).transport.headers = {};
+      }
+      (client as any).transport.headers['X-API-KEY'] = 'test-api-key';
+
+      (client as any).transport.sendRequest = vi.fn().mockResolvedValue({
+        content: [{ type: 'text', text: 'Success' }],
+      });
+      (client as any).transport.setHeader = vi.fn();
+      (client as any).transport.removeHeader = vi.fn();
+      (client as any).transport.connected = true;
+
+      await (client as any).github.listRepos({});
+
+      expect((client as any).transport.setHeader).toHaveBeenCalledWith('Authorization', 'Bearer sess_github_123');
+      expect((client as any).transport.setHeader).toHaveBeenCalledWith('X-Session-Token', 'sess_github_123');
+    });
+
     it('should work without context (backward compatibility)', async () => {
       const getProviderToken = vi.fn().mockResolvedValue(mockTokenData);
 
@@ -544,4 +578,3 @@ describe('Context-Aware Token Storage', () => {
     });
   });
 });
-
