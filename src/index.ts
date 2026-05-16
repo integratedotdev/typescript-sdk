@@ -111,6 +111,12 @@ export type { SlackIntegrationConfig, SlackTools, SlackIntegrationClient } from 
 export { discordIntegration } from "./integrations/discord.js";
 export type { DiscordIntegrationConfig, DiscordTools, DiscordIntegrationClient } from "./integrations/discord.js";
 
+export { telegramIntegration } from "./integrations/telegram.js";
+export type { TelegramIntegrationOptions, TelegramTools, TelegramIntegrationClient } from "./integrations/telegram.js";
+
+export { boxIntegration } from "./integrations/box.js";
+export type { BoxIntegrationOptions, BoxTools, BoxIntegrationClient } from "./integrations/box.js";
+
 export { linearIntegration } from "./integrations/linear.js";
 export type { LinearIntegrationConfig, LinearTools, LinearIntegrationClient } from "./integrations/linear.js";
 
@@ -131,6 +137,9 @@ export type { GcalIntegrationConfig, GcalTools, GcalIntegrationClient } from "./
 
 export { gtasksIntegration } from "./integrations/gtasks.js";
 export type { GtasksIntegrationConfig, GtasksTools, GtasksIntegrationClient } from "./integrations/gtasks.js";
+
+export { gkeepIntegration } from "./integrations/gkeep.js";
+export type { GkeepIntegrationConfig, GkeepTools, GkeepIntegrationClient } from "./integrations/gkeep.js";
 
 export { gcontactsIntegration } from "./integrations/gcontacts.js";
 export type {

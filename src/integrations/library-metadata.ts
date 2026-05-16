@@ -94,6 +94,10 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     description: "Manage Google Tasks lists and to-dos",
     category: "Productivity",
   },
+  gkeep: {
+    description: "Manage Google Keep notes, attachments, and sharing permissions",
+    category: "Productivity",
+  },
   gmeet: {
     description: "Create Google Meet links and manage meeting events via Calendar",
     category: "Communication",
@@ -194,6 +198,10 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     description: "Send and manage Slack messages and channels",
     category: "Communication",
   },
+  telegram: {
+    description: "Use Telegram as an actual user account via MTProto sessions",
+    category: "Communication",
+  },
   stripe: {
     description: "Manage Stripe customers, payments, and subscriptions",
     category: "Finance",
@@ -256,6 +264,10 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   dropbox: {
     description: "Manage Dropbox files, folders, and sharing",
+    category: "Storage",
+  },
+  box: {
+    description: "Manage Box files, folders, sharing, comments, search, and collaborations",
     category: "Storage",
   },
   paper: {

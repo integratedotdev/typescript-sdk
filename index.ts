@@ -37,6 +37,7 @@ import { gmailIntegration } from './src/integrations/gmail.js';
 import { notionIntegration } from './src/integrations/notion.js';
 import { slackIntegration } from './src/integrations/slack.js';
 import { discordIntegration } from './src/integrations/discord.js';
+import { boxIntegration } from './src/integrations/box.js';
 import { linearIntegration } from './src/integrations/linear.js';
 import { vercelIntegration } from './src/integrations/vercel.js';
 import { zendeskIntegration } from './src/integrations/zendesk.js';
@@ -44,6 +45,7 @@ import { stripeIntegration } from './src/integrations/stripe.js';
 import { gcalIntegration } from './src/integrations/gcal.js';
 import { gmeetIntegration } from './src/integrations/gmeet.js';
 import { gtasksIntegration } from './src/integrations/gtasks.js';
+import { gkeepIntegration } from './src/integrations/gkeep.js';
 import { gcontactsIntegration } from './src/integrations/gcontacts.js';
 import { outlookIntegration } from './src/integrations/outlook.js';
 import { teamsIntegration } from './src/integrations/teams.js';
@@ -134,6 +136,7 @@ export const client = createMCPClient({
     notionIntegration(),
     slackIntegration(),
     discordIntegration(),
+    boxIntegration(),
     linearIntegration(),
     vercelIntegration(),
     zendeskIntegration(),
@@ -141,6 +144,7 @@ export const client = createMCPClient({
     gcalIntegration(),
     gmeetIntegration(),
     gtasksIntegration(),
+    gkeepIntegration(),
     gcontactsIntegration(),
     outlookIntegration(),
     teamsIntegration(),

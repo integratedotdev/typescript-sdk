@@ -40,6 +40,7 @@ import type { StripeIntegrationClient } from "./integrations/stripe-client.js";
 import type { GcalIntegrationClient } from "./integrations/gcal-client.js";
 import type { GcontactsIntegrationClient } from "./integrations/gcontacts-client.js";
 import type { GtasksIntegrationClient } from "./integrations/gtasks-client.js";
+import type { GkeepIntegrationClient } from "./integrations/gkeep-client.js";
 import type { Ga4IntegrationClient } from "./integrations/ga4-client.js";
 import type { GmeetIntegrationClient } from "./integrations/gmeet-client.js";
 import type { OutlookIntegrationClient } from "./integrations/outlook-client.js";
@@ -107,6 +108,8 @@ import type { UpstashIntegrationClient } from "./integrations/upstash-client.js"
 import type { WorkOSIntegrationClient } from "./integrations/workos-client.js";
 import type { CanvaIntegrationClient } from "./integrations/canva-client.js";
 import type { DiscordIntegrationClient } from "./integrations/discord-client.js";
+import type { TelegramIntegrationClient } from "./integrations/telegram-client.js";
+import type { BoxIntegrationClient } from "./integrations/box-client.js";
 import type { ExcelIntegrationClient } from "./integrations/excel-client.js";
 import type { GDriveIntegrationClient } from "./integrations/gdrive-client.js";
 import type { GitLabIntegrationClient } from "./integrations/gitlab-client.js";
@@ -387,6 +390,8 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   ? "astronomer"
   : K extends "gtasks"
   ? "gtasks"
+  : K extends "gkeep"
+  ? "gkeep"
   : K extends "instagram"
   ? "instagram"
   : K extends "alpaca"
@@ -401,6 +406,10 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   ? "canva"
   : K extends "discord"
   ? "discord"
+  : K extends "telegram"
+  ? "telegram"
+  : K extends "box"
+  ? "box"
   : K extends "excel"
   ? "excel"
   : K extends "gdrive"
@@ -424,6 +433,7 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   K extends "gcal" ? GcalIntegrationClient :
   K extends "gcontacts" ? GcontactsIntegrationClient :
   K extends "gtasks" ? GtasksIntegrationClient :
+  K extends "gkeep" ? GkeepIntegrationClient :
   K extends "ga4" ? Ga4IntegrationClient :
   K extends "gmeet" ? GmeetIntegrationClient :
   K extends "outlook" ? OutlookIntegrationClient :
@@ -491,6 +501,8 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   K extends "astronomer" ? AstronomerIntegrationClient :
   K extends "canva" ? CanvaIntegrationClient :
   K extends "discord" ? DiscordIntegrationClient :
+  K extends "telegram" ? TelegramIntegrationClient :
+  K extends "box" ? BoxIntegrationClient :
   K extends "excel" ? ExcelIntegrationClient :
   K extends "gdrive" ? GDriveIntegrationClient :
   K extends "gitlab" ? GitLabIntegrationClient :
