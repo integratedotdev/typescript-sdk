@@ -41,7 +41,7 @@ export function tiktokIntegration(config: TikTokIntegrationConfig = {}): MCPInte
     name: "TikTok",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/tiktok.png",
     description: "Read TikTok user profile data and user-authorized video metadata",
-    category: "Social Media",
+    category: "Entertainment",
     tools: [...TIKTOK_TOOLS],
     oauth,
     async onInit(_client) {

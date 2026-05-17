@@ -56,7 +56,7 @@ export function smartthingsIntegration(config: SmartThingsIntegrationConfig = {}
     name: "Samsung SmartThings",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/smartthings.png",
     description: "Manage SmartThings locations, rooms, devices, commands, scenes, and rules",
-    category: "Other",
+    category: "Lifestyle",
     tools: [...SMARTTHINGS_TOOLS],
     authType: accessToken ? "apiKey" : "oauth",
     oauth,

@@ -7,7 +7,9 @@ export type IntegrationCategory =
   | "Analytics"
   | "Business"
   | "Finance"
+  | "Entertainment"
   | "Productivity"
+  | "Lifestyle"
   | "Communication"
   | "Engineering"
   | "Infrastructure"
@@ -24,8 +26,10 @@ type LibraryEntry = {
 export const INTEGRATION_CATEGORY_ORDER: readonly IntegrationCategory[] = [
   "Analytics",
   "Productivity",
+  "Lifestyle",
   "Business",
   "Finance",
+  "Entertainment",
   "Communication",
   "Engineering",
   "Infrastructure",
@@ -224,15 +228,15 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   smartthings: {
     description: "Manage SmartThings locations, rooms, devices, scenes, and rules",
-    category: "Other",
+    category: "Lifestyle",
   },
   spotify: {
     description: "Search Spotify, manage playlists and saved tracks, and control playback",
-    category: "Other",
+    category: "Entertainment",
   },
   strava: {
     description: "Manage Strava athletes, activities, routes, clubs, segments, streams, gear, and uploads",
-    category: "Other",
+    category: "Lifestyle",
   },
   square: {
     description: "Manage Square merchants, locations, customers, catalog, orders, payments, refunds, and invoices",
@@ -280,7 +284,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   youtube: {
     description: "Search and access YouTube videos and channels",
-    category: "Social Media",
+    category: "Entertainment",
   },
   zoom: {
     description: "Manage Zoom user profile and meetings",
@@ -424,7 +428,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   tiktok: {
     description: "Manage TikTok videos, account info, and creator analytics",
-    category: "Social Media",
+    category: "Entertainment",
   },
   tldraw: {
     description: "Create and manage tldraw collaborative whiteboards",

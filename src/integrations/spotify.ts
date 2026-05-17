@@ -54,7 +54,7 @@ export function spotifyIntegration(config: SpotifyIntegrationConfig = {}): MCPIn
     name: "Spotify",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/spotify.png",
     description: "Search Spotify, manage playlists and saved tracks, and control playback",
-    category: "Other",
+    category: "Entertainment",
     tools: [...SPOTIFY_TOOLS],
     authType: "oauth",
     oauth,
@@ -66,4 +66,3 @@ export function spotifyIntegration(config: SpotifyIntegrationConfig = {}): MCPIn
 export type SpotifyTools = (typeof SPOTIFY_TOOLS)[number];
 export type SpotifyScopes = (typeof SPOTIFY_SCOPES)[number];
 export type { SpotifyIntegrationClient } from "./spotify-client.js";
-

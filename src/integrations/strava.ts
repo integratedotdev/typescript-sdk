@@ -61,7 +61,7 @@ export function stravaIntegration(config: StravaIntegrationConfig = {}): MCPInte
     name: "Strava",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/strava.png",
     description: "Manage Strava athletes, activities, routes, clubs, segments, streams, gear, and uploads",
-    category: "Other",
+    category: "Lifestyle",
     tools: [...STRAVA_TOOLS],
     authType: "oauth",
     oauth,
@@ -73,4 +73,3 @@ export function stravaIntegration(config: StravaIntegrationConfig = {}): MCPInte
 export type StravaTools = (typeof STRAVA_TOOLS)[number];
 export type StravaScopes = (typeof STRAVA_SCOPES)[number];
 export type { StravaIntegrationClient } from "./strava-client.js";
-
