@@ -110,6 +110,16 @@ import type { CanvaIntegrationClient } from "./integrations/canva-client.js";
 import type { DiscordIntegrationClient } from "./integrations/discord-client.js";
 import type { TelegramIntegrationClient } from "./integrations/telegram-client.js";
 import type { BoxIntegrationClient } from "./integrations/box-client.js";
+import type { PayPalIntegrationClient } from "./integrations/paypal-client.js";
+import type { SquareIntegrationClient } from "./integrations/square-client.js";
+import type { SpotifyIntegrationClient } from "./integrations/spotify-client.js";
+import type { StravaIntegrationClient } from "./integrations/strava-client.js";
+import type { AsanaIntegrationClient } from "./integrations/asana-client.js";
+import type { ConfluenceIntegrationClient } from "./integrations/confluence-client.js";
+import type { OktaIntegrationClient } from "./integrations/okta-client.js";
+import type { QuickBooksIntegrationClient } from "./integrations/quickbooks-client.js";
+import type { BitbucketIntegrationClient } from "./integrations/bitbucket-client.js";
+import type { SmartThingsIntegrationClient } from "./integrations/smartthings-client.js";
 import type { ExcelIntegrationClient } from "./integrations/excel-client.js";
 import type { GDriveIntegrationClient } from "./integrations/gdrive-client.js";
 import type { GitLabIntegrationClient } from "./integrations/gitlab-client.js";
@@ -410,6 +420,26 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   ? "telegram"
   : K extends "box"
   ? "box"
+  : K extends "paypal"
+  ? "paypal"
+  : K extends "square"
+  ? "square"
+  : K extends "spotify"
+  ? "spotify"
+  : K extends "strava"
+  ? "strava"
+  : K extends "asana"
+  ? "asana"
+  : K extends "confluence"
+  ? "confluence"
+  : K extends "okta"
+  ? "okta"
+  : K extends "quickbooks"
+  ? "quickbooks"
+  : K extends "bitbucket"
+  ? "bitbucket"
+  : K extends "smartthings"
+  ? "smartthings"
   : K extends "excel"
   ? "excel"
   : K extends "gdrive"
@@ -503,6 +533,16 @@ type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
   K extends "discord" ? DiscordIntegrationClient :
   K extends "telegram" ? TelegramIntegrationClient :
   K extends "box" ? BoxIntegrationClient :
+  K extends "paypal" ? PayPalIntegrationClient :
+  K extends "square" ? SquareIntegrationClient :
+  K extends "spotify" ? SpotifyIntegrationClient :
+  K extends "strava" ? StravaIntegrationClient :
+  K extends "asana" ? AsanaIntegrationClient :
+  K extends "confluence" ? ConfluenceIntegrationClient :
+  K extends "okta" ? OktaIntegrationClient :
+  K extends "quickbooks" ? QuickBooksIntegrationClient :
+  K extends "bitbucket" ? BitbucketIntegrationClient :
+  K extends "smartthings" ? SmartThingsIntegrationClient :
   K extends "excel" ? ExcelIntegrationClient :
   K extends "gdrive" ? GDriveIntegrationClient :
   K extends "gitlab" ? GitLabIntegrationClient :

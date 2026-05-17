@@ -117,6 +117,36 @@ export type { TelegramIntegrationOptions, TelegramTools, TelegramIntegrationClie
 export { boxIntegration } from "./integrations/box.js";
 export type { BoxIntegrationOptions, BoxTools, BoxIntegrationClient } from "./integrations/box.js";
 
+export { paypalIntegration } from "./integrations/paypal.js";
+export type { PayPalIntegrationConfig, PayPalTools, PayPalIntegrationClient } from "./integrations/paypal.js";
+
+export { squareIntegration } from "./integrations/square.js";
+export type { SquareIntegrationConfig, SquareTools, SquareScopes, SquareIntegrationClient } from "./integrations/square.js";
+
+export { spotifyIntegration } from "./integrations/spotify.js";
+export type { SpotifyIntegrationConfig, SpotifyTools, SpotifyScopes, SpotifyIntegrationClient } from "./integrations/spotify.js";
+
+export { stravaIntegration } from "./integrations/strava.js";
+export type { StravaIntegrationConfig, StravaTools, StravaScopes, StravaIntegrationClient } from "./integrations/strava.js";
+
+export { asanaIntegration } from "./integrations/asana.js";
+export type { AsanaIntegrationConfig, AsanaTools, AsanaIntegrationClient } from "./integrations/asana.js";
+
+export { confluenceIntegration } from "./integrations/confluence.js";
+export type { ConfluenceIntegrationConfig, ConfluenceTools, ConfluenceScopes, ConfluenceIntegrationClient } from "./integrations/confluence.js";
+
+export { oktaIntegration } from "./integrations/okta.js";
+export type { OktaIntegrationConfig, OktaTools, OktaScopes, OktaIntegrationClient } from "./integrations/okta.js";
+
+export { quickbooksIntegration } from "./integrations/quickbooks.js";
+export type { QuickBooksIntegrationConfig, QuickBooksTools, QuickBooksScopes, QuickBooksIntegrationClient } from "./integrations/quickbooks.js";
+
+export { bitbucketIntegration } from "./integrations/bitbucket.js";
+export type { BitbucketIntegrationConfig, BitbucketTools, BitbucketScopes, BitbucketIntegrationClient } from "./integrations/bitbucket.js";
+
+export { smartthingsIntegration } from "./integrations/smartthings.js";
+export type { SmartThingsIntegrationConfig, SmartThingsTools, SmartThingsScopes, SmartThingsIntegrationClient } from "./integrations/smartthings.js";
+
 export { linearIntegration } from "./integrations/linear.js";
 export type { LinearIntegrationConfig, LinearTools, LinearIntegrationClient } from "./integrations/linear.js";
 

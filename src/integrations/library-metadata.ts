@@ -50,6 +50,14 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     description: "Manage Attio people, companies, tasks, and CRM records",
     category: "Business",
   },
+  asana: {
+    description: "Manage Asana workspaces, projects, tasks, stories, users, and teams",
+    category: "Productivity",
+  },
+  bitbucket: {
+    description: "Manage Bitbucket Cloud repositories, pull requests, issues, and pipelines",
+    category: "Engineering",
+  },
   calcom: {
     description: "Manage Cal.com bookings and schedules",
     category: "Business",
@@ -61,6 +69,10 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   cloudflare: {
     description: "Manage Cloudflare zones, DNS, CDN cache, and Workers",
     category: "Infrastructure",
+  },
+  confluence: {
+    description: "Manage Confluence spaces, pages, search, comments, and attachments",
+    category: "Productivity",
   },
   cursor: {
     description: "Manage Cursor Cloud Agents and background tasks",
@@ -126,6 +138,10 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     description: "Manage Notion pages and databases",
     category: "Productivity",
   },
+  okta: {
+    description: "Manage Okta users, groups, applications, policies, and system logs",
+    category: "Engineering",
+  },
   onedrive: {
     description: "Manage OneDrive files, folders, and sharing",
     category: "Storage",
@@ -140,6 +156,10 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   polar: {
     description: "Manage Polar products, orders, and subscriptions",
+    category: "Finance",
+  },
+  paypal: {
+    description: "Manage PayPal orders, captures, refunds, invoices, products, plans, and subscriptions",
     category: "Finance",
   },
   phantom: {
@@ -157,6 +177,10 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   ramp: {
     description: "Manage Ramp corporate cards, bills, and spend",
     category: "Business",
+  },
+  quickbooks: {
+    description: "Manage QuickBooks Online accounting data, invoices, bills, payments, and reports",
+    category: "Finance",
   },
   resend: {
     description: "Send email and manage domains with the Resend API",
@@ -197,6 +221,22 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   slack: {
     description: "Send and manage Slack messages and channels",
     category: "Communication",
+  },
+  smartthings: {
+    description: "Manage SmartThings locations, rooms, devices, scenes, and rules",
+    category: "Other",
+  },
+  spotify: {
+    description: "Search Spotify, manage playlists and saved tracks, and control playback",
+    category: "Other",
+  },
+  strava: {
+    description: "Manage Strava athletes, activities, routes, clubs, segments, streams, gear, and uploads",
+    category: "Other",
+  },
+  square: {
+    description: "Manage Square merchants, locations, customers, catalog, orders, payments, refunds, and invoices",
+    category: "Finance",
   },
   telegram: {
     description: "Use Telegram as an actual user account via MTProto sessions",

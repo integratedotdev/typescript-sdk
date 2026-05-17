@@ -38,6 +38,16 @@ import { notionIntegration } from './src/integrations/notion.js';
 import { slackIntegration } from './src/integrations/slack.js';
 import { discordIntegration } from './src/integrations/discord.js';
 import { boxIntegration } from './src/integrations/box.js';
+import { paypalIntegration } from './src/integrations/paypal.js';
+import { squareIntegration } from './src/integrations/square.js';
+import { spotifyIntegration } from './src/integrations/spotify.js';
+import { stravaIntegration } from './src/integrations/strava.js';
+import { asanaIntegration } from './src/integrations/asana.js';
+import { confluenceIntegration } from './src/integrations/confluence.js';
+import { oktaIntegration } from './src/integrations/okta.js';
+import { quickbooksIntegration } from './src/integrations/quickbooks.js';
+import { bitbucketIntegration } from './src/integrations/bitbucket.js';
+import { smartthingsIntegration } from './src/integrations/smartthings.js';
 import { linearIntegration } from './src/integrations/linear.js';
 import { vercelIntegration } from './src/integrations/vercel.js';
 import { zendeskIntegration } from './src/integrations/zendesk.js';
@@ -137,6 +147,16 @@ export const client = createMCPClient({
     slackIntegration(),
     discordIntegration(),
     boxIntegration(),
+    paypalIntegration(),
+    squareIntegration(),
+    spotifyIntegration(),
+    stravaIntegration(),
+    asanaIntegration(),
+    confluenceIntegration(),
+    oktaIntegration(),
+    quickbooksIntegration(),
+    bitbucketIntegration(),
+    smartthingsIntegration(),
     linearIntegration(),
     vercelIntegration(),
     zendeskIntegration(),
