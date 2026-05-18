@@ -48,6 +48,24 @@ import { oktaIntegration } from './src/integrations/okta.js';
 import { quickbooksIntegration } from './src/integrations/quickbooks.js';
 import { bitbucketIntegration } from './src/integrations/bitbucket.js';
 import { smartthingsIntegration } from './src/integrations/smartthings.js';
+import { googleAdsIntegration } from './src/integrations/google_ads.js';
+import { pinterestIntegration } from './src/integrations/pinterest.js';
+import { twitchIntegration } from './src/integrations/twitch.js';
+import { xIntegration } from './src/integrations/x.js';
+import { ebayIntegration } from './src/integrations/ebay.js';
+import { miroIntegration } from './src/integrations/miro.js';
+import { smartsheetIntegration } from './src/integrations/smartsheet.js';
+import { docusignIntegration } from './src/integrations/docusign.js';
+import { pipedriveIntegration } from './src/integrations/pipedrive.js';
+import { freshserviceIntegration } from './src/integrations/freshservice.js';
+import { zohoCrmIntegration } from './src/integrations/zoho_crm.js';
+import { zohoMailIntegration } from './src/integrations/zoho_mail.js';
+import { zohoDeskIntegration } from './src/integrations/zoho_desk.js';
+import { zohoBooksIntegration } from './src/integrations/zoho_books.js';
+import { zohoProjectsIntegration } from './src/integrations/zoho_projects.js';
+import { zohoCampaignsIntegration } from './src/integrations/zoho_campaigns.js';
+import { zohoAnalyticsIntegration } from './src/integrations/zoho_analytics.js';
+import { zohoInvoiceIntegration } from './src/integrations/zoho_invoice.js';
 import { linearIntegration } from './src/integrations/linear.js';
 import { vercelIntegration } from './src/integrations/vercel.js';
 import { zendeskIntegration } from './src/integrations/zendesk.js';
@@ -157,6 +175,24 @@ export const client = createMCPClient({
     quickbooksIntegration(),
     bitbucketIntegration(),
     smartthingsIntegration(),
+    googleAdsIntegration(),
+    pinterestIntegration(),
+    twitchIntegration(),
+    xIntegration(),
+    ebayIntegration(),
+    miroIntegration(),
+    smartsheetIntegration(),
+    docusignIntegration(),
+    pipedriveIntegration(),
+    freshserviceIntegration(),
+    zohoCrmIntegration(),
+    zohoMailIntegration(),
+    zohoDeskIntegration(),
+    zohoBooksIntegration(),
+    zohoProjectsIntegration(),
+    zohoCampaignsIntegration(),
+    zohoAnalyticsIntegration(),
+    zohoInvoiceIntegration(),
     linearIntegration(),
     vercelIntegration(),
     zendeskIntegration(),

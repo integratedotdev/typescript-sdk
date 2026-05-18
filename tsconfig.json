@@ -42,10 +42,10 @@
   "include": [
     "src/**/*",
     "index.ts",
+    "integrations.ts",
     "server.ts",
     "oauth.ts",
     "react.ts"
   ],
   "exclude": ["node_modules", "dist"]
 }
-

@@ -1,6 +1,6 @@
 {
   "name": "integrate-sdk",
-  "version": "0.9.51",
+  "version": "0.9.52",
   "description": "Type-safe 3rd party integration SDK for the Integrate MCP server",
   "type": "module",
   "main": "./dist/index.js",
@@ -63,7 +63,7 @@
   "scripts": {
     "prep": "bun run type-check && bun run build",
     "build": "bun run build:client && bun run build:server && bun run build:adapters && bun run build:ai && bun run build:code-mode && bun run build:types && bun run build:copy-types",
-    "build:client": "bun build index.ts react.ts --outdir dist --target browser --format esm --external react --external @vercel/sandbox",
+    "build:client": "bun build index.ts react.ts integrations.ts --outdir dist --target browser --format esm --external react --external @vercel/sandbox",
     "build:server": "bun build server.ts oauth.ts --outdir dist --target node --format esm --external @google/genai --external @anthropic-ai/sdk --external openai --external ai --external @openai/agents --external @vercel/sandbox",
     "build:adapters": "cd src/adapters && bun build auto-routes.ts base-handler.ts context-cookie.ts index.ts nextjs-oauth-redirect.ts nextjs.ts node.ts session-detector.ts solid-start.ts svelte-kit.ts tanstack-start.ts --outdir ../../dist/adapters --target node --format esm && cd ../..",
     "build:ai": "cd src/ai && bun build anthropic.ts google.ts index.ts openai.ts trigger-tools.ts utils.ts vercel-ai.ts --outdir ../../dist/ai --target node --format esm --external @google/genai --external @anthropic-ai/sdk --external openai --external ai --external @openai/agents --external zod-to-json-schema --external @vercel/sandbox && cd ../..",

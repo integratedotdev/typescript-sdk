@@ -5,5 +5,4 @@
  * Import from 'integrate-sdk/integrations' to get access to all provider integrations.
  */
 
-export * from './src/integrations/index.js';
-
+export * from './src/index.js';
