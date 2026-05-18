@@ -125,6 +125,24 @@ import type { GDriveIntegrationClient } from "./integrations/gdrive-client.js";
 import type { GitLabIntegrationClient } from "./integrations/gitlab-client.js";
 import type { PowerPointIntegrationClient } from "./integrations/powerpoint-client.js";
 import type { WordIntegrationClient } from "./integrations/word-client.js";
+import type { GoogleAdsIntegrationClient } from "./integrations/google_ads-client.js";
+import type { PinterestIntegrationClient } from "./integrations/pinterest-client.js";
+import type { TwitchIntegrationClient } from "./integrations/twitch-client.js";
+import type { XIntegrationClient } from "./integrations/x-client.js";
+import type { EbayIntegrationClient } from "./integrations/ebay-client.js";
+import type { MiroIntegrationClient } from "./integrations/miro-client.js";
+import type { SmartsheetIntegrationClient } from "./integrations/smartsheet-client.js";
+import type { DocusignIntegrationClient } from "./integrations/docusign-client.js";
+import type { PipedriveIntegrationClient } from "./integrations/pipedrive-client.js";
+import type { FreshserviceIntegrationClient } from "./integrations/freshservice-client.js";
+import type { ZohoCrmIntegrationClient } from "./integrations/zoho_crm-client.js";
+import type { ZohoMailIntegrationClient } from "./integrations/zoho_mail-client.js";
+import type { ZohoDeskIntegrationClient } from "./integrations/zoho_desk-client.js";
+import type { ZohoBooksIntegrationClient } from "./integrations/zoho_books-client.js";
+import type { ZohoProjectsIntegrationClient } from "./integrations/zoho_projects-client.js";
+import type { ZohoCampaignsIntegrationClient } from "./integrations/zoho_campaigns-client.js";
+import type { ZohoAnalyticsIntegrationClient } from "./integrations/zoho_analytics-client.js";
+import type { ZohoInvoiceIntegrationClient } from "./integrations/zoho_invoice-client.js";
 import type { ServerIntegrationClient } from "./integrations/server-client.js";
 import { TriggerClient } from "./triggers/client.js";
 import { OAuthManager } from "./oauth/manager.js";
@@ -257,298 +275,126 @@ type IntegrationIds<TIntegrations extends readonly MCPIntegration[]> = ExtractIn
  * Integration namespace type mapping - only includes properties for configured integrations
  * Uses a single mapped type to avoid intersection issues with IDE autocomplete
  */
+type IntegrationClientMap = {
+  github: GitHubIntegrationClient;
+  gmail: GmailIntegrationClient;
+  notion: NotionIntegrationClient;
+  slack: SlackIntegrationClient;
+  linear: LinearIntegrationClient;
+  railway: RailwayIntegrationClient;
+  vercel: VercelIntegrationClient;
+  zendesk: ZendeskIntegrationClient;
+  stripe: StripeIntegrationClient;
+  gcal: GcalIntegrationClient;
+  gcontacts: GcontactsIntegrationClient;
+  gtasks: GtasksIntegrationClient;
+  gkeep: GkeepIntegrationClient;
+  ga4: Ga4IntegrationClient;
+  gmeet: GmeetIntegrationClient;
+  outlook: OutlookIntegrationClient;
+  airtable: AirtableIntegrationClient;
+  todoist: TodoistIntegrationClient;
+  whatsapp: WhatsAppIntegrationClient;
+  calcom: CalcomIntegrationClient;
+  ramp: RampIntegrationClient;
+  onedrive: OneDriveIntegrationClient;
+  planner: PlannerIntegrationClient;
+  sharepoint: SharePointIntegrationClient;
+  gdocs: GDocsIntegrationClient;
+  gsheets: GSheetsIntegrationClient;
+  gslides: GSlidesIntegrationClient;
+  polar: PolarIntegrationClient;
+  planetscale: PlanetScaleIntegrationClient;
+  supabase: SupabaseIntegrationClient;
+  facebook: FacebookIntegrationClient;
+  figma: FigmaIntegrationClient;
+  intercom: IntercomIntegrationClient;
+  hubspot: HubSpotIntegrationClient;
+  instagram: InstagramIntegrationClient;
+  youtube: YouTubeIntegrationClient;
+  tiktok: TikTokIntegrationClient;
+  cursor: CursorIntegrationClient;
+  databricks: DatabricksIntegrationClient;
+  posthog: PostHogIntegrationClient;
+  postman: PostmanIntegrationClient;
+  sentry: SentryIntegrationClient;
+  netlify: NetlifyIntegrationClient;
+  webflow: WebflowIntegrationClient;
+  jira: JiraIntegrationClient;
+  clickup: ClickUpIntegrationClient;
+  zapier: ZapierIntegrationClient;
+  threads: ThreadsIntegrationClient;
+  alpaca: AlpacaIntegrationClient;
+  linkedin: LinkedInIntegrationClient;
+  trello: TrelloIntegrationClient;
+  monday: MondayIntegrationClient;
+  resend: ResendIntegrationClient;
+  mailchimp: MailchimpIntegrationClient;
+  neon: NeonIntegrationClient;
+  typeform: TypeformIntegrationClient;
+  xero: XeroIntegrationClient;
+  attio: AttioIntegrationClient;
+  gchat: GchatIntegrationClient;
+  shopify: ShopifyIntegrationClient;
+  convex: ConvexIntegrationClient;
+  etoro: EtoroIntegrationClient;
+  binance: BinanceIntegrationClient;
+  betterstack: BetterStackIntegrationClient;
+  aws: AwsIntegrationClient;
+  phantom: PhantomIntegrationClient;
+  reddit: RedditIntegrationClient;
+  zoom: ZoomIntegrationClient;
+  clerk: ClerkIntegrationClient;
+  auth0: Auth0IntegrationClient;
+  workday: WorkdayIntegrationClient;
+  redis: RedisIntegrationClient;
+  upstash: UpstashIntegrationClient;
+  tldraw: TldrawIntegrationClient;
+  cloudflare: CloudflareIntegrationClient;
+  paper: PaperIntegrationClient;
+  workos: WorkOSIntegrationClient;
+  astronomer: AstronomerIntegrationClient;
+  canva: CanvaIntegrationClient;
+  discord: DiscordIntegrationClient;
+  telegram: TelegramIntegrationClient;
+  box: BoxIntegrationClient;
+  paypal: PayPalIntegrationClient;
+  square: SquareIntegrationClient;
+  spotify: SpotifyIntegrationClient;
+  strava: StravaIntegrationClient;
+  asana: AsanaIntegrationClient;
+  confluence: ConfluenceIntegrationClient;
+  okta: OktaIntegrationClient;
+  quickbooks: QuickBooksIntegrationClient;
+  bitbucket: BitbucketIntegrationClient;
+  smartthings: SmartThingsIntegrationClient;
+  google_ads: GoogleAdsIntegrationClient;
+  pinterest: PinterestIntegrationClient;
+  twitch: TwitchIntegrationClient;
+  x: XIntegrationClient;
+  ebay: EbayIntegrationClient;
+  miro: MiroIntegrationClient;
+  smartsheet: SmartsheetIntegrationClient;
+  docusign: DocusignIntegrationClient;
+  pipedrive: PipedriveIntegrationClient;
+  freshservice: FreshserviceIntegrationClient;
+  zoho_crm: ZohoCrmIntegrationClient;
+  zoho_mail: ZohoMailIntegrationClient;
+  zoho_desk: ZohoDeskIntegrationClient;
+  zoho_books: ZohoBooksIntegrationClient;
+  zoho_projects: ZohoProjectsIntegrationClient;
+  zoho_campaigns: ZohoCampaignsIntegrationClient;
+  zoho_analytics: ZohoAnalyticsIntegrationClient;
+  zoho_invoice: ZohoInvoiceIntegrationClient;
+  excel: ExcelIntegrationClient;
+  gdrive: GDriveIntegrationClient;
+  gitlab: GitLabIntegrationClient;
+  powerpoint: PowerPointIntegrationClient;
+  word: WordIntegrationClient;
+};
+
 type IntegrationNamespaces<TIntegrations extends readonly MCPIntegration[]> = {
-  [K in IntegrationIds<TIntegrations> as K extends "github"
-  ? "github"
-  : K extends "gmail"
-  ? "gmail"
-  : K extends "notion"
-  ? "notion"
-  : K extends "slack"
-  ? "slack"
-  : K extends "linear"
-  ? "linear"
-  : K extends "railway"
-  ? "railway"
-  : K extends "vercel"
-  ? "vercel"
-  : K extends "zendesk"
-  ? "zendesk"
-  : K extends "stripe"
-  ? "stripe"
-  : K extends "gcal"
-  ? "gcal"
-  : K extends "gcontacts"
-  ? "gcontacts"
-  : K extends "ga4"
-  ? "ga4"
-  : K extends "gmeet"
-  ? "gmeet"
-  : K extends "outlook"
-  ? "outlook"
-  : K extends "airtable"
-  ? "airtable"
-  : K extends "todoist"
-  ? "todoist"
-  : K extends "whatsapp"
-  ? "whatsapp"
-  : K extends "calcom"
-  ? "calcom"
-  : K extends "ramp"
-  ? "ramp"
-  : K extends "onedrive"
-  ? "onedrive"
-  : K extends "planner"
-  ? "planner"
-  : K extends "sharepoint"
-  ? "sharepoint"
-  : K extends "gdocs"
-  ? "gdocs"
-  : K extends "gsheets"
-  ? "gsheets"
-  : K extends "gslides"
-  ? "gslides"
-  : K extends "polar"
-  ? "polar"
-  : K extends "planetscale"
-  ? "planetscale"
-  : K extends "supabase"
-  ? "supabase"
-  : K extends "facebook"
-  ? "facebook"
-  : K extends "figma"
-  ? "figma"
-  : K extends "intercom"
-  ? "intercom"
-  : K extends "hubspot"
-  ? "hubspot"
-  : K extends "youtube"
-  ? "youtube"
-  : K extends "cursor"
-  ? "cursor"
-  : K extends "databricks"
-  ? "databricks"
-  : K extends "posthog"
-  ? "posthog"
-  : K extends "postman"
-  ? "postman"
-  : K extends "sentry"
-  ? "sentry"
-  : K extends "netlify"
-  ? "netlify"
-  : K extends "jira"
-  ? "jira"
-  : K extends "clickup"
-  ? "clickup"
-  : K extends "threads"
-  ? "threads"
-  : K extends "zapier"
-  ? "zapier"
-  : K extends "linkedin"
-  ? "linkedin"
-  : K extends "tiktok"
-  ? "tiktok"
-  : K extends "trello"
-  ? "trello"
-  : K extends "neon"
-  ? "neon"
-  : K extends "resend"
-  ? "resend"
-  : K extends "mailchimp"
-  ? "mailchimp"
-  : K extends "typeform"
-  ? "typeform"
-  : K extends "xero"
-  ? "xero"
-  : K extends "attio"
-  ? "attio"
-  : K extends "gchat"
-  ? "gchat"
-  : K extends "shopify"
-  ? "shopify"
-  : K extends "convex"
-  ? "convex"
-  : K extends "etoro"
-  ? "etoro"
-  : K extends "zoom"
-  ? "zoom"
-  : K extends "clerk"
-  ? "clerk"
-  : K extends "reddit"
-  ? "reddit"
-  : K extends "betterstack"
-  ? "betterstack"
-  : K extends "phantom"
-  ? "phantom"
-  : K extends "aws"
-  ? "aws"
-  : K extends "workos"
-  ? "workos"
-  : K extends "redis"
-  ? "redis"
-  : K extends "binance"
-  ? "binance"
-  : K extends "tldraw"
-  ? "tldraw"
-  : K extends "upstash"
-  ? "upstash"
-  : K extends "cloudflare"
-  ? "cloudflare"
-  : K extends "paper"
-  ? "paper"
-  : K extends "astronomer"
-  ? "astronomer"
-  : K extends "gtasks"
-  ? "gtasks"
-  : K extends "gkeep"
-  ? "gkeep"
-  : K extends "instagram"
-  ? "instagram"
-  : K extends "alpaca"
-  ? "alpaca"
-  : K extends "monday"
-  ? "monday"
-  : K extends "auth0"
-  ? "auth0"
-  : K extends "workday"
-  ? "workday"
-  : K extends "canva"
-  ? "canva"
-  : K extends "discord"
-  ? "discord"
-  : K extends "telegram"
-  ? "telegram"
-  : K extends "box"
-  ? "box"
-  : K extends "paypal"
-  ? "paypal"
-  : K extends "square"
-  ? "square"
-  : K extends "spotify"
-  ? "spotify"
-  : K extends "strava"
-  ? "strava"
-  : K extends "asana"
-  ? "asana"
-  : K extends "confluence"
-  ? "confluence"
-  : K extends "okta"
-  ? "okta"
-  : K extends "quickbooks"
-  ? "quickbooks"
-  : K extends "bitbucket"
-  ? "bitbucket"
-  : K extends "smartthings"
-  ? "smartthings"
-  : K extends "excel"
-  ? "excel"
-  : K extends "gdrive"
-  ? "gdrive"
-  : K extends "gitlab"
-  ? "gitlab"
-  : K extends "powerpoint"
-  ? "powerpoint"
-  : K extends "word"
-  ? "word"
-  : never]:
-  K extends "github" ? GitHubIntegrationClient :
-  K extends "gmail" ? GmailIntegrationClient :
-  K extends "notion" ? NotionIntegrationClient :
-  K extends "slack" ? SlackIntegrationClient :
-  K extends "linear" ? LinearIntegrationClient :
-  K extends "railway" ? RailwayIntegrationClient :
-  K extends "vercel" ? VercelIntegrationClient :
-  K extends "zendesk" ? ZendeskIntegrationClient :
-  K extends "stripe" ? StripeIntegrationClient :
-  K extends "gcal" ? GcalIntegrationClient :
-  K extends "gcontacts" ? GcontactsIntegrationClient :
-  K extends "gtasks" ? GtasksIntegrationClient :
-  K extends "gkeep" ? GkeepIntegrationClient :
-  K extends "ga4" ? Ga4IntegrationClient :
-  K extends "gmeet" ? GmeetIntegrationClient :
-  K extends "outlook" ? OutlookIntegrationClient :
-  K extends "airtable" ? AirtableIntegrationClient :
-  K extends "todoist" ? TodoistIntegrationClient :
-  K extends "whatsapp" ? WhatsAppIntegrationClient :
-  K extends "calcom" ? CalcomIntegrationClient :
-  K extends "ramp" ? RampIntegrationClient :
-  K extends "onedrive" ? OneDriveIntegrationClient :
-  K extends "planner" ? PlannerIntegrationClient :
-  K extends "sharepoint" ? SharePointIntegrationClient :
-  K extends "gdocs" ? GDocsIntegrationClient :
-  K extends "gsheets" ? GSheetsIntegrationClient :
-  K extends "gslides" ? GSlidesIntegrationClient :
-  K extends "polar" ? PolarIntegrationClient :
-  K extends "planetscale" ? PlanetScaleIntegrationClient :
-  K extends "supabase" ? SupabaseIntegrationClient :
-  K extends "facebook" ? FacebookIntegrationClient :
-  K extends "figma" ? FigmaIntegrationClient :
-  K extends "intercom" ? IntercomIntegrationClient :
-  K extends "hubspot" ? HubSpotIntegrationClient :
-  K extends "instagram" ? InstagramIntegrationClient :
-  K extends "youtube" ? YouTubeIntegrationClient :
-  K extends "tiktok" ? TikTokIntegrationClient :
-  K extends "cursor" ? CursorIntegrationClient :
-  K extends "databricks" ? DatabricksIntegrationClient :
-  K extends "posthog" ? PostHogIntegrationClient :
-  K extends "postman" ? PostmanIntegrationClient :
-  K extends "sentry" ? SentryIntegrationClient :
-  K extends "netlify" ? NetlifyIntegrationClient :
-  K extends "webflow" ? WebflowIntegrationClient :
-  K extends "jira" ? JiraIntegrationClient :
-  K extends "clickup" ? ClickUpIntegrationClient :
-  K extends "zapier" ? ZapierIntegrationClient :
-  K extends "threads" ? ThreadsIntegrationClient :
-  K extends "alpaca" ? AlpacaIntegrationClient :
-  K extends "linkedin" ? LinkedInIntegrationClient :
-  K extends "trello" ? TrelloIntegrationClient :
-  K extends "monday" ? MondayIntegrationClient :
-  K extends "resend" ? ResendIntegrationClient :
-  K extends "mailchimp" ? MailchimpIntegrationClient :
-  K extends "neon" ? NeonIntegrationClient :
-  K extends "typeform" ? TypeformIntegrationClient :
-  K extends "xero" ? XeroIntegrationClient :
-  K extends "attio" ? AttioIntegrationClient :
-  K extends "gchat" ? GchatIntegrationClient :
-  K extends "shopify" ? ShopifyIntegrationClient :
-  K extends "convex" ? ConvexIntegrationClient :
-  K extends "etoro" ? EtoroIntegrationClient :
-  K extends "binance" ? BinanceIntegrationClient :
-  K extends "betterstack" ? BetterStackIntegrationClient :
-  K extends "aws" ? AwsIntegrationClient :
-  K extends "phantom" ? PhantomIntegrationClient :
-  K extends "reddit" ? RedditIntegrationClient :
-  K extends "zoom" ? ZoomIntegrationClient :
-  K extends "clerk" ? ClerkIntegrationClient :
-  K extends "auth0" ? Auth0IntegrationClient :
-  K extends "workday" ? WorkdayIntegrationClient :
-  K extends "redis" ? RedisIntegrationClient :
-  K extends "upstash" ? UpstashIntegrationClient :
-  K extends "tldraw" ? TldrawIntegrationClient :
-  K extends "cloudflare" ? CloudflareIntegrationClient :
-  K extends "paper" ? PaperIntegrationClient :
-  K extends "workos" ? WorkOSIntegrationClient :
-  K extends "astronomer" ? AstronomerIntegrationClient :
-  K extends "canva" ? CanvaIntegrationClient :
-  K extends "discord" ? DiscordIntegrationClient :
-  K extends "telegram" ? TelegramIntegrationClient :
-  K extends "box" ? BoxIntegrationClient :
-  K extends "paypal" ? PayPalIntegrationClient :
-  K extends "square" ? SquareIntegrationClient :
-  K extends "spotify" ? SpotifyIntegrationClient :
-  K extends "strava" ? StravaIntegrationClient :
-  K extends "asana" ? AsanaIntegrationClient :
-  K extends "confluence" ? ConfluenceIntegrationClient :
-  K extends "okta" ? OktaIntegrationClient :
-  K extends "quickbooks" ? QuickBooksIntegrationClient :
-  K extends "bitbucket" ? BitbucketIntegrationClient :
-  K extends "smartthings" ? SmartThingsIntegrationClient :
-  K extends "excel" ? ExcelIntegrationClient :
-  K extends "gdrive" ? GDriveIntegrationClient :
-  K extends "gitlab" ? GitLabIntegrationClient :
-  K extends "powerpoint" ? PowerPointIntegrationClient :
-  K extends "word" ? WordIntegrationClient :
-  never;
+  [K in Extract<IntegrationIds<TIntegrations>, keyof IntegrationClientMap>]: IntegrationClientMap[K];
 };
 
 /**

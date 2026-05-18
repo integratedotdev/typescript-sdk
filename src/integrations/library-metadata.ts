@@ -7,6 +7,7 @@ export type IntegrationCategory =
   | "Analytics"
   | "Business"
   | "Finance"
+  | "Marketing"
   | "Entertainment"
   | "Productivity"
   | "Lifestyle"
@@ -29,6 +30,7 @@ export const INTEGRATION_CATEGORY_ORDER: readonly IntegrationCategory[] = [
   "Lifestyle",
   "Business",
   "Finance",
+  "Marketing",
   "Entertainment",
   "Communication",
   "Engineering",
@@ -42,6 +44,78 @@ export const INTEGRATION_CATEGORY_ORDER: readonly IntegrationCategory[] = [
  * Canonical one-line descriptions and categories for integrate-sdk integrations.
  */
 export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
+  google_ads: {
+    description: "Manage Google Ads customers, campaigns, ad groups, ads, keywords, and conversions",
+    category: "Marketing",
+  },
+  pinterest: {
+    description: "Manage Pinterest boards, pins, search, ad accounts, and campaigns",
+    category: "Social Media",
+  },
+  twitch: {
+    description: "Manage Twitch users, streams, channels, clips, videos, games, follows, and subscriptions",
+    category: "Entertainment",
+  },
+  x: {
+    description: "Manage X users, posts, timelines, likes, bookmarks, follows, and posting",
+    category: "Social Media",
+  },
+  ebay: {
+    description: "Manage eBay browse, inventory, offers, orders, and fulfillment APIs",
+    category: "Business",
+  },
+  miro: {
+    description: "Manage Miro boards, board items, comments, members, and collaborators",
+    category: "Productivity",
+  },
+  smartsheet: {
+    description: "Manage Smartsheet sheets, rows, columns, workspaces, reports, and attachments",
+    category: "Productivity",
+  },
+  docusign: {
+    description: "Manage DocuSign eSignature accounts, envelopes, recipients, documents, and templates",
+    category: "Business",
+  },
+  pipedrive: {
+    description: "Manage Pipedrive deals, leads, people, organizations, activities, notes, pipelines, and products",
+    category: "Business",
+  },
+  freshservice: {
+    description: "Manage Freshservice tickets, requesters, agents, assets, changes, problems, releases, and solutions",
+    category: "Business",
+  },
+  zoho_crm: {
+    description: "Manage Zoho CRM modules, records, users, org settings, search, and COQL",
+    category: "Business",
+  },
+  zoho_mail: {
+    description: "Manage Zoho Mail accounts, folders, messages, labels, search, and sending",
+    category: "Communication",
+  },
+  zoho_desk: {
+    description: "Manage Zoho Desk tickets, contacts, accounts, agents, departments, and articles",
+    category: "Business",
+  },
+  zoho_books: {
+    description: "Manage Zoho Books organizations, contacts, items, invoices, bills, payments, and reports",
+    category: "Finance",
+  },
+  zoho_projects: {
+    description: "Manage Zoho Projects portals, projects, milestones, tasks, issues, and timesheets",
+    category: "Productivity",
+  },
+  zoho_campaigns: {
+    description: "Manage Zoho Campaigns lists, contacts, campaigns, reports, and sends",
+    category: "Marketing",
+  },
+  zoho_analytics: {
+    description: "Manage Zoho Analytics workspaces, views, imports, exports, and query APIs",
+    category: "Analytics",
+  },
+  zoho_invoice: {
+    description: "Manage Zoho Invoice organizations, customers, items, estimates, invoices, payments, and reports",
+    category: "Finance",
+  },
   airtable: {
     description: "Manage Airtable bases, tables, and records",
     category: "Business",

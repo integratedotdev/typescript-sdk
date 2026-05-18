@@ -147,6 +147,60 @@ export type { BitbucketIntegrationConfig, BitbucketTools, BitbucketScopes, Bitbu
 export { smartthingsIntegration } from "./integrations/smartthings.js";
 export type { SmartThingsIntegrationConfig, SmartThingsTools, SmartThingsScopes, SmartThingsIntegrationClient } from "./integrations/smartthings.js";
 
+export { googleAdsIntegration } from "./integrations/google_ads.js";
+export type { GoogleAdsIntegrationConfig, GoogleAdsTools, GoogleAdsScopes, GoogleAdsIntegrationClient } from "./integrations/google_ads.js";
+
+export { pinterestIntegration } from "./integrations/pinterest.js";
+export type { PinterestIntegrationConfig, PinterestTools, PinterestScopes, PinterestIntegrationClient } from "./integrations/pinterest.js";
+
+export { twitchIntegration } from "./integrations/twitch.js";
+export type { TwitchIntegrationConfig, TwitchTools, TwitchScopes, TwitchIntegrationClient } from "./integrations/twitch.js";
+
+export { xIntegration } from "./integrations/x.js";
+export type { XIntegrationConfig, XTools, XScopes, XIntegrationClient } from "./integrations/x.js";
+
+export { ebayIntegration } from "./integrations/ebay.js";
+export type { EbayIntegrationConfig, EbayTools, EbayScopes, EbayIntegrationClient } from "./integrations/ebay.js";
+
+export { miroIntegration } from "./integrations/miro.js";
+export type { MiroIntegrationConfig, MiroTools, MiroScopes, MiroIntegrationClient } from "./integrations/miro.js";
+
+export { smartsheetIntegration } from "./integrations/smartsheet.js";
+export type { SmartsheetIntegrationConfig, SmartsheetTools, SmartsheetScopes, SmartsheetIntegrationClient } from "./integrations/smartsheet.js";
+
+export { docusignIntegration } from "./integrations/docusign.js";
+export type { DocusignIntegrationConfig, DocusignTools, DocusignScopes, DocusignIntegrationClient } from "./integrations/docusign.js";
+
+export { pipedriveIntegration } from "./integrations/pipedrive.js";
+export type { PipedriveIntegrationConfig, PipedriveTools, PipedriveScopes, PipedriveIntegrationClient } from "./integrations/pipedrive.js";
+
+export { freshserviceIntegration } from "./integrations/freshservice.js";
+export type { FreshserviceIntegrationConfig, FreshserviceTools, FreshserviceScopes, FreshserviceIntegrationClient } from "./integrations/freshservice.js";
+
+export { zohoCrmIntegration } from "./integrations/zoho_crm.js";
+export type { ZohoCrmIntegrationConfig, ZohoCrmTools, ZohoCrmScopes, ZohoCrmIntegrationClient } from "./integrations/zoho_crm.js";
+
+export { zohoMailIntegration } from "./integrations/zoho_mail.js";
+export type { ZohoMailIntegrationConfig, ZohoMailTools, ZohoMailScopes, ZohoMailIntegrationClient } from "./integrations/zoho_mail.js";
+
+export { zohoDeskIntegration } from "./integrations/zoho_desk.js";
+export type { ZohoDeskIntegrationConfig, ZohoDeskTools, ZohoDeskScopes, ZohoDeskIntegrationClient } from "./integrations/zoho_desk.js";
+
+export { zohoBooksIntegration } from "./integrations/zoho_books.js";
+export type { ZohoBooksIntegrationConfig, ZohoBooksTools, ZohoBooksScopes, ZohoBooksIntegrationClient } from "./integrations/zoho_books.js";
+
+export { zohoProjectsIntegration } from "./integrations/zoho_projects.js";
+export type { ZohoProjectsIntegrationConfig, ZohoProjectsTools, ZohoProjectsScopes, ZohoProjectsIntegrationClient } from "./integrations/zoho_projects.js";
+
+export { zohoCampaignsIntegration } from "./integrations/zoho_campaigns.js";
+export type { ZohoCampaignsIntegrationConfig, ZohoCampaignsTools, ZohoCampaignsScopes, ZohoCampaignsIntegrationClient } from "./integrations/zoho_campaigns.js";
+
+export { zohoAnalyticsIntegration } from "./integrations/zoho_analytics.js";
+export type { ZohoAnalyticsIntegrationConfig, ZohoAnalyticsTools, ZohoAnalyticsScopes, ZohoAnalyticsIntegrationClient } from "./integrations/zoho_analytics.js";
+
+export { zohoInvoiceIntegration } from "./integrations/zoho_invoice.js";
+export type { ZohoInvoiceIntegrationConfig, ZohoInvoiceTools, ZohoInvoiceScopes, ZohoInvoiceIntegrationClient } from "./integrations/zoho_invoice.js";
+
 export { linearIntegration } from "./integrations/linear.js";
 export type { LinearIntegrationConfig, LinearTools, LinearIntegrationClient } from "./integrations/linear.js";
 
