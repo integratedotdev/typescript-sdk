@@ -30,7 +30,7 @@ export interface ZohoMailIntegrationConfig {
 
 export function zohoMailIntegration(config: ZohoMailIntegrationConfig = {}): MCPIntegration<"zoho_mail"> {
   const oauth: OAuthConfig = { provider: "zoho_mail", clientId: config.clientId ?? getEnv("ZOHO_CLIENT_ID"), clientSecret: config.clientSecret ?? getEnv("ZOHO_CLIENT_SECRET"), scopes: config.scopes ?? [...ZOHO_MAIL_SCOPES], redirectUri: config.redirectUri, config };
-  return { id: "zoho_mail", name: "Zoho Mail", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/zoho_mail.png", description: "Manage Zoho Mail accounts, folders, messages, labels, search, and sending", category: "Business", tools: [...ZOHO_MAIL_TOOLS], authType: "oauth", oauth,
+  return { id: "zoho_mail", name: "Zoho Mail", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/zoho_mail.png", description: "Manage Zoho Mail accounts, folders, messages, labels, search, and sending", category: "Communication", tools: [...ZOHO_MAIL_TOOLS], authType: "oauth", oauth,
     getHeaders() {
     const region = config.region ?? getEnv("ZOHO_REGION");
     const headers: Record<string, string> = {};

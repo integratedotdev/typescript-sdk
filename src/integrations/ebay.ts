@@ -33,7 +33,7 @@ export interface EbayIntegrationConfig {
 
 export function ebayIntegration(config: EbayIntegrationConfig = {}): MCPIntegration<"ebay"> {
   const oauth: OAuthConfig = { provider: "ebay", clientId: config.clientId ?? getEnv("EBAY_CLIENT_ID"), clientSecret: config.clientSecret ?? getEnv("EBAY_CLIENT_SECRET"), scopes: config.scopes ?? [...EBAY_SCOPES], redirectUri: config.redirectUri, config };
-  return { id: "ebay", name: "eBay", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/ebay.png", description: "Manage eBay browse, inventory, offers, orders, and fulfillment APIs", category: "Business", tools: [...EBAY_TOOLS], authType: "oauth", oauth,
+  return { id: "ebay", name: "eBay", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/ebay.png", description: "Manage eBay browse, inventory, offers, orders, and fulfillment APIs", category: "Commerce", tools: [...EBAY_TOOLS], authType: "oauth", oauth,
     getHeaders() {
     const headers: Record<string, string> = {};
     if (config.environment) headers["X-Ebay-Environment"] = config.environment;

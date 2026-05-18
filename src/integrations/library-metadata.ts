@@ -16,6 +16,20 @@ export type IntegrationCategory =
   | "Infrastructure"
   | "Storage"
   | "Social Media"
+  | "Fitness"
+  | "Travel"
+  | "Events & Ticketing"
+  | "Commerce"
+  | "Food"
+  | "CMS"
+  | "Education"
+  | "HR & Recruiting"
+  | "Data & BI"
+  | "Legal"
+  | "Accounting"
+  | "Identity & Access"
+  | "Shipping & Logistics"
+  | "Banking"
   | "Other";
 
 type LibraryEntry = {
@@ -37,6 +51,20 @@ export const INTEGRATION_CATEGORY_ORDER: readonly IntegrationCategory[] = [
   "Infrastructure",
   "Storage",
   "Social Media",
+  "Fitness",
+  "Travel",
+  "Events & Ticketing",
+  "Commerce",
+  "Food",
+  "CMS",
+  "Education",
+  "HR & Recruiting",
+  "Data & BI",
+  "Legal",
+  "Accounting",
+  "Identity & Access",
+  "Shipping & Logistics",
+  "Banking",
   "Other",
 ] as const;
 
@@ -44,6 +72,246 @@ export const INTEGRATION_CATEGORY_ORDER: readonly IntegrationCategory[] = [
  * Canonical one-line descriptions and categories for integrate-sdk integrations.
  */
 export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
+  oura: {
+    description: "Manage Oura get personal info, list daily activity, list sleep, list workouts, list sessions",
+    category: "Fitness",
+  },
+  whoop: {
+    description: "Manage WHOOP get profile, get body measurement, list cycles, list recovery, list sleep",
+    category: "Fitness",
+  },
+  garmin: {
+    description: "Manage Garmin list activities, list daily summaries, list sleep, list heart rates, list body composition",
+    category: "Fitness",
+  },
+  fitbit: {
+    description: "Manage Fitbit get profile, list activities, list sleep, list heart rate, list weight",
+    category: "Fitness",
+  },
+  withings: {
+    description: "Manage Withings get measurements, get activity, get sleep, get workouts, get user",
+    category: "Fitness",
+  },
+  mapmyfitness: {
+    description: "Manage MapMyFitness get user, list workouts, get workout, create workout, list routes",
+    category: "Fitness",
+  },
+  miele: {
+    description: "Manage Miele list devices, get device, get actions, execute action, get programs",
+    category: "Lifestyle",
+  },
+  tesla: {
+    description: "Manage Tesla list vehicles, get vehicle, wake vehicle, send vehicle command, list energy sites",
+    category: "Lifestyle",
+  },
+  tuya: {
+    description: "Manage Tuya list devices, get device, get device status, send device commands, list scenes",
+    category: "Lifestyle",
+  },
+  home_connect: {
+    description: "Manage Home Connect list appliances, get appliance, get status, get programs, start program",
+    category: "Lifestyle",
+  },
+  netatmo: {
+    description: "Manage Netatmo get homesdata, get stationsdata, get measure, set thermpoint, get events",
+    category: "Lifestyle",
+  },
+  philips_hue: {
+    description: "Manage Philips Hue list bridges, list lights, get light, update light, list rooms",
+    category: "Lifestyle",
+  },
+  google_home: {
+    description: "Manage Google Home/Nest list devices, get device, execute device command, list structures, list rooms",
+    category: "Lifestyle",
+  },
+  sonos: {
+    description: "Manage Sonos list households, list groups, get playback status, control playback, get group volume",
+    category: "Lifestyle",
+  },
+  ring: {
+    description: "Manage Ring list locations, list devices, get device health, list events, activate siren",
+    category: "Lifestyle",
+  },
+  kick: {
+    description: "Manage Kick get users, get channels, get livestreams, get categories, send chat message",
+    category: "Entertainment",
+  },
+  deezer: {
+    description: "Manage Deezer get user, search, get album, get track, list playlists",
+    category: "Entertainment",
+  },
+  uber: {
+    description: "Manage Uber get profile, list products, estimate price, estimate time, list requests",
+    category: "Travel",
+  },
+  amadeus: {
+    description: "Manage Amadeus search flights, price flight, search hotels, get hotel offers, search locations",
+    category: "Travel",
+  },
+  expedia: {
+    description: "Manage Expedia Rapid search properties, get property content, get rate quote, create booking, get itinerary",
+    category: "Travel",
+  },
+  eventbrite: {
+    description: "Manage Eventbrite get user, list organizations, list events, get event, create event",
+    category: "Events & Ticketing",
+  },
+  meetup: {
+    description: "Manage Meetup get self, search groups, list events, get event, create event",
+    category: "Events & Ticketing",
+  },
+  universe: {
+    description: "Manage Universe get user, list events, get event, create event, list orders",
+    category: "Events & Ticketing",
+  },
+  etsy: {
+    description: "Manage Etsy get me, get shop, list shop listings, create listing, list receipts",
+    category: "Commerce",
+  },
+  amazon: {
+    description: "Manage Amazon Selling Partner search catalog items, list orders, get order, list inventory, list listings",
+    category: "Commerce",
+  },
+  bigcommerce: {
+    description: "Manage BigCommerce list products, get product, create product, list orders, get order",
+    category: "Commerce",
+  },
+  foursquare: {
+    description: "Manage Foursquare search places, get place, get place tips, get place photos, autocomplete places",
+    category: "Food",
+  },
+  uber_eats: {
+    description: "Manage Uber Eats list stores, get store, list orders, get order, update order status",
+    category: "Food",
+  },
+  wordpress: {
+    description: "Manage WordPress get site, list posts, get post, create post, update post",
+    category: "CMS",
+  },
+  contentful: {
+    description: "Manage Contentful list spaces, get space, list entries, get entry, create entry",
+    category: "CMS",
+  },
+  canvas_lms: {
+    description: "Manage Canvas LMS list courses, get course, list assignments, create assignment, list submissions",
+    category: "Education",
+  },
+  google_classroom: {
+    description: "Manage Google Classroom list courses, get course, create course, list coursework, create coursework",
+    category: "Education",
+  },
+  microsoft_graph_education: {
+    description: "Manage Microsoft Graph Education list classes, get class, list users, list assignments, create assignment",
+    category: "Education",
+  },
+  lever: {
+    description: "Manage Lever list opportunities, get opportunity, create opportunity, list postings, list users",
+    category: "HR & Recruiting",
+  },
+  greenhouse: {
+    description: "Manage Greenhouse list candidates, get candidate, create candidate, list jobs, list applications",
+    category: "HR & Recruiting",
+  },
+  bamboohr: {
+    description: "Manage BambooHR get company report, list employees, get employee, update employee, list time off requests",
+    category: "HR & Recruiting",
+  },
+  snowflake: {
+    description: "Manage Snowflake submit statement, get statement, cancel statement, list databases, list warehouses",
+    category: "Data & BI",
+  },
+  bigquery: {
+    description: "Manage BigQuery list projects, list datasets, list tables, get table, query",
+    category: "Data & BI",
+  },
+  looker: {
+    description: "Manage Looker me, search dashboards, get dashboard, run query, list looks",
+    category: "Data & BI",
+  },
+  tableau: {
+    description: "Manage Tableau list sites, list workbooks, get workbook, list views, list datasources",
+    category: "Data & BI",
+  },
+  dropbox_sign: {
+    description: "Manage Dropbox Sign get account, list signature requests, get signature request, send signature request, list templates",
+    category: "Legal",
+  },
+  adobe_acrobat_sign: {
+    description: "Manage Adobe Acrobat Sign get user, list agreements, get agreement, create agreement, list library documents",
+    category: "Legal",
+  },
+  pandadoc: {
+    description: "Manage PandaDoc list documents, get document, create document, send document, list templates",
+    category: "Legal",
+  },
+  meta_ads: {
+    description: "Manage Meta Ads list ad accounts, get ad account, list campaigns, create campaign, list adsets",
+    category: "Marketing",
+  },
+  microsoft_ads: {
+    description: "Manage Microsoft Ads get user, search accounts, get campaigns, add campaigns, get ad groups",
+    category: "Marketing",
+  },
+  tiktok_business: {
+    description: "Manage TikTok Business list advertisers, list campaigns, create campaign, list adgroups, list ads",
+    category: "Marketing",
+  },
+  amazon_ads: {
+    description: "Manage Amazon Ads list profiles, list campaigns, create campaigns, list ad groups, list keywords",
+    category: "Marketing",
+  },
+  moneybird: {
+    description: "Manage Moneybird list administrations, list contacts, create contact, list sales invoices, create sales invoice",
+    category: "Accounting",
+  },
+  exact_online: {
+    description: "Manage Exact Online list divisions, list accounts, list items, list sales invoices, create sales invoice",
+    category: "Accounting",
+  },
+  sage: {
+    description: "Manage Sage Accounting get business, list contacts, create contact, list products, list sales invoices",
+    category: "Accounting",
+  },
+  freeagent: {
+    description: "Manage FreeAgent get company, list contacts, create contact, list invoices, create invoice",
+    category: "Accounting",
+  },
+  onelogin: {
+    description: "Manage OneLogin list users, get user, create user, list roles, list apps",
+    category: "Identity & Access",
+  },
+  microsoft_entra_id: {
+    description: "Manage Microsoft Entra ID list users, get user, create user, list groups, list applications",
+    category: "Identity & Access",
+  },
+  dhl: {
+    description: "Manage DHL track shipment, create shipment, get label, delete shipment, validate address",
+    category: "Shipping & Logistics",
+  },
+  ups: {
+    description: "Manage UPS track shipment, rate shipment, create shipment, void shipment, validate address",
+    category: "Shipping & Logistics",
+  },
+  fedex: {
+    description: "Manage FedEx track shipments, rate shipment, create shipment, cancel shipment, validate address",
+    category: "Shipping & Logistics",
+  },
+  plaid: {
+    description: "Manage Plaid create link token, exchange public token, get accounts, get transactions, get identity",
+    category: "Banking",
+  },
+  truelayer: {
+    description: "Manage TrueLayer get me, list accounts, get account, get balance, list transactions",
+    category: "Banking",
+  },
+  tink: {
+    description: "Manage Tink get user, list accounts, get account, list transactions, list credentials",
+    category: "Banking",
+  },
+  gocardless: {
+    description: "Manage GoCardless Bank Account Data list institutions, create requisition, get requisition, get account, get balances",
+    category: "Banking",
+  },
   google_ads: {
     description: "Manage Google Ads customers, campaigns, ad groups, ads, keywords, and conversions",
     category: "Marketing",
@@ -62,7 +330,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   ebay: {
     description: "Manage eBay browse, inventory, offers, orders, and fulfillment APIs",
-    category: "Business",
+    category: "Commerce",
   },
   miro: {
     description: "Manage Miro boards, board items, comments, members, and collaborators",
@@ -74,7 +342,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   docusign: {
     description: "Manage DocuSign eSignature accounts, envelopes, recipients, documents, and templates",
-    category: "Business",
+    category: "Legal",
   },
   pipedrive: {
     description: "Manage Pipedrive deals, leads, people, organizations, activities, notes, pipelines, and products",
@@ -98,7 +366,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   zoho_books: {
     description: "Manage Zoho Books organizations, contacts, items, invoices, bills, payments, and reports",
-    category: "Finance",
+    category: "Accounting",
   },
   zoho_projects: {
     description: "Manage Zoho Projects portals, projects, milestones, tasks, issues, and timesheets",
@@ -114,7 +382,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   zoho_invoice: {
     description: "Manage Zoho Invoice organizations, customers, items, estimates, invoices, payments, and reports",
-    category: "Finance",
+    category: "Accounting",
   },
   airtable: {
     description: "Manage Airtable bases, tables, and records",
@@ -218,7 +486,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   okta: {
     description: "Manage Okta users, groups, applications, policies, and system logs",
-    category: "Engineering",
+    category: "Identity & Access",
   },
   onedrive: {
     description: "Manage OneDrive files, folders, and sharing",
@@ -258,7 +526,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   quickbooks: {
     description: "Manage QuickBooks Online accounting data, invoices, bills, payments, and reports",
-    category: "Finance",
+    category: "Accounting",
   },
   resend: {
     description: "Send email and manage domains with the Resend API",
@@ -266,7 +534,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   mailchimp: {
     description: "Manage Mailchimp audiences, members, and campaigns",
-    category: "Communication",
+    category: "Marketing",
   },
   railway: {
     description: "Manage Railway workspaces, projects, services, deployments, variables, domains, and volumes",
@@ -310,7 +578,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   strava: {
     description: "Manage Strava athletes, activities, routes, clubs, segments, streams, gear, and uploads",
-    category: "Lifestyle",
+    category: "Fitness",
   },
   square: {
     description: "Manage Square merchants, locations, customers, catalog, orders, payments, refunds, and invoices",
@@ -426,7 +694,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   auth0: {
     description: "Manage Auth0 users, applications, and tenant configuration",
-    category: "Infrastructure",
+    category: "Identity & Access",
   },
   betterstack: {
     description: "Monitor uptime, logs, and incident alerts with BetterStack",
@@ -490,7 +758,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   shopify: {
     description: "Manage Shopify products, orders, customers, and inventory",
-    category: "Business",
+    category: "Commerce",
   },
   teams: {
     description: "Send messages and manage Microsoft Teams channels and meetings",
@@ -526,7 +794,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   xero: {
     description: "Manage Xero invoices, contacts, and accounting data",
-    category: "Finance",
+    category: "Accounting",
   },
   zapier: {
     description: "Trigger and manage Zapier automation workflows",

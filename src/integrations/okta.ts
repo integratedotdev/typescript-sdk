@@ -67,7 +67,7 @@ export function oktaIntegration(config: OktaIntegrationConfig = {}): MCPIntegrat
     name: "Okta",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/okta.png",
     description: "Manage Okta users, groups, apps, authorization servers, policies, and system logs",
-    category: "Engineering",
+    category: "Identity & Access",
     tools: [...OKTA_TOOLS],
     authType: accessToken ? "apiKey" : "oauth",
     oauth,

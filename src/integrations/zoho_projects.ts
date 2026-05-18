@@ -33,7 +33,7 @@ export interface ZohoProjectsIntegrationConfig {
 
 export function zohoProjectsIntegration(config: ZohoProjectsIntegrationConfig = {}): MCPIntegration<"zoho_projects"> {
   const oauth: OAuthConfig = { provider: "zoho_projects", clientId: config.clientId ?? getEnv("ZOHO_CLIENT_ID"), clientSecret: config.clientSecret ?? getEnv("ZOHO_CLIENT_SECRET"), scopes: config.scopes ?? [...ZOHO_PROJECTS_SCOPES], redirectUri: config.redirectUri, config };
-  return { id: "zoho_projects", name: "Zoho Projects", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/zoho_projects.png", description: "Manage Zoho Projects portals, projects, milestones, tasks, issues, and timesheets", category: "Business", tools: [...ZOHO_PROJECTS_TOOLS], authType: "oauth", oauth,
+  return { id: "zoho_projects", name: "Zoho Projects", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/zoho_projects.png", description: "Manage Zoho Projects portals, projects, milestones, tasks, issues, and timesheets", category: "Productivity", tools: [...ZOHO_PROJECTS_TOOLS], authType: "oauth", oauth,
     getHeaders() {
     const region = config.region ?? getEnv("ZOHO_REGION");
     const headers: Record<string, string> = {};

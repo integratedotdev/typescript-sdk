@@ -29,7 +29,7 @@ export interface ZohoBooksIntegrationConfig {
 
 export function zohoBooksIntegration(config: ZohoBooksIntegrationConfig = {}): MCPIntegration<"zoho_books"> {
   const oauth: OAuthConfig = { provider: "zoho_books", clientId: config.clientId ?? getEnv("ZOHO_CLIENT_ID"), clientSecret: config.clientSecret ?? getEnv("ZOHO_CLIENT_SECRET"), scopes: config.scopes ?? [...ZOHO_BOOKS_SCOPES], redirectUri: config.redirectUri, config };
-  return { id: "zoho_books", name: "Zoho Books", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/zoho_books.png", description: "Manage Zoho Books organizations, contacts, items, invoices, bills, payments, and reports", category: "Business", tools: [...ZOHO_BOOKS_TOOLS], authType: "oauth", oauth,
+  return { id: "zoho_books", name: "Zoho Books", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/zoho_books.png", description: "Manage Zoho Books organizations, contacts, items, invoices, bills, payments, and reports", category: "Accounting", tools: [...ZOHO_BOOKS_TOOLS], authType: "oauth", oauth,
     getHeaders() {
     const region = config.region ?? getEnv("ZOHO_REGION");
     const headers: Record<string, string> = {};

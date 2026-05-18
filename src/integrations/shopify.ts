@@ -60,7 +60,7 @@ export function shopifyIntegration(config: ShopifyIntegrationConfig = {}): MCPIn
     name: "Shopify",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/shopify.png",
     description: "Route-complete Shopify Admin access through GraphQL and REST tools",
-    category: "Business",
+    category: "Commerce",
     tools: [...SHOPIFY_TOOLS],
     oauth,
     async onInit(_client) {

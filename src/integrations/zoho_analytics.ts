@@ -27,7 +27,7 @@ export interface ZohoAnalyticsIntegrationConfig {
 
 export function zohoAnalyticsIntegration(config: ZohoAnalyticsIntegrationConfig = {}): MCPIntegration<"zoho_analytics"> {
   const oauth: OAuthConfig = { provider: "zoho_analytics", clientId: config.clientId ?? getEnv("ZOHO_CLIENT_ID"), clientSecret: config.clientSecret ?? getEnv("ZOHO_CLIENT_SECRET"), scopes: config.scopes ?? [...ZOHO_ANALYTICS_SCOPES], redirectUri: config.redirectUri, config };
-  return { id: "zoho_analytics", name: "Zoho Analytics", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/zoho_analytics.png", description: "Manage Zoho Analytics workspaces, views, imports, exports, and query APIs", category: "Business", tools: [...ZOHO_ANALYTICS_TOOLS], authType: "oauth", oauth,
+  return { id: "zoho_analytics", name: "Zoho Analytics", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/zoho_analytics.png", description: "Manage Zoho Analytics workspaces, views, imports, exports, and query APIs", category: "Analytics", tools: [...ZOHO_ANALYTICS_TOOLS], authType: "oauth", oauth,
     getHeaders() {
     const region = config.region ?? getEnv("ZOHO_REGION");
     const headers: Record<string, string> = {};

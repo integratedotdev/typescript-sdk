@@ -29,7 +29,7 @@ export interface ZohoCampaignsIntegrationConfig {
 
 export function zohoCampaignsIntegration(config: ZohoCampaignsIntegrationConfig = {}): MCPIntegration<"zoho_campaigns"> {
   const oauth: OAuthConfig = { provider: "zoho_campaigns", clientId: config.clientId ?? getEnv("ZOHO_CLIENT_ID"), clientSecret: config.clientSecret ?? getEnv("ZOHO_CLIENT_SECRET"), scopes: config.scopes ?? [...ZOHO_CAMPAIGNS_SCOPES], redirectUri: config.redirectUri, config };
-  return { id: "zoho_campaigns", name: "Zoho Campaigns", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/zoho_campaigns.png", description: "Manage Zoho Campaigns lists, contacts, campaigns, reports, and sends", category: "Business", tools: [...ZOHO_CAMPAIGNS_TOOLS], authType: "oauth", oauth,
+  return { id: "zoho_campaigns", name: "Zoho Campaigns", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/zoho_campaigns.png", description: "Manage Zoho Campaigns lists, contacts, campaigns, reports, and sends", category: "Marketing", tools: [...ZOHO_CAMPAIGNS_TOOLS], authType: "oauth", oauth,
     getHeaders() {
     const region = config.region ?? getEnv("ZOHO_REGION");
     const headers: Record<string, string> = {};

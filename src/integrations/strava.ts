@@ -61,7 +61,7 @@ export function stravaIntegration(config: StravaIntegrationConfig = {}): MCPInte
     name: "Strava",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/strava.png",
     description: "Manage Strava athletes, activities, routes, clubs, segments, streams, gear, and uploads",
-    category: "Lifestyle",
+    category: "Fitness",
     tools: [...STRAVA_TOOLS],
     authType: "oauth",
     oauth,

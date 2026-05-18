@@ -30,7 +30,7 @@ export interface DocusignIntegrationConfig {
 
 export function docusignIntegration(config: DocusignIntegrationConfig = {}): MCPIntegration<"docusign"> {
   const oauth: OAuthConfig = { provider: "docusign", clientId: config.clientId ?? getEnv("DOCUSIGN_CLIENT_ID"), clientSecret: config.clientSecret ?? getEnv("DOCUSIGN_CLIENT_SECRET"), scopes: config.scopes ?? [...DOCUSIGN_SCOPES], redirectUri: config.redirectUri, config };
-  return { id: "docusign", name: "DocuSign", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/docusign.png", description: "Manage DocuSign eSignature accounts, envelopes, recipients, documents, and templates", category: "Business", tools: [...DOCUSIGN_TOOLS], authType: "oauth", oauth,
+  return { id: "docusign", name: "DocuSign", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/docusign.png", description: "Manage DocuSign eSignature accounts, envelopes, recipients, documents, and templates", category: "Legal", tools: [...DOCUSIGN_TOOLS], authType: "oauth", oauth,
     getHeaders() {
     const headers: Record<string, string> = {};
     if (config.baseUri) headers["X-DocuSign-Base-Uri"] = config.baseUri;

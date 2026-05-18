@@ -57,7 +57,7 @@ export function xeroIntegration(config: XeroIntegrationConfig = {}): MCPIntegrat
     name: "Xero",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/xero.png",
     description: "Manage Xero organisations, accounts, contacts, invoices, and bank transactions",
-    category: "Finance",
+    category: "Accounting",
     tools: [...XERO_TOOLS],
     oauth,
     async onInit(_client) {

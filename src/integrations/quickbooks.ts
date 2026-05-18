@@ -47,7 +47,7 @@ export function quickbooksIntegration(config: QuickBooksIntegrationConfig = {}):
     name: "QuickBooks Online",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/quickbooks.png",
     description: "Manage QuickBooks Online company data, customers, vendors, items, accounts, invoices, bills, payments, reports, and queries",
-    category: "Finance",
+    category: "Accounting",
     tools: [...QUICKBOOKS_TOOLS],
     authType: "oauth",
     oauth,

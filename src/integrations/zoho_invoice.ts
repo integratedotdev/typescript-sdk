@@ -29,7 +29,7 @@ export interface ZohoInvoiceIntegrationConfig {
 
 export function zohoInvoiceIntegration(config: ZohoInvoiceIntegrationConfig = {}): MCPIntegration<"zoho_invoice"> {
   const oauth: OAuthConfig = { provider: "zoho_invoice", clientId: config.clientId ?? getEnv("ZOHO_CLIENT_ID"), clientSecret: config.clientSecret ?? getEnv("ZOHO_CLIENT_SECRET"), scopes: config.scopes ?? [...ZOHO_INVOICE_SCOPES], redirectUri: config.redirectUri, config };
-  return { id: "zoho_invoice", name: "Zoho Invoice", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/zoho_invoice.png", description: "Manage Zoho Invoice organizations, customers, items, estimates, invoices, payments, and reports", category: "Business", tools: [...ZOHO_INVOICE_TOOLS], authType: "oauth", oauth,
+  return { id: "zoho_invoice", name: "Zoho Invoice", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/zoho_invoice.png", description: "Manage Zoho Invoice organizations, customers, items, estimates, invoices, payments, and reports", category: "Accounting", tools: [...ZOHO_INVOICE_TOOLS], authType: "oauth", oauth,
     getHeaders() {
     const region = config.region ?? getEnv("ZOHO_REGION");
     const headers: Record<string, string> = {};

@@ -113,7 +113,7 @@ export function auth0Integration(options: Auth0IntegrationOptions): MCPIntegrati
     name: "Auth0",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/auth0.png",
     description: "Manage Auth0 users, connections, and applications via the Management API",
-    category: "Engineering",
+    category: "Identity & Access",
     tools: [...AUTH0_TOOLS],
     authType: "apiKey",
 
