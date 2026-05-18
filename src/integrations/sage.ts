@@ -2,7 +2,7 @@ import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
 import { createLogger } from "../utils/logger.js";
 
-const logger = createLogger("Sage Accounting");
+const logger = createLogger("Sage");
 
 const SAGE_SCOPES = [
   "full_access",
@@ -26,9 +26,9 @@ export interface SageIntegrationConfig {
 
 export function sageIntegration(config: SageIntegrationConfig = {}): MCPIntegration<"sage"> {
   const oauth: OAuthConfig = { provider: "sage", clientId: config.clientId ?? getEnv("SAGE_CLIENT_ID"), clientSecret: config.clientSecret ?? getEnv("SAGE_CLIENT_SECRET"), scopes: config.scopes ?? [...SAGE_SCOPES], redirectUri: config.redirectUri, config };
-  return { id: "sage", name: "Sage Accounting", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/sage.png", description: "Manage Sage Accounting get business, list contacts, create contact, list products, list sales invoices", category: "Accounting", tools: [...SAGE_TOOLS], authType: "oauth", oauth,
-    async onInit() { logger.debug("Sage Accounting integration initialized"); },
-    async onAfterConnect() { logger.debug("Sage Accounting integration connected"); },
+  return { id: "sage", name: "Sage", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/sage.png", description: "Manage Sage business details, contacts, products, and sales invoices", category: "Accounting", tools: [...SAGE_TOOLS], authType: "oauth", oauth,
+    async onInit() { logger.debug("Sage integration initialized"); },
+    async onAfterConnect() { logger.debug("Sage integration connected"); },
   };
 }
 

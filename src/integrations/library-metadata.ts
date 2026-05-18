@@ -121,7 +121,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     category: "Lifestyle",
   },
   google_home: {
-    description: "Manage Google Home/Nest list devices, get device, execute device command, list structures, list rooms",
+    description: "Manage Google Home devices, structures, rooms, and device commands",
     category: "Lifestyle",
   },
   sonos: {
@@ -269,7 +269,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     category: "Accounting",
   },
   sage: {
-    description: "Manage Sage Accounting get business, list contacts, create contact, list products, list sales invoices",
+    description: "Manage Sage business details, contacts, products, and sales invoices",
     category: "Accounting",
   },
   freeagent: {
@@ -309,7 +309,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     category: "Banking",
   },
   gocardless: {
-    description: "Manage GoCardless Bank Account Data list institutions, create requisition, get requisition, get account, get balances",
+    description: "Manage GoCardless institutions, requisitions, accounts, balances, and transactions",
     category: "Banking",
   },
   google_ads: {
@@ -406,7 +406,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   calcom: {
     description: "Manage Cal.com bookings and schedules",
-    category: "Business",
+    category: "Productivity",
   },
   canva: {
     description: "List and create Canva designs, manage folders, and export assets",
@@ -521,8 +521,8 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     category: "Engineering",
   },
   ramp: {
-    description: "Manage Ramp corporate cards, bills, and spend",
-    category: "Business",
+    description: "Manage Ramp corporate cards, bills, reimbursements, and spend controls",
+    category: "Finance",
   },
   quickbooks: {
     description: "Manage QuickBooks Online accounting data, invoices, bills, payments, and reports",
@@ -618,7 +618,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   workos: {
     description: "Manage WorkOS organizations, users, directory sync, and AuthKit",
-    category: "Infrastructure",
+    category: "Identity & Access",
   },
   whatsapp: {
     description: "Send WhatsApp messages and templates",
@@ -702,7 +702,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   clerk: {
     description: "Manage Clerk users, organizations, and authentication",
-    category: "Infrastructure",
+    category: "Identity & Access",
   },
   clickup: {
     description: "Manage ClickUp tasks, lists, spaces, and workspaces",
@@ -782,7 +782,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   typeform: {
     description: "Create and manage Typeform surveys and responses",
-    category: "Business",
+    category: "Productivity",
   },
   webflow: {
     description: "Manage Webflow sites, collections, and CMS content",
@@ -790,7 +790,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   workday: {
     description: "Read Workday HR data including workers, organizations, and pay",
-    category: "Business",
+    category: "HR & Recruiting",
   },
   xero: {
     description: "Manage Xero invoices, contacts, and accounting data",
@@ -798,7 +798,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   zapier: {
     description: "Trigger and manage Zapier automation workflows",
-    category: "Engineering",
+    category: "Productivity",
   },
 };
 

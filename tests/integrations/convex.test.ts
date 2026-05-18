@@ -12,7 +12,7 @@ describe("Convex Integration", () => {
     expect(integration.authType).toBe("apiKey");
     expect(integration.logoUrl).toBeDefined();
     expect(integration.description).toBeDefined();
-    expect(integration.category).toBe("Infrastructure");
+    expect(integration.category).toBe("Engineering");
   });
 
   test("throws without credentials", () => {

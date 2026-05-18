@@ -66,6 +66,8 @@ export function rampIntegration(config: RampIntegrationConfig = {}): MCPIntegrat
     id: "ramp",
     name: "Ramp",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/ramp.jpeg",
+    description: "Manage Ramp corporate cards, bills, reimbursements, and spend controls",
+    category: "Finance",
     tools: [...RAMP_TOOLS],
     oauth,
 

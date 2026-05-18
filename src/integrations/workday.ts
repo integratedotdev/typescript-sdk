@@ -46,7 +46,7 @@ export function workdayIntegration(config: WorkdayIntegrationConfig = {}): MCPIn
     name: "Workday",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/workday.png",
     description: "Query Workday workers via the tenant REST API",
-    category: "Business",
+    category: "HR & Recruiting",
     tools: [...WORKDAY_TOOLS],
     oauth,
 

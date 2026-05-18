@@ -39,7 +39,7 @@ export function convexIntegration(options: ConvexIntegrationOptions = {}): MCPIn
     name: "Convex",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/convex.png",
     description: "Manage Convex projects, deployments, regions, classes, and environment variables",
-    category: "Infrastructure",
+    category: "Engineering",
     tools: [...CONVEX_TOOLS],
     authType: "apiKey",
     getHeaders() {

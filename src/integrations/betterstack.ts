@@ -42,7 +42,7 @@ export function betterstackIntegration(
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/betterstack.png",
     description:
       "Ingest and manage log sources, collectors, and metrics with Better Stack Logs (Logtail) Telemetry API",
-    category: "Infrastructure",
+    category: "Engineering",
     tools: [...BETTERSTACK_TOOLS],
     authType: "apiKey",
     getHeaders() {

@@ -40,8 +40,8 @@ export function clerkIntegration(options: ClerkIntegrationOptions = {}): MCPInte
     id: "clerk",
     name: "Clerk",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/clerk.png",
-    description: "Manage Clerk users, organizations, and sessions via the Backend API",
-    category: "Business",
+    description: "Manage Clerk users, organizations, sessions, and authentication settings",
+    category: "Identity & Access",
     tools: [...CLERK_TOOLS],
     authType: "apiKey",
     getHeaders() {

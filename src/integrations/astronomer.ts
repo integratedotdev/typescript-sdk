@@ -45,7 +45,7 @@ export function astronomerIntegration(options: AstronomerIntegrationOptions = {}
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/astronomer.png",
     description:
       "Manage Astro organizations, workspaces, deployments, clusters, and deploy history via the Astro API v1",
-    category: "Infrastructure",
+    category: "Engineering",
     tools: [...ASTRONOMER_TOOLS],
     authType: "apiKey",
     getHeaders() {

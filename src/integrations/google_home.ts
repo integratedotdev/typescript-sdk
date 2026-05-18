@@ -2,7 +2,7 @@ import type { MCPIntegration, OAuthConfig } from "./types.js";
 import { getEnv } from "../utils/env.js";
 import { createLogger } from "../utils/logger.js";
 
-const logger = createLogger("Google Home/Nest");
+const logger = createLogger("Google Home");
 
 const GOOGLE_HOME_SCOPES = [
   "https://www.googleapis.com/auth/sdm.service",
@@ -25,9 +25,9 @@ export interface GoogleHomeIntegrationConfig {
 
 export function googleHomeIntegration(config: GoogleHomeIntegrationConfig = {}): MCPIntegration<"google_home"> {
   const oauth: OAuthConfig = { provider: "google_home", clientId: config.clientId ?? getEnv("GOOGLE_HOME_CLIENT_ID"), clientSecret: config.clientSecret ?? getEnv("GOOGLE_HOME_CLIENT_SECRET"), scopes: config.scopes ?? [...GOOGLE_HOME_SCOPES], redirectUri: config.redirectUri, config };
-  return { id: "google_home", name: "Google Home/Nest", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/google_home.png", description: "Manage Google Home/Nest list devices, get device, execute device command, list structures, list rooms", category: "Lifestyle", tools: [...GOOGLE_HOME_TOOLS], authType: "oauth", oauth,
-    async onInit() { logger.debug("Google Home/Nest integration initialized"); },
-    async onAfterConnect() { logger.debug("Google Home/Nest integration connected"); },
+  return { id: "google_home", name: "Google Home", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/google_home.png", description: "Manage Google Home devices, structures, rooms, and device commands", category: "Lifestyle", tools: [...GOOGLE_HOME_TOOLS], authType: "oauth", oauth,
+    async onInit() { logger.debug("Google Home integration initialized"); },
+    async onAfterConnect() { logger.debug("Google Home integration connected"); },
   };
 }
 

@@ -39,7 +39,7 @@ export function workosIntegration(options: WorkOSIntegrationOptions = {}): MCPIn
     name: "WorkOS",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/workos.png",
     description: "Manage WorkOS organizations, AuthKit users, memberships, and directory sync",
-    category: "Infrastructure",
+    category: "Identity & Access",
     tools: [...WORKOS_TOOLS],
     authType: "apiKey",
     getHeaders() {
