@@ -2246,3 +2246,23 @@ export function toSvelteKitHandler<TIntegrations extends readonly MCPIntegration
     }
   };
 }
+
+export { calendlyIntegration } from './integrations/calendly.js';
+export { klaviyoIntegration } from './integrations/klaviyo.js';
+export { googleFormsIntegration } from './integrations/google_forms.js';
+export { firebaseIntegration } from './integrations/firebase.js';
+export { microsoftToDoIntegration } from './integrations/microsoft_to_do.js';
+export { onenoteIntegration } from './integrations/onenote.js';
+export { microsoftBookingsIntegration } from './integrations/microsoft_bookings.js';
+export { azureDevopsIntegration } from './integrations/azure_devops.js';
+export { googlePlayConsoleIntegration } from './integrations/google_play_console.js';
+export { squarespaceIntegration } from './integrations/squarespace.js';
+export { zohoPeopleIntegration } from './integrations/zoho_people.js';
+export { zohoRecruitIntegration } from './integrations/zoho_recruit.js';
+export { zohoSignIntegration } from './integrations/zoho_sign.js';
+export { zohoWorkdriveIntegration } from './integrations/zoho_workdrive.js';
+export { zohoCreatorIntegration } from './integrations/zoho_creator.js';
+export { zohoInventoryIntegration } from './integrations/zoho_inventory.js';
+export { zohoBillingIntegration } from './integrations/zoho_billing.js';
+export { zohoWriterIntegration } from './integrations/zoho_writer.js';
+export { zohoSprintsIntegration } from './integrations/zoho_sprints.js';

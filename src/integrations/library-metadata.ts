@@ -5,6 +5,7 @@
 
 export type IntegrationCategory =
   | "Analytics"
+  | "Scheduling"
   | "Business"
   | "Finance"
   | "Marketing"
@@ -21,6 +22,7 @@ export type IntegrationCategory =
   | "Events & Ticketing"
   | "Commerce"
   | "Food"
+  | "Websites & CMS"
   | "CMS"
   | "Education"
   | "HR & Recruiting"
@@ -40,6 +42,7 @@ type LibraryEntry = {
 /** Display order for library section headers (categories not listed sort before "Other"). */
 export const INTEGRATION_CATEGORY_ORDER: readonly IntegrationCategory[] = [
   "Analytics",
+  "Scheduling",
   "Productivity",
   "Lifestyle",
   "Business",
@@ -56,6 +59,7 @@ export const INTEGRATION_CATEGORY_ORDER: readonly IntegrationCategory[] = [
   "Events & Ticketing",
   "Commerce",
   "Food",
+  "Websites & CMS",
   "CMS",
   "Education",
   "HR & Recruiting",
@@ -186,11 +190,87 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   wordpress: {
     description: "Manage WordPress get site, list posts, get post, create post, update post",
-    category: "CMS",
+    category: "Websites & CMS",
   },
   contentful: {
     description: "Manage Contentful list spaces, get space, list entries, get entry, create entry",
-    category: "CMS",
+    category: "Websites & CMS",
+  },
+  calendly: {
+    description: "Manage Calendly user profiles, event types, scheduled events, invitees, and availability schedules",
+    category: "Scheduling",
+  },
+  klaviyo: {
+    description: "Manage Klaviyo accounts, profiles, lists, segments, campaigns, and metrics",
+    category: "Marketing",
+  },
+  google_forms: {
+    description: "Manage Google Forms forms, structure updates, and responses",
+    category: "Productivity",
+  },
+  firebase: {
+    description: "Manage Firebase projects and registered apps across web, Android, and Apple platforms",
+    category: "Infrastructure",
+  },
+  microsoft_to_do: {
+    description: "Manage Microsoft To Do task lists and tasks through Microsoft Graph",
+    category: "Productivity",
+  },
+  onenote: {
+    description: "Manage OneNote notebooks, sections, pages, and section creation through Microsoft Graph",
+    category: "Productivity",
+  },
+  microsoft_bookings: {
+    description: "Manage Microsoft Bookings businesses, services, staff members, and appointments",
+    category: "Scheduling",
+  },
+  azure_devops: {
+    description: "Manage Azure DevOps projects, repositories, pull requests, builds, and work items",
+    category: "Engineering",
+  },
+  google_play_console: {
+    description: "Manage Google Play edits, tracks, and in-app products through the Android Publisher API",
+    category: "Engineering",
+  },
+  squarespace: {
+    description: "Manage Squarespace commerce orders, products, inventory, and profiles",
+    category: "Websites & CMS",
+  },
+  zoho_people: {
+    description: "Manage Zoho People forms, employees, attendance, leave requests, and time tracking",
+    category: "HR & Recruiting",
+  },
+  zoho_recruit: {
+    description: "Manage Zoho Recruit candidates, job openings, interviews, and custom modules",
+    category: "HR & Recruiting",
+  },
+  zoho_sign: {
+    description: "Manage Zoho Sign requests, templates, contacts, and signature workflows",
+    category: "Legal",
+  },
+  zoho_workdrive: {
+    description: "Manage Zoho WorkDrive team folders, files, folders, and collaborators",
+    category: "Storage",
+  },
+  zoho_creator: {
+    description: "Manage Zoho Creator applications, forms, reports, and app records",
+    category: "Business",
+  },
+  zoho_inventory: {
+    description: "Manage Zoho Inventory organizations, contacts, items, sales orders, packages, and shipments",
+    category: "Commerce",
+  },
+  zoho_billing: {
+    description: "Manage Zoho Billing organizations, customers, items, subscriptions, and invoices",
+    category: "Accounting",
+  },
+  zoho_writer: {
+    description: "Manage Zoho Writer documents, templates, merges, and exports",
+    category: "Productivity",
+  },
+  zoho_sprints: {
+    description: "Manage Zoho Sprints portals, projects, sprints, epics, and work items",
+    category: "Engineering",
   },
   canvas_lms: {
     description: "Manage Canvas LMS list courses, get course, list assignments, create assignment, list submissions",
@@ -406,7 +486,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   calcom: {
     description: "Manage Cal.com bookings and schedules",
-    category: "Productivity",
+    category: "Scheduling",
   },
   canva: {
     description: "List and create Canva designs, manage folders, and export assets",
@@ -786,7 +866,7 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
   },
   webflow: {
     description: "Manage Webflow sites, collections, and CMS content",
-    category: "Engineering",
+    category: "Websites & CMS",
   },
   workday: {
     description: "Read Workday HR data including workers, organizations, and pay",

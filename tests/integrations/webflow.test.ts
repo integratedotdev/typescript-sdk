@@ -15,7 +15,7 @@ describe("Webflow Integration", () => {
     expect(integration.oauth).toBeDefined();
     expect(integration.logoUrl).toBeDefined();
     expect(integration.description).toBeDefined();
-    expect(integration.category).toBe("Engineering");
+    expect(integration.category).toBe("Websites & CMS");
   });
 
   test("uses default scopes and oauth endpoints", () => {

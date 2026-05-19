@@ -122,6 +122,26 @@ import { jiraIntegration } from './src/integrations/jira.js';
 import { salesforceIntegration } from './src/integrations/salesforce.js';
 import { workdayIntegration } from './src/integrations/workday.js';
 
+import { calendlyIntegration } from './src/integrations/calendly.js';
+import { klaviyoIntegration } from './src/integrations/klaviyo.js';
+import { googleFormsIntegration } from './src/integrations/google_forms.js';
+import { firebaseIntegration } from './src/integrations/firebase.js';
+import { microsoftToDoIntegration } from './src/integrations/microsoft_to_do.js';
+import { onenoteIntegration } from './src/integrations/onenote.js';
+import { microsoftBookingsIntegration } from './src/integrations/microsoft_bookings.js';
+import { azureDevopsIntegration } from './src/integrations/azure_devops.js';
+import { googlePlayConsoleIntegration } from './src/integrations/google_play_console.js';
+import { squarespaceIntegration } from './src/integrations/squarespace.js';
+import { zohoPeopleIntegration } from './src/integrations/zoho_people.js';
+import { zohoRecruitIntegration } from './src/integrations/zoho_recruit.js';
+import { zohoSignIntegration } from './src/integrations/zoho_sign.js';
+import { zohoWorkdriveIntegration } from './src/integrations/zoho_workdrive.js';
+import { zohoCreatorIntegration } from './src/integrations/zoho_creator.js';
+import { zohoInventoryIntegration } from './src/integrations/zoho_inventory.js';
+import { zohoBillingIntegration } from './src/integrations/zoho_billing.js';
+import { zohoWriterIntegration } from './src/integrations/zoho_writer.js';
+import { zohoSprintsIntegration } from './src/integrations/zoho_sprints.js';
+
 /**
  * Default MCP Client with all integrations pre-configured
  * 
@@ -193,6 +213,25 @@ export const client = createMCPClient({
     zohoCampaignsIntegration(),
     zohoAnalyticsIntegration(),
     zohoInvoiceIntegration(),
+    calendlyIntegration(),
+    klaviyoIntegration(),
+    googleFormsIntegration(),
+    firebaseIntegration(),
+    microsoftToDoIntegration(),
+    onenoteIntegration(),
+    microsoftBookingsIntegration(),
+    azureDevopsIntegration(),
+    googlePlayConsoleIntegration(),
+    squarespaceIntegration(),
+    zohoPeopleIntegration(),
+    zohoRecruitIntegration(),
+    zohoSignIntegration(),
+    zohoWorkdriveIntegration(),
+    zohoCreatorIntegration(),
+    zohoInventoryIntegration(),
+    zohoBillingIntegration(),
+    zohoWriterIntegration(),
+    zohoSprintsIntegration(),
     linearIntegration(),
     vercelIntegration(),
     zendeskIntegration(),

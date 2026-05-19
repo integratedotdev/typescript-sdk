@@ -40,7 +40,7 @@ export function wixIntegration(options: WixIntegrationOptions = {}): MCPIntegrat
     name: "Wix",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/wix.png",
     description: "Manage Wix site stores, products, and e-commerce orders via REST",
-    category: "Business",
+    category: "Websites & CMS",
     tools: [...WIX_TOOLS],
     authType: "apiKey",
     getHeaders() {

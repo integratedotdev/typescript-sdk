@@ -77,7 +77,7 @@ export function webflowIntegration(config: WebflowIntegrationConfig = {}): MCPIn
     name: "Webflow",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/webflow.png",
     description: "Manage Webflow sites, CMS collections, pages, forms, and publishing",
-    category: "Engineering",
+    category: "Websites & CMS",
     tools: [...WEBFLOW_TOOLS],
     oauth,
 

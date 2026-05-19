@@ -26,7 +26,7 @@ export interface ContentfulIntegrationConfig {
 
 export function contentfulIntegration(config: ContentfulIntegrationConfig = {}): MCPIntegration<"contentful"> {
   const oauth: OAuthConfig = { provider: "contentful", clientId: config.clientId ?? getEnv("CONTENTFUL_CLIENT_ID"), clientSecret: config.clientSecret ?? getEnv("CONTENTFUL_CLIENT_SECRET"), scopes: config.scopes ?? [...CONTENTFUL_SCOPES], redirectUri: config.redirectUri, config };
-  return { id: "contentful", name: "Contentful", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/contentful.png", description: "Manage Contentful list spaces, get space, list entries, get entry, create entry", category: "CMS", tools: [...CONTENTFUL_TOOLS], authType: "oauth", oauth,
+  return { id: "contentful", name: "Contentful", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/contentful.png", description: "Manage Contentful list spaces, get space, list entries, get entry, create entry", category: "Websites & CMS", tools: [...CONTENTFUL_TOOLS], authType: "oauth", oauth,
     async onInit() { logger.debug("Contentful integration initialized"); },
     async onAfterConnect() { logger.debug("Contentful integration connected"); },
   };

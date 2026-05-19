@@ -27,7 +27,7 @@ export interface WordpressIntegrationConfig {
 
 export function wordpressIntegration(config: WordpressIntegrationConfig = {}): MCPIntegration<"wordpress"> {
   const oauth: OAuthConfig = { provider: "wordpress", clientId: config.clientId ?? getEnv("WORDPRESS_CLIENT_ID"), clientSecret: config.clientSecret ?? getEnv("WORDPRESS_CLIENT_SECRET"), scopes: config.scopes ?? [...WORDPRESS_SCOPES], redirectUri: config.redirectUri, config };
-  return { id: "wordpress", name: "WordPress", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/wordpress.png", description: "Manage WordPress get site, list posts, get post, create post, update post", category: "CMS", tools: [...WORDPRESS_TOOLS], authType: "oauth", oauth,
+  return { id: "wordpress", name: "WordPress", logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/wordpress.png", description: "Manage WordPress get site, list posts, get post, create post, update post", category: "Websites & CMS", tools: [...WORDPRESS_TOOLS], authType: "oauth", oauth,
     getHeaders() {
       const headers: Record<string, string> = {};
       if (config.site) headers["X-WordPress-Site"] = config.site;

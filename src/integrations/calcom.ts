@@ -122,7 +122,10 @@ export function calcomIntegration(config: CalcomIntegrationConfig = {}): MCPInte
     id: "calcom",
     name: "Cal.com",
     logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/calcom.jpeg",
+    description: "Manage Cal.com bookings and schedules",
+    category: "Scheduling",
     tools: [...CALCOM_TOOLS],
+    authType: "oauth",
     oauth,
 
     async onInit(_client) {
