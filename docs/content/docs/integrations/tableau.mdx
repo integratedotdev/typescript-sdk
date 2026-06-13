@@ -1,0 +1,151 @@
+---
+title: "Tableau Integration"
+description: "Manage Tableau list sites, list workbooks, get workbook, list views, list datasources"
+---
+
+The Tableau integration provides access to manage Tableau list sites, list workbooks, get workbook, list views, list datasources through the Integrate MCP server.
+
+## Installation
+
+The Tableau integration is included with the SDK:
+
+```typescript
+import { tableauIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Tableau OAuth App
+
+1. Create an OAuth application for Tableau
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Tableau integration to your server configuration. The integration automatically reads `TABLEAU_CLIENT_ID` and `TABLEAU_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, tableauIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    tableauIntegration({
+      scopes: ["tableau:content:read", "tableau:content:write", "tableau:users:read"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+tableauIntegration({
+  clientId: process.env.CUSTOM_TABLEAU_ID,
+  clientSecret: process.env.CUSTOM_TABLEAU_SECRET,
+      scopes: ["tableau:content:read", "tableau:content:write", "tableau:users:read"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("tableau");
+const result = await client.tableau.listSites({
+  tableau_base_url: "value",
+});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, tableauIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [tableauIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/tableau.ts"
+  name="TableauIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `tableau:content:read`
+- `tableau:content:write`
+- `tableau:users:read`
+
+## Tools
+
+### `tableau_list_sites`
+
+List sites
+
+<AutoTypeTable
+  path="generated/tool-params/tableau.ts"
+  name="TableauListSitesParams"
+/>
+
+### `tableau_list_workbooks`
+
+List workbooks
+
+<AutoTypeTable
+  path="generated/tool-params/tableau.ts"
+  name="TableauListWorkbooksParams"
+/>
+
+### `tableau_get_workbook`
+
+Get workbook
+
+<AutoTypeTable
+  path="generated/tool-params/tableau.ts"
+  name="TableauGetWorkbookParams"
+/>
+
+### `tableau_list_views`
+
+List views
+
+<AutoTypeTable
+  path="generated/tool-params/tableau.ts"
+  name="TableauListViewsParams"
+/>
+
+### `tableau_list_datasources`
+
+List datasources
+
+<AutoTypeTable
+  path="generated/tool-params/tableau.ts"
+  name="TableauListDatasourcesParams"
+/>
+
+### `tableau_run_query_view_data`
+
+Run query view data
+
+<AutoTypeTable
+  path="generated/tool-params/tableau.ts"
+  name="TableauRunQueryViewDataParams"
+/>
+
+## Notes
+
+- Category: Data & BI
+- Authentication mode: OAuth

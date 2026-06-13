@@ -1,11 +1,13 @@
 ---
-title: "Instagram"
-description: "Instagram Graph API — media, comments, insights, stories, and publishing"
+title: "Instagram Integration"
+description: "Instagram Graph API for professional accounts — pages, media, comments, insights, stories, and publishing."
 ---
 
-The Instagram integration provides access to instagram graph api — media, comments, insights, stories, and publishing through the Integrate MCP server.
+The Instagram integration provides access to instagram Graph API for professional accounts — pages, media, comments, insights, stories, and publishing. through the Integrate MCP server.
 
 ## Installation
+
+The Instagram integration is included with the SDK:
 
 ```typescript
 import { instagramIntegration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { instagramIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Instagram to your server configuration. The integration automatically reads OAuth credentials from your environment (`INSTAGRAM_CLIENT_ID`, `INSTAGRAM_CLIENT_SECRET`):
+### 1. Create an Instagram OAuth App
+
+1. Go to [Facebook Developer Portal](https://www.facebook.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Instagram integration to your server configuration. The integration automatically reads `INSTAGRAM_CLIENT_ID` and `INSTAGRAM_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, instagramIntegration } from "integrate-sdk/server";
@@ -21,22 +32,44 @@ import { createMCPServer, instagramIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    instagramIntegration(),
+    instagramIntegration({
+      scopes: ["pages_show_list", "pages_read_engagement", "instagram_basic", "instagram_manage_insights", "instagram_manage_comments", "instagram_content_publish"], // Optional
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+instagramIntegration({
+  clientId: process.env.CUSTOM_INSTAGRAM_ID,
+  clientSecret: process.env.CUSTOM_INSTAGRAM_SECRET,
+      scopes: ["pages_show_list", "pages_read_engagement", "instagram_basic", "instagram_manage_insights", "instagram_manage_comments", "instagram_content_publish"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("instagram");
-const result = await client.instagram.listPages({
-  // Add the parameters required by this tool
-});
+const result = await client.instagram.listPages({});
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, instagramIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [instagramIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,31 +79,147 @@ console.log(result);
   name="InstagramIntegrationConfig"
 />
 
-## Environment Variables
 
-- `INSTAGRAM_CLIENT_ID`
-- `INSTAGRAM_CLIENT_SECRET`
+## Default Scopes
 
-## Available Tools
+These defaults are applied unless you override `scopes` in the integration config:
 
-- `instagram_list_pages`
-- `instagram_get_profile`
-- `instagram_list_media`
-- `instagram_get_media`
-- `instagram_list_comments`
-- `instagram_reply_comment`
-- `instagram_delete_comment`
-- `instagram_hide_comment`
-- `instagram_get_media_insights`
-- `instagram_get_user_insights`
-- `instagram_create_media_container`
-- `instagram_publish_media`
-- `instagram_list_stories`
-- `instagram_list_tagged_media`
+- `pages_show_list`
+- `pages_read_engagement`
+- `instagram_basic`
+- `instagram_manage_insights`
+- `instagram_manage_comments`
+- `instagram_content_publish`
+
+## Tools
+
+### `instagram_list_pages`
+
+List pages
+
+<AutoTypeTable
+  path="generated/tool-params/instagram.ts"
+  name="InstagramListPagesParams"
+/>
+
+### `instagram_get_profile`
+
+Get profile
+
+<AutoTypeTable
+  path="generated/tool-params/instagram.ts"
+  name="InstagramGetProfileParams"
+/>
+
+### `instagram_list_media`
+
+List media
+
+<AutoTypeTable
+  path="generated/tool-params/instagram.ts"
+  name="InstagramListMediaParams"
+/>
+
+### `instagram_get_media`
+
+Get media
+
+<AutoTypeTable
+  path="generated/tool-params/instagram.ts"
+  name="InstagramGetMediaParams"
+/>
+
+### `instagram_list_comments`
+
+List comments
+
+<AutoTypeTable
+  path="generated/tool-params/instagram.ts"
+  name="InstagramListCommentsParams"
+/>
+
+### `instagram_reply_comment`
+
+Reply comment
+
+<AutoTypeTable
+  path="generated/tool-params/instagram.ts"
+  name="InstagramReplyCommentParams"
+/>
+
+### `instagram_delete_comment`
+
+Delete comment
+
+<AutoTypeTable
+  path="generated/tool-params/instagram.ts"
+  name="InstagramDeleteCommentParams"
+/>
+
+### `instagram_hide_comment`
+
+Hide comment
+
+<AutoTypeTable
+  path="generated/tool-params/instagram.ts"
+  name="InstagramHideCommentParams"
+/>
+
+### `instagram_get_media_insights`
+
+Get media insights
+
+<AutoTypeTable
+  path="generated/tool-params/instagram.ts"
+  name="InstagramGetMediaInsightsParams"
+/>
+
+### `instagram_get_user_insights`
+
+Get user insights
+
+<AutoTypeTable
+  path="generated/tool-params/instagram.ts"
+  name="InstagramGetUserInsightsParams"
+/>
+
+### `instagram_create_media_container`
+
+Create media container
+
+<AutoTypeTable
+  path="generated/tool-params/instagram.ts"
+  name="InstagramCreateMediaContainerParams"
+/>
+
+### `instagram_publish_media`
+
+Publish media
+
+<AutoTypeTable
+  path="generated/tool-params/instagram.ts"
+  name="InstagramPublishMediaParams"
+/>
+
+### `instagram_list_stories`
+
+List stories
+
+<AutoTypeTable
+  path="generated/tool-params/instagram.ts"
+  name="InstagramListStoriesParams"
+/>
+
+### `instagram_list_tagged_media`
+
+List tagged media
+
+<AutoTypeTable
+  path="generated/tool-params/instagram.ts"
+  name="InstagramListTaggedMediaParams"
+/>
 
 ## Notes
 
 - Category: Social Media
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

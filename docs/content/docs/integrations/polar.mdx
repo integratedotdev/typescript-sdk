@@ -1,9 +1,9 @@
 ---
-title: "Polar"
-description: "Manage products, subscriptions, and customers"
+title: "Polar Integration"
+description: "Manage Polar products, orders, and subscriptions"
 ---
 
-The Polar integration provides access to Polar's API through the Integrate MCP server.
+The Polar integration provides access to manage Polar products, orders, and subscriptions through the Integrate MCP server.
 
 ## Installation
 
@@ -18,8 +18,8 @@ import { polarIntegration } from "integrate-sdk/server";
 ### 1. Create a Polar OAuth App
 
 1. Go to [Polar Settings](https://polar.sh/settings)
-2. Navigate to the API section
-3. Create a new OAuth application
+2. Create a new OAuth application
+3. Configure your redirect URI
 4. Note your Client ID and Client Secret
 
 ### 2. Configure the Integration on Your Server
@@ -33,13 +33,6 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     polarIntegration({
-      scopes: [
-        "products:read",
-        "subscriptions:read",
-        "customers:read",
-        "orders:read",
-        "benefits:read",
-      ], // Optional
     }),
   ],
 });
@@ -51,7 +44,6 @@ You can override the environment variables by passing explicit values:
 polarIntegration({
   clientId: process.env.CUSTOM_POLAR_ID,
   clientSecret: process.env.CUSTOM_POLAR_SECRET,
-  scopes: ["products:read", "subscriptions:read"],
 });
 ```
 
@@ -63,7 +55,9 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("polar");
-const products = await client.polar.listProducts({});
+const result = await client.polar.listProducts({});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -83,98 +77,325 @@ const customClient = createMCPClient({
   name="PolarIntegrationConfig"
 />
 
-## Available Tools
 
-### Products
+## Tools
 
-- **`polar_list_products`** - List products
-- **`polar_get_product`** - Get a specific product
+### `polar_list_products`
 
-### Subscriptions
+List products
 
-- **`polar_list_subscriptions`** - List subscriptions
-- **`polar_get_subscription`** - Get a specific subscription
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarListProductsParams"
+/>
 
-### Customers
+### `polar_get_product`
 
-- **`polar_list_customers`** - List customers
-- **`polar_get_customer`** - Get a specific customer
+Get product details
 
-### Orders
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarGetProductParams"
+/>
 
-- **`polar_list_orders`** - List orders
-- **`polar_get_order`** - Get a specific order
+### `polar_create_product`
 
-### Benefits
+Create a new product
 
-- **`polar_list_benefits`** - List benefits
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarCreateProductParams"
+/>
 
-## Examples
+### `polar_update_product`
 
-### List Products
+Update a product
 
-```typescript
-const result = await client.polar.listProducts({
-  organizationId: "org_123",
-});
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarUpdateProductParams"
+/>
 
-console.log("Products:", result);
-```
+### `polar_list_subscriptions`
 
-### Get Subscription
+List subscriptions
 
-```typescript
-const result = await client.polar.getSubscription({
-  subscriptionId: "sub_123",
-});
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarListSubscriptionsParams"
+/>
 
-console.log("Subscription:", result);
-```
+### `polar_get_subscription`
 
-### List Customers
+Get subscription details
 
-```typescript
-const result = await client.polar.listCustomers({
-  organizationId: "org_123",
-  limit: 50,
-});
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarGetSubscriptionParams"
+/>
 
-console.log("Customers:", result);
-```
+### `polar_update_subscription`
 
-## OAuth Scopes
+Update a subscription
 
-The default scopes are `['products:read', 'subscriptions:read', 'customers:read', 'orders:read', 'benefits:read']`. You may need different scopes:
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarUpdateSubscriptionParams"
+/>
 
-- **`products:read`** - Read products
-- **`products:write`** - Create and update products
-- **`subscriptions:read`** - Read subscriptions
-- **`subscriptions:write`** - Manage subscriptions
-- **`customers:read`** - Read customers
-- **`customers:write`** - Manage customers
-- **`orders:read`** - Read orders
-- **`benefits:read`** - Read benefits
+### `polar_revoke_subscription`
 
-## Error Handling
+Revoke a subscription
 
-```typescript
-try {
-  const result = await client.polar.getProduct({
-    productId: "prod_123",
-  });
-} catch (error) {
-  if (error.message.includes("not found")) {
-    console.error("Product not found");
-  } else if (error.message.includes("authentication")) {
-    console.error("Authentication failed");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarRevokeSubscriptionParams"
+/>
 
-## Next Steps
+### `polar_list_customers`
 
-- Explore the [Stripe Integration](/docs/integrations/stripe)
-- Explore the [Ramp Integration](/docs/integrations/ramp)
-- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
+List customers
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarListCustomersParams"
+/>
+
+### `polar_get_customer`
+
+Get customer details
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarGetCustomerParams"
+/>
+
+### `polar_create_customer`
+
+Create a new customer
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarCreateCustomerParams"
+/>
+
+### `polar_update_customer`
+
+Update a customer
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarUpdateCustomerParams"
+/>
+
+### `polar_delete_customer`
+
+Delete a customer
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarDeleteCustomerParams"
+/>
+
+### `polar_get_customer_state`
+
+Get customer state (subscriptions, orders, etc.)
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarGetCustomerStateParams"
+/>
+
+### `polar_list_orders`
+
+List orders
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarListOrdersParams"
+/>
+
+### `polar_get_order`
+
+Get order details
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarGetOrderParams"
+/>
+
+### `polar_get_order_invoice`
+
+Get order invoice
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarGetOrderInvoiceParams"
+/>
+
+### `polar_list_benefits`
+
+List benefits
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarListBenefitsParams"
+/>
+
+### `polar_get_benefit`
+
+Get benefit details
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarGetBenefitParams"
+/>
+
+### `polar_create_benefit`
+
+Create a new benefit
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarCreateBenefitParams"
+/>
+
+### `polar_update_benefit`
+
+Update a benefit
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarUpdateBenefitParams"
+/>
+
+### `polar_list_discounts`
+
+List discounts
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarListDiscountsParams"
+/>
+
+### `polar_get_discount`
+
+Get discount details
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarGetDiscountParams"
+/>
+
+### `polar_create_discount`
+
+Create a new discount
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarCreateDiscountParams"
+/>
+
+### `polar_delete_discount`
+
+Delete a discount
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarDeleteDiscountParams"
+/>
+
+### `polar_list_checkout_links`
+
+List checkout links
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarListCheckoutLinksParams"
+/>
+
+### `polar_get_checkout_link`
+
+Get checkout link details
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarGetCheckoutLinkParams"
+/>
+
+### `polar_create_checkout_link`
+
+Create a new checkout link
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarCreateCheckoutLinkParams"
+/>
+
+### `polar_list_license_keys`
+
+List license keys
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarListLicenseKeysParams"
+/>
+
+### `polar_get_license_key`
+
+Get license key details
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarGetLicenseKeyParams"
+/>
+
+### `polar_validate_license_key`
+
+Validate a license key
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarValidateLicenseKeyParams"
+/>
+
+### `polar_activate_license_key`
+
+Activate a license key
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarActivateLicenseKeyParams"
+/>
+
+### `polar_get_metrics`
+
+Get metrics for a time period
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarGetMetricsParams"
+/>
+
+### `polar_list_organizations`
+
+List organizations
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarListOrganizationsParams"
+/>
+
+### `polar_get_organization`
+
+Get organization details
+
+<AutoTypeTable
+  path="generated/tool-params/polar.ts"
+  name="PolarGetOrganizationParams"
+/>
+
+## Notes
+
+- Category: Finance
+- Authentication mode: OAuth

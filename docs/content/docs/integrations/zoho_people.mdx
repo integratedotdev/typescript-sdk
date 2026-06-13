@@ -1,0 +1,148 @@
+---
+title: "Zoho People Integration"
+description: "Manage Zoho People forms, employees, attendance, leave requests, and time tracking"
+---
+
+The Zoho People integration provides access to manage Zoho People forms, employees, attendance, leave requests, and time tracking through the Integrate MCP server.
+
+## Installation
+
+The Zoho People integration is included with the SDK:
+
+```typescript
+import { zohoPeopleIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Zoho People OAuth App
+
+1. Go to [Zoho API Console](https://api-console.zoho.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Zoho People integration to your server configuration. The integration automatically reads `ZOHO_PEOPLE_CLIENT_ID` and `ZOHO_PEOPLE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, zohoPeopleIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    zohoPeopleIntegration({
+      scopes: ["ZohoPeople.forms.ALL", "ZohoPeople.employee.ALL", "ZohoPeople.leave.ALL", "ZohoPeople.attendance.ALL"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+zohoPeopleIntegration({
+  clientId: process.env.CUSTOM_ZOHO_PEOPLE_ID,
+  clientSecret: process.env.CUSTOM_ZOHO_PEOPLE_SECRET,
+      scopes: ["ZohoPeople.forms.ALL", "ZohoPeople.employee.ALL", "ZohoPeople.leave.ALL", "ZohoPeople.attendance.ALL"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("zoho_people");
+const result = await client.zoho_people.listForms({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, zohoPeopleIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [zohoPeopleIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/zoho_people.ts"
+  name="ZohoPeopleIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `ZohoPeople.forms.ALL`
+- `ZohoPeople.employee.ALL`
+- `ZohoPeople.leave.ALL`
+- `ZohoPeople.attendance.ALL`
+
+## Tools
+
+### `zoho_people_list_forms`
+
+People list forms
+
+_No parameters._
+
+### `zoho_people_list_employees`
+
+People list employees
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_people.ts"
+  name="ZohoPeopleListEmployeesParams"
+/>
+
+### `zoho_people_get_employee`
+
+People get employee
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_people.ts"
+  name="ZohoPeopleGetEmployeeParams"
+/>
+
+### `zoho_people_list_attendance`
+
+People list attendance
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_people.ts"
+  name="ZohoPeopleListAttendanceParams"
+/>
+
+### `zoho_people_list_leave_requests`
+
+People list leave requests
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_people.ts"
+  name="ZohoPeopleListLeaveRequestsParams"
+/>
+
+### `zoho_people_list_time_logs`
+
+People list time logs
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_people.ts"
+  name="ZohoPeopleListTimeLogsParams"
+/>
+
+## Notes
+
+- Category: HR & Recruiting
+- Authentication mode: OAuth

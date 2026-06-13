@@ -1,27 +1,29 @@
 ---
-title: "Phantom"
-description: "Build Phantom mobile browse universal links and deeplink provider documentation (Solana)"
+title: "Phantom Integration"
+description: "Build Phantom mobile universal links and expose provider deeplink reference data"
 ---
 
-The Phantom integration provides access to build phantom mobile browse universal links and deeplink provider documentation (solana) through the Integrate MCP server.
+The Phantom integration provides access to build Phantom mobile universal links and expose provider deeplink reference data through the Integrate MCP server.
 
 ## Installation
 
+The Phantom integration is included with the SDK:
+
 ```typescript
-import { buildPhantomBrowseDeeplink } from "integrate-sdk/server";
+import { phantomIntegration } from "integrate-sdk/server";
 ```
 
 ## Setup
 
-Add Phantom to your server configuration. The integration automatically reads OAuth credentials from your environment:
+Add Phantom to your server configuration:
 
 ```typescript
-import { createMCPServer, buildPhantomBrowseDeeplink } from "integrate-sdk/server";
+import { createMCPServer, phantomIntegration } from "integrate-sdk/server";
 
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    buildPhantomBrowseDeeplink(),
+    phantomIntegration(),
   ],
 });
 ```
@@ -31,9 +33,8 @@ export const { client: serverClient } = createMCPServer({
 ```typescript
 import { client } from "integrate-sdk";
 
-await client.authorize("phantom");
 const result = await client.phantom.buildBrowseDeeplink({
-  // Add the parameters required by this tool
+  url: "value",
 });
 
 console.log(result);
@@ -46,14 +47,25 @@ console.log(result);
   name="PhantomIntegrationOptions"
 />
 
-## Available Tools
 
-- `phantom_build_browse_deeplink`
-- `phantom_deeplink_provider_reference`
+## Tools
+
+### `phantom_build_browse_deeplink`
+
+Build browse deeplink
+
+<AutoTypeTable
+  path="generated/tool-params/phantom.ts"
+  name="PhantomBuildBrowseDeeplinkParams"
+/>
+
+### `phantom_deeplink_provider_reference`
+
+Deeplink provider reference
+
+_No parameters._
 
 ## Notes
 
 - Category: Other
-- Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-
+- Authentication mode: None

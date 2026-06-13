@@ -1,11 +1,13 @@
 ---
-title: "PostHog"
-description: "Read PostHog organizations, projects, insights, and feature flags"
+title: "PostHog Integration"
+description: "Read PostHog organizations, projects, insights, flags, and analytics data"
 ---
 
-The PostHog integration provides access to read posthog organizations, projects, insights, and feature flags through the Integrate MCP server.
+The PostHog integration provides access to read PostHog organizations, projects, insights, flags, and analytics data through the Integrate MCP server.
 
 ## Installation
+
+The PostHog integration is included with the SDK:
 
 ```typescript
 import { posthogIntegration } from "integrate-sdk/server";
@@ -13,7 +15,15 @@ import { posthogIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add PostHog to your server configuration. The integration automatically reads OAuth credentials from your environment (`POSTHOG_CLIENT_ID`, `POSTHOG_CLIENT_SECRET`):
+### 1. Create a PostHog OAuth App
+
+1. Create an OAuth application for PostHog
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the PostHog integration to your server configuration. The integration automatically reads `POSTHOG_CLIENT_ID` and `POSTHOG_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, posthogIntegration } from "integrate-sdk/server";
@@ -21,22 +31,44 @@ import { createMCPServer, posthogIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    posthogIntegration(),
+    posthogIntegration({
+      scopes: ["openid", "profile", "email", "organization:read", "project:read", "user:read", "query:read", "insight:read", "dashboard:read", "feature_flag:read", "experiment:read", "annotation:read", "cohort:read", "person:read", "event_definition:read", "property_definition:read", "session_recording:read", "action:read"], // Optional
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+posthogIntegration({
+  clientId: process.env.CUSTOM_POSTHOG_ID,
+  clientSecret: process.env.CUSTOM_POSTHOG_SECRET,
+      scopes: ["openid", "profile", "email", "organization:read", "project:read", "user:read", "query:read", "insight:read", "dashboard:read", "feature_flag:read", "experiment:read", "annotation:read", "cohort:read", "person:read", "event_definition:read", "property_definition:read", "session_recording:read", "action:read"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("posthog");
-const result = await client.posthog.getCurrentUser({
-  // Add the parameters required by this tool
-});
+const result = await client.posthog.getCurrentUser({});
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, posthogIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [posthogIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,43 +78,264 @@ console.log(result);
   name="PostHogIntegrationConfig"
 />
 
-## Environment Variables
 
-- `POSTHOG_CLIENT_ID`
-- `POSTHOG_CLIENT_SECRET`
+## Default Scopes
 
-## Available Tools
+These defaults are applied unless you override `scopes` in the integration config:
 
-- `posthog_get_current_user`
-- `posthog_list_organizations`
-- `posthog_get_organization`
-- `posthog_list_projects`
-- `posthog_get_project`
-- `posthog_run_hogql_query`
-- `posthog_list_insights`
-- `posthog_get_insight`
-- `posthog_list_dashboards`
-- `posthog_get_dashboard`
-- `posthog_list_feature_flags`
-- `posthog_get_feature_flag`
-- `posthog_list_experiments`
-- `posthog_get_experiment`
-- `posthog_list_annotations`
-- `posthog_get_annotation`
-- `posthog_list_cohorts`
-- `posthog_get_cohort`
-- `posthog_list_event_definitions`
-- `posthog_get_event_definition`
-- `posthog_list_property_definitions`
-- `posthog_get_property_definition`
-- `posthog_list_persons`
-- `posthog_get_person`
-- `posthog_list_session_recordings`
-- `posthog_get_session_recording`
+- `openid`
+- `profile`
+- `email`
+- `organization:read`
+- `project:read`
+- `user:read`
+- `query:read`
+- `insight:read`
+- `dashboard:read`
+- `feature_flag:read`
+- `experiment:read`
+- `annotation:read`
+- `cohort:read`
+- `person:read`
+- `event_definition:read`
+- `property_definition:read`
+- `session_recording:read`
+- `action:read`
+
+## Tools
+
+### `posthog_get_current_user`
+
+Get current user
+
+_No parameters._
+
+### `posthog_list_organizations`
+
+List organizations
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogListOrganizationsParams"
+/>
+
+### `posthog_get_organization`
+
+Get organization
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogGetOrganizationParams"
+/>
+
+### `posthog_list_projects`
+
+List projects
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogListProjectsParams"
+/>
+
+### `posthog_get_project`
+
+Get project
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogGetProjectParams"
+/>
+
+### `posthog_run_hogql_query`
+
+Run hogql query
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogRunHogqlQueryParams"
+/>
+
+### `posthog_list_insights`
+
+List insights
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogListInsightsParams"
+/>
+
+### `posthog_get_insight`
+
+Get insight
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogGetInsightParams"
+/>
+
+### `posthog_list_dashboards`
+
+List dashboards
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogListDashboardsParams"
+/>
+
+### `posthog_get_dashboard`
+
+Get dashboard
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogGetDashboardParams"
+/>
+
+### `posthog_list_feature_flags`
+
+List feature flags
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogListFeatureFlagsParams"
+/>
+
+### `posthog_get_feature_flag`
+
+Get feature flag
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogGetFeatureFlagParams"
+/>
+
+### `posthog_list_experiments`
+
+List experiments
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogListExperimentsParams"
+/>
+
+### `posthog_get_experiment`
+
+Get experiment
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogGetExperimentParams"
+/>
+
+### `posthog_list_annotations`
+
+List annotations
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogListAnnotationsParams"
+/>
+
+### `posthog_get_annotation`
+
+Get annotation
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogGetAnnotationParams"
+/>
+
+### `posthog_list_cohorts`
+
+List cohorts
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogListCohortsParams"
+/>
+
+### `posthog_get_cohort`
+
+Get cohort
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogGetCohortParams"
+/>
+
+### `posthog_list_event_definitions`
+
+List event definitions
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogListEventDefinitionsParams"
+/>
+
+### `posthog_get_event_definition`
+
+Get event definition
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogGetEventDefinitionParams"
+/>
+
+### `posthog_list_property_definitions`
+
+List property definitions
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogListPropertyDefinitionsParams"
+/>
+
+### `posthog_get_property_definition`
+
+Get property definition
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogGetPropertyDefinitionParams"
+/>
+
+### `posthog_list_persons`
+
+List persons
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogListPersonsParams"
+/>
+
+### `posthog_get_person`
+
+Get person
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogGetPersonParams"
+/>
+
+### `posthog_list_session_recordings`
+
+List session recordings
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogListSessionRecordingsParams"
+/>
+
+### `posthog_get_session_recording`
+
+Get session recording
+
+<AutoTypeTable
+  path="generated/tool-params/posthog.ts"
+  name="PosthogGetSessionRecordingParams"
+/>
 
 ## Notes
 
 - Category: Analytics
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

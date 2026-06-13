@@ -1,0 +1,144 @@
+---
+title: "Sonos Integration"
+description: "Manage Sonos list households, list groups, get playback status, control playback, get group volume"
+---
+
+The Sonos integration provides access to manage Sonos list households, list groups, get playback status, control playback, get group volume through the Integrate MCP server.
+
+## Installation
+
+The Sonos integration is included with the SDK:
+
+```typescript
+import { sonosIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Sonos OAuth App
+
+1. Create an OAuth application for Sonos
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Sonos integration to your server configuration. The integration automatically reads `SONOS_CLIENT_ID` and `SONOS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, sonosIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    sonosIntegration({
+      scopes: ["playback-control-all"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+sonosIntegration({
+  clientId: process.env.CUSTOM_SONOS_ID,
+  clientSecret: process.env.CUSTOM_SONOS_SECRET,
+      scopes: ["playback-control-all"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("sonos");
+const result = await client.sonos.listHouseholds({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, sonosIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [sonosIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/sonos.ts"
+  name="SonosIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `playback-control-all`
+
+## Tools
+
+### `sonos_list_households`
+
+List households
+
+_No parameters._
+
+### `sonos_list_groups`
+
+List groups
+
+<AutoTypeTable
+  path="generated/tool-params/sonos.ts"
+  name="SonosListGroupsParams"
+/>
+
+### `sonos_get_playback_status`
+
+Get playback status
+
+<AutoTypeTable
+  path="generated/tool-params/sonos.ts"
+  name="SonosGetPlaybackStatusParams"
+/>
+
+### `sonos_control_playback`
+
+Control playback
+
+<AutoTypeTable
+  path="generated/tool-params/sonos.ts"
+  name="SonosControlPlaybackParams"
+/>
+
+### `sonos_get_group_volume`
+
+Get group volume
+
+<AutoTypeTable
+  path="generated/tool-params/sonos.ts"
+  name="SonosGetGroupVolumeParams"
+/>
+
+### `sonos_set_group_volume`
+
+Set group volume
+
+<AutoTypeTable
+  path="generated/tool-params/sonos.ts"
+  name="SonosSetGroupVolumeParams"
+/>
+
+## Notes
+
+- Category: Lifestyle
+- Authentication mode: OAuth

@@ -1,11 +1,13 @@
 ---
-title: "Monday.com"
+title: "Monday.com Integration"
 description: "Manage Monday.com boards, items, columns, and updates"
 ---
 
-The Monday.com integration provides access to manage monday.com boards, items, columns, and updates through the Integrate MCP server.
+The Monday.com integration provides access to manage Monday.com boards, items, columns, and updates through the Integrate MCP server.
 
 ## Installation
+
+The Monday.com integration is included with the SDK:
 
 ```typescript
 import { mondayIntegration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { mondayIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Monday.com to your server configuration. The integration automatically reads OAuth credentials from your environment (`MONDAY_CLIENT_ID`, `MONDAY_CLIENT_SECRET`):
+### 1. Create a Monday.com OAuth App
+
+1. Go to [Auth Developer Portal](https://auth.monday.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Monday.com integration to your server configuration. The integration automatically reads `MONDAY_CLIENT_ID` and `MONDAY_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, mondayIntegration } from "integrate-sdk/server";
@@ -21,22 +32,42 @@ import { createMCPServer, mondayIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    mondayIntegration(),
+    mondayIntegration({
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+mondayIntegration({
+  clientId: process.env.CUSTOM_MONDAY_ID,
+  clientSecret: process.env.CUSTOM_MONDAY_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("monday");
-const result = await client.monday.me({
-  // Add the parameters required by this tool
-});
+const result = await client.monday.me({});
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, mondayIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [mondayIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,28 +77,103 @@ console.log(result);
   name="MondayIntegrationConfig"
 />
 
-## Environment Variables
 
-- `MONDAY_CLIENT_ID`
-- `MONDAY_CLIENT_SECRET`
+## Tools
 
-## Available Tools
+### `monday_me`
 
-- `monday_me`
-- `monday_list_workspaces`
-- `monday_list_boards`
-- `monday_get_board`
-- `monday_list_board_items`
-- `monday_next_items_page`
-- `monday_get_items`
-- `monday_create_item`
-- `monday_update_item_columns`
-- `monday_create_update`
-- `monday_delete_item`
+Me
+
+_No parameters._
+
+### `monday_list_workspaces`
+
+List workspaces
+
+_No parameters._
+
+### `monday_list_boards`
+
+List boards
+
+<AutoTypeTable
+  path="generated/tool-params/monday.ts"
+  name="MondayListBoardsParams"
+/>
+
+### `monday_get_board`
+
+Get board
+
+<AutoTypeTable
+  path="generated/tool-params/monday.ts"
+  name="MondayGetBoardParams"
+/>
+
+### `monday_list_board_items`
+
+List board items
+
+<AutoTypeTable
+  path="generated/tool-params/monday.ts"
+  name="MondayListBoardItemsParams"
+/>
+
+### `monday_next_items_page`
+
+Next items page
+
+<AutoTypeTable
+  path="generated/tool-params/monday.ts"
+  name="MondayNextItemsPageParams"
+/>
+
+### `monday_get_items`
+
+Get items
+
+<AutoTypeTable
+  path="generated/tool-params/monday.ts"
+  name="MondayGetItemsParams"
+/>
+
+### `monday_create_item`
+
+Create item
+
+<AutoTypeTable
+  path="generated/tool-params/monday.ts"
+  name="MondayCreateItemParams"
+/>
+
+### `monday_update_item_columns`
+
+Update item columns
+
+<AutoTypeTable
+  path="generated/tool-params/monday.ts"
+  name="MondayUpdateItemColumnsParams"
+/>
+
+### `monday_create_update`
+
+Create update
+
+<AutoTypeTable
+  path="generated/tool-params/monday.ts"
+  name="MondayCreateUpdateParams"
+/>
+
+### `monday_delete_item`
+
+Delete item
+
+<AutoTypeTable
+  path="generated/tool-params/monday.ts"
+  name="MondayDeleteItemParams"
+/>
 
 ## Notes
 
 - Category: Productivity
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

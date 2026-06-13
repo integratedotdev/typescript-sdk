@@ -1,11 +1,13 @@
 ---
-title: "Facebook"
+title: "Facebook Integration"
 description: "Manage Facebook Page posts, comments, reactions, and insights via the Graph API"
 ---
 
-The Facebook integration provides access to manage facebook page posts, comments, reactions, and insights via the graph api through the Integrate MCP server.
+The Facebook integration provides access to manage Facebook Page posts, comments, reactions, and insights via the Graph API through the Integrate MCP server.
 
 ## Installation
+
+The Facebook integration is included with the SDK:
 
 ```typescript
 import { facebookIntegration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { facebookIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Facebook to your server configuration. The integration automatically reads OAuth credentials from your environment (`FACEBOOK_CLIENT_ID`, `FACEBOOK_CLIENT_SECRET`):
+### 1. Create a Facebook OAuth App
+
+1. Go to [Facebook Developer Portal](https://www.facebook.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Facebook integration to your server configuration. The integration automatically reads `FACEBOOK_CLIENT_ID` and `FACEBOOK_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, facebookIntegration } from "integrate-sdk/server";
@@ -21,22 +32,44 @@ import { createMCPServer, facebookIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    facebookIntegration(),
+    facebookIntegration({
+      scopes: ["public_profile", "email", "pages_show_list", "pages_read_engagement", "pages_manage_posts", "pages_read_user_content", "pages_manage_engagement"], // Optional
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+facebookIntegration({
+  clientId: process.env.CUSTOM_FACEBOOK_ID,
+  clientSecret: process.env.CUSTOM_FACEBOOK_SECRET,
+      scopes: ["public_profile", "email", "pages_show_list", "pages_read_engagement", "pages_manage_posts", "pages_read_user_content", "pages_manage_engagement"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("facebook");
-const result = await client.facebook.getMe({
-  // Add the parameters required by this tool
-});
+const result = await client.facebook.getMe({});
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, facebookIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [facebookIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,28 +79,121 @@ console.log(result);
   name="FacebookIntegrationConfig"
 />
 
-## Environment Variables
 
-- `FACEBOOK_CLIENT_ID`
-- `FACEBOOK_CLIENT_SECRET`
+## Default Scopes
 
-## Available Tools
+These defaults are applied unless you override `scopes` in the integration config:
 
-- `facebook_get_me`
-- `facebook_list_pages`
-- `facebook_list_page_posts`
-- `facebook_get_object`
-- `facebook_create_page_post`
-- `facebook_delete_object`
-- `facebook_list_comments`
-- `facebook_publish_comment`
-- `facebook_get_insights`
-- `facebook_set_comment_visibility`
-- `facebook_like_object`
+- `public_profile`
+- `email`
+- `pages_show_list`
+- `pages_read_engagement`
+- `pages_manage_posts`
+- `pages_read_user_content`
+- `pages_manage_engagement`
+
+## Tools
+
+### `facebook_get_me`
+
+Get me
+
+<AutoTypeTable
+  path="generated/tool-params/facebook.ts"
+  name="FacebookGetMeParams"
+/>
+
+### `facebook_list_pages`
+
+List pages
+
+<AutoTypeTable
+  path="generated/tool-params/facebook.ts"
+  name="FacebookListPagesParams"
+/>
+
+### `facebook_list_page_posts`
+
+List page posts
+
+<AutoTypeTable
+  path="generated/tool-params/facebook.ts"
+  name="FacebookListPagePostsParams"
+/>
+
+### `facebook_get_object`
+
+Get object
+
+<AutoTypeTable
+  path="generated/tool-params/facebook.ts"
+  name="FacebookGetObjectParams"
+/>
+
+### `facebook_create_page_post`
+
+Create page post
+
+<AutoTypeTable
+  path="generated/tool-params/facebook.ts"
+  name="FacebookCreatePagePostParams"
+/>
+
+### `facebook_delete_object`
+
+Delete object
+
+<AutoTypeTable
+  path="generated/tool-params/facebook.ts"
+  name="FacebookDeleteObjectParams"
+/>
+
+### `facebook_list_comments`
+
+List comments
+
+<AutoTypeTable
+  path="generated/tool-params/facebook.ts"
+  name="FacebookListCommentsParams"
+/>
+
+### `facebook_publish_comment`
+
+Publish comment
+
+<AutoTypeTable
+  path="generated/tool-params/facebook.ts"
+  name="FacebookPublishCommentParams"
+/>
+
+### `facebook_get_insights`
+
+Get insights
+
+<AutoTypeTable
+  path="generated/tool-params/facebook.ts"
+  name="FacebookGetInsightsParams"
+/>
+
+### `facebook_set_comment_visibility`
+
+Set comment visibility
+
+<AutoTypeTable
+  path="generated/tool-params/facebook.ts"
+  name="FacebookSetCommentVisibilityParams"
+/>
+
+### `facebook_like_object`
+
+Like object
+
+<AutoTypeTable
+  path="generated/tool-params/facebook.ts"
+  name="FacebookLikeObjectParams"
+/>
 
 ## Notes
 
 - Category: Social Media
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

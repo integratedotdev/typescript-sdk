@@ -1,0 +1,141 @@
+---
+title: "Google Home Integration"
+description: "Manage Google Home devices, structures, rooms, and device commands"
+---
+
+The Google Home integration provides access to manage Google Home devices, structures, rooms, and device commands through the Integrate MCP server.
+
+## Installation
+
+The Google Home integration is included with the SDK:
+
+```typescript
+import { googleHomeIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Google Home OAuth App
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Home integration to your server configuration. The integration automatically reads `GOOGLE_HOME_CLIENT_ID` and `GOOGLE_HOME_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, googleHomeIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    googleHomeIntegration({
+      scopes: ["https://www.googleapis.com/auth/sdm.service"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+googleHomeIntegration({
+  clientId: process.env.CUSTOM_GOOGLE_HOME_ID,
+  clientSecret: process.env.CUSTOM_GOOGLE_HOME_SECRET,
+      scopes: ["https://www.googleapis.com/auth/sdm.service"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("google_home");
+const result = await client.google_home.listDevices({
+  project_id: "value",
+});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, googleHomeIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [googleHomeIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/google_home.ts"
+  name="GoogleHomeIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `https://www.googleapis.com/auth/sdm.service`
+
+## Tools
+
+### `google_home_list_devices`
+
+Home list devices
+
+<AutoTypeTable
+  path="generated/tool-params/google_home.ts"
+  name="GoogleHomeListDevicesParams"
+/>
+
+### `google_home_get_device`
+
+Home get device
+
+<AutoTypeTable
+  path="generated/tool-params/google_home.ts"
+  name="GoogleHomeGetDeviceParams"
+/>
+
+### `google_home_execute_device_command`
+
+Home execute device command
+
+<AutoTypeTable
+  path="generated/tool-params/google_home.ts"
+  name="GoogleHomeExecuteDeviceCommandParams"
+/>
+
+### `google_home_list_structures`
+
+Home list structures
+
+<AutoTypeTable
+  path="generated/tool-params/google_home.ts"
+  name="GoogleHomeListStructuresParams"
+/>
+
+### `google_home_list_rooms`
+
+Home list rooms
+
+<AutoTypeTable
+  path="generated/tool-params/google_home.ts"
+  name="GoogleHomeListRoomsParams"
+/>
+
+## Notes
+
+- Category: Lifestyle
+- Authentication mode: OAuth

@@ -1,0 +1,235 @@
+---
+title: "Box Integration"
+description: "Manage Box files, folders, sharing, comments, search, and collaborations"
+---
+
+The Box integration provides access to manage Box files, folders, sharing, comments, search, and collaborations through the Integrate MCP server.
+
+## Installation
+
+The Box integration is included with the SDK:
+
+```typescript
+import { boxIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Box OAuth App
+
+1. Create an OAuth application for Box
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Box integration to your server configuration. The integration automatically reads `BOX_CLIENT_ID` and `BOX_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, boxIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    boxIntegration({
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+boxIntegration({
+  clientId: process.env.CUSTOM_BOX_ID,
+  clientSecret: process.env.CUSTOM_BOX_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("box");
+const result = await client.box.getCurrentUser({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, boxIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [boxIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/box.ts"
+  name="BoxIntegrationOptions"
+/>
+
+
+## Tools
+
+### `box_get_current_user`
+
+Get current user
+
+_No parameters._
+
+### `box_list_folder_items`
+
+List folder items
+
+<AutoTypeTable
+  path="generated/tool-params/box.ts"
+  name="BoxListFolderItemsParams"
+/>
+
+### `box_get_file`
+
+Get file
+
+<AutoTypeTable
+  path="generated/tool-params/box.ts"
+  name="BoxGetFileParams"
+/>
+
+### `box_get_folder`
+
+Get folder
+
+<AutoTypeTable
+  path="generated/tool-params/box.ts"
+  name="BoxGetFolderParams"
+/>
+
+### `box_create_folder`
+
+Create folder
+
+<AutoTypeTable
+  path="generated/tool-params/box.ts"
+  name="BoxCreateFolderParams"
+/>
+
+### `box_update_file`
+
+Update file
+
+<AutoTypeTable
+  path="generated/tool-params/box.ts"
+  name="BoxUpdateFileParams"
+/>
+
+### `box_update_folder`
+
+Update folder
+
+<AutoTypeTable
+  path="generated/tool-params/box.ts"
+  name="BoxUpdateFolderParams"
+/>
+
+### `box_delete_file`
+
+Delete file
+
+<AutoTypeTable
+  path="generated/tool-params/box.ts"
+  name="BoxDeleteFileParams"
+/>
+
+### `box_delete_folder`
+
+Delete folder
+
+<AutoTypeTable
+  path="generated/tool-params/box.ts"
+  name="BoxDeleteFolderParams"
+/>
+
+### `box_upload_text_file`
+
+Upload text file
+
+<AutoTypeTable
+  path="generated/tool-params/box.ts"
+  name="BoxUploadTextFileParams"
+/>
+
+### `box_download_file`
+
+Download file
+
+<AutoTypeTable
+  path="generated/tool-params/box.ts"
+  name="BoxDownloadFileParams"
+/>
+
+### `box_search`
+
+Search
+
+<AutoTypeTable
+  path="generated/tool-params/box.ts"
+  name="BoxSearchParams"
+/>
+
+### `box_create_shared_link`
+
+Create shared link
+
+<AutoTypeTable
+  path="generated/tool-params/box.ts"
+  name="BoxCreateSharedLinkParams"
+/>
+
+### `box_create_collaboration`
+
+Create collaboration
+
+<AutoTypeTable
+  path="generated/tool-params/box.ts"
+  name="BoxCreateCollaborationParams"
+/>
+
+### `box_list_comments`
+
+List comments
+
+<AutoTypeTable
+  path="generated/tool-params/box.ts"
+  name="BoxListCommentsParams"
+/>
+
+### `box_create_comment`
+
+Create comment
+
+<AutoTypeTable
+  path="generated/tool-params/box.ts"
+  name="BoxCreateCommentParams"
+/>
+
+### `box_delete_comment`
+
+Delete comment
+
+<AutoTypeTable
+  path="generated/tool-params/box.ts"
+  name="BoxDeleteCommentParams"
+/>
+
+## Notes
+
+- Category: Storage
+- Authentication mode: OAuth

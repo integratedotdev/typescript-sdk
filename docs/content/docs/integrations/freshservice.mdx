@@ -1,0 +1,179 @@
+---
+title: "Freshservice Integration"
+description: "Manage Freshservice tickets, requesters, agents, assets, changes, problems, releases, and solutions"
+---
+
+The Freshservice integration provides access to manage Freshservice tickets, requesters, agents, assets, changes, problems, releases, and solutions through the Integrate MCP server.
+
+## Installation
+
+The Freshservice integration is included with the SDK:
+
+```typescript
+import { freshserviceIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Freshservice OAuth App
+
+1. Create an OAuth application for Freshservice
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Freshservice integration to your server configuration. The integration automatically reads `FRESHSERVICE_CLIENT_ID` and `FRESHSERVICE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, freshserviceIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    freshserviceIntegration({
+      scopes: ["freshservice.tickets.read", "freshservice.tickets.write", "freshservice.assets.read", "freshservice.solutions.read"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+freshserviceIntegration({
+  clientId: process.env.CUSTOM_FRESHSERVICE_ID,
+  clientSecret: process.env.CUSTOM_FRESHSERVICE_SECRET,
+      scopes: ["freshservice.tickets.read", "freshservice.tickets.write", "freshservice.assets.read", "freshservice.solutions.read"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("freshservice");
+const result = await client.freshservice.listTickets({
+  domain: "value",
+});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, freshserviceIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [freshserviceIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/freshservice.ts"
+  name="FreshserviceIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `freshservice.tickets.read`
+- `freshservice.tickets.write`
+- `freshservice.assets.read`
+- `freshservice.solutions.read`
+
+## Tools
+
+### `freshservice_list_tickets`
+
+List tickets
+
+<AutoTypeTable
+  path="generated/tool-params/freshservice.ts"
+  name="FreshserviceListTicketsParams"
+/>
+
+### `freshservice_list_requesters`
+
+List requesters
+
+<AutoTypeTable
+  path="generated/tool-params/freshservice.ts"
+  name="FreshserviceListRequestersParams"
+/>
+
+### `freshservice_list_agents`
+
+List agents
+
+<AutoTypeTable
+  path="generated/tool-params/freshservice.ts"
+  name="FreshserviceListAgentsParams"
+/>
+
+### `freshservice_list_assets`
+
+List assets
+
+<AutoTypeTable
+  path="generated/tool-params/freshservice.ts"
+  name="FreshserviceListAssetsParams"
+/>
+
+### `freshservice_list_changes`
+
+List changes
+
+<AutoTypeTable
+  path="generated/tool-params/freshservice.ts"
+  name="FreshserviceListChangesParams"
+/>
+
+### `freshservice_list_problems`
+
+List problems
+
+<AutoTypeTable
+  path="generated/tool-params/freshservice.ts"
+  name="FreshserviceListProblemsParams"
+/>
+
+### `freshservice_list_releases`
+
+List releases
+
+<AutoTypeTable
+  path="generated/tool-params/freshservice.ts"
+  name="FreshserviceListReleasesParams"
+/>
+
+### `freshservice_create_ticket`
+
+Create ticket
+
+<AutoTypeTable
+  path="generated/tool-params/freshservice.ts"
+  name="FreshserviceCreateTicketParams"
+/>
+
+### `freshservice_list_solutions`
+
+List solutions
+
+<AutoTypeTable
+  path="generated/tool-params/freshservice.ts"
+  name="FreshserviceListSolutionsParams"
+/>
+
+## Notes
+
+- Category: Business
+- Authentication mode: OAuth

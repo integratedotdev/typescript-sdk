@@ -1,0 +1,171 @@
+---
+title: "Zoho CRM Integration"
+description: "Manage Zoho CRM modules, records, users, org settings, search, and COQL"
+---
+
+The Zoho CRM integration provides access to manage Zoho CRM modules, records, users, org settings, search, and COQL through the Integrate MCP server.
+
+## Installation
+
+The Zoho CRM integration is included with the SDK:
+
+```typescript
+import { zohoCrmIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Zoho CRM OAuth App
+
+1. Go to [Zoho API Console](https://api-console.zoho.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Zoho CRM integration to your server configuration. The integration automatically reads `ZOHO_CRM_CLIENT_ID` and `ZOHO_CRM_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, zohoCrmIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    zohoCrmIntegration({
+      scopes: ["ZohoCRM.modules.ALL", "ZohoCRM.settings.ALL", "ZohoCRM.users.ALL"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+zohoCrmIntegration({
+  clientId: process.env.CUSTOM_ZOHO_CRM_ID,
+  clientSecret: process.env.CUSTOM_ZOHO_CRM_SECRET,
+      scopes: ["ZohoCRM.modules.ALL", "ZohoCRM.settings.ALL", "ZohoCRM.users.ALL"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("zoho_crm");
+const result = await client.zoho_crm.listModules({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, zohoCrmIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [zohoCrmIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/zoho_crm.ts"
+  name="ZohoCrmIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `ZohoCRM.modules.ALL`
+- `ZohoCRM.settings.ALL`
+- `ZohoCRM.users.ALL`
+
+## Tools
+
+### `zoho_crm_list_modules`
+
+Crm list modules
+
+_No parameters._
+
+### `zoho_crm_list_records`
+
+Crm list records
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_crm.ts"
+  name="ZohoCrmListRecordsParams"
+/>
+
+### `zoho_crm_get_record`
+
+Crm get record
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_crm.ts"
+  name="ZohoCrmGetRecordParams"
+/>
+
+### `zoho_crm_create_records`
+
+Crm create records
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_crm.ts"
+  name="ZohoCrmCreateRecordsParams"
+/>
+
+### `zoho_crm_update_record`
+
+Crm update record
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_crm.ts"
+  name="ZohoCrmUpdateRecordParams"
+/>
+
+### `zoho_crm_search_records`
+
+Crm search records
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_crm.ts"
+  name="ZohoCrmSearchRecordsParams"
+/>
+
+### `zoho_crm_coql_query`
+
+Crm coql query
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_crm.ts"
+  name="ZohoCrmCoqlQueryParams"
+/>
+
+### `zoho_crm_list_users`
+
+Crm list users
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_crm.ts"
+  name="ZohoCrmListUsersParams"
+/>
+
+### `zoho_crm_get_org`
+
+Crm get org
+
+_No parameters._
+
+## Notes
+
+- Category: Business
+- Authentication mode: OAuth

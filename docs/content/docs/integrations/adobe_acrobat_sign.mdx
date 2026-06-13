@@ -1,0 +1,148 @@
+---
+title: "Adobe Acrobat Sign Integration"
+description: "Manage Adobe Acrobat Sign get user, list agreements, get agreement, create agreement, list library documents"
+---
+
+The Adobe Acrobat Sign integration provides access to manage Adobe Acrobat Sign get user, list agreements, get agreement, create agreement, list library documents through the Integrate MCP server.
+
+## Installation
+
+The Adobe Acrobat Sign integration is included with the SDK:
+
+```typescript
+import { adobeAcrobatSignIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create an Adobe Acrobat Sign OAuth App
+
+1. Create an OAuth application for Adobe Acrobat Sign
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Adobe Acrobat Sign integration to your server configuration. The integration automatically reads `ADOBE_ACROBAT_SIGN_CLIENT_ID` and `ADOBE_ACROBAT_SIGN_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, adobeAcrobatSignIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    adobeAcrobatSignIntegration({
+      scopes: ["user_read", "agreement_read", "agreement_write", "library_read", "library_write"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+adobeAcrobatSignIntegration({
+  clientId: process.env.CUSTOM_ADOBE_ACROBAT_SIGN_ID,
+  clientSecret: process.env.CUSTOM_ADOBE_ACROBAT_SIGN_SECRET,
+      scopes: ["user_read", "agreement_read", "agreement_write", "library_read", "library_write"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("adobe_acrobat_sign");
+const result = await client.adobe_acrobat_sign.getUser({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, adobeAcrobatSignIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [adobeAcrobatSignIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/adobe_acrobat_sign.ts"
+  name="AdobeAcrobatSignIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `user_read`
+- `agreement_read`
+- `agreement_write`
+- `library_read`
+- `library_write`
+
+## Tools
+
+### `adobe_acrobat_sign_get_user`
+
+Acrobat sign get user
+
+_No parameters._
+
+### `adobe_acrobat_sign_list_agreements`
+
+Acrobat sign list agreements
+
+<AutoTypeTable
+  path="generated/tool-params/adobe_acrobat_sign.ts"
+  name="AdobeAcrobatSignListAgreementsParams"
+/>
+
+### `adobe_acrobat_sign_get_agreement`
+
+Acrobat sign get agreement
+
+<AutoTypeTable
+  path="generated/tool-params/adobe_acrobat_sign.ts"
+  name="AdobeAcrobatSignGetAgreementParams"
+/>
+
+### `adobe_acrobat_sign_create_agreement`
+
+Acrobat sign create agreement
+
+<AutoTypeTable
+  path="generated/tool-params/adobe_acrobat_sign.ts"
+  name="AdobeAcrobatSignCreateAgreementParams"
+/>
+
+### `adobe_acrobat_sign_list_library_documents`
+
+Acrobat sign list library documents
+
+<AutoTypeTable
+  path="generated/tool-params/adobe_acrobat_sign.ts"
+  name="AdobeAcrobatSignListLibraryDocumentsParams"
+/>
+
+### `adobe_acrobat_sign_get_signing_urls`
+
+Acrobat sign get signing urls
+
+<AutoTypeTable
+  path="generated/tool-params/adobe_acrobat_sign.ts"
+  name="AdobeAcrobatSignGetSigningUrlsParams"
+/>
+
+## Notes
+
+- Category: Legal
+- Authentication mode: OAuth

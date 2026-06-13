@@ -1,11 +1,13 @@
 ---
-title: "eToro"
-description: "Read eToro portfolio data and market instruments"
+title: "eToro Integration"
+description: "Access eToro Public API identity, portfolio, market data, trade history, and watchlists"
 ---
 
-The eToro integration provides access to read etoro portfolio data and market instruments through the Integrate MCP server.
+The eToro integration provides access to access eToro Public API identity, portfolio, market data, trade history, and watchlists through the Integrate MCP server.
 
 ## Installation
+
+The eToro integration is included with the SDK:
 
 ```typescript
 import { etoroIntegration } from "integrate-sdk/server";
@@ -13,7 +15,7 @@ import { etoroIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add eToro to your server configuration. This integration can read credentials from environment variables automatically (`ETORO_PUBLIC_API_KEY`, `ETORO_USER_KEY`):
+Add eToro to your server configuration. Provide credentials via environment variables or integration config:
 
 ```typescript
 import { createMCPServer, etoroIntegration } from "integrate-sdk/server";
@@ -21,7 +23,9 @@ import { createMCPServer, etoroIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    etoroIntegration(),
+    etoroIntegration({
+      // See configuration options below
+    }),
   ],
 });
 ```
@@ -31,12 +35,14 @@ export const { client: serverClient } = createMCPServer({
 ```typescript
 import { client } from "integrate-sdk";
 
-const result = await client.etoro.getIdentity({
-  // Add the parameters required by this tool
-});
+const result = await client.etoro.getIdentity({});
 
 console.log(result);
 ```
+
+## Environment Variables
+
+- `ETORO_API_KEY` (when supported by this integration)
 
 ## Configuration Options
 
@@ -45,23 +51,58 @@ console.log(result);
   name="EtoroIntegrationOptions"
 />
 
-## Environment Variables
 
-- `ETORO_PUBLIC_API_KEY`
-- `ETORO_USER_KEY`
+## Tools
 
-## Available Tools
+### `etoro_get_identity`
 
-- `etoro_get_identity`
-- `etoro_get_portfolio`
-- `etoro_search_instruments`
-- `etoro_get_instrument_rates`
-- `etoro_list_trade_history`
-- `etoro_list_watchlists`
+Get identity
+
+_No parameters._
+
+### `etoro_get_portfolio`
+
+Get portfolio
+
+_No parameters._
+
+### `etoro_search_instruments`
+
+Search instruments
+
+<AutoTypeTable
+  path="generated/tool-params/etoro.ts"
+  name="EtoroSearchInstrumentsParams"
+/>
+
+### `etoro_get_instrument_rates`
+
+Get instrument rates
+
+<AutoTypeTable
+  path="generated/tool-params/etoro.ts"
+  name="EtoroGetInstrumentRatesParams"
+/>
+
+### `etoro_list_trade_history`
+
+List trade history
+
+<AutoTypeTable
+  path="generated/tool-params/etoro.ts"
+  name="EtoroListTradeHistoryParams"
+/>
+
+### `etoro_list_watchlists`
+
+List watchlists
+
+<AutoTypeTable
+  path="generated/tool-params/etoro.ts"
+  name="EtoroListWatchlistsParams"
+/>
 
 ## Notes
 
 - Category: Finance
 - Authentication mode: API key
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

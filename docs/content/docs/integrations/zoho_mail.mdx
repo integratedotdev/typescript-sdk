@@ -1,0 +1,156 @@
+---
+title: "Zoho Mail Integration"
+description: "Manage Zoho Mail accounts, folders, messages, labels, search, and sending"
+---
+
+The Zoho Mail integration provides access to manage Zoho Mail accounts, folders, messages, labels, search, and sending through the Integrate MCP server.
+
+## Installation
+
+The Zoho Mail integration is included with the SDK:
+
+```typescript
+import { zohoMailIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Zoho Mail OAuth App
+
+1. Go to [Zoho API Console](https://api-console.zoho.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Zoho Mail integration to your server configuration. The integration automatically reads `ZOHO_MAIL_CLIENT_ID` and `ZOHO_MAIL_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, zohoMailIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    zohoMailIntegration({
+      scopes: ["ZohoMail.accounts.READ", "ZohoMail.messages.ALL", "ZohoMail.folders.ALL"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+zohoMailIntegration({
+  clientId: process.env.CUSTOM_ZOHO_MAIL_ID,
+  clientSecret: process.env.CUSTOM_ZOHO_MAIL_SECRET,
+      scopes: ["ZohoMail.accounts.READ", "ZohoMail.messages.ALL", "ZohoMail.folders.ALL"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("zoho_mail");
+const result = await client.zoho_mail.listAccounts({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, zohoMailIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [zohoMailIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/zoho_mail.ts"
+  name="ZohoMailIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `ZohoMail.accounts.READ`
+- `ZohoMail.messages.ALL`
+- `ZohoMail.folders.ALL`
+
+## Tools
+
+### `zoho_mail_list_accounts`
+
+Mail list accounts
+
+_No parameters._
+
+### `zoho_mail_list_folders`
+
+Mail list folders
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_mail.ts"
+  name="ZohoMailListFoldersParams"
+/>
+
+### `zoho_mail_list_messages`
+
+Mail list messages
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_mail.ts"
+  name="ZohoMailListMessagesParams"
+/>
+
+### `zoho_mail_get_message`
+
+Mail get message
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_mail.ts"
+  name="ZohoMailGetMessageParams"
+/>
+
+### `zoho_mail_send_message`
+
+Mail send message
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_mail.ts"
+  name="ZohoMailSendMessageParams"
+/>
+
+### `zoho_mail_search_messages`
+
+Mail search messages
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_mail.ts"
+  name="ZohoMailSearchMessagesParams"
+/>
+
+### `zoho_mail_list_labels`
+
+Mail list labels
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_mail.ts"
+  name="ZohoMailListLabelsParams"
+/>
+
+## Notes
+
+- Category: Communication
+- Authentication mode: OAuth

@@ -1,11 +1,13 @@
 ---
-title: "LinkedIn"
-description: "Post updates and manage LinkedIn profile and company pages"
+title: "LinkedIn Integration"
+description: "Read LinkedIn OpenID profile data and publish member posts"
 ---
 
-The LinkedIn integration provides access to post updates and manage linkedin profile and company pages through the Integrate MCP server.
+The LinkedIn integration provides access to read LinkedIn OpenID profile data and publish member posts through the Integrate MCP server.
 
 ## Installation
+
+The LinkedIn integration is included with the SDK:
 
 ```typescript
 import { linkedinIntegration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { linkedinIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add LinkedIn to your server configuration. The integration automatically reads OAuth credentials from your environment (`LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`):
+### 1. Create a LinkedIn OAuth App
+
+1. Go to [Linkedin Developer Portal](https://www.linkedin.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the LinkedIn integration to your server configuration. The integration automatically reads `LINKEDIN_CLIENT_ID` and `LINKEDIN_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, linkedinIntegration } from "integrate-sdk/server";
@@ -21,22 +32,44 @@ import { createMCPServer, linkedinIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    linkedinIntegration(),
+    linkedinIntegration({
+      scopes: ["openid", "profile", "email", "w_member_social"], // Optional
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+linkedinIntegration({
+  clientId: process.env.CUSTOM_LINKEDIN_ID,
+  clientSecret: process.env.CUSTOM_LINKEDIN_SECRET,
+      scopes: ["openid", "profile", "email", "w_member_social"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("linkedin");
-const result = await client.linkedin.getUserinfo({
-  // Add the parameters required by this tool
-});
+const result = await client.linkedin.getUserinfo({});
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, linkedinIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [linkedinIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,19 +79,34 @@ console.log(result);
   name="LinkedInIntegrationConfig"
 />
 
-## Environment Variables
 
-- `LINKEDIN_CLIENT_ID`
-- `LINKEDIN_CLIENT_SECRET`
+## Default Scopes
 
-## Available Tools
+These defaults are applied unless you override `scopes` in the integration config:
 
-- `linkedin_get_userinfo`
-- `linkedin_create_post`
+- `openid`
+- `profile`
+- `email`
+- `w_member_social`
+
+## Tools
+
+### `linkedin_get_userinfo`
+
+Get userinfo
+
+_No parameters._
+
+### `linkedin_create_post`
+
+Create post
+
+<AutoTypeTable
+  path="generated/tool-params/linkedin.ts"
+  name="LinkedinCreatePostParams"
+/>
 
 ## Notes
 
 - Category: Social Media
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

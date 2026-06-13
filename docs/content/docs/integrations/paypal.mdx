@@ -1,0 +1,206 @@
+---
+title: "PayPal Integration"
+description: "Manage PayPal orders, captures, refunds, invoices, products, plans, and subscriptions"
+---
+
+The PayPal integration provides access to manage PayPal orders, captures, refunds, invoices, products, plans, and subscriptions through the Integrate MCP server.
+
+## Installation
+
+The PayPal integration is included with the SDK:
+
+```typescript
+import { paypalIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add PayPal to your server configuration. Provide credentials via environment variables or integration config:
+
+```typescript
+import { createMCPServer, paypalIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    paypalIntegration({
+      // See configuration options below
+    }),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+const result = await client.paypal.createOrder({
+  order_json: "value",
+});
+
+console.log(result);
+```
+
+## Environment Variables
+
+- `PAYPAL_API_KEY` (when supported by this integration)
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/paypal.ts"
+  name="PayPalIntegrationConfig"
+/>
+
+
+## Tools
+
+### `paypal_create_order`
+
+Create order
+
+<AutoTypeTable
+  path="generated/tool-params/paypal.ts"
+  name="PaypalCreateOrderParams"
+/>
+
+### `paypal_get_order`
+
+Get order
+
+<AutoTypeTable
+  path="generated/tool-params/paypal.ts"
+  name="PaypalGetOrderParams"
+/>
+
+### `paypal_capture_order`
+
+Capture order
+
+<AutoTypeTable
+  path="generated/tool-params/paypal.ts"
+  name="PaypalCaptureOrderParams"
+/>
+
+### `paypal_get_capture`
+
+Get capture
+
+<AutoTypeTable
+  path="generated/tool-params/paypal.ts"
+  name="PaypalGetCaptureParams"
+/>
+
+### `paypal_refund_capture`
+
+Refund capture
+
+<AutoTypeTable
+  path="generated/tool-params/paypal.ts"
+  name="PaypalRefundCaptureParams"
+/>
+
+### `paypal_get_refund`
+
+Get refund
+
+<AutoTypeTable
+  path="generated/tool-params/paypal.ts"
+  name="PaypalGetRefundParams"
+/>
+
+### `paypal_list_invoices`
+
+List invoices
+
+<AutoTypeTable
+  path="generated/tool-params/paypal.ts"
+  name="PaypalListInvoicesParams"
+/>
+
+### `paypal_get_invoice`
+
+Get invoice
+
+<AutoTypeTable
+  path="generated/tool-params/paypal.ts"
+  name="PaypalGetInvoiceParams"
+/>
+
+### `paypal_create_invoice`
+
+Create invoice
+
+<AutoTypeTable
+  path="generated/tool-params/paypal.ts"
+  name="PaypalCreateInvoiceParams"
+/>
+
+### `paypal_send_invoice`
+
+Send invoice
+
+<AutoTypeTable
+  path="generated/tool-params/paypal.ts"
+  name="PaypalSendInvoiceParams"
+/>
+
+### `paypal_list_products`
+
+List products
+
+<AutoTypeTable
+  path="generated/tool-params/paypal.ts"
+  name="PaypalListProductsParams"
+/>
+
+### `paypal_create_product`
+
+Create product
+
+<AutoTypeTable
+  path="generated/tool-params/paypal.ts"
+  name="PaypalCreateProductParams"
+/>
+
+### `paypal_list_plans`
+
+List plans
+
+<AutoTypeTable
+  path="generated/tool-params/paypal.ts"
+  name="PaypalListPlansParams"
+/>
+
+### `paypal_create_plan`
+
+Create plan
+
+<AutoTypeTable
+  path="generated/tool-params/paypal.ts"
+  name="PaypalCreatePlanParams"
+/>
+
+### `paypal_get_subscription`
+
+Get subscription
+
+<AutoTypeTable
+  path="generated/tool-params/paypal.ts"
+  name="PaypalGetSubscriptionParams"
+/>
+
+### `paypal_cancel_subscription`
+
+Cancel subscription
+
+<AutoTypeTable
+  path="generated/tool-params/paypal.ts"
+  name="PaypalCancelSubscriptionParams"
+/>
+
+## Notes
+
+- Category: Finance
+- Authentication mode: API key

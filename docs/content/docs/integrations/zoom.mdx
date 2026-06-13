@@ -1,11 +1,13 @@
 ---
-title: "Zoom"
+title: "Zoom Integration"
 description: "Manage Zoom user profile and meetings"
 ---
 
-The Zoom integration provides access to manage zoom user profile and meetings through the Integrate MCP server.
+The Zoom integration provides access to manage Zoom user profile and meetings through the Integrate MCP server.
 
 ## Installation
+
+The Zoom integration is included with the SDK:
 
 ```typescript
 import { zoomIntegration } from "integrate-sdk/server";
@@ -13,7 +15,15 @@ import { zoomIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Zoom to your server configuration. The integration automatically reads OAuth credentials from your environment (`ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`):
+### 1. Create a Zoom OAuth App
+
+1. Create an OAuth application for Zoom
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Zoom integration to your server configuration. The integration automatically reads `ZOOM_CLIENT_ID` and `ZOOM_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, zoomIntegration } from "integrate-sdk/server";
@@ -21,22 +31,42 @@ import { createMCPServer, zoomIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    zoomIntegration(),
+    zoomIntegration({
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+zoomIntegration({
+  clientId: process.env.CUSTOM_ZOOM_ID,
+  clientSecret: process.env.CUSTOM_ZOOM_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("zoom");
-const result = await client.zoom.getUser({
-  // Add the parameters required by this tool
-});
+const result = await client.zoom.getUser({});
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, zoomIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [zoomIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,23 +76,64 @@ console.log(result);
   name="ZoomIntegrationConfig"
 />
 
-## Environment Variables
 
-- `ZOOM_CLIENT_ID`
-- `ZOOM_CLIENT_SECRET`
+## Tools
 
-## Available Tools
+### `zoom_get_user`
 
-- `zoom_get_user`
-- `zoom_list_meetings`
-- `zoom_create_meeting`
-- `zoom_get_meeting`
-- `zoom_update_meeting`
-- `zoom_delete_meeting`
+Get user
+
+<AutoTypeTable
+  path="generated/tool-params/zoom.ts"
+  name="ZoomGetUserParams"
+/>
+
+### `zoom_list_meetings`
+
+List meetings
+
+<AutoTypeTable
+  path="generated/tool-params/zoom.ts"
+  name="ZoomListMeetingsParams"
+/>
+
+### `zoom_create_meeting`
+
+Create meeting
+
+<AutoTypeTable
+  path="generated/tool-params/zoom.ts"
+  name="ZoomCreateMeetingParams"
+/>
+
+### `zoom_get_meeting`
+
+Get meeting
+
+<AutoTypeTable
+  path="generated/tool-params/zoom.ts"
+  name="ZoomGetMeetingParams"
+/>
+
+### `zoom_update_meeting`
+
+Update meeting
+
+<AutoTypeTable
+  path="generated/tool-params/zoom.ts"
+  name="ZoomUpdateMeetingParams"
+/>
+
+### `zoom_delete_meeting`
+
+Delete meeting
+
+<AutoTypeTable
+  path="generated/tool-params/zoom.ts"
+  name="ZoomDeleteMeetingParams"
+/>
 
 ## Notes
 
 - Category: Communication
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

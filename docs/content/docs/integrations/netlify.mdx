@@ -1,11 +1,13 @@
 ---
-title: "Netlify"
+title: "Netlify Integration"
 description: "Manage Netlify sites, deploys, builds, and environment variables"
 ---
 
-The Netlify integration provides access to manage netlify sites, deploys, builds, and environment variables through the Integrate MCP server.
+The Netlify integration provides access to manage Netlify sites, deploys, builds, and environment variables through the Integrate MCP server.
 
 ## Installation
+
+The Netlify integration is included with the SDK:
 
 ```typescript
 import { netlifyIntegration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { netlifyIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Netlify to your server configuration. The integration automatically reads OAuth credentials from your environment (`NETLIFY_CLIENT_ID`, `NETLIFY_CLIENT_SECRET`):
+### 1. Create a Netlify OAuth App
+
+1. Go to [App Developer Portal](https://app.netlify.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Netlify integration to your server configuration. The integration automatically reads `NETLIFY_CLIENT_ID` and `NETLIFY_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, netlifyIntegration } from "integrate-sdk/server";
@@ -21,22 +32,42 @@ import { createMCPServer, netlifyIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    netlifyIntegration(),
+    netlifyIntegration({
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+netlifyIntegration({
+  clientId: process.env.CUSTOM_NETLIFY_ID,
+  clientSecret: process.env.CUSTOM_NETLIFY_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("netlify");
-const result = await client.netlify.getCurrentUser({
-  // Add the parameters required by this tool
-});
+const result = await client.netlify.getCurrentUser({});
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, netlifyIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [netlifyIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,54 +77,334 @@ console.log(result);
   name="NetlifyIntegrationConfig"
 />
 
-## Environment Variables
 
-- `NETLIFY_CLIENT_ID`
-- `NETLIFY_CLIENT_SECRET`
+## Tools
 
-## Available Tools
+### `netlify_get_current_user`
 
-- `netlify_get_current_user`
-- `netlify_list_accounts`
-- `netlify_get_account`
-- `netlify_list_sites`
-- `netlify_get_site`
-- `netlify_create_site`
-- `netlify_update_site`
-- `netlify_delete_site`
-- `netlify_enable_site`
-- `netlify_disable_site`
-- `netlify_list_deploys`
-- `netlify_get_deploy`
-- `netlify_create_deploy`
-- `netlify_cancel_deploy`
-- `netlify_restore_deploy`
-- `netlify_lock_deploy`
-- `netlify_unlock_deploy`
-- `netlify_list_builds`
-- `netlify_get_build`
-- `netlify_trigger_build`
-- `netlify_list_env_vars`
-- `netlify_get_env_var`
-- `netlify_create_env_vars`
-- `netlify_update_env_var`
-- `netlify_delete_env_var`
-- `netlify_list_build_hooks`
-- `netlify_create_build_hook`
-- `netlify_delete_build_hook`
-- `netlify_list_forms`
-- `netlify_list_form_submissions`
-- `netlify_list_dns_zones`
-- `netlify_get_dns_records`
-- `netlify_create_dns_record`
-- `netlify_delete_dns_record`
-- `netlify_list_functions`
-- `netlify_list_files`
-- `netlify_purge_cache`
+Get current user
+
+_No parameters._
+
+### `netlify_list_accounts`
+
+List accounts
+
+_No parameters._
+
+### `netlify_get_account`
+
+Get account
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyGetAccountParams"
+/>
+
+### `netlify_list_sites`
+
+List sites
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyListSitesParams"
+/>
+
+### `netlify_get_site`
+
+Get site
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyGetSiteParams"
+/>
+
+### `netlify_create_site`
+
+Create site
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyCreateSiteParams"
+/>
+
+### `netlify_update_site`
+
+Update site
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyUpdateSiteParams"
+/>
+
+### `netlify_delete_site`
+
+Delete site
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyDeleteSiteParams"
+/>
+
+### `netlify_enable_site`
+
+Enable site
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyEnableSiteParams"
+/>
+
+### `netlify_disable_site`
+
+Disable site
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyDisableSiteParams"
+/>
+
+### `netlify_list_deploys`
+
+List deploys
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyListDeploysParams"
+/>
+
+### `netlify_get_deploy`
+
+Get deploy
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyGetDeployParams"
+/>
+
+### `netlify_create_deploy`
+
+Create deploy
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyCreateDeployParams"
+/>
+
+### `netlify_cancel_deploy`
+
+Cancel deploy
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyCancelDeployParams"
+/>
+
+### `netlify_restore_deploy`
+
+Restore deploy
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyRestoreDeployParams"
+/>
+
+### `netlify_lock_deploy`
+
+Lock deploy
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyLockDeployParams"
+/>
+
+### `netlify_unlock_deploy`
+
+Unlock deploy
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyUnlockDeployParams"
+/>
+
+### `netlify_list_builds`
+
+List builds
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyListBuildsParams"
+/>
+
+### `netlify_get_build`
+
+Get build
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyGetBuildParams"
+/>
+
+### `netlify_trigger_build`
+
+Trigger build
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyTriggerBuildParams"
+/>
+
+### `netlify_list_env_vars`
+
+List env vars
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyListEnvVarsParams"
+/>
+
+### `netlify_get_env_var`
+
+Get env var
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyGetEnvVarParams"
+/>
+
+### `netlify_create_env_vars`
+
+Create env vars
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyCreateEnvVarsParams"
+/>
+
+### `netlify_update_env_var`
+
+Update env var
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyUpdateEnvVarParams"
+/>
+
+### `netlify_delete_env_var`
+
+Delete env var
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyDeleteEnvVarParams"
+/>
+
+### `netlify_list_build_hooks`
+
+List build hooks
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyListBuildHooksParams"
+/>
+
+### `netlify_create_build_hook`
+
+Create build hook
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyCreateBuildHookParams"
+/>
+
+### `netlify_delete_build_hook`
+
+Delete build hook
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyDeleteBuildHookParams"
+/>
+
+### `netlify_list_forms`
+
+List forms
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyListFormsParams"
+/>
+
+### `netlify_list_form_submissions`
+
+List form submissions
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyListFormSubmissionsParams"
+/>
+
+### `netlify_list_dns_zones`
+
+List dns zones
+
+_No parameters._
+
+### `netlify_get_dns_records`
+
+Get dns records
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyGetDnsRecordsParams"
+/>
+
+### `netlify_create_dns_record`
+
+Create dns record
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyCreateDnsRecordParams"
+/>
+
+### `netlify_delete_dns_record`
+
+Delete dns record
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyDeleteDnsRecordParams"
+/>
+
+### `netlify_list_functions`
+
+List functions
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyListFunctionsParams"
+/>
+
+### `netlify_list_files`
+
+List files
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyListFilesParams"
+/>
+
+### `netlify_purge_cache`
+
+Purge cache
+
+<AutoTypeTable
+  path="generated/tool-params/netlify.ts"
+  name="NetlifyPurgeCacheParams"
+/>
 
 ## Notes
 
 - Category: Infrastructure
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

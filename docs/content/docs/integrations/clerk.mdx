@@ -1,11 +1,13 @@
 ---
-title: "Clerk"
-description: "Manage Clerk users, organizations, and authentication"
+title: "Clerk Integration"
+description: "Manage Clerk users, organizations, sessions, and authentication settings"
 ---
 
-The Clerk integration provides access to manage clerk users, organizations, and authentication through the Integrate MCP server.
+The Clerk integration provides access to manage Clerk users, organizations, sessions, and authentication settings through the Integrate MCP server.
 
 ## Installation
+
+The Clerk integration is included with the SDK:
 
 ```typescript
 import { clerkIntegration } from "integrate-sdk/server";
@@ -13,7 +15,7 @@ import { clerkIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Clerk to your server configuration. This integration can read credentials from environment variables automatically (`CLERK_SECRET_KEY`):
+Add Clerk to your server configuration. Provide credentials via environment variables or integration config:
 
 ```typescript
 import { createMCPServer, clerkIntegration } from "integrate-sdk/server";
@@ -21,7 +23,9 @@ import { createMCPServer, clerkIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    clerkIntegration(),
+    clerkIntegration({
+      // See configuration options below
+    }),
   ],
 });
 ```
@@ -31,12 +35,14 @@ export const { client: serverClient } = createMCPServer({
 ```typescript
 import { client } from "integrate-sdk";
 
-const result = await client.clerk.listUsers({
-  // Add the parameters required by this tool
-});
+const result = await client.clerk.listUsers({});
 
 console.log(result);
 ```
+
+## Environment Variables
+
+- `CLERK_API_KEY` (when supported by this integration)
 
 ## Configuration Options
 
@@ -45,29 +51,127 @@ console.log(result);
   name="ClerkIntegrationOptions"
 />
 
-## Environment Variables
 
-- `CLERK_SECRET_KEY`
+## Tools
 
-## Available Tools
+### `clerk_list_users`
 
-- `clerk_list_users`
-- `clerk_get_user`
-- `clerk_create_user`
-- `clerk_update_user`
-- `clerk_delete_user`
-- `clerk_list_organizations`
-- `clerk_get_organization`
-- `clerk_create_organization`
-- `clerk_update_organization`
-- `clerk_delete_organization`
-- `clerk_list_sessions`
-- `clerk_get_session`
-- `clerk_revoke_session`
+List users
+
+<AutoTypeTable
+  path="generated/tool-params/clerk.ts"
+  name="ClerkListUsersParams"
+/>
+
+### `clerk_get_user`
+
+Get user
+
+<AutoTypeTable
+  path="generated/tool-params/clerk.ts"
+  name="ClerkGetUserParams"
+/>
+
+### `clerk_create_user`
+
+Create user
+
+<AutoTypeTable
+  path="generated/tool-params/clerk.ts"
+  name="ClerkCreateUserParams"
+/>
+
+### `clerk_update_user`
+
+Update user
+
+<AutoTypeTable
+  path="generated/tool-params/clerk.ts"
+  name="ClerkUpdateUserParams"
+/>
+
+### `clerk_delete_user`
+
+Delete user
+
+<AutoTypeTable
+  path="generated/tool-params/clerk.ts"
+  name="ClerkDeleteUserParams"
+/>
+
+### `clerk_list_organizations`
+
+List organizations
+
+<AutoTypeTable
+  path="generated/tool-params/clerk.ts"
+  name="ClerkListOrganizationsParams"
+/>
+
+### `clerk_get_organization`
+
+Get organization
+
+<AutoTypeTable
+  path="generated/tool-params/clerk.ts"
+  name="ClerkGetOrganizationParams"
+/>
+
+### `clerk_create_organization`
+
+Create organization
+
+<AutoTypeTable
+  path="generated/tool-params/clerk.ts"
+  name="ClerkCreateOrganizationParams"
+/>
+
+### `clerk_update_organization`
+
+Update organization
+
+<AutoTypeTable
+  path="generated/tool-params/clerk.ts"
+  name="ClerkUpdateOrganizationParams"
+/>
+
+### `clerk_delete_organization`
+
+Delete organization
+
+<AutoTypeTable
+  path="generated/tool-params/clerk.ts"
+  name="ClerkDeleteOrganizationParams"
+/>
+
+### `clerk_list_sessions`
+
+List sessions
+
+<AutoTypeTable
+  path="generated/tool-params/clerk.ts"
+  name="ClerkListSessionsParams"
+/>
+
+### `clerk_get_session`
+
+Get session
+
+<AutoTypeTable
+  path="generated/tool-params/clerk.ts"
+  name="ClerkGetSessionParams"
+/>
+
+### `clerk_revoke_session`
+
+Revoke session
+
+<AutoTypeTable
+  path="generated/tool-params/clerk.ts"
+  name="ClerkRevokeSessionParams"
+/>
 
 ## Notes
 
-- Category: Infrastructure
+- Category: Identity & Access
 - Authentication mode: API key
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

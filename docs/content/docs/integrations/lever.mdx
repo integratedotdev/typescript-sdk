@@ -1,0 +1,149 @@
+---
+title: "Lever Integration"
+description: "Manage Lever list opportunities, get opportunity, create opportunity, list postings, list users"
+---
+
+The Lever integration provides access to manage Lever list opportunities, get opportunity, create opportunity, list postings, list users through the Integrate MCP server.
+
+## Installation
+
+The Lever integration is included with the SDK:
+
+```typescript
+import { leverIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Lever OAuth App
+
+1. Create an OAuth application for Lever
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Lever integration to your server configuration. The integration automatically reads `LEVER_CLIENT_ID` and `LEVER_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, leverIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    leverIntegration({
+      scopes: ["opportunities:read", "opportunities:write", "postings:read", "postings:write", "users:read", "offline_access"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+leverIntegration({
+  clientId: process.env.CUSTOM_LEVER_ID,
+  clientSecret: process.env.CUSTOM_LEVER_SECRET,
+      scopes: ["opportunities:read", "opportunities:write", "postings:read", "postings:write", "users:read", "offline_access"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("lever");
+const result = await client.lever.listOpportunities({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, leverIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [leverIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/lever.ts"
+  name="LeverIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `opportunities:read`
+- `opportunities:write`
+- `postings:read`
+- `postings:write`
+- `users:read`
+- `offline_access`
+
+## Tools
+
+### `lever_list_opportunities`
+
+List opportunities
+
+<AutoTypeTable
+  path="generated/tool-params/lever.ts"
+  name="LeverListOpportunitiesParams"
+/>
+
+### `lever_get_opportunity`
+
+Get opportunity
+
+<AutoTypeTable
+  path="generated/tool-params/lever.ts"
+  name="LeverGetOpportunityParams"
+/>
+
+### `lever_create_opportunity`
+
+Create opportunity
+
+<AutoTypeTable
+  path="generated/tool-params/lever.ts"
+  name="LeverCreateOpportunityParams"
+/>
+
+### `lever_list_postings`
+
+List postings
+
+<AutoTypeTable
+  path="generated/tool-params/lever.ts"
+  name="LeverListPostingsParams"
+/>
+
+### `lever_list_users`
+
+List users
+
+<AutoTypeTable
+  path="generated/tool-params/lever.ts"
+  name="LeverListUsersParams"
+/>
+
+### `lever_list_stages`
+
+List stages
+
+_No parameters._
+
+## Notes
+
+- Category: HR & Recruiting
+- Authentication mode: OAuth

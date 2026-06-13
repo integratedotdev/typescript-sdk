@@ -1,0 +1,143 @@
+---
+title: "Google Forms Integration"
+description: "Manage Google Forms forms, structure updates, and responses"
+---
+
+The Google Forms integration provides access to manage Google Forms forms, structure updates, and responses through the Integrate MCP server.
+
+## Installation
+
+The Google Forms integration is included with the SDK:
+
+```typescript
+import { googleFormsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Google Forms OAuth App
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Forms integration to your server configuration. The integration automatically reads `GOOGLE_FORMS_CLIENT_ID` and `GOOGLE_FORMS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, googleFormsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    googleFormsIntegration({
+      scopes: ["openid", "email", "https://www.googleapis.com/auth/forms.body", "https://www.googleapis.com/auth/forms.responses.readonly", "https://www.googleapis.com/auth/drive.readonly"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+googleFormsIntegration({
+  clientId: process.env.CUSTOM_GOOGLE_FORMS_ID,
+  clientSecret: process.env.CUSTOM_GOOGLE_FORMS_SECRET,
+      scopes: ["openid", "email", "https://www.googleapis.com/auth/forms.body", "https://www.googleapis.com/auth/forms.responses.readonly", "https://www.googleapis.com/auth/drive.readonly"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("google_forms");
+const result = await client.google_forms.createForm({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, googleFormsIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [googleFormsIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/google_forms.ts"
+  name="GoogleFormsIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `openid`
+- `email`
+- `https://www.googleapis.com/auth/forms.body`
+- `https://www.googleapis.com/auth/forms.responses.readonly`
+- `https://www.googleapis.com/auth/drive.readonly`
+
+## Tools
+
+### `google_forms_create_form`
+
+Forms create form
+
+<AutoTypeTable
+  path="generated/tool-params/google_forms.ts"
+  name="GoogleFormsCreateFormParams"
+/>
+
+### `google_forms_get_form`
+
+Forms get form
+
+<AutoTypeTable
+  path="generated/tool-params/google_forms.ts"
+  name="GoogleFormsGetFormParams"
+/>
+
+### `google_forms_batch_update_form`
+
+Forms batch update form
+
+<AutoTypeTable
+  path="generated/tool-params/google_forms.ts"
+  name="GoogleFormsBatchUpdateFormParams"
+/>
+
+### `google_forms_list_form_responses`
+
+Forms list form responses
+
+<AutoTypeTable
+  path="generated/tool-params/google_forms.ts"
+  name="GoogleFormsListFormResponsesParams"
+/>
+
+### `google_forms_get_form_response`
+
+Forms get form response
+
+<AutoTypeTable
+  path="generated/tool-params/google_forms.ts"
+  name="GoogleFormsGetFormResponseParams"
+/>
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth

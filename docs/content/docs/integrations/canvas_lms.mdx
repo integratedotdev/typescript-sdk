@@ -1,0 +1,151 @@
+---
+title: "Canvas LMS Integration"
+description: "Manage Canvas LMS list courses, get course, list assignments, create assignment, list submissions"
+---
+
+The Canvas LMS integration provides access to manage Canvas LMS list courses, get course, list assignments, create assignment, list submissions through the Integrate MCP server.
+
+## Installation
+
+The Canvas LMS integration is included with the SDK:
+
+```typescript
+import { canvasLmsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Canvas LMS OAuth App
+
+1. Create an OAuth application for Canvas LMS
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Canvas LMS integration to your server configuration. The integration automatically reads `CANVAS_LMS_CLIENT_ID` and `CANVAS_LMS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, canvasLmsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    canvasLmsIntegration({
+      scopes: ["url:GET|/api/v1/courses", "url:GET|/api/v1/users/:id/profile", "url:POST|/api/v1/courses/:course_id/assignments"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+canvasLmsIntegration({
+  clientId: process.env.CUSTOM_CANVAS_LMS_ID,
+  clientSecret: process.env.CUSTOM_CANVAS_LMS_SECRET,
+      scopes: ["url:GET|/api/v1/courses", "url:GET|/api/v1/users/:id/profile", "url:POST|/api/v1/courses/:course_id/assignments"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("canvas_lms");
+const result = await client.canvas_lms.listCourses({
+  canvas_domain: "value",
+});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, canvasLmsIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [canvasLmsIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/canvas_lms.ts"
+  name="CanvasLmsIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `url:GET|/api/v1/courses`
+- `url:GET|/api/v1/users/:id/profile`
+- `url:POST|/api/v1/courses/:course_id/assignments`
+
+## Tools
+
+### `canvas_lms_list_courses`
+
+Lms list courses
+
+<AutoTypeTable
+  path="generated/tool-params/canvas_lms.ts"
+  name="CanvasLmsListCoursesParams"
+/>
+
+### `canvas_lms_get_course`
+
+Lms get course
+
+<AutoTypeTable
+  path="generated/tool-params/canvas_lms.ts"
+  name="CanvasLmsGetCourseParams"
+/>
+
+### `canvas_lms_list_assignments`
+
+Lms list assignments
+
+<AutoTypeTable
+  path="generated/tool-params/canvas_lms.ts"
+  name="CanvasLmsListAssignmentsParams"
+/>
+
+### `canvas_lms_create_assignment`
+
+Lms create assignment
+
+<AutoTypeTable
+  path="generated/tool-params/canvas_lms.ts"
+  name="CanvasLmsCreateAssignmentParams"
+/>
+
+### `canvas_lms_list_submissions`
+
+Lms list submissions
+
+<AutoTypeTable
+  path="generated/tool-params/canvas_lms.ts"
+  name="CanvasLmsListSubmissionsParams"
+/>
+
+### `canvas_lms_list_users`
+
+Lms list users
+
+<AutoTypeTable
+  path="generated/tool-params/canvas_lms.ts"
+  name="CanvasLmsListUsersParams"
+/>
+
+## Notes
+
+- Category: Education
+- Authentication mode: OAuth

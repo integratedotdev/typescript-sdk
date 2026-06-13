@@ -1,0 +1,150 @@
+---
+title: "Etsy Integration"
+description: "Manage Etsy get me, get shop, list shop listings, create listing, list receipts"
+---
+
+The Etsy integration provides access to manage Etsy get me, get shop, list shop listings, create listing, list receipts through the Integrate MCP server.
+
+## Installation
+
+The Etsy integration is included with the SDK:
+
+```typescript
+import { etsyIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create an Etsy OAuth App
+
+1. Create an OAuth application for Etsy
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Etsy integration to your server configuration. The integration automatically reads `ETSY_CLIENT_ID` and `ETSY_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, etsyIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    etsyIntegration({
+      scopes: ["listings_r", "listings_w", "transactions_r", "transactions_w", "shops_r", "shops_w", "profile_r"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+etsyIntegration({
+  clientId: process.env.CUSTOM_ETSY_ID,
+  clientSecret: process.env.CUSTOM_ETSY_SECRET,
+      scopes: ["listings_r", "listings_w", "transactions_r", "transactions_w", "shops_r", "shops_w", "profile_r"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("etsy");
+const result = await client.etsy.getMe({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, etsyIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [etsyIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/etsy.ts"
+  name="EtsyIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `listings_r`
+- `listings_w`
+- `transactions_r`
+- `transactions_w`
+- `shops_r`
+- `shops_w`
+- `profile_r`
+
+## Tools
+
+### `etsy_get_me`
+
+Get me
+
+_No parameters._
+
+### `etsy_get_shop`
+
+Get shop
+
+<AutoTypeTable
+  path="generated/tool-params/etsy.ts"
+  name="EtsyGetShopParams"
+/>
+
+### `etsy_list_shop_listings`
+
+List shop listings
+
+<AutoTypeTable
+  path="generated/tool-params/etsy.ts"
+  name="EtsyListShopListingsParams"
+/>
+
+### `etsy_create_listing`
+
+Create listing
+
+<AutoTypeTable
+  path="generated/tool-params/etsy.ts"
+  name="EtsyCreateListingParams"
+/>
+
+### `etsy_list_receipts`
+
+List receipts
+
+<AutoTypeTable
+  path="generated/tool-params/etsy.ts"
+  name="EtsyListReceiptsParams"
+/>
+
+### `etsy_update_inventory`
+
+Update inventory
+
+<AutoTypeTable
+  path="generated/tool-params/etsy.ts"
+  name="EtsyUpdateInventoryParams"
+/>
+
+## Notes
+
+- Category: Commerce
+- Authentication mode: OAuth

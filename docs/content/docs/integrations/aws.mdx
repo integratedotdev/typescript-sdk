@@ -1,27 +1,31 @@
 ---
-title: "Amazon Web Services"
-description: "Inspect AWS accounts and resources with SigV4 (control-plane APIs)"
+title: "Amazon Web Services Integration"
+description: "Query AWS accounts and resources using SigV4 (control-plane read APIs: STS, EC2, S3, Lambda, CloudFormation, IAM)."
 ---
 
-The Amazon Web Services integration provides access to inspect aws accounts and resources with sigv4 (control-plane apis) through the Integrate MCP server.
+The Amazon Web Services integration provides access to query AWS accounts and resources using SigV4 (control-plane read APIs: STS, EC2, S3, Lambda, CloudFormation, IAM). through the Integrate MCP server.
 
 ## Installation
 
+The Amazon Web Services integration is included with the SDK:
+
 ```typescript
-import { encodeAwsCredentialsPayload } from "integrate-sdk/server";
+import { awsIntegration } from "integrate-sdk/server";
 ```
 
 ## Setup
 
-Add Amazon Web Services to your server configuration. This integration can read credentials from environment variables automatically (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, `AWS_REGION`, `AWS_DEFAULT_REGION`):
+Add Amazon Web Services to your server configuration. Provide credentials via environment variables or integration config:
 
 ```typescript
-import { createMCPServer, encodeAwsCredentialsPayload } from "integrate-sdk/server";
+import { createMCPServer, awsIntegration } from "integrate-sdk/server";
 
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    encodeAwsCredentialsPayload(),
+    awsIntegration({
+      // See configuration options below
+    }),
   ],
 });
 ```
@@ -31,12 +35,14 @@ export const { client: serverClient } = createMCPServer({
 ```typescript
 import { client } from "integrate-sdk";
 
-const result = await client.aws.stsGetCallerIdentity({
-  // Add the parameters required by this tool
-});
+const result = await client.aws.stsGetCallerIdentity({});
 
 console.log(result);
 ```
+
+## Environment Variables
+
+- `AWS_API_KEY` (when supported by this integration)
 
 ## Configuration Options
 
@@ -45,27 +51,64 @@ console.log(result);
   name="AwsIntegrationOptions"
 />
 
-## Environment Variables
 
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-- `AWS_SESSION_TOKEN`
-- `AWS_REGION`
-- `AWS_DEFAULT_REGION`
+## Tools
 
-## Available Tools
+### `aws_sts_get_caller_identity`
 
-- `aws_sts_get_caller_identity`
-- `aws_ec2_describe_regions`
-- `aws_ec2_describe_instances`
-- `aws_s3_list_buckets`
-- `aws_lambda_list_functions`
-- `aws_cloudformation_list_stacks`
-- `aws_iam_list_account_aliases`
+Sts get caller identity
+
+_No parameters._
+
+### `aws_ec2_describe_regions`
+
+Ec2 describe regions
+
+<AutoTypeTable
+  path="generated/tool-params/aws.ts"
+  name="AwsEc2DescribeRegionsParams"
+/>
+
+### `aws_ec2_describe_instances`
+
+Ec2 describe instances
+
+<AutoTypeTable
+  path="generated/tool-params/aws.ts"
+  name="AwsEc2DescribeInstancesParams"
+/>
+
+### `aws_s3_list_buckets`
+
+S3 list buckets
+
+_No parameters._
+
+### `aws_lambda_list_functions`
+
+Lambda list functions
+
+<AutoTypeTable
+  path="generated/tool-params/aws.ts"
+  name="AwsLambdaListFunctionsParams"
+/>
+
+### `aws_cloudformation_list_stacks`
+
+Cloudformation list stacks
+
+<AutoTypeTable
+  path="generated/tool-params/aws.ts"
+  name="AwsCloudformationListStacksParams"
+/>
+
+### `aws_iam_list_account_aliases`
+
+Iam list account aliases
+
+_No parameters._
 
 ## Notes
 
 - Category: Infrastructure
 - Authentication mode: API key
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

@@ -1,9 +1,9 @@
 ---
-title: "Cal.com"
-description: "Manage bookings, event types, and schedules"
+title: "Cal.com Integration"
+description: "Manage Cal.com bookings and schedules"
 ---
 
-The Cal.com integration provides access to Cal.com's API through the Integrate MCP server.
+The Cal.com integration provides access to manage Cal.com bookings and schedules through the Integrate MCP server.
 
 ## Installation
 
@@ -33,12 +33,6 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     calcomIntegration({
-      scopes: [
-        "read:bookings",
-        "write:bookings",
-        "read:event-types",
-        "read:schedules",
-      ], // Optional
     }),
   ],
 });
@@ -50,7 +44,6 @@ You can override the environment variables by passing explicit values:
 calcomIntegration({
   clientId: process.env.CUSTOM_CALCOM_ID,
   clientSecret: process.env.CUSTOM_CALCOM_SECRET,
-  scopes: ["read:bookings", "write:bookings"],
 });
 ```
 
@@ -62,7 +55,9 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("calcom");
-const bookings = await client.calcom.listBookings({});
+const result = await client.calcom.listBookings({});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -82,109 +77,466 @@ const customClient = createMCPClient({
   name="CalcomIntegrationConfig"
 />
 
-## Available Tools
 
-### Bookings
+## Tools
 
-- **`calcom_list_bookings`** - List all bookings
-- **`calcom_get_booking`** - Get a specific booking
-- **`calcom_create_booking`** - Create a new booking
-- **`calcom_cancel_booking`** - Cancel a booking
-- **`calcom_reschedule_booking`** - Reschedule an existing booking
+### `calcom_list_bookings`
 
-### Event Types
+List all bookings
 
-- **`calcom_list_event_types`** - List available event types
-- **`calcom_get_availability`** - Check availability for an event type
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomListBookingsParams"
+/>
 
-### Schedules
+### `calcom_get_booking`
 
-- **`calcom_list_schedules`** - List user schedules
+Get booking details
 
-### User
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomGetBookingParams"
+/>
 
-- **`calcom_get_me`** - Get current user information
+### `calcom_create_booking`
 
-## Examples
+Create a new booking
 
-### List Bookings
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomCreateBookingParams"
+/>
 
-```typescript
-const result = await client.calcom.listBookings({
-  status: "upcoming",
-});
+### `calcom_cancel_booking`
 
-console.log("Upcoming bookings:", result);
-```
+Cancel a booking
 
-### Create a Booking
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomCancelBookingParams"
+/>
 
-```typescript
-const result = await client.calcom.createBooking({
-  eventTypeId: 123456,
-  start: "2024-12-10T10:00:00Z",
-  responses: {
-    name: "John Doe",
-    email: "john@example.com",
-    notes: "Looking forward to the meeting",
-  },
-});
+### `calcom_reschedule_booking`
 
-console.log("Booking created:", result);
-```
+Reschedule a booking
 
-### Check Availability
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomRescheduleBookingParams"
+/>
 
-```typescript
-const result = await client.calcom.getAvailability({
-  eventTypeId: 123456,
-  dateFrom: "2024-12-10",
-  dateTo: "2024-12-17",
-});
+### `calcom_update_booking`
 
-console.log("Available slots:", result);
-```
+Update an existing booking
 
-## OAuth Scopes
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomUpdateBookingParams"
+/>
 
-The following scopes are supported. Enable them on your Cal.com OAuth app based on the tools you need:
+### `calcom_get_booking_recordings`
 
-- **`BOOKING_READ`** - View bookings
-- **`BOOKING_WRITE`** - Create, edit, and delete bookings
-- **`EVENT_TYPE_READ`** - View event types
-- **`EVENT_TYPE_WRITE`** - Create, edit, and delete event types
-- **`SCHEDULE_READ`** - View schedules
-- **`SCHEDULE_WRITE`** - Create, edit, and delete schedules
-- **`PROFILE_READ`** - View personal info
-- **`PROFILE_WRITE`** - Edit personal info
-- **`TEAM_PROFILE_READ`** - View teams
-- **`TEAM_PROFILE_WRITE`** - Create, edit, and delete teams
-- **`TEAM_EVENT_TYPE_READ`** - View team event types
-- **`TEAM_MEMBERSHIP_READ`** - View team memberships
-- **`TEAM_MEMBERSHIP_WRITE`** - Create, edit, and delete team memberships
+Get recordings for a booking
 
-## Error Handling
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomGetBookingRecordingsParams"
+/>
 
-```typescript
-try {
-  const result = await client.calcom.createBooking({
-    eventTypeId: 123456,
-    start: "2024-12-10T10:00:00Z",
-    responses: { name: "John Doe", email: "john@example.com" },
-  });
-} catch (error) {
-  if (error.message.includes("not available")) {
-    console.error("Time slot not available");
-  } else if (error.message.includes("authentication")) {
-    console.error("Authentication failed");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+### `calcom_get_booking_transcripts`
 
-## Next Steps
+Get transcripts for a booking
 
-- Explore the [Google Calendar Integration](/docs/integrations/gcal)
-- Explore the [Outlook Integration](/docs/integrations/outlook)
-- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomGetBookingTranscriptsParams"
+/>
+
+### `calcom_list_event_types`
+
+List event types
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomListEventTypesParams"
+/>
+
+### `calcom_get_event_type`
+
+Get a specific event type
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomGetEventTypeParams"
+/>
+
+### `calcom_create_event_type`
+
+Create a new event type
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomCreateEventTypeParams"
+/>
+
+### `calcom_update_event_type`
+
+Update an event type
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomUpdateEventTypeParams"
+/>
+
+### `calcom_delete_event_type`
+
+Delete an event type
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomDeleteEventTypeParams"
+/>
+
+### `calcom_list_team_event_types`
+
+List event types for a team
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomListTeamEventTypesParams"
+/>
+
+### `calcom_get_availability`
+
+Get availability slots
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomGetAvailabilityParams"
+/>
+
+### `calcom_get_availability_rule`
+
+Get an availability rule
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomGetAvailabilityRuleParams"
+/>
+
+### `calcom_create_availability_rule`
+
+Create an availability rule
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomCreateAvailabilityRuleParams"
+/>
+
+### `calcom_update_availability_rule`
+
+Update an availability rule
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomUpdateAvailabilityRuleParams"
+/>
+
+### `calcom_delete_availability_rule`
+
+Delete an availability rule
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomDeleteAvailabilityRuleParams"
+/>
+
+### `calcom_list_schedules`
+
+List schedules
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomListSchedulesParams"
+/>
+
+### `calcom_get_schedule`
+
+Get a specific schedule
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomGetScheduleParams"
+/>
+
+### `calcom_create_schedule`
+
+Create a new schedule
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomCreateScheduleParams"
+/>
+
+### `calcom_update_schedule`
+
+Update a schedule
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomUpdateScheduleParams"
+/>
+
+### `calcom_delete_schedule`
+
+Delete a schedule
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomDeleteScheduleParams"
+/>
+
+### `calcom_get_slots`
+
+Get available time slots
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomGetSlotsParams"
+/>
+
+### `calcom_list_attendees`
+
+List attendees
+
+_No parameters._
+
+### `calcom_get_attendee`
+
+Get a specific attendee
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomGetAttendeeParams"
+/>
+
+### `calcom_create_attendee`
+
+Create a new attendee
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomCreateAttendeeParams"
+/>
+
+### `calcom_update_attendee`
+
+Update an attendee
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomUpdateAttendeeParams"
+/>
+
+### `calcom_delete_attendee`
+
+Delete an attendee
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomDeleteAttendeeParams"
+/>
+
+### `calcom_list_teams`
+
+List teams
+
+_No parameters._
+
+### `calcom_get_team`
+
+Get a specific team
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomGetTeamParams"
+/>
+
+### `calcom_create_team`
+
+Create a new team
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomCreateTeamParams"
+/>
+
+### `calcom_update_team`
+
+Update a team
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomUpdateTeamParams"
+/>
+
+### `calcom_delete_team`
+
+Delete a team
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomDeleteTeamParams"
+/>
+
+### `calcom_list_memberships`
+
+List memberships
+
+_No parameters._
+
+### `calcom_get_membership`
+
+Get a specific membership
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomGetMembershipParams"
+/>
+
+### `calcom_create_membership`
+
+Create a membership
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomCreateMembershipParams"
+/>
+
+### `calcom_update_membership`
+
+Update a membership
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomUpdateMembershipParams"
+/>
+
+### `calcom_delete_membership`
+
+Delete a membership
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomDeleteMembershipParams"
+/>
+
+### `calcom_list_webhooks`
+
+List webhooks
+
+_No parameters._
+
+### `calcom_get_webhook`
+
+Get a specific webhook
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomGetWebhookParams"
+/>
+
+### `calcom_create_webhook`
+
+Create a webhook
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomCreateWebhookParams"
+/>
+
+### `calcom_update_webhook`
+
+Update a webhook
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomUpdateWebhookParams"
+/>
+
+### `calcom_delete_webhook`
+
+Delete a webhook
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomDeleteWebhookParams"
+/>
+
+### `calcom_list_payments`
+
+List payments
+
+_No parameters._
+
+### `calcom_get_payment`
+
+Get a specific payment
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomGetPaymentParams"
+/>
+
+### `calcom_list_users`
+
+List users
+
+_No parameters._
+
+### `calcom_get_user`
+
+Get a specific user
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomGetUserParams"
+/>
+
+### `calcom_create_user`
+
+Create a new user
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomCreateUserParams"
+/>
+
+### `calcom_update_user`
+
+Update a user
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomUpdateUserParams"
+/>
+
+### `calcom_delete_user`
+
+Delete a user
+
+<AutoTypeTable
+  path="generated/tool-params/calcom.ts"
+  name="CalcomDeleteUserParams"
+/>
+
+### `calcom_get_me`
+
+Get current user info
+
+_No parameters._
+
+## Notes
+
+- Category: Scheduling
+- Authentication mode: OAuth

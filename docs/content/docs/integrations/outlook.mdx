@@ -1,9 +1,9 @@
 ---
-title: "Outlook"
-description: "Manage emails, calendar, and contacts"
+title: "Outlook Integration"
+description: "Manage Outlook mail, calendars, and contacts"
 ---
 
-The Outlook integration provides access to Microsoft Outlook's API through the Integrate MCP server.
+The Outlook integration provides access to manage Outlook mail, calendars, and contacts through the Integrate MCP server.
 
 ## Installation
 
@@ -15,13 +15,12 @@ import { outlookIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-### 1. Create a Microsoft App Registration
+### 1. Create an Outlook OAuth App
 
-1. Go to [Azure Portal - App Registrations](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps)
-2. Create a new registration
-3. Configure redirect URIs
-4. Create a client secret
-5. Note your Application (client) ID and Client Secret
+1. Go to [Azure Portal — App Registrations](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
 
 ### 2. Configure the Integration on Your Server
 
@@ -34,12 +33,6 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     outlookIntegration({
-      scopes: [
-        "Mail.Read",
-        "Mail.Send",
-        "Calendars.ReadWrite",
-        "Contacts.Read",
-      ], // Optional
     }),
   ],
 });
@@ -51,7 +44,6 @@ You can override the environment variables by passing explicit values:
 outlookIntegration({
   clientId: process.env.CUSTOM_OUTLOOK_ID,
   clientSecret: process.env.CUSTOM_OUTLOOK_SECRET,
-  scopes: ["Mail.Read", "Mail.Send"],
 });
 ```
 
@@ -63,7 +55,9 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("outlook");
-const messages = await client.outlook.listMessages({});
+const result = await client.outlook.listMessages({});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -83,113 +77,232 @@ const customClient = createMCPClient({
   name="OutlookIntegrationConfig"
 />
 
-## Available Tools
 
-### Email
+## Tools
 
-- **`outlook_list_messages`** - List email messages
-- **`outlook_get_message`** - Get a specific message
-- **`outlook_send_message`** - Send an email
-- **`outlook_search`** - Search messages and events
+### `outlook_accept_event`
 
-### Calendar
+Accept a calendar event invitation
 
-- **`outlook_list_events`** - List calendar events
-- **`outlook_get_event`** - Get a specific event
-- **`outlook_create_event`** - Create a new event
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookAcceptEventParams"
+/>
 
-### Contacts
+### `outlook_create_draft`
 
-- **`outlook_list_contacts`** - List contacts
-- **`outlook_get_contact`** - Get a specific contact
+Create a draft message (not sent)
 
-## Examples
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookCreateDraftParams"
+/>
 
-### Send an Email
+### `outlook_create_event`
 
-```typescript
-const result = await client.outlook.sendMessage({
-  subject: "Meeting Follow-up",
-  body: {
-    contentType: "HTML",
-    content: "<p>Thanks for the great discussion today!</p>",
-  },
-  toRecipients: [{ emailAddress: { address: "colleague@example.com" } }],
-});
+Create a new calendar event
 
-console.log("Email sent:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookCreateEventParams"
+/>
 
-### List Messages
+### `outlook_decline_event`
 
-```typescript
-const result = await client.outlook.listMessages({
-  filter: "isRead eq false",
-  top: 10,
-  orderby: "receivedDateTime desc",
-});
+Decline a calendar event invitation
 
-console.log("Unread messages:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookDeclineEventParams"
+/>
 
-### Create Calendar Event
+### `outlook_delete_event`
 
-```typescript
-const result = await client.outlook.createEvent({
-  subject: "Team Standup",
-  start: {
-    dateTime: "2024-12-10T09:00:00",
-    timeZone: "Pacific Standard Time",
-  },
-  end: {
-    dateTime: "2024-12-10T09:30:00",
-    timeZone: "Pacific Standard Time",
-  },
-  attendees: [
-    {
-      emailAddress: { address: "team@example.com" },
-      type: "required",
-    },
-  ],
-});
+Delete a calendar event
 
-console.log("Event created:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookDeleteEventParams"
+/>
 
-## OAuth Scopes
+### `outlook_delete_message`
 
-The default scopes are `['Mail.Read', 'Mail.Send', 'Calendars.ReadWrite', 'Contacts.Read']`. You may need different scopes:
+Delete a message permanently
 
-- **`Mail.Read`** - Read user mail
-- **`Mail.Send`** - Send mail as user
-- **`Mail.ReadWrite`** - Read and write user mail
-- **`Calendars.Read`** - Read user calendars
-- **`Calendars.ReadWrite`** - Read and write user calendars
-- **`Contacts.Read`** - Read user contacts
-- **`Contacts.ReadWrite`** - Read and write user contacts
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookDeleteMessageParams"
+/>
 
-## Error Handling
+### `outlook_find_meeting_times`
 
-```typescript
-try {
-  const result = await client.outlook.sendMessage({
-    subject: "Test",
-    body: { content: "Test message" },
-    toRecipients: [{ emailAddress: { address: "test@example.com" } }],
-  });
-} catch (error) {
-  if (error.message.includes("invalid recipient")) {
-    console.error("Invalid email address");
-  } else if (error.message.includes("authentication")) {
-    console.error("Authentication failed");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+Find available meeting times for a set of attendees
 
-## Next Steps
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookFindMeetingTimesParams"
+/>
 
-- Explore the [Gmail Integration](/docs/integrations/gmail)
-- Explore the [Google Calendar Integration](/docs/integrations/gcal)
-- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
+### `outlook_forward_message`
+
+Forward a message to one or more recipients
+
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookForwardMessageParams"
+/>
+
+### `outlook_get_contact`
+
+Get a specific contact by ID
+
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookGetContactParams"
+/>
+
+### `outlook_get_event`
+
+Get a specific calendar event by ID
+
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookGetEventParams"
+/>
+
+### `outlook_get_message`
+
+Get a specific message by ID
+
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookGetMessageParams"
+/>
+
+### `outlook_get_schedule`
+
+Get free/busy schedule for a set of users or resources
+
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookGetScheduleParams"
+/>
+
+### `outlook_list_calendars`
+
+List all calendars for the authenticated user
+
+_No parameters._
+
+### `outlook_list_contacts`
+
+List contacts in the address book
+
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookListContactsParams"
+/>
+
+### `outlook_list_events`
+
+List calendar events
+
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookListEventsParams"
+/>
+
+### `outlook_list_mail_folders`
+
+List mail folders in the mailbox
+
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookListMailFoldersParams"
+/>
+
+### `outlook_list_messages`
+
+List messages in the mailbox
+
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookListMessagesParams"
+/>
+
+### `outlook_mark_message_read`
+
+Mark a message as read or unread
+
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookMarkMessageReadParams"
+/>
+
+### `outlook_move_message`
+
+Move a message to another folder
+
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookMoveMessageParams"
+/>
+
+### `outlook_reply_all_message`
+
+Reply all to a message
+
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookReplyAllMessageParams"
+/>
+
+### `outlook_reply_message`
+
+Reply to a message
+
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookReplyMessageParams"
+/>
+
+### `outlook_search_messages`
+
+Search messages by keyword query
+
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookSearchMessagesParams"
+/>
+
+### `outlook_send_message`
+
+Send a new email message
+
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookSendMessageParams"
+/>
+
+### `outlook_tentatively_accept_event`
+
+Tentatively accept a calendar event invitation
+
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookTentativelyAcceptEventParams"
+/>
+
+### `outlook_update_event`
+
+Update an existing calendar event
+
+<AutoTypeTable
+  path="generated/tool-params/outlook.ts"
+  name="OutlookUpdateEventParams"
+/>
+
+## Notes
+
+- Category: Communication
+- Authentication mode: OAuth

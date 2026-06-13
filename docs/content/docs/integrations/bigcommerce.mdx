@@ -1,0 +1,152 @@
+---
+title: "BigCommerce Integration"
+description: "Manage BigCommerce list products, get product, create product, list orders, get order"
+---
+
+The BigCommerce integration provides access to manage BigCommerce list products, get product, create product, list orders, get order through the Integrate MCP server.
+
+## Installation
+
+The BigCommerce integration is included with the SDK:
+
+```typescript
+import { bigcommerceIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a BigCommerce OAuth App
+
+1. Create an OAuth application for BigCommerce
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the BigCommerce integration to your server configuration. The integration automatically reads `BIGCOMMERCE_CLIENT_ID` and `BIGCOMMERCE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, bigcommerceIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    bigcommerceIntegration({
+      scopes: ["store_v2_products", "store_v2_orders", "store_v2_customers", "store_v2_information"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+bigcommerceIntegration({
+  clientId: process.env.CUSTOM_BIGCOMMERCE_ID,
+  clientSecret: process.env.CUSTOM_BIGCOMMERCE_SECRET,
+      scopes: ["store_v2_products", "store_v2_orders", "store_v2_customers", "store_v2_information"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("bigcommerce");
+const result = await client.bigcommerce.listProducts({
+  store_hash: "value",
+});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, bigcommerceIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [bigcommerceIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/bigcommerce.ts"
+  name="BigcommerceIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `store_v2_products`
+- `store_v2_orders`
+- `store_v2_customers`
+- `store_v2_information`
+
+## Tools
+
+### `bigcommerce_list_products`
+
+List products
+
+<AutoTypeTable
+  path="generated/tool-params/bigcommerce.ts"
+  name="BigcommerceListProductsParams"
+/>
+
+### `bigcommerce_get_product`
+
+Get product
+
+<AutoTypeTable
+  path="generated/tool-params/bigcommerce.ts"
+  name="BigcommerceGetProductParams"
+/>
+
+### `bigcommerce_create_product`
+
+Create product
+
+<AutoTypeTable
+  path="generated/tool-params/bigcommerce.ts"
+  name="BigcommerceCreateProductParams"
+/>
+
+### `bigcommerce_list_orders`
+
+List orders
+
+<AutoTypeTable
+  path="generated/tool-params/bigcommerce.ts"
+  name="BigcommerceListOrdersParams"
+/>
+
+### `bigcommerce_get_order`
+
+Get order
+
+<AutoTypeTable
+  path="generated/tool-params/bigcommerce.ts"
+  name="BigcommerceGetOrderParams"
+/>
+
+### `bigcommerce_list_customers`
+
+List customers
+
+<AutoTypeTable
+  path="generated/tool-params/bigcommerce.ts"
+  name="BigcommerceListCustomersParams"
+/>
+
+## Notes
+
+- Category: Commerce
+- Authentication mode: OAuth

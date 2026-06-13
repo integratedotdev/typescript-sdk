@@ -1,0 +1,135 @@
+---
+title: "Philips Hue Integration"
+description: "Manage Philips Hue list bridges, list lights, get light, update light, list rooms"
+---
+
+The Philips Hue integration provides access to manage Philips Hue list bridges, list lights, get light, update light, list rooms through the Integrate MCP server.
+
+## Installation
+
+The Philips Hue integration is included with the SDK:
+
+```typescript
+import { philipsHueIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Philips Hue OAuth App
+
+1. Create an OAuth application for Philips Hue
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Philips Hue integration to your server configuration. The integration automatically reads `PHILIPS_HUE_CLIENT_ID` and `PHILIPS_HUE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, philipsHueIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    philipsHueIntegration({
+      scopes: ["remote_control:all"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+philipsHueIntegration({
+  clientId: process.env.CUSTOM_PHILIPS_HUE_ID,
+  clientSecret: process.env.CUSTOM_PHILIPS_HUE_SECRET,
+      scopes: ["remote_control:all"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("philips_hue");
+const result = await client.philips_hue.listBridges({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, philipsHueIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [philipsHueIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/philips_hue.ts"
+  name="PhilipsHueIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `remote_control:all`
+
+## Tools
+
+### `philips_hue_list_bridges`
+
+Hue list bridges
+
+_No parameters._
+
+### `philips_hue_list_lights`
+
+Hue list lights
+
+_No parameters._
+
+### `philips_hue_get_light`
+
+Hue get light
+
+<AutoTypeTable
+  path="generated/tool-params/philips_hue.ts"
+  name="PhilipsHueGetLightParams"
+/>
+
+### `philips_hue_update_light`
+
+Hue update light
+
+<AutoTypeTable
+  path="generated/tool-params/philips_hue.ts"
+  name="PhilipsHueUpdateLightParams"
+/>
+
+### `philips_hue_list_rooms`
+
+Hue list rooms
+
+_No parameters._
+
+### `philips_hue_list_scenes`
+
+Hue list scenes
+
+_No parameters._
+
+## Notes
+
+- Category: Lifestyle
+- Authentication mode: OAuth

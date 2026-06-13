@@ -1,11 +1,13 @@
 ---
-title: "Auth0"
+title: "Auth0 Integration"
 description: "Manage Auth0 users, applications, and tenant configuration"
 ---
 
-The Auth0 integration provides access to manage auth0 users, applications, and tenant configuration through the Integrate MCP server.
+The Auth0 integration provides access to manage Auth0 users, applications, and tenant configuration through the Integrate MCP server.
 
 ## Installation
+
+The Auth0 integration is included with the SDK:
 
 ```typescript
 import { auth0Integration } from "integrate-sdk/server";
@@ -13,7 +15,7 @@ import { auth0Integration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Auth0 to your server configuration. This integration can read credentials from environment variables automatically (`AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`, `AUTH0_ACCESS_TOKEN`):
+Add Auth0 to your server configuration. Provide credentials via environment variables or integration config:
 
 ```typescript
 import { createMCPServer, auth0Integration } from "integrate-sdk/server";
@@ -21,7 +23,9 @@ import { createMCPServer, auth0Integration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    auth0Integration(),
+    auth0Integration({
+      // See configuration options below
+    }),
   ],
 });
 ```
@@ -31,12 +35,14 @@ export const { client: serverClient } = createMCPServer({
 ```typescript
 import { client } from "integrate-sdk";
 
-const result = await client.auth0.listUsers({
-  // Add the parameters required by this tool
-});
+const result = await client.auth0.listUsers({});
 
 console.log(result);
 ```
+
+## Environment Variables
+
+- `AUTH0_API_KEY` (when supported by this integration)
 
 ## Configuration Options
 
@@ -45,29 +51,109 @@ console.log(result);
   name="Auth0IntegrationOptions"
 />
 
-## Environment Variables
 
-- `AUTH0_CLIENT_ID`
-- `AUTH0_CLIENT_SECRET`
-- `AUTH0_ACCESS_TOKEN`
+## Tools
 
-## Available Tools
+### `auth0_list_users`
 
-- `auth0_list_users`
-- `auth0_get_user`
-- `auth0_create_user`
-- `auth0_patch_user`
-- `auth0_delete_user`
-- `auth0_list_connections`
-- `auth0_get_connection`
-- `auth0_list_clients`
-- `auth0_get_client`
-- `auth0_create_client`
-- `auth0_patch_client`
+List users
+
+<AutoTypeTable
+  path="generated/tool-params/auth0.ts"
+  name="Auth0ListUsersParams"
+/>
+
+### `auth0_get_user`
+
+Get user
+
+<AutoTypeTable
+  path="generated/tool-params/auth0.ts"
+  name="Auth0GetUserParams"
+/>
+
+### `auth0_create_user`
+
+Create user
+
+<AutoTypeTable
+  path="generated/tool-params/auth0.ts"
+  name="Auth0CreateUserParams"
+/>
+
+### `auth0_patch_user`
+
+Patch user
+
+<AutoTypeTable
+  path="generated/tool-params/auth0.ts"
+  name="Auth0PatchUserParams"
+/>
+
+### `auth0_delete_user`
+
+Delete user
+
+<AutoTypeTable
+  path="generated/tool-params/auth0.ts"
+  name="Auth0DeleteUserParams"
+/>
+
+### `auth0_list_connections`
+
+List connections
+
+<AutoTypeTable
+  path="generated/tool-params/auth0.ts"
+  name="Auth0ListConnectionsParams"
+/>
+
+### `auth0_get_connection`
+
+Get connection
+
+<AutoTypeTable
+  path="generated/tool-params/auth0.ts"
+  name="Auth0GetConnectionParams"
+/>
+
+### `auth0_list_clients`
+
+List clients
+
+<AutoTypeTable
+  path="generated/tool-params/auth0.ts"
+  name="Auth0ListClientsParams"
+/>
+
+### `auth0_get_client`
+
+Get client
+
+<AutoTypeTable
+  path="generated/tool-params/auth0.ts"
+  name="Auth0GetClientParams"
+/>
+
+### `auth0_create_client`
+
+Create client
+
+<AutoTypeTable
+  path="generated/tool-params/auth0.ts"
+  name="Auth0CreateClientParams"
+/>
+
+### `auth0_patch_client`
+
+Patch client
+
+<AutoTypeTable
+  path="generated/tool-params/auth0.ts"
+  name="Auth0PatchClientParams"
+/>
 
 ## Notes
 
-- Category: Infrastructure
+- Category: Identity & Access
 - Authentication mode: API key
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

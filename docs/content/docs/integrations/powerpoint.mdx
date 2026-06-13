@@ -1,9 +1,9 @@
 ---
-title: "PowerPoint"
-description: "Manage Microsoft PowerPoint presentations stored in OneDrive"
+title: "PowerPoint Integration"
+description: "Manage PowerPoint presentations and sharing"
 ---
 
-The PowerPoint integration provides access to PowerPoint presentations (.pptx) stored in OneDrive through the Integrate MCP server. It uses the Microsoft Graph API for file-level operations — the Graph API does not expose a slide-level editing API for PowerPoint.
+The PowerPoint integration provides access to manage PowerPoint presentations and sharing through the Integrate MCP server.
 
 ## Installation
 
@@ -15,17 +15,16 @@ import { powerpointIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-### 1. Create a Microsoft App Registration
+### 1. Create a PowerPoint OAuth App
 
 1. Go to [Azure Portal — App Registrations](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps)
-2. Create a new registration
-3. Add your redirect URI under **Authentication** (e.g. `https://yourdomain.com/api/integrate/oauth/callback`)
-4. Create a client secret under **Certificates & secrets**
-5. Note your Application (client) ID and Client Secret
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
 
 ### 2. Configure the Integration on Your Server
 
-The integration automatically reads `POWERPOINT_CLIENT_ID` and `POWERPOINT_CLIENT_SECRET` from your environment:
+Add the PowerPoint integration to your server configuration. The integration automatically reads `POWERPOINT_CLIENT_ID` and `POWERPOINT_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, powerpointIntegration } from "integrate-sdk/server";
@@ -33,7 +32,8 @@ import { createMCPServer, powerpointIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    powerpointIntegration(),
+    powerpointIntegration({
+    }),
   ],
 });
 ```
@@ -49,14 +49,18 @@ powerpointIntegration({
 
 ### 3. Client-Side Usage
 
+The default client automatically includes all integrations. You can use it directly:
+
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("powerpoint");
-const presentations = await client.powerpoint.list({});
+const result = await client.powerpoint.list({});
+
+console.log(result);
 ```
 
-For a custom client:
+If you're using a custom client, add the integration to the integrations array:
 
 ```typescript
 import { createMCPClient, powerpointIntegration } from "integrate-sdk";
@@ -73,80 +77,73 @@ const customClient = createMCPClient({
   name="PowerPointIntegrationConfig"
 />
 
-## Available Tools
 
-- **`powerpoint_list`** - Search for PowerPoint presentations
-- **`powerpoint_get`** - Get metadata for a presentation by item ID
-- **`powerpoint_create`** - Create a new empty .pptx file in OneDrive
-- **`powerpoint_copy`** - Copy a presentation (async for large files)
-- **`powerpoint_delete`** - Permanently delete a presentation
-- **`powerpoint_share`** - Create a sharing link
+## Tools
 
-## Examples
+### `powerpoint_copy`
 
-### Search for Presentations
+Copy a presentation
 
-```typescript
-const result = await client.powerpoint.list({ query: "quarterly review" });
-```
+<AutoTypeTable
+  path="generated/tool-params/powerpoint.ts"
+  name="PowerpointCopyParams"
+/>
 
-### Create a Presentation
+### `powerpoint_create`
 
-```typescript
-const ppt = await client.powerpoint.create({
-  name: "Q4 Investor Deck",  // .pptx appended automatically
-  parent_id: "folderId123",  // optional, defaults to root
-});
-```
+Create a new empty .pptx file in OneDrive
 
-### Copy a Presentation
+<AutoTypeTable
+  path="generated/tool-params/powerpoint.ts"
+  name="PowerpointCreateParams"
+/>
 
-```typescript
-const result = await client.powerpoint.copy({
-  item_id: "ABC123",
-  name: "Q4 Investor Deck — Draft",
-  parent_id: "draftsFolderId",
-});
+### `powerpoint_delete`
 
-// Large files return a pending status — poll monitor_url to confirm
-if (result.status === "pending") {
-  console.log("Copy in progress:", result.monitor_url);
-}
-```
+Delete a presentation permanently
 
-### Create a Sharing Link
+<AutoTypeTable
+  path="generated/tool-params/powerpoint.ts"
+  name="PowerpointDeleteParams"
+/>
 
-```typescript
-const link = await client.powerpoint.share({
-  item_id: "ABC123",
-  type: "view",
-  scope: "anonymous",
-});
-```
+### `powerpoint_get`
 
-## OAuth Scopes
+Get metadata for a presentation
 
-The default scope is `Files.ReadWrite.All`. Available scopes:
+<AutoTypeTable
+  path="generated/tool-params/powerpoint.ts"
+  name="PowerpointGetParams"
+/>
 
-- **`Files.ReadWrite.All`** - Read and write all files the user can access
-- **`Files.Read.All`** - Read-only access
+### `powerpoint_list`
 
-## Error Handling
+Search for PowerPoint presentations
 
-```typescript
-try {
-  const ppt = await client.powerpoint.get({ item_id: "ABC123" });
-} catch (error) {
-  if (error.message.includes("404")) {
-    console.error("Presentation not found");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+<AutoTypeTable
+  path="generated/tool-params/powerpoint.ts"
+  name="PowerpointListParams"
+/>
 
-## Next Steps
+### `powerpoint_share`
 
-- Manage Word documents with the [Word Integration](/docs/integrations/word)
-- Manage Excel workbooks with the [Excel Integration](/docs/integrations/excel)
-- Manage files and folders with the [OneDrive Integration](/docs/integrations/onedrive)
+Create a sharing link for a presentation
+
+<AutoTypeTable
+  path="generated/tool-params/powerpoint.ts"
+  name="PowerpointShareParams"
+/>
+
+### `powerpoint_update_content`
+
+Update content
+
+<AutoTypeTable
+  path="generated/tool-params/powerpoint.ts"
+  name="PowerpointUpdateContentParams"
+/>
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth

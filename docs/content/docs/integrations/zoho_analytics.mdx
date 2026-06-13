@@ -1,0 +1,145 @@
+---
+title: "Zoho Analytics Integration"
+description: "Manage Zoho Analytics workspaces, views, imports, exports, and query APIs"
+---
+
+The Zoho Analytics integration provides access to manage Zoho Analytics workspaces, views, imports, exports, and query APIs through the Integrate MCP server.
+
+## Installation
+
+The Zoho Analytics integration is included with the SDK:
+
+```typescript
+import { zohoAnalyticsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Zoho Analytics OAuth App
+
+1. Go to [Zoho API Console](https://api-console.zoho.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Zoho Analytics integration to your server configuration. The integration automatically reads `ZOHO_ANALYTICS_CLIENT_ID` and `ZOHO_ANALYTICS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, zohoAnalyticsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    zohoAnalyticsIntegration({
+      scopes: ["ZohoAnalytics.fullaccess.all"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+zohoAnalyticsIntegration({
+  clientId: process.env.CUSTOM_ZOHO_ANALYTICS_ID,
+  clientSecret: process.env.CUSTOM_ZOHO_ANALYTICS_SECRET,
+      scopes: ["ZohoAnalytics.fullaccess.all"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("zoho_analytics");
+const result = await client.zoho_analytics.listWorkspaces({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, zohoAnalyticsIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [zohoAnalyticsIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/zoho_analytics.ts"
+  name="ZohoAnalyticsIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `ZohoAnalytics.fullaccess.all`
+
+## Tools
+
+### `zoho_analytics_list_workspaces`
+
+Analytics list workspaces
+
+_No parameters._
+
+### `zoho_analytics_get_workspace`
+
+Analytics get workspace
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_analytics.ts"
+  name="ZohoAnalyticsGetWorkspaceParams"
+/>
+
+### `zoho_analytics_list_views`
+
+Analytics list views
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_analytics.ts"
+  name="ZohoAnalyticsListViewsParams"
+/>
+
+### `zoho_analytics_export_view`
+
+Analytics export view
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_analytics.ts"
+  name="ZohoAnalyticsExportViewParams"
+/>
+
+### `zoho_analytics_import_data`
+
+Analytics import data
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_analytics.ts"
+  name="ZohoAnalyticsImportDataParams"
+/>
+
+### `zoho_analytics_query`
+
+Analytics query
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_analytics.ts"
+  name="ZohoAnalyticsQueryParams"
+/>
+
+## Notes
+
+- Category: Analytics
+- Authentication mode: OAuth

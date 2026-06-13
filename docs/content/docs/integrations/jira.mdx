@@ -1,11 +1,13 @@
 ---
-title: "Jira"
+title: "Jira Integration"
 description: "Manage Jira issues, projects, sprints, and boards"
 ---
 
-The Jira integration provides access to manage jira issues, projects, sprints, and boards through the Integrate MCP server.
+The Jira integration provides access to manage Jira issues, projects, sprints, and boards through the Integrate MCP server.
 
 ## Installation
+
+The Jira integration is included with the SDK:
 
 ```typescript
 import { jiraIntegration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { jiraIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Jira to your server configuration. The integration automatically reads OAuth credentials from your environment (`JIRA_CLIENT_ID`, `JIRA_CLIENT_SECRET`):
+### 1. Create a Jira OAuth App
+
+1. Go to [Auth Developer Portal](https://auth.atlassian.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Jira integration to your server configuration. The integration automatically reads `JIRA_CLIENT_ID` and `JIRA_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, jiraIntegration } from "integrate-sdk/server";
@@ -21,22 +32,44 @@ import { createMCPServer, jiraIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    jiraIntegration(),
+    jiraIntegration({
+      scopes: ["read:jira-work", "write:jira-work", "read:account", "offline_access"], // Optional
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+jiraIntegration({
+  clientId: process.env.CUSTOM_JIRA_ID,
+  clientSecret: process.env.CUSTOM_JIRA_SECRET,
+      scopes: ["read:jira-work", "write:jira-work", "read:account", "offline_access"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("jira");
-const result = await client.jira.listProjects({
-  // Add the parameters required by this tool
-});
+const result = await client.jira.listProjects({});
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, jiraIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [jiraIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,30 +79,136 @@ console.log(result);
   name="JiraIntegrationConfig"
 />
 
-## Environment Variables
 
-- `JIRA_CLIENT_ID`
-- `JIRA_CLIENT_SECRET`
+## Default Scopes
 
-## Available Tools
+These defaults are applied unless you override `scopes` in the integration config:
 
-- `jira_list_projects`
-- `jira_get_project`
-- `jira_get_issue_types`
-- `jira_search_issues`
-- `jira_get_issue`
-- `jira_create_issue`
-- `jira_update_issue`
-- `jira_get_transitions`
-- `jira_transition_issue`
-- `jira_add_comment`
-- `jira_assign_issue`
-- `jira_list_boards`
-- `jira_list_sprints`
+- `read:jira-work`
+- `write:jira-work`
+- `read:account`
+- `offline_access`
+
+## Tools
+
+### `jira_list_projects`
+
+List projects
+
+<AutoTypeTable
+  path="generated/tool-params/jira.ts"
+  name="JiraListProjectsParams"
+/>
+
+### `jira_get_project`
+
+Get project
+
+<AutoTypeTable
+  path="generated/tool-params/jira.ts"
+  name="JiraGetProjectParams"
+/>
+
+### `jira_get_issue_types`
+
+Get issue types
+
+<AutoTypeTable
+  path="generated/tool-params/jira.ts"
+  name="JiraGetIssueTypesParams"
+/>
+
+### `jira_search_issues`
+
+Search issues
+
+<AutoTypeTable
+  path="generated/tool-params/jira.ts"
+  name="JiraSearchIssuesParams"
+/>
+
+### `jira_get_issue`
+
+Get issue
+
+<AutoTypeTable
+  path="generated/tool-params/jira.ts"
+  name="JiraGetIssueParams"
+/>
+
+### `jira_create_issue`
+
+Create issue
+
+<AutoTypeTable
+  path="generated/tool-params/jira.ts"
+  name="JiraCreateIssueParams"
+/>
+
+### `jira_update_issue`
+
+Update issue
+
+<AutoTypeTable
+  path="generated/tool-params/jira.ts"
+  name="JiraUpdateIssueParams"
+/>
+
+### `jira_get_transitions`
+
+Get transitions
+
+<AutoTypeTable
+  path="generated/tool-params/jira.ts"
+  name="JiraGetTransitionsParams"
+/>
+
+### `jira_transition_issue`
+
+Transition issue
+
+<AutoTypeTable
+  path="generated/tool-params/jira.ts"
+  name="JiraTransitionIssueParams"
+/>
+
+### `jira_add_comment`
+
+Add comment
+
+<AutoTypeTable
+  path="generated/tool-params/jira.ts"
+  name="JiraAddCommentParams"
+/>
+
+### `jira_assign_issue`
+
+Assign issue
+
+<AutoTypeTable
+  path="generated/tool-params/jira.ts"
+  name="JiraAssignIssueParams"
+/>
+
+### `jira_list_boards`
+
+List boards
+
+<AutoTypeTable
+  path="generated/tool-params/jira.ts"
+  name="JiraListBoardsParams"
+/>
+
+### `jira_list_sprints`
+
+List sprints
+
+<AutoTypeTable
+  path="generated/tool-params/jira.ts"
+  name="JiraListSprintsParams"
+/>
 
 ## Notes
 
 - Category: Engineering
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

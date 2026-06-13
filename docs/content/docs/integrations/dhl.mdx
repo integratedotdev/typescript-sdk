@@ -1,0 +1,139 @@
+---
+title: "DHL Integration"
+description: "Manage DHL track shipment, create shipment, get label, delete shipment, validate address"
+---
+
+The DHL integration provides access to manage DHL track shipment, create shipment, get label, delete shipment, validate address through the Integrate MCP server.
+
+## Installation
+
+The DHL integration is included with the SDK:
+
+```typescript
+import { dhlIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a DHL OAuth App
+
+1. Create an OAuth application for DHL
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the DHL integration to your server configuration. The integration automatically reads `DHL_CLIENT_ID` and `DHL_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, dhlIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    dhlIntegration({
+      scopes: ["shipping", "tracking"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+dhlIntegration({
+  clientId: process.env.CUSTOM_DHL_ID,
+  clientSecret: process.env.CUSTOM_DHL_SECRET,
+      scopes: ["shipping", "tracking"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("dhl");
+const result = await client.dhl.trackShipment({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, dhlIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [dhlIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/dhl.ts"
+  name="DhlIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `shipping`
+- `tracking`
+
+## Tools
+
+### `dhl_track_shipment`
+
+Track shipment
+
+<AutoTypeTable
+  path="generated/tool-params/dhl.ts"
+  name="DhlTrackShipmentParams"
+/>
+
+### `dhl_create_shipment`
+
+Create shipment
+
+<AutoTypeTable
+  path="generated/tool-params/dhl.ts"
+  name="DhlCreateShipmentParams"
+/>
+
+### `dhl_get_label`
+
+Get label
+
+<AutoTypeTable
+  path="generated/tool-params/dhl.ts"
+  name="DhlGetLabelParams"
+/>
+
+### `dhl_delete_shipment`
+
+Delete shipment
+
+<AutoTypeTable
+  path="generated/tool-params/dhl.ts"
+  name="DhlDeleteShipmentParams"
+/>
+
+### `dhl_validate_address`
+
+Validate address
+
+<AutoTypeTable
+  path="generated/tool-params/dhl.ts"
+  name="DhlValidateAddressParams"
+/>
+
+## Notes
+
+- Category: Shipping & Logistics
+- Authentication mode: OAuth

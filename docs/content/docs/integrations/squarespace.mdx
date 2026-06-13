@@ -1,0 +1,139 @@
+---
+title: "Squarespace Integration"
+description: "Manage Squarespace commerce orders, products, inventory, and profiles"
+---
+
+The Squarespace integration provides access to manage Squarespace commerce orders, products, inventory, and profiles through the Integrate MCP server.
+
+## Installation
+
+The Squarespace integration is included with the SDK:
+
+```typescript
+import { squarespaceIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Squarespace OAuth App
+
+1. Create an OAuth application for Squarespace
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Squarespace integration to your server configuration. The integration automatically reads `SQUARESPACE_CLIENT_ID` and `SQUARESPACE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, squarespaceIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    squarespaceIntegration({
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+squarespaceIntegration({
+  clientId: process.env.CUSTOM_SQUARESPACE_ID,
+  clientSecret: process.env.CUSTOM_SQUARESPACE_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("squarespace");
+const result = await client.squarespace.listOrders({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, squarespaceIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [squarespaceIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/squarespace.ts"
+  name="SquarespaceIntegrationConfig"
+/>
+
+
+## Tools
+
+### `squarespace_list_orders`
+
+List orders
+
+<AutoTypeTable
+  path="generated/tool-params/squarespace.ts"
+  name="SquarespaceListOrdersParams"
+/>
+
+### `squarespace_get_order`
+
+Get order
+
+<AutoTypeTable
+  path="generated/tool-params/squarespace.ts"
+  name="SquarespaceGetOrderParams"
+/>
+
+### `squarespace_list_products`
+
+List products
+
+<AutoTypeTable
+  path="generated/tool-params/squarespace.ts"
+  name="SquarespaceListProductsParams"
+/>
+
+### `squarespace_get_product`
+
+Get product
+
+<AutoTypeTable
+  path="generated/tool-params/squarespace.ts"
+  name="SquarespaceGetProductParams"
+/>
+
+### `squarespace_list_inventory`
+
+List inventory
+
+<AutoTypeTable
+  path="generated/tool-params/squarespace.ts"
+  name="SquarespaceListInventoryParams"
+/>
+
+### `squarespace_adjust_inventory`
+
+Adjust inventory
+
+<AutoTypeTable
+  path="generated/tool-params/squarespace.ts"
+  name="SquarespaceAdjustInventoryParams"
+/>
+
+## Notes
+
+- Category: Websites & CMS
+- Authentication mode: OAuth

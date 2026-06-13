@@ -1,11 +1,13 @@
 ---
-title: "Discord"
-description: "Send messages and manage Discord channels and servers"
+title: "Discord Integration"
+description: "Send and manage Discord messages; list guilds and channels (bot token required on server for channel APIs)"
 ---
 
-The Discord integration provides access to send messages and manage discord channels and servers through the Integrate MCP server.
+The Discord integration provides access to send and manage Discord messages; list guilds and channels (bot token required on server for channel APIs) through the Integrate MCP server.
 
 ## Installation
+
+The Discord integration is included with the SDK:
 
 ```typescript
 import { discordIntegration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { discordIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Discord to your server configuration. The integration automatically reads OAuth credentials from your environment (`DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`):
+### 1. Create a Discord OAuth App
+
+1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Discord integration to your server configuration. The integration automatically reads `DISCORD_CLIENT_ID` and `DISCORD_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, discordIntegration } from "integrate-sdk/server";
@@ -21,22 +32,42 @@ import { createMCPServer, discordIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    discordIntegration(),
+    discordIntegration({
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+discordIntegration({
+  clientId: process.env.CUSTOM_DISCORD_ID,
+  clientSecret: process.env.CUSTOM_DISCORD_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("discord");
-const result = await client.discord.getCurrentUser({
-  // Add the parameters required by this tool
-});
+const result = await client.discord.getCurrentUser({});
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, discordIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [discordIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,36 +77,88 @@ console.log(result);
   name="DiscordIntegrationConfig"
 />
 
-## Environment Variables
 
-- `DISCORD_CLIENT_ID`
-- `DISCORD_CLIENT_SECRET`
+## Tools
 
-## Default Scopes
+### `discord_get_current_user`
 
-These defaults are applied unless you override `scopes` in the integration config:
+Get current user
 
-- `identify`
-- `email`
-- `guilds`
-- `bot`
-- `applications.commands`
+_No parameters._
 
-## Available Tools
+### `discord_list_my_guilds`
 
-- `discord_get_current_user`
-- `discord_list_my_guilds`
-- `discord_get_guild`
-- `discord_list_guild_channels`
-- `discord_get_channel`
-- `discord_send_message`
-- `discord_list_messages`
-- `discord_edit_message`
-- `discord_delete_message`
+List my guilds
+
+<AutoTypeTable
+  path="generated/tool-params/discord.ts"
+  name="DiscordListMyGuildsParams"
+/>
+
+### `discord_get_guild`
+
+Get guild
+
+<AutoTypeTable
+  path="generated/tool-params/discord.ts"
+  name="DiscordGetGuildParams"
+/>
+
+### `discord_list_guild_channels`
+
+List guild channels
+
+<AutoTypeTable
+  path="generated/tool-params/discord.ts"
+  name="DiscordListGuildChannelsParams"
+/>
+
+### `discord_get_channel`
+
+Get channel
+
+<AutoTypeTable
+  path="generated/tool-params/discord.ts"
+  name="DiscordGetChannelParams"
+/>
+
+### `discord_send_message`
+
+Send message
+
+<AutoTypeTable
+  path="generated/tool-params/discord.ts"
+  name="DiscordSendMessageParams"
+/>
+
+### `discord_list_messages`
+
+List messages
+
+<AutoTypeTable
+  path="generated/tool-params/discord.ts"
+  name="DiscordListMessagesParams"
+/>
+
+### `discord_edit_message`
+
+Edit message
+
+<AutoTypeTable
+  path="generated/tool-params/discord.ts"
+  name="DiscordEditMessageParams"
+/>
+
+### `discord_delete_message`
+
+Delete message
+
+<AutoTypeTable
+  path="generated/tool-params/discord.ts"
+  name="DiscordDeleteMessageParams"
+/>
 
 ## Notes
 
 - Category: Communication
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

@@ -1,0 +1,137 @@
+---
+title: "Tesla Integration"
+description: "Manage Tesla list vehicles, get vehicle, wake vehicle, send vehicle command, list energy sites"
+---
+
+The Tesla integration provides access to manage Tesla list vehicles, get vehicle, wake vehicle, send vehicle command, list energy sites through the Integrate MCP server.
+
+## Installation
+
+The Tesla integration is included with the SDK:
+
+```typescript
+import { teslaIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Tesla OAuth App
+
+1. Create an OAuth application for Tesla
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Tesla integration to your server configuration. The integration automatically reads `TESLA_CLIENT_ID` and `TESLA_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, teslaIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    teslaIntegration({
+      scopes: ["openid", "offline_access", "vehicle_device_data", "vehicle_cmds", "energy_device_data", "energy_cmds"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+teslaIntegration({
+  clientId: process.env.CUSTOM_TESLA_ID,
+  clientSecret: process.env.CUSTOM_TESLA_SECRET,
+      scopes: ["openid", "offline_access", "vehicle_device_data", "vehicle_cmds", "energy_device_data", "energy_cmds"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("tesla");
+const result = await client.tesla.listVehicles({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, teslaIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [teslaIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/tesla.ts"
+  name="TeslaIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `openid`
+- `offline_access`
+- `vehicle_device_data`
+- `vehicle_cmds`
+- `energy_device_data`
+- `energy_cmds`
+
+## Tools
+
+### `tesla_list_vehicles`
+
+List vehicles
+
+_No parameters._
+
+### `tesla_get_vehicle`
+
+Get vehicle
+
+<AutoTypeTable
+  path="generated/tool-params/tesla.ts"
+  name="TeslaGetVehicleParams"
+/>
+
+### `tesla_wake_vehicle`
+
+Wake vehicle
+
+<AutoTypeTable
+  path="generated/tool-params/tesla.ts"
+  name="TeslaWakeVehicleParams"
+/>
+
+### `tesla_send_vehicle_command`
+
+Send vehicle command
+
+<AutoTypeTable
+  path="generated/tool-params/tesla.ts"
+  name="TeslaSendVehicleCommandParams"
+/>
+
+### `tesla_list_energy_sites`
+
+List energy sites
+
+_No parameters._
+
+## Notes
+
+- Category: Lifestyle
+- Authentication mode: OAuth

@@ -1,9 +1,9 @@
 ---
-title: "Stripe"
-description: "Manage customers, payments, and subscriptions"
+title: "Stripe Integration"
+description: "Manage Stripe customers, payments, and subscriptions"
 ---
 
-The Stripe integration provides access to Stripe's API through the Integrate MCP server.
+The Stripe integration provides access to manage Stripe customers, payments, and subscriptions through the Integrate MCP server.
 
 ## Installation
 
@@ -15,12 +15,12 @@ import { stripeIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-### 1. Create a Stripe Connect App
+### 1. Create a Stripe OAuth App
 
 1. Go to [Stripe Connect Settings](https://dashboard.stripe.com/settings/applications)
-2. Configure your Connect platform
-3. Note your Client ID and obtain your keys
-4. Set up OAuth redirect URIs
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
 
 ### 2. Configure the Integration on Your Server
 
@@ -33,7 +33,6 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     stripeIntegration({
-      scopes: ["read_write"], // Optional
     }),
   ],
 });
@@ -45,7 +44,6 @@ You can override the environment variables by passing explicit values:
 stripeIntegration({
   clientId: process.env.CUSTOM_STRIPE_ID,
   clientSecret: process.env.CUSTOM_STRIPE_SECRET,
-  scopes: ["read_write"],
 });
 ```
 
@@ -57,7 +55,9 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("stripe");
-const customers = await client.stripe.listCustomers({});
+const result = await client.stripe.listCustomers({});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -77,95 +77,322 @@ const customClient = createMCPClient({
   name="StripeIntegrationConfig"
 />
 
-## Available Tools
 
-### Customers
+## Tools
 
-- **`stripe_list_customers`** - List customers
-- **`stripe_get_customer`** - Get a specific customer
-- **`stripe_create_customer`** - Create a new customer
+### `stripe_list_customers`
 
-### Payments
+List customers
 
-- **`stripe_list_payments`** - List payment intents
-- **`stripe_get_payment`** - Get a specific payment
-- **`stripe_create_payment`** - Create a payment intent
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeListCustomersParams"
+/>
 
-### Invoices
+### `stripe_get_customer`
 
-- **`stripe_list_invoices`** - List invoices
+Get a specific customer
 
-### Subscriptions
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeGetCustomerParams"
+/>
 
-- **`stripe_list_subscriptions`** - List subscriptions
-- **`stripe_create_subscription`** - Create a new subscription
+### `stripe_create_customer`
 
-## Examples
+Create a new customer
 
-### Create a Customer
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeCreateCustomerParams"
+/>
 
-```typescript
-const result = await client.stripe.createCustomer({
-  email: "customer@example.com",
-  name: "John Doe",
-  description: "Premium customer",
-  metadata: {
-    userId: "user_123",
-  },
-});
+### `stripe_update_customer`
 
-console.log("Customer created:", result);
-```
+Update an existing customer
 
-### List Payments
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeUpdateCustomerParams"
+/>
 
-```typescript
-const result = await client.stripe.listPayments({
-  limit: 100,
-  customer: "cus_123",
-});
+### `stripe_delete_customer`
 
-console.log("Payments:", result);
-```
+Delete a customer
 
-### Create a Subscription
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeDeleteCustomerParams"
+/>
 
-```typescript
-const result = await client.stripe.createSubscription({
-  customer: "cus_123",
-  items: [{ price: "price_123" }],
-});
+### `stripe_search_customers`
 
-console.log("Subscription created:", result);
-```
+Search customers using Stripe search syntax
 
-## OAuth Scopes
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeSearchCustomersParams"
+/>
 
-Stripe Connect uses a simplified scope model:
+### `stripe_list_payments`
 
-- **`read_write`** - Full access to the connected account (default)
-- **`read_only`** - Read-only access to the connected account
+List payment intents
 
-## Error Handling
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeListPaymentsParams"
+/>
 
-```typescript
-try {
-  const result = await client.stripe.createCustomer({
-    email: "customer@example.com",
-  });
-} catch (error) {
-  if (error.message.includes("invalid email")) {
-    console.error("Invalid email address");
-  } else if (error.message.includes("authentication")) {
-    console.error("Authentication failed");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+### `stripe_get_payment`
 
-## Next Steps
+Get a specific payment intent
 
-- Explore the [Ramp Integration](/docs/integrations/ramp)
-- Explore the [Polar Integration](/docs/integrations/polar)
-- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeGetPaymentParams"
+/>
+
+### `stripe_create_payment`
+
+Create a payment intent
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeCreatePaymentParams"
+/>
+
+### `stripe_cancel_payment`
+
+Cancel a payment intent
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeCancelPaymentParams"
+/>
+
+### `stripe_capture_payment`
+
+Capture an authorized payment intent
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeCapturePaymentParams"
+/>
+
+### `stripe_list_subscriptions`
+
+List subscriptions
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeListSubscriptionsParams"
+/>
+
+### `stripe_get_subscription`
+
+Get a subscription by ID
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeGetSubscriptionParams"
+/>
+
+### `stripe_create_subscription`
+
+Create a subscription
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeCreateSubscriptionParams"
+/>
+
+### `stripe_update_subscription`
+
+Update a subscription
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeUpdateSubscriptionParams"
+/>
+
+### `stripe_cancel_subscription`
+
+Cancel a subscription
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeCancelSubscriptionParams"
+/>
+
+### `stripe_list_invoices`
+
+List invoices
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeListInvoicesParams"
+/>
+
+### `stripe_get_invoice`
+
+Get an invoice by ID
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeGetInvoiceParams"
+/>
+
+### `stripe_create_invoice`
+
+Create an invoice for a customer
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeCreateInvoiceParams"
+/>
+
+### `stripe_finalize_invoice`
+
+Finalize a draft invoice
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeFinalizeInvoiceParams"
+/>
+
+### `stripe_pay_invoice`
+
+Pay an open invoice immediately
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripePayInvoiceParams"
+/>
+
+### `stripe_void_invoice`
+
+Void an invoice (cannot be undone)
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeVoidInvoiceParams"
+/>
+
+### `stripe_list_products`
+
+List products
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeListProductsParams"
+/>
+
+### `stripe_get_product`
+
+Get a product by ID
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeGetProductParams"
+/>
+
+### `stripe_create_product`
+
+Create a product
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeCreateProductParams"
+/>
+
+### `stripe_list_prices`
+
+List prices
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeListPricesParams"
+/>
+
+### `stripe_get_price`
+
+Get a price by ID
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeGetPriceParams"
+/>
+
+### `stripe_create_price`
+
+Create a price for a product
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeCreatePriceParams"
+/>
+
+### `stripe_list_refunds`
+
+List refunds
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeListRefundsParams"
+/>
+
+### `stripe_get_refund`
+
+Get a refund by ID
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeGetRefundParams"
+/>
+
+### `stripe_create_refund`
+
+Create a refund for a payment
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeCreateRefundParams"
+/>
+
+### `stripe_get_balance`
+
+Get the current Stripe account balance
+
+_No parameters._
+
+### `stripe_list_events`
+
+List events from the Stripe event log
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeListEventsParams"
+/>
+
+### `stripe_get_event`
+
+Get a specific event by ID
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeGetEventParams"
+/>
+
+### `stripe_list_payment_methods`
+
+List payment methods for a customer
+
+<AutoTypeTable
+  path="generated/tool-params/stripe.ts"
+  name="StripeListPaymentMethodsParams"
+/>
+
+## Notes
+
+- Category: Finance
+- Authentication mode: OAuth

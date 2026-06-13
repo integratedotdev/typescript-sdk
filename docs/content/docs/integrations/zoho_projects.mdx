@@ -1,0 +1,175 @@
+---
+title: "Zoho Projects Integration"
+description: "Manage Zoho Projects portals, projects, milestones, tasks, issues, and timesheets"
+---
+
+The Zoho Projects integration provides access to manage Zoho Projects portals, projects, milestones, tasks, issues, and timesheets through the Integrate MCP server.
+
+## Installation
+
+The Zoho Projects integration is included with the SDK:
+
+```typescript
+import { zohoProjectsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Zoho Projects OAuth App
+
+1. Go to [Zoho API Console](https://api-console.zoho.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Zoho Projects integration to your server configuration. The integration automatically reads `ZOHO_PROJECTS_CLIENT_ID` and `ZOHO_PROJECTS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, zohoProjectsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    zohoProjectsIntegration({
+      scopes: ["ZohoProjects.portals.ALL", "ZohoProjects.projects.ALL", "ZohoProjects.tasks.ALL", "ZohoProjects.issues.ALL"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+zohoProjectsIntegration({
+  clientId: process.env.CUSTOM_ZOHO_PROJECTS_ID,
+  clientSecret: process.env.CUSTOM_ZOHO_PROJECTS_SECRET,
+      scopes: ["ZohoProjects.portals.ALL", "ZohoProjects.projects.ALL", "ZohoProjects.tasks.ALL", "ZohoProjects.issues.ALL"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("zoho_projects");
+const result = await client.zoho_projects.listPortals({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, zohoProjectsIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [zohoProjectsIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/zoho_projects.ts"
+  name="ZohoProjectsIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `ZohoProjects.portals.ALL`
+- `ZohoProjects.projects.ALL`
+- `ZohoProjects.tasks.ALL`
+- `ZohoProjects.issues.ALL`
+
+## Tools
+
+### `zoho_projects_list_portals`
+
+Projects list portals
+
+_No parameters._
+
+### `zoho_projects_list_projects`
+
+Projects list projects
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_projects.ts"
+  name="ZohoProjectsListProjectsParams"
+/>
+
+### `zoho_projects_get_project`
+
+Projects get project
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_projects.ts"
+  name="ZohoProjectsGetProjectParams"
+/>
+
+### `zoho_projects_list_milestones`
+
+Projects list milestones
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_projects.ts"
+  name="ZohoProjectsListMilestonesParams"
+/>
+
+### `zoho_projects_list_tasklists`
+
+Projects list tasklists
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_projects.ts"
+  name="ZohoProjectsListTasklistsParams"
+/>
+
+### `zoho_projects_list_tasks`
+
+Projects list tasks
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_projects.ts"
+  name="ZohoProjectsListTasksParams"
+/>
+
+### `zoho_projects_create_task`
+
+Projects create task
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_projects.ts"
+  name="ZohoProjectsCreateTaskParams"
+/>
+
+### `zoho_projects_list_issues`
+
+Projects list issues
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_projects.ts"
+  name="ZohoProjectsListIssuesParams"
+/>
+
+### `zoho_projects_list_timesheets`
+
+Projects list timesheets
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_projects.ts"
+  name="ZohoProjectsListTimesheetsParams"
+/>
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth

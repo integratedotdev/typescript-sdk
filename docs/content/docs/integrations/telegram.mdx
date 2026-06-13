@@ -1,0 +1,143 @@
+---
+title: "Telegram Integration"
+description: "Use Telegram as an actual user account via MTProto sessions, not the Bot API"
+---
+
+The Telegram integration provides access to use Telegram as an actual user account via MTProto sessions, not the Bot API through the Integrate MCP server.
+
+## Installation
+
+The Telegram integration is included with the SDK:
+
+```typescript
+import { telegramIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+Add Telegram to your server configuration. Provide credentials via environment variables or integration config:
+
+```typescript
+import { createMCPServer, telegramIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    telegramIntegration({
+      // See configuration options below
+    }),
+  ],
+});
+```
+
+### Client-Side Usage
+
+```typescript
+import { client } from "integrate-sdk";
+
+const result = await client.telegram.authSendCode({
+  phone_number: "value",
+});
+
+console.log(result);
+```
+
+## Environment Variables
+
+- `TELEGRAM_API_KEY` (when supported by this integration)
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/telegram.ts"
+  name="TelegramIntegrationOptions"
+/>
+
+
+## Tools
+
+### `telegram_auth_send_code`
+
+Auth send code
+
+<AutoTypeTable
+  path="generated/tool-params/telegram.ts"
+  name="TelegramAuthSendCodeParams"
+/>
+
+### `telegram_auth_sign_in`
+
+Auth sign in
+
+<AutoTypeTable
+  path="generated/tool-params/telegram.ts"
+  name="TelegramAuthSignInParams"
+/>
+
+### `telegram_auth_check_password`
+
+Auth check password
+
+<AutoTypeTable
+  path="generated/tool-params/telegram.ts"
+  name="TelegramAuthCheckPasswordParams"
+/>
+
+### `telegram_get_me`
+
+Get me
+
+<AutoTypeTable
+  path="generated/tool-params/telegram.ts"
+  name="TelegramGetMeParams"
+/>
+
+### `telegram_resolve_username`
+
+Resolve username
+
+<AutoTypeTable
+  path="generated/tool-params/telegram.ts"
+  name="TelegramResolveUsernameParams"
+/>
+
+### `telegram_list_dialogs`
+
+List dialogs
+
+<AutoTypeTable
+  path="generated/tool-params/telegram.ts"
+  name="TelegramListDialogsParams"
+/>
+
+### `telegram_get_history`
+
+Get history
+
+<AutoTypeTable
+  path="generated/tool-params/telegram.ts"
+  name="TelegramGetHistoryParams"
+/>
+
+### `telegram_search_messages`
+
+Search messages
+
+<AutoTypeTable
+  path="generated/tool-params/telegram.ts"
+  name="TelegramSearchMessagesParams"
+/>
+
+### `telegram_send_message`
+
+Send message
+
+<AutoTypeTable
+  path="generated/tool-params/telegram.ts"
+  name="TelegramSendMessageParams"
+/>
+
+## Notes
+
+- Category: Communication
+- Authentication mode: API key

@@ -1,11 +1,13 @@
 ---
-title: "Salesforce"
+title: "Salesforce Integration"
 description: "Manage Salesforce accounts, contacts, opportunities, and cases"
 ---
 
-The Salesforce integration provides access to manage salesforce accounts, contacts, opportunities, and cases through the Integrate MCP server.
+The Salesforce integration provides access to manage Salesforce accounts, contacts, opportunities, and cases through the Integrate MCP server.
 
 ## Installation
+
+The Salesforce integration is included with the SDK:
 
 ```typescript
 import { salesforceIntegration } from "integrate-sdk/server";
@@ -13,7 +15,15 @@ import { salesforceIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Salesforce to your server configuration. The integration automatically reads OAuth credentials from your environment (`SALESFORCE_CLIENT_ID`, `SALESFORCE_CLIENT_SECRET`, `SALESFORCE_SUBDOMAIN`):
+### 1. Create a Salesforce OAuth App
+
+1. Create an OAuth application for Salesforce
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Salesforce integration to your server configuration. The integration automatically reads `SALESFORCE_CLIENT_ID` and `SALESFORCE_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, salesforceIntegration } from "integrate-sdk/server";
@@ -21,22 +31,44 @@ import { createMCPServer, salesforceIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    salesforceIntegration(),
+    salesforceIntegration({
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+salesforceIntegration({
+  clientId: process.env.CUSTOM_SALESFORCE_ID,
+  clientSecret: process.env.CUSTOM_SALESFORCE_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("salesforce");
 const result = await client.salesforce.query({
-  // Add the parameters required by this tool
+  q: "value",
 });
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, salesforceIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [salesforceIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,34 +78,82 @@ console.log(result);
   name="SalesforceIntegrationConfig"
 />
 
-## Environment Variables
 
-- `SALESFORCE_CLIENT_ID`
-- `SALESFORCE_CLIENT_SECRET`
-- `SALESFORCE_SUBDOMAIN`
+## Tools
 
-## Default Scopes
+### `salesforce_query`
 
-These defaults are applied unless you override `scopes` in the integration config:
+Query
 
-- `api`
-- `refresh_token`
-- `offline_access`
+<AutoTypeTable
+  path="generated/tool-params/salesforce.ts"
+  name="SalesforceQueryParams"
+/>
 
-## Available Tools
+### `salesforce_get_limits`
 
-- `salesforce_query`
-- `salesforce_get_limits`
-- `salesforce_describe_global`
-- `salesforce_sobject_describe`
-- `salesforce_sobject_get`
-- `salesforce_sobject_create`
-- `salesforce_sobject_update`
-- `salesforce_sobject_delete`
+Get limits
+
+<AutoTypeTable
+  path="generated/tool-params/salesforce.ts"
+  name="SalesforceGetLimitsParams"
+/>
+
+### `salesforce_describe_global`
+
+Describe global
+
+<AutoTypeTable
+  path="generated/tool-params/salesforce.ts"
+  name="SalesforceDescribeGlobalParams"
+/>
+
+### `salesforce_sobject_describe`
+
+Sobject describe
+
+<AutoTypeTable
+  path="generated/tool-params/salesforce.ts"
+  name="SalesforceSobjectDescribeParams"
+/>
+
+### `salesforce_sobject_get`
+
+Sobject get
+
+<AutoTypeTable
+  path="generated/tool-params/salesforce.ts"
+  name="SalesforceSobjectGetParams"
+/>
+
+### `salesforce_sobject_create`
+
+Sobject create
+
+<AutoTypeTable
+  path="generated/tool-params/salesforce.ts"
+  name="SalesforceSobjectCreateParams"
+/>
+
+### `salesforce_sobject_update`
+
+Sobject update
+
+<AutoTypeTable
+  path="generated/tool-params/salesforce.ts"
+  name="SalesforceSobjectUpdateParams"
+/>
+
+### `salesforce_sobject_delete`
+
+Sobject delete
+
+<AutoTypeTable
+  path="generated/tool-params/salesforce.ts"
+  name="SalesforceSobjectDeleteParams"
+/>
 
 ## Notes
 
 - Category: Business
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

@@ -1,11 +1,13 @@
 ---
-title: "Granola"
+title: "Granola Integration"
 description: "List and read Granola meeting notes and folders"
 ---
 
-The Granola integration provides access to list and read granola meeting notes and folders through the Integrate MCP server.
+The Granola integration provides access to list and read Granola meeting notes and folders through the Integrate MCP server.
 
 ## Installation
+
+The Granola integration is included with the SDK:
 
 ```typescript
 import { granolaIntegration } from "integrate-sdk/server";
@@ -13,7 +15,7 @@ import { granolaIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Granola to your server configuration. This integration can read credentials from environment variables automatically:
+Add Granola to your server configuration. Provide credentials via environment variables or integration config:
 
 ```typescript
 import { createMCPServer, granolaIntegration } from "integrate-sdk/server";
@@ -21,7 +23,9 @@ import { createMCPServer, granolaIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    granolaIntegration(),
+    granolaIntegration({
+      // See configuration options below
+    }),
   ],
 });
 ```
@@ -31,12 +35,12 @@ export const { client: serverClient } = createMCPServer({
 ```typescript
 import { client } from "integrate-sdk";
 
-const result = await client.granola.listNotes({
-  // Add the parameters required by this tool
-});
-
-console.log(result);
+// Use client.granola methods after connecting
 ```
+
+## Environment Variables
+
+- `GRANOLA_API_KEY` (when supported by this integration)
 
 ## Configuration Options
 
@@ -45,15 +49,28 @@ console.log(result);
   name="GranolaIntegrationOptions"
 />
 
-## Available Tools
 
-- `granola_list_notes`
-- `granola_get_note`
-- `granola_list_folders`
+## Tools
+
+### `granola_list_notes`
+
+List notes
+
+_No parameters._
+
+### `granola_get_note`
+
+Get note
+
+_No parameters._
+
+### `granola_list_folders`
+
+List folders
+
+_No parameters._
 
 ## Notes
 
 - Category: Productivity
 - Authentication mode: API key
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

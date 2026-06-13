@@ -1,11 +1,13 @@
 ---
-title: "Xero"
-description: "Manage Xero invoices, contacts, and accounting data"
+title: "Xero Integration"
+description: "Manage Xero organisations, accounts, contacts, invoices, and bank transactions"
 ---
 
-The Xero integration provides access to manage xero invoices, contacts, and accounting data through the Integrate MCP server.
+The Xero integration provides access to manage Xero organisations, accounts, contacts, invoices, and bank transactions through the Integrate MCP server.
 
 ## Installation
+
+The Xero integration is included with the SDK:
 
 ```typescript
 import { xeroIntegration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { xeroIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Xero to your server configuration. The integration automatically reads OAuth credentials from your environment (`XERO_CLIENT_ID`, `XERO_CLIENT_SECRET`):
+### 1. Create a Xero OAuth App
+
+1. Go to [Login Developer Portal](https://login.xero.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Xero integration to your server configuration. The integration automatically reads `XERO_CLIENT_ID` and `XERO_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, xeroIntegration } from "integrate-sdk/server";
@@ -21,22 +32,44 @@ import { createMCPServer, xeroIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    xeroIntegration(),
+    xeroIntegration({
+      scopes: ["openid", "profile", "email", "offline_access", "accounting.settings", "accounting.transactions", "accounting.contacts", "accounting.attachments"], // Optional
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+xeroIntegration({
+  clientId: process.env.CUSTOM_XERO_ID,
+  clientSecret: process.env.CUSTOM_XERO_SECRET,
+      scopes: ["openid", "profile", "email", "offline_access", "accounting.settings", "accounting.transactions", "accounting.contacts", "accounting.attachments"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("xero");
-const result = await client.xero.listConnections({
-  // Add the parameters required by this tool
-});
+const result = await client.xero.listConnections({});
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, xeroIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [xeroIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,27 +79,110 @@ console.log(result);
   name="XeroIntegrationConfig"
 />
 
-## Environment Variables
 
-- `XERO_CLIENT_ID`
-- `XERO_CLIENT_SECRET`
+## Default Scopes
 
-## Available Tools
+These defaults are applied unless you override `scopes` in the integration config:
 
-- `xero_list_connections`
-- `xero_get_organisation`
-- `xero_list_accounts`
-- `xero_list_contacts`
-- `xero_get_contact`
-- `xero_create_contact`
-- `xero_list_invoices`
-- `xero_get_invoice`
-- `xero_create_invoice`
-- `xero_list_bank_transactions`
+- `openid`
+- `profile`
+- `email`
+- `offline_access`
+- `accounting.settings`
+- `accounting.transactions`
+- `accounting.contacts`
+- `accounting.attachments`
+
+## Tools
+
+### `xero_list_connections`
+
+List connections
+
+_No parameters._
+
+### `xero_get_organisation`
+
+Get organisation
+
+<AutoTypeTable
+  path="generated/tool-params/xero.ts"
+  name="XeroGetOrganisationParams"
+/>
+
+### `xero_list_accounts`
+
+List accounts
+
+<AutoTypeTable
+  path="generated/tool-params/xero.ts"
+  name="XeroListAccountsParams"
+/>
+
+### `xero_list_contacts`
+
+List contacts
+
+<AutoTypeTable
+  path="generated/tool-params/xero.ts"
+  name="XeroListContactsParams"
+/>
+
+### `xero_get_contact`
+
+Get contact
+
+<AutoTypeTable
+  path="generated/tool-params/xero.ts"
+  name="XeroGetContactParams"
+/>
+
+### `xero_create_contact`
+
+Create contact
+
+<AutoTypeTable
+  path="generated/tool-params/xero.ts"
+  name="XeroCreateContactParams"
+/>
+
+### `xero_list_invoices`
+
+List invoices
+
+<AutoTypeTable
+  path="generated/tool-params/xero.ts"
+  name="XeroListInvoicesParams"
+/>
+
+### `xero_get_invoice`
+
+Get invoice
+
+<AutoTypeTable
+  path="generated/tool-params/xero.ts"
+  name="XeroGetInvoiceParams"
+/>
+
+### `xero_create_invoice`
+
+Create invoice
+
+<AutoTypeTable
+  path="generated/tool-params/xero.ts"
+  name="XeroCreateInvoiceParams"
+/>
+
+### `xero_list_bank_transactions`
+
+List bank transactions
+
+<AutoTypeTable
+  path="generated/tool-params/xero.ts"
+  name="XeroListBankTransactionsParams"
+/>
 
 ## Notes
 
-- Category: Finance
+- Category: Accounting
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

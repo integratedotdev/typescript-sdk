@@ -1,11 +1,13 @@
 ---
-title: "Workday"
-description: "Read Workday HR data including workers, organizations, and pay"
+title: "Workday Integration"
+description: "Query Workday workers via the tenant REST API"
 ---
 
-The Workday integration provides access to read workday hr data including workers, organizations, and pay through the Integrate MCP server.
+The Workday integration provides access to query Workday workers via the tenant REST API through the Integrate MCP server.
 
 ## Installation
+
+The Workday integration is included with the SDK:
 
 ```typescript
 import { workdayIntegration } from "integrate-sdk/server";
@@ -13,7 +15,15 @@ import { workdayIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Workday to your server configuration. The integration automatically reads OAuth credentials from your environment (`WORKDAY_CLIENT_ID`, `WORKDAY_CLIENT_SECRET`, `WORKDAY_TENANT_DESCRIPTOR`):
+### 1. Create a Workday OAuth App
+
+1. Create an OAuth application for Workday
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Workday integration to your server configuration. The integration automatically reads `WORKDAY_CLIENT_ID` and `WORKDAY_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, workdayIntegration } from "integrate-sdk/server";
@@ -21,22 +31,44 @@ import { createMCPServer, workdayIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    workdayIntegration(),
+    workdayIntegration({
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+workdayIntegration({
+  clientId: process.env.CUSTOM_WORKDAY_ID,
+  clientSecret: process.env.CUSTOM_WORKDAY_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("workday");
 const result = await client.workday.listWorkers({
-  // Add the parameters required by this tool
+  hostname: "value",
 });
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, workdayIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [workdayIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,20 +78,28 @@ console.log(result);
   name="WorkdayIntegrationConfig"
 />
 
-## Environment Variables
 
-- `WORKDAY_CLIENT_ID`
-- `WORKDAY_CLIENT_SECRET`
-- `WORKDAY_TENANT_DESCRIPTOR`
+## Tools
 
-## Available Tools
+### `workday_list_workers`
 
-- `workday_list_workers`
-- `workday_get_worker`
+List workers
+
+<AutoTypeTable
+  path="generated/tool-params/workday.ts"
+  name="WorkdayListWorkersParams"
+/>
+
+### `workday_get_worker`
+
+Get worker
+
+<AutoTypeTable
+  path="generated/tool-params/workday.ts"
+  name="WorkdayGetWorkerParams"
+/>
 
 ## Notes
 
-- Category: Business
+- Category: HR & Recruiting
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

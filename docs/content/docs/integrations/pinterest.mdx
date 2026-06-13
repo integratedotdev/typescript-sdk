@@ -1,0 +1,168 @@
+---
+title: "Pinterest Integration"
+description: "Manage Pinterest boards, pins, search, ad accounts, and campaigns"
+---
+
+The Pinterest integration provides access to manage Pinterest boards, pins, search, ad accounts, and campaigns through the Integrate MCP server.
+
+## Installation
+
+The Pinterest integration is included with the SDK:
+
+```typescript
+import { pinterestIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Pinterest OAuth App
+
+1. Create an OAuth application for Pinterest
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Pinterest integration to your server configuration. The integration automatically reads `PINTEREST_CLIENT_ID` and `PINTEREST_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, pinterestIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    pinterestIntegration({
+      scopes: ["boards:read", "boards:write", "pins:read", "pins:write", "user_accounts:read", "ads:read", "ads:write"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+pinterestIntegration({
+  clientId: process.env.CUSTOM_PINTEREST_ID,
+  clientSecret: process.env.CUSTOM_PINTEREST_SECRET,
+      scopes: ["boards:read", "boards:write", "pins:read", "pins:write", "user_accounts:read", "ads:read", "ads:write"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("pinterest");
+const result = await client.pinterest.getUser({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, pinterestIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [pinterestIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/pinterest.ts"
+  name="PinterestIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `boards:read`
+- `boards:write`
+- `pins:read`
+- `pins:write`
+- `user_accounts:read`
+- `ads:read`
+- `ads:write`
+
+## Tools
+
+### `pinterest_get_user`
+
+Get user
+
+_No parameters._
+
+### `pinterest_list_boards`
+
+List boards
+
+<AutoTypeTable
+  path="generated/tool-params/pinterest.ts"
+  name="PinterestListBoardsParams"
+/>
+
+### `pinterest_get_board`
+
+Get board
+
+<AutoTypeTable
+  path="generated/tool-params/pinterest.ts"
+  name="PinterestGetBoardParams"
+/>
+
+### `pinterest_create_pin`
+
+Create pin
+
+<AutoTypeTable
+  path="generated/tool-params/pinterest.ts"
+  name="PinterestCreatePinParams"
+/>
+
+### `pinterest_get_pin`
+
+Get pin
+
+<AutoTypeTable
+  path="generated/tool-params/pinterest.ts"
+  name="PinterestGetPinParams"
+/>
+
+### `pinterest_search_pins`
+
+Search pins
+
+<AutoTypeTable
+  path="generated/tool-params/pinterest.ts"
+  name="PinterestSearchPinsParams"
+/>
+
+### `pinterest_list_ad_accounts`
+
+List ad accounts
+
+<AutoTypeTable
+  path="generated/tool-params/pinterest.ts"
+  name="PinterestListAdAccountsParams"
+/>
+
+### `pinterest_list_campaigns`
+
+List campaigns
+
+<AutoTypeTable
+  path="generated/tool-params/pinterest.ts"
+  name="PinterestListCampaignsParams"
+/>
+
+## Notes
+
+- Category: Social Media
+- Authentication mode: OAuth

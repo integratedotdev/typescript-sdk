@@ -1,0 +1,166 @@
+---
+title: "Zoho Invoice Integration"
+description: "Manage Zoho Invoice organizations, customers, items, estimates, invoices, payments, and reports"
+---
+
+The Zoho Invoice integration provides access to manage Zoho Invoice organizations, customers, items, estimates, invoices, payments, and reports through the Integrate MCP server.
+
+## Installation
+
+The Zoho Invoice integration is included with the SDK:
+
+```typescript
+import { zohoInvoiceIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Zoho Invoice OAuth App
+
+1. Go to [Zoho API Console](https://api-console.zoho.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Zoho Invoice integration to your server configuration. The integration automatically reads `ZOHO_INVOICE_CLIENT_ID` and `ZOHO_INVOICE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, zohoInvoiceIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    zohoInvoiceIntegration({
+      scopes: ["ZohoInvoice.fullaccess.all"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+zohoInvoiceIntegration({
+  clientId: process.env.CUSTOM_ZOHO_INVOICE_ID,
+  clientSecret: process.env.CUSTOM_ZOHO_INVOICE_SECRET,
+      scopes: ["ZohoInvoice.fullaccess.all"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("zoho_invoice");
+const result = await client.zoho_invoice.listOrganizations({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, zohoInvoiceIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [zohoInvoiceIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/zoho_invoice.ts"
+  name="ZohoInvoiceIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `ZohoInvoice.fullaccess.all`
+
+## Tools
+
+### `zoho_invoice_list_organizations`
+
+Invoice list organizations
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_invoice.ts"
+  name="ZohoInvoiceListOrganizationsParams"
+/>
+
+### `zoho_invoice_list_contacts`
+
+Invoice list contacts
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_invoice.ts"
+  name="ZohoInvoiceListContactsParams"
+/>
+
+### `zoho_invoice_list_items`
+
+Invoice list items
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_invoice.ts"
+  name="ZohoInvoiceListItemsParams"
+/>
+
+### `zoho_invoice_list_estimates`
+
+Invoice list estimates
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_invoice.ts"
+  name="ZohoInvoiceListEstimatesParams"
+/>
+
+### `zoho_invoice_list_invoices`
+
+Invoice list invoices
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_invoice.ts"
+  name="ZohoInvoiceListInvoicesParams"
+/>
+
+### `zoho_invoice_list_customerpayments`
+
+Invoice list customerpayments
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_invoice.ts"
+  name="ZohoInvoiceListCustomerpaymentsParams"
+/>
+
+### `zoho_invoice_create_invoice`
+
+Invoice create invoice
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_invoice.ts"
+  name="ZohoInvoiceCreateInvoiceParams"
+/>
+
+### `zoho_invoice_get_aging_summary`
+
+Invoice get aging summary
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_invoice.ts"
+  name="ZohoInvoiceGetAgingSummaryParams"
+/>
+
+## Notes
+
+- Category: Accounting
+- Authentication mode: OAuth

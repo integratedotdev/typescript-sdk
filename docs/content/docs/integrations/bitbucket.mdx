@@ -1,0 +1,229 @@
+---
+title: "Bitbucket Cloud Integration"
+description: "Manage Bitbucket Cloud workspaces, repositories, branches, commits, pull requests, issues, and pipelines"
+---
+
+The Bitbucket Cloud integration provides access to manage Bitbucket Cloud workspaces, repositories, branches, commits, pull requests, issues, and pipelines through the Integrate MCP server.
+
+## Installation
+
+The Bitbucket Cloud integration is included with the SDK:
+
+```typescript
+import { bitbucketIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Bitbucket Cloud OAuth App
+
+1. Create an OAuth application for Bitbucket Cloud
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Bitbucket Cloud integration to your server configuration. The integration automatically reads `BITBUCKET_CLIENT_ID` and `BITBUCKET_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, bitbucketIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    bitbucketIntegration({
+      scopes: ["account", "repository", "pullrequest", "issue", "pipeline"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+bitbucketIntegration({
+  clientId: process.env.CUSTOM_BITBUCKET_ID,
+  clientSecret: process.env.CUSTOM_BITBUCKET_SECRET,
+      scopes: ["account", "repository", "pullrequest", "issue", "pipeline"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("bitbucket");
+const result = await client.bitbucket.getCurrentUser({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, bitbucketIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [bitbucketIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/bitbucket.ts"
+  name="BitbucketIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `account`
+- `repository`
+- `pullrequest`
+- `issue`
+- `pipeline`
+
+## Tools
+
+### `bitbucket_get_current_user`
+
+Get current user
+
+_No parameters._
+
+### `bitbucket_list_workspaces`
+
+List workspaces
+
+<AutoTypeTable
+  path="generated/tool-params/bitbucket.ts"
+  name="BitbucketListWorkspacesParams"
+/>
+
+### `bitbucket_list_repositories`
+
+List repositories
+
+<AutoTypeTable
+  path="generated/tool-params/bitbucket.ts"
+  name="BitbucketListRepositoriesParams"
+/>
+
+### `bitbucket_get_repository`
+
+Get repository
+
+<AutoTypeTable
+  path="generated/tool-params/bitbucket.ts"
+  name="BitbucketGetRepositoryParams"
+/>
+
+### `bitbucket_list_branches`
+
+List branches
+
+<AutoTypeTable
+  path="generated/tool-params/bitbucket.ts"
+  name="BitbucketListBranchesParams"
+/>
+
+### `bitbucket_list_commits`
+
+List commits
+
+<AutoTypeTable
+  path="generated/tool-params/bitbucket.ts"
+  name="BitbucketListCommitsParams"
+/>
+
+### `bitbucket_get_commit`
+
+Get commit
+
+<AutoTypeTable
+  path="generated/tool-params/bitbucket.ts"
+  name="BitbucketGetCommitParams"
+/>
+
+### `bitbucket_list_pull_requests`
+
+List pull requests
+
+<AutoTypeTable
+  path="generated/tool-params/bitbucket.ts"
+  name="BitbucketListPullRequestsParams"
+/>
+
+### `bitbucket_get_pull_request`
+
+Get pull request
+
+<AutoTypeTable
+  path="generated/tool-params/bitbucket.ts"
+  name="BitbucketGetPullRequestParams"
+/>
+
+### `bitbucket_create_pull_request`
+
+Create pull request
+
+<AutoTypeTable
+  path="generated/tool-params/bitbucket.ts"
+  name="BitbucketCreatePullRequestParams"
+/>
+
+### `bitbucket_list_issues`
+
+List issues
+
+<AutoTypeTable
+  path="generated/tool-params/bitbucket.ts"
+  name="BitbucketListIssuesParams"
+/>
+
+### `bitbucket_get_issue`
+
+Get issue
+
+<AutoTypeTable
+  path="generated/tool-params/bitbucket.ts"
+  name="BitbucketGetIssueParams"
+/>
+
+### `bitbucket_create_issue`
+
+Create issue
+
+<AutoTypeTable
+  path="generated/tool-params/bitbucket.ts"
+  name="BitbucketCreateIssueParams"
+/>
+
+### `bitbucket_list_pipelines`
+
+List pipelines
+
+<AutoTypeTable
+  path="generated/tool-params/bitbucket.ts"
+  name="BitbucketListPipelinesParams"
+/>
+
+### `bitbucket_trigger_pipeline`
+
+Trigger pipeline
+
+<AutoTypeTable
+  path="generated/tool-params/bitbucket.ts"
+  name="BitbucketTriggerPipelineParams"
+/>
+
+## Notes
+
+- Category: Engineering
+- Authentication mode: OAuth

@@ -1,0 +1,143 @@
+---
+title: "UPS Integration"
+description: "Manage UPS track shipment, rate shipment, create shipment, void shipment, validate address"
+---
+
+The UPS integration provides access to manage UPS track shipment, rate shipment, create shipment, void shipment, validate address through the Integrate MCP server.
+
+## Installation
+
+The UPS integration is included with the SDK:
+
+```typescript
+import { upsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create an UPS OAuth App
+
+1. Create an OAuth application for UPS
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the UPS integration to your server configuration. The integration automatically reads `UPS_CLIENT_ID` and `UPS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, upsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    upsIntegration({
+      scopes: ["shipments", "tracking", "rating", "address_validation"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+upsIntegration({
+  clientId: process.env.CUSTOM_UPS_ID,
+  clientSecret: process.env.CUSTOM_UPS_SECRET,
+      scopes: ["shipments", "tracking", "rating", "address_validation"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("ups");
+const result = await client.ups.trackShipment({
+  tracking_number: "value",
+});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, upsIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [upsIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/ups.ts"
+  name="UpsIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `shipments`
+- `tracking`
+- `rating`
+- `address_validation`
+
+## Tools
+
+### `ups_track_shipment`
+
+Track shipment
+
+<AutoTypeTable
+  path="generated/tool-params/ups.ts"
+  name="UpsTrackShipmentParams"
+/>
+
+### `ups_rate_shipment`
+
+Rate shipment
+
+<AutoTypeTable
+  path="generated/tool-params/ups.ts"
+  name="UpsRateShipmentParams"
+/>
+
+### `ups_create_shipment`
+
+Create shipment
+
+<AutoTypeTable
+  path="generated/tool-params/ups.ts"
+  name="UpsCreateShipmentParams"
+/>
+
+### `ups_void_shipment`
+
+Void shipment
+
+<AutoTypeTable
+  path="generated/tool-params/ups.ts"
+  name="UpsVoidShipmentParams"
+/>
+
+### `ups_validate_address`
+
+Validate address
+
+<AutoTypeTable
+  path="generated/tool-params/ups.ts"
+  name="UpsValidateAddressParams"
+/>
+
+## Notes
+
+- Category: Shipping & Logistics
+- Authentication mode: OAuth

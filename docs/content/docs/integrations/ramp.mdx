@@ -1,9 +1,9 @@
 ---
-title: "Ramp"
-description: "Manage transactions, cards, and users"
+title: "Ramp Integration"
+description: "Manage Ramp corporate cards, bills, reimbursements, and spend controls"
 ---
 
-The Ramp integration provides access to Ramp's API through the Integrate MCP server.
+The Ramp integration provides access to manage Ramp corporate cards, bills, reimbursements, and spend controls through the Integrate MCP server.
 
 ## Installation
 
@@ -33,7 +33,6 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     rampIntegration({
-      scopes: ["transactions:read", "cards:read", "users:read"], // Optional
     }),
   ],
 });
@@ -45,7 +44,6 @@ You can override the environment variables by passing explicit values:
 rampIntegration({
   clientId: process.env.CUSTOM_RAMP_ID,
   clientSecret: process.env.CUSTOM_RAMP_SECRET,
-  scopes: ["transactions:read", "cards:read"],
 });
 ```
 
@@ -57,7 +55,9 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("ramp");
-const transactions = await client.ramp.listTransactions({});
+const result = await client.ramp.listTransactions({});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -77,102 +77,91 @@ const customClient = createMCPClient({
   name="RampIntegrationConfig"
 />
 
-## Available Tools
 
-### Transactions
+## Tools
 
-- **`ramp_list_transactions`** - List transactions
-- **`ramp_get_transaction`** - Get a specific transaction
+### `ramp_list_transactions`
 
-### Cards
+List transactions
 
-- **`ramp_list_cards`** - List cards
-- **`ramp_get_card`** - Get a specific card
+<AutoTypeTable
+  path="generated/tool-params/ramp.ts"
+  name="RampListTransactionsParams"
+/>
 
-### Users
+### `ramp_get_transaction`
 
-- **`ramp_list_users`** - List users
-- **`ramp_get_user`** - Get a specific user
+Get transaction details
 
-### Departments
+<AutoTypeTable
+  path="generated/tool-params/ramp.ts"
+  name="RampGetTransactionParams"
+/>
 
-- **`ramp_list_departments`** - List departments
+### `ramp_list_cards`
 
-### Reimbursements
+List cards
 
-- **`ramp_list_reimbursements`** - List reimbursements
+<AutoTypeTable
+  path="generated/tool-params/ramp.ts"
+  name="RampListCardsParams"
+/>
 
-### Spend Limits
+### `ramp_get_card`
 
-- **`ramp_get_spend_limits`** - Get spend limits
+Get card details
 
-## Examples
+<AutoTypeTable
+  path="generated/tool-params/ramp.ts"
+  name="RampGetCardParams"
+/>
 
-### List Transactions
+### `ramp_list_users`
 
-```typescript
-const result = await client.ramp.listTransactions({
-  fromDate: "2024-01-01",
-  toDate: "2024-12-31",
-  limit: 100,
-});
+List users
 
-console.log("Transactions:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/ramp.ts"
+  name="RampListUsersParams"
+/>
 
-### Get Card Details
+### `ramp_get_user`
 
-```typescript
-const result = await client.ramp.getCard({
-  cardId: "card_123",
-});
+Get user details
 
-console.log("Card:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/ramp.ts"
+  name="RampGetUserParams"
+/>
 
-### List Users
+### `ramp_list_departments`
 
-```typescript
-const result = await client.ramp.listUsers({
-  departmentId: "dept_123",
-});
+List departments
 
-console.log("Users:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/ramp.ts"
+  name="RampListDepartmentsParams"
+/>
 
-## OAuth Scopes
+### `ramp_list_reimbursements`
 
-The default scopes are `['transactions:read', 'cards:read', 'users:read']`. You may need different scopes:
+List reimbursements
 
-- **`transactions:read`** - Read transaction data
-- **`transactions:write`** - Manage transactions
-- **`cards:read`** - Read card data
-- **`cards:write`** - Manage cards
-- **`users:read`** - Read user data
-- **`users:write`** - Manage users
-- **`reimbursements:read`** - Read reimbursements
-- **`reimbursements:write`** - Manage reimbursements
+<AutoTypeTable
+  path="generated/tool-params/ramp.ts"
+  name="RampListReimbursementsParams"
+/>
 
-## Error Handling
+### `ramp_get_spend_limits`
 
-```typescript
-try {
-  const result = await client.ramp.getTransaction({
-    transactionId: "txn_123",
-  });
-} catch (error) {
-  if (error.message.includes("not found")) {
-    console.error("Transaction not found");
-  } else if (error.message.includes("authentication")) {
-    console.error("Authentication failed");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+Get spend limits
 
-## Next Steps
+<AutoTypeTable
+  path="generated/tool-params/ramp.ts"
+  name="RampGetSpendLimitsParams"
+/>
 
-- Explore the [Stripe Integration](/docs/integrations/stripe)
-- Explore the [Polar Integration](/docs/integrations/polar)
-- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
+## Notes
+
+- Category: Finance
+- Authentication mode: OAuth

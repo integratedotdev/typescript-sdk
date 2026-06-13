@@ -1,11 +1,13 @@
 ---
-title: "PlanetScale"
+title: "PlanetScale Integration"
 description: "Manage PlanetScale databases, branches, and schema changes"
 ---
 
-The PlanetScale integration provides access to manage planetscale databases, branches, and schema changes through the Integrate MCP server.
+The PlanetScale integration provides access to manage PlanetScale databases, branches, and schema changes through the Integrate MCP server.
 
 ## Installation
+
+The PlanetScale integration is included with the SDK:
 
 ```typescript
 import { planetscaleIntegration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { planetscaleIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add PlanetScale to your server configuration. The integration automatically reads OAuth credentials from your environment (`PLANETSCALE_CLIENT_ID`, `PLANETSCALE_CLIENT_SECRET`):
+### 1. Create a PlanetScale OAuth App
+
+1. Go to [Auth Developer Portal](https://auth.planetscale.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the PlanetScale integration to your server configuration. The integration automatically reads `PLANETSCALE_CLIENT_ID` and `PLANETSCALE_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, planetscaleIntegration } from "integrate-sdk/server";
@@ -21,22 +32,40 @@ import { createMCPServer, planetscaleIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    planetscaleIntegration(),
+    planetscaleIntegration({
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+planetscaleIntegration({
+  clientId: process.env.CUSTOM_PLANETSCALE_ID,
+  clientSecret: process.env.CUSTOM_PLANETSCALE_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("planetscale");
-const result = await client.planetscale.getCurrentUser({
-  // Add the parameters required by this tool
-});
+// Use client.planetscale methods after connecting
+```
 
-console.log(result);
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, planetscaleIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [planetscaleIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,34 +75,64 @@ console.log(result);
   name="PlanetScaleIntegrationConfig"
 />
 
-## Environment Variables
 
-- `PLANETSCALE_CLIENT_ID`
-- `PLANETSCALE_CLIENT_SECRET`
+## Tools
 
-## Default Scopes
+### `planetscale_get_current_user`
 
-These defaults are applied unless you override `scopes` in the integration config:
+Get current user
 
-- `database:read_branches`
-- `database:read_deploy_requests`
-- `organization:read`
+_No parameters._
 
-## Available Tools
+### `planetscale_list_organizations`
 
-- `planetscale_get_current_user`
-- `planetscale_list_organizations`
-- `planetscale_get_organization`
-- `planetscale_list_databases`
-- `planetscale_get_database`
-- `planetscale_list_branches`
-- `planetscale_get_branch`
-- `planetscale_list_deploy_requests`
-- `planetscale_get_deploy_request`
+List organizations
+
+_No parameters._
+
+### `planetscale_get_organization`
+
+Get organization
+
+_No parameters._
+
+### `planetscale_list_databases`
+
+List databases
+
+_No parameters._
+
+### `planetscale_get_database`
+
+Get database
+
+_No parameters._
+
+### `planetscale_list_branches`
+
+List branches
+
+_No parameters._
+
+### `planetscale_get_branch`
+
+Get branch
+
+_No parameters._
+
+### `planetscale_list_deploy_requests`
+
+List deploy requests
+
+_No parameters._
+
+### `planetscale_get_deploy_request`
+
+Get deploy request
+
+_No parameters._
 
 ## Notes
 
 - Category: Infrastructure
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

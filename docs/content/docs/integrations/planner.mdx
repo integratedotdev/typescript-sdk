@@ -1,11 +1,13 @@
 ---
-title: "Microsoft Planner"
+title: "Microsoft Planner Integration"
 description: "Manage Microsoft Planner plans, buckets, and tasks"
 ---
 
-The Microsoft Planner integration provides access to manage microsoft planner plans, buckets, and tasks through the Integrate MCP server.
+The Microsoft Planner integration provides access to manage Microsoft Planner plans, buckets, and tasks through the Integrate MCP server.
 
 ## Installation
+
+The Microsoft Planner integration is included with the SDK:
 
 ```typescript
 import { plannerIntegration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { plannerIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Microsoft Planner to your server configuration. The integration automatically reads OAuth credentials from your environment (`PLANNER_CLIENT_ID`, `PLANNER_CLIENT_SECRET`):
+### 1. Create a Microsoft Planner OAuth App
+
+1. Go to [Azure Portal — App Registrations](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Microsoft Planner integration to your server configuration. The integration automatically reads `PLANNER_CLIENT_ID` and `PLANNER_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, plannerIntegration } from "integrate-sdk/server";
@@ -21,22 +32,42 @@ import { createMCPServer, plannerIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    plannerIntegration(),
+    plannerIntegration({
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+plannerIntegration({
+  clientId: process.env.CUSTOM_PLANNER_ID,
+  clientSecret: process.env.CUSTOM_PLANNER_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("planner");
-const result = await client.planner.createBucket({
-  // Add the parameters required by this tool
-});
+const result = await client.planner.createBucket({});
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, plannerIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [plannerIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,38 +77,127 @@ console.log(result);
   name="PlannerIntegrationConfig"
 />
 
-## Environment Variables
 
-- `PLANNER_CLIENT_ID`
-- `PLANNER_CLIENT_SECRET`
+## Tools
 
-## Default Scopes
+### `planner_create_bucket`
 
-These defaults are applied unless you override `scopes` in the integration config:
+Create bucket
 
-- `Tasks.ReadWrite`
-- `Group.Read.All`
-- `offline_access`
+<AutoTypeTable
+  path="generated/tool-params/planner.ts"
+  name="PlannerCreateBucketParams"
+/>
 
-## Available Tools
+### `planner_create_plan`
 
-- `planner_create_bucket`
-- `planner_create_plan`
-- `planner_create_task`
-- `planner_delete_task`
-- `planner_get_plan`
-- `planner_get_task`
-- `planner_get_task_details`
-- `planner_list_buckets`
-- `planner_list_group_plans`
-- `planner_list_my_plans`
-- `planner_list_my_tasks`
-- `planner_list_plan_tasks`
-- `planner_update_task`
+Create plan
+
+<AutoTypeTable
+  path="generated/tool-params/planner.ts"
+  name="PlannerCreatePlanParams"
+/>
+
+### `planner_create_task`
+
+Create task
+
+<AutoTypeTable
+  path="generated/tool-params/planner.ts"
+  name="PlannerCreateTaskParams"
+/>
+
+### `planner_delete_task`
+
+Delete task
+
+<AutoTypeTable
+  path="generated/tool-params/planner.ts"
+  name="PlannerDeleteTaskParams"
+/>
+
+### `planner_get_plan`
+
+Get plan
+
+<AutoTypeTable
+  path="generated/tool-params/planner.ts"
+  name="PlannerGetPlanParams"
+/>
+
+### `planner_get_task`
+
+Get task
+
+<AutoTypeTable
+  path="generated/tool-params/planner.ts"
+  name="PlannerGetTaskParams"
+/>
+
+### `planner_get_task_details`
+
+Get task details
+
+<AutoTypeTable
+  path="generated/tool-params/planner.ts"
+  name="PlannerGetTaskDetailsParams"
+/>
+
+### `planner_list_buckets`
+
+List buckets
+
+<AutoTypeTable
+  path="generated/tool-params/planner.ts"
+  name="PlannerListBucketsParams"
+/>
+
+### `planner_list_group_plans`
+
+List group plans
+
+<AutoTypeTable
+  path="generated/tool-params/planner.ts"
+  name="PlannerListGroupPlansParams"
+/>
+
+### `planner_list_my_plans`
+
+List my plans
+
+<AutoTypeTable
+  path="generated/tool-params/planner.ts"
+  name="PlannerListMyPlansParams"
+/>
+
+### `planner_list_my_tasks`
+
+List my tasks
+
+<AutoTypeTable
+  path="generated/tool-params/planner.ts"
+  name="PlannerListMyTasksParams"
+/>
+
+### `planner_list_plan_tasks`
+
+List plan tasks
+
+<AutoTypeTable
+  path="generated/tool-params/planner.ts"
+  name="PlannerListPlanTasksParams"
+/>
+
+### `planner_update_task`
+
+Update task
+
+<AutoTypeTable
+  path="generated/tool-params/planner.ts"
+  name="PlannerUpdateTaskParams"
+/>
 
 ## Notes
 
 - Category: Productivity
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

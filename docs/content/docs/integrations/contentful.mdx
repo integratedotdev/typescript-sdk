@@ -1,0 +1,147 @@
+---
+title: "Contentful Integration"
+description: "Manage Contentful list spaces, get space, list entries, get entry, create entry"
+---
+
+The Contentful integration provides access to manage Contentful list spaces, get space, list entries, get entry, create entry through the Integrate MCP server.
+
+## Installation
+
+The Contentful integration is included with the SDK:
+
+```typescript
+import { contentfulIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Contentful OAuth App
+
+1. Create an OAuth application for Contentful
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Contentful integration to your server configuration. The integration automatically reads `CONTENTFUL_CLIENT_ID` and `CONTENTFUL_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, contentfulIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    contentfulIntegration({
+      scopes: ["content_management_manage"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+contentfulIntegration({
+  clientId: process.env.CUSTOM_CONTENTFUL_ID,
+  clientSecret: process.env.CUSTOM_CONTENTFUL_SECRET,
+      scopes: ["content_management_manage"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("contentful");
+const result = await client.contentful.listSpaces({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, contentfulIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [contentfulIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/contentful.ts"
+  name="ContentfulIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `content_management_manage`
+
+## Tools
+
+### `contentful_list_spaces`
+
+List spaces
+
+<AutoTypeTable
+  path="generated/tool-params/contentful.ts"
+  name="ContentfulListSpacesParams"
+/>
+
+### `contentful_get_space`
+
+Get space
+
+<AutoTypeTable
+  path="generated/tool-params/contentful.ts"
+  name="ContentfulGetSpaceParams"
+/>
+
+### `contentful_list_entries`
+
+List entries
+
+<AutoTypeTable
+  path="generated/tool-params/contentful.ts"
+  name="ContentfulListEntriesParams"
+/>
+
+### `contentful_get_entry`
+
+Get entry
+
+<AutoTypeTable
+  path="generated/tool-params/contentful.ts"
+  name="ContentfulGetEntryParams"
+/>
+
+### `contentful_create_entry`
+
+Create entry
+
+<AutoTypeTable
+  path="generated/tool-params/contentful.ts"
+  name="ContentfulCreateEntryParams"
+/>
+
+### `contentful_publish_entry`
+
+Publish entry
+
+<AutoTypeTable
+  path="generated/tool-params/contentful.ts"
+  name="ContentfulPublishEntryParams"
+/>
+
+## Notes
+
+- Category: Websites & CMS
+- Authentication mode: OAuth

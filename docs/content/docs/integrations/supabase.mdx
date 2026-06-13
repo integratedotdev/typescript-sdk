@@ -1,11 +1,13 @@
 ---
-title: "Supabase"
-description: "Manage Supabase organizations, projects, Postgres, API keys, secrets, and branches"
+title: "Supabase Integration"
+description: "Manage Supabase organizations, projects, Postgres settings, API keys, secrets, and branches via the Management API"
 ---
 
-The Supabase integration provides access to manage supabase organizations, projects, postgres, api keys, secrets, and branches through the Integrate MCP server.
+The Supabase integration provides access to manage Supabase organizations, projects, Postgres settings, API keys, secrets, and branches via the Management API through the Integrate MCP server.
 
 ## Installation
+
+The Supabase integration is included with the SDK:
 
 ```typescript
 import { supabaseIntegration } from "integrate-sdk/server";
@@ -13,7 +15,7 @@ import { supabaseIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Supabase to your server configuration. This integration supports OAuth and alternate token-based configuration; the config table below shows the available options.
+Add Supabase to your server configuration. Provide credentials via environment variables or integration config:
 
 ```typescript
 import { createMCPServer, supabaseIntegration } from "integrate-sdk/server";
@@ -21,7 +23,9 @@ import { createMCPServer, supabaseIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    supabaseIntegration(),
+    supabaseIntegration({
+      // See configuration options below
+    }),
   ],
 });
 ```
@@ -31,13 +35,14 @@ export const { client: serverClient } = createMCPServer({
 ```typescript
 import { client } from "integrate-sdk";
 
-await client.authorize("supabase");
-const result = await client.supabase.getProfile({
-  // Add the parameters required by this tool
-});
+const result = await client.supabase.getProfile({});
 
 console.log(result);
 ```
+
+## Environment Variables
+
+- `SUPABASE_API_KEY` (when supported by this integration)
 
 ## Configuration Options
 
@@ -46,35 +51,151 @@ console.log(result);
   name="SupabaseIntegrationConfig"
 />
 
-## Environment Variables
 
-- `SUPABASE_ACCESS_TOKEN`
-- `SUPABASE_CLIENT_ID`
-- `SUPABASE_CLIENT_SECRET`
+## Tools
 
-## Available Tools
+### `supabase_get_profile`
 
-- `supabase_get_profile`
-- `supabase_list_organizations`
-- `supabase_get_organization`
-- `supabase_list_organization_projects`
-- `supabase_list_projects`
-- `supabase_get_project`
-- `supabase_create_project`
-- `supabase_update_project`
-- `supabase_delete_project`
-- `supabase_list_project_api_keys`
-- `supabase_create_project_api_key`
-- `supabase_delete_project_api_key`
-- `supabase_list_project_secrets`
-- `supabase_list_project_branches`
-- `supabase_get_project_health`
-- `supabase_get_database_postgres_config`
-- `supabase_list_available_regions`
+Get profile
+
+_No parameters._
+
+### `supabase_list_organizations`
+
+List organizations
+
+_No parameters._
+
+### `supabase_get_organization`
+
+Get organization
+
+<AutoTypeTable
+  path="generated/tool-params/supabase.ts"
+  name="SupabaseGetOrganizationParams"
+/>
+
+### `supabase_list_organization_projects`
+
+List organization projects
+
+<AutoTypeTable
+  path="generated/tool-params/supabase.ts"
+  name="SupabaseListOrganizationProjectsParams"
+/>
+
+### `supabase_list_projects`
+
+List projects
+
+_No parameters._
+
+### `supabase_get_project`
+
+Get project
+
+<AutoTypeTable
+  path="generated/tool-params/supabase.ts"
+  name="SupabaseGetProjectParams"
+/>
+
+### `supabase_create_project`
+
+Create project
+
+<AutoTypeTable
+  path="generated/tool-params/supabase.ts"
+  name="SupabaseCreateProjectParams"
+/>
+
+### `supabase_update_project`
+
+Update project
+
+<AutoTypeTable
+  path="generated/tool-params/supabase.ts"
+  name="SupabaseUpdateProjectParams"
+/>
+
+### `supabase_delete_project`
+
+Delete project
+
+<AutoTypeTable
+  path="generated/tool-params/supabase.ts"
+  name="SupabaseDeleteProjectParams"
+/>
+
+### `supabase_list_project_api_keys`
+
+List project api keys
+
+<AutoTypeTable
+  path="generated/tool-params/supabase.ts"
+  name="SupabaseListProjectApiKeysParams"
+/>
+
+### `supabase_create_project_api_key`
+
+Create project api key
+
+<AutoTypeTable
+  path="generated/tool-params/supabase.ts"
+  name="SupabaseCreateProjectApiKeyParams"
+/>
+
+### `supabase_delete_project_api_key`
+
+Delete project api key
+
+<AutoTypeTable
+  path="generated/tool-params/supabase.ts"
+  name="SupabaseDeleteProjectApiKeyParams"
+/>
+
+### `supabase_list_project_secrets`
+
+List project secrets
+
+<AutoTypeTable
+  path="generated/tool-params/supabase.ts"
+  name="SupabaseListProjectSecretsParams"
+/>
+
+### `supabase_list_project_branches`
+
+List project branches
+
+<AutoTypeTable
+  path="generated/tool-params/supabase.ts"
+  name="SupabaseListProjectBranchesParams"
+/>
+
+### `supabase_get_project_health`
+
+Get project health
+
+<AutoTypeTable
+  path="generated/tool-params/supabase.ts"
+  name="SupabaseGetProjectHealthParams"
+/>
+
+### `supabase_get_database_postgres_config`
+
+Get database postgres config
+
+<AutoTypeTable
+  path="generated/tool-params/supabase.ts"
+  name="SupabaseGetDatabasePostgresConfigParams"
+/>
+
+### `supabase_list_available_regions`
+
+List available regions
+
+_No parameters._
 
 ## Notes
 
 - Category: Infrastructure
-- Authentication mode: OAuth or token-based
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-
+- Authentication mode: API key

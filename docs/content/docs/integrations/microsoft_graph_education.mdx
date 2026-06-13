@@ -1,0 +1,150 @@
+---
+title: "Microsoft Graph Education Integration"
+description: "Manage Microsoft Graph Education list classes, get class, list users, list assignments, create assignment"
+---
+
+The Microsoft Graph Education integration provides access to manage Microsoft Graph Education list classes, get class, list users, list assignments, create assignment through the Integrate MCP server.
+
+## Installation
+
+The Microsoft Graph Education integration is included with the SDK:
+
+```typescript
+import { microsoftGraphEducationIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Microsoft Graph Education OAuth App
+
+1. Go to [Azure Portal — App Registrations](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Microsoft Graph Education integration to your server configuration. The integration automatically reads `MICROSOFT_GRAPH_EDUCATION_CLIENT_ID` and `MICROSOFT_GRAPH_EDUCATION_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, microsoftGraphEducationIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    microsoftGraphEducationIntegration({
+      scopes: ["EduRoster.ReadWrite", "EduAssignments.ReadWrite", "offline_access"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+microsoftGraphEducationIntegration({
+  clientId: process.env.CUSTOM_MICROSOFT_GRAPH_EDUCATION_ID,
+  clientSecret: process.env.CUSTOM_MICROSOFT_GRAPH_EDUCATION_SECRET,
+      scopes: ["EduRoster.ReadWrite", "EduAssignments.ReadWrite", "offline_access"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("microsoft_graph_education");
+const result = await client.microsoft_graph_education.listClasses({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, microsoftGraphEducationIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [microsoftGraphEducationIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/microsoft_graph_education.ts"
+  name="MicrosoftGraphEducationIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `EduRoster.ReadWrite`
+- `EduAssignments.ReadWrite`
+- `offline_access`
+
+## Tools
+
+### `microsoft_graph_education_list_classes`
+
+Graph education list classes
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_graph_education.ts"
+  name="MicrosoftGraphEducationListClassesParams"
+/>
+
+### `microsoft_graph_education_get_class`
+
+Graph education get class
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_graph_education.ts"
+  name="MicrosoftGraphEducationGetClassParams"
+/>
+
+### `microsoft_graph_education_list_users`
+
+Graph education list users
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_graph_education.ts"
+  name="MicrosoftGraphEducationListUsersParams"
+/>
+
+### `microsoft_graph_education_list_assignments`
+
+Graph education list assignments
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_graph_education.ts"
+  name="MicrosoftGraphEducationListAssignmentsParams"
+/>
+
+### `microsoft_graph_education_create_assignment`
+
+Graph education create assignment
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_graph_education.ts"
+  name="MicrosoftGraphEducationCreateAssignmentParams"
+/>
+
+### `microsoft_graph_education_list_schools`
+
+Graph education list schools
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_graph_education.ts"
+  name="MicrosoftGraphEducationListSchoolsParams"
+/>
+
+## Notes
+
+- Category: Education
+- Authentication mode: OAuth

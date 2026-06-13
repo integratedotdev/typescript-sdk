@@ -1,0 +1,148 @@
+---
+title: "Amazon Selling Partner Integration"
+description: "Manage Amazon Selling Partner search catalog items, list orders, get order, list inventory, list listings"
+---
+
+The Amazon Selling Partner integration provides access to manage Amazon Selling Partner search catalog items, list orders, get order, list inventory, list listings through the Integrate MCP server.
+
+## Installation
+
+The Amazon Selling Partner integration is included with the SDK:
+
+```typescript
+import { amazonIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create an Amazon Selling Partner OAuth App
+
+1. Create an OAuth application for Amazon Selling Partner
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Amazon Selling Partner integration to your server configuration. The integration automatically reads `AMAZON_CLIENT_ID` and `AMAZON_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, amazonIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    amazonIntegration({
+      scopes: ["sellingpartnerapi::notifications", "sellingpartnerapi::migration"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+amazonIntegration({
+  clientId: process.env.CUSTOM_AMAZON_ID,
+  clientSecret: process.env.CUSTOM_AMAZON_SECRET,
+      scopes: ["sellingpartnerapi::notifications", "sellingpartnerapi::migration"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("amazon");
+const result = await client.amazon.searchCatalogItems({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, amazonIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [amazonIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/amazon.ts"
+  name="AmazonIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `sellingpartnerapi::notifications`
+- `sellingpartnerapi::migration`
+
+## Tools
+
+### `amazon_search_catalog_items`
+
+Search catalog items
+
+<AutoTypeTable
+  path="generated/tool-params/amazon.ts"
+  name="AmazonSearchCatalogItemsParams"
+/>
+
+### `amazon_list_orders`
+
+List orders
+
+<AutoTypeTable
+  path="generated/tool-params/amazon.ts"
+  name="AmazonListOrdersParams"
+/>
+
+### `amazon_get_order`
+
+Get order
+
+<AutoTypeTable
+  path="generated/tool-params/amazon.ts"
+  name="AmazonGetOrderParams"
+/>
+
+### `amazon_list_inventory`
+
+List inventory
+
+<AutoTypeTable
+  path="generated/tool-params/amazon.ts"
+  name="AmazonListInventoryParams"
+/>
+
+### `amazon_list_listings`
+
+List listings
+
+<AutoTypeTable
+  path="generated/tool-params/amazon.ts"
+  name="AmazonListListingsParams"
+/>
+
+### `amazon_patch_listing`
+
+Patch listing
+
+<AutoTypeTable
+  path="generated/tool-params/amazon.ts"
+  name="AmazonPatchListingParams"
+/>
+
+## Notes
+
+- Category: Commerce
+- Authentication mode: OAuth

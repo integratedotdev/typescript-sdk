@@ -1,9 +1,9 @@
 ---
-title: "Intercom"
-description: "Manage contacts, conversations, and companies"
+title: "Intercom Integration"
+description: "Manage Intercom contacts and conversations"
 ---
 
-The Intercom integration provides access to Intercom's API through the Integrate MCP server.
+The Intercom integration provides access to manage Intercom contacts and conversations through the Integrate MCP server.
 
 ## Installation
 
@@ -15,11 +15,11 @@ import { intercomIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-### 1. Create an Intercom App
+### 1. Create an Intercom OAuth App
 
 1. Go to [Intercom Developer Hub](https://developers.intercom.com/)
-2. Create a new app
-3. Configure OAuth settings
+2. Create a new OAuth application
+3. Configure your redirect URI
 4. Note your Client ID and Client Secret
 
 ### 2. Configure the Integration on Your Server
@@ -33,7 +33,6 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     intercomIntegration({
-      // Intercom uses app-level permissions
     }),
   ],
 });
@@ -56,7 +55,9 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("intercom");
-const contacts = await client.intercom.listContacts({});
+const result = await client.intercom.listContacts({});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -76,99 +77,91 @@ const customClient = createMCPClient({
   name="IntercomIntegrationConfig"
 />
 
-## Available Tools
 
-### Contacts
+## Tools
 
-- **`intercom_list_contacts`** - List contacts
-- **`intercom_get_contact`** - Get a specific contact
-- **`intercom_create_contact`** - Create a new contact
-- **`intercom_search_contacts`** - Search contacts
+### `intercom_list_contacts`
 
-### Conversations
+List contacts
 
-- **`intercom_list_conversations`** - List conversations
-- **`intercom_get_conversation`** - Get a specific conversation
-- **`intercom_reply_conversation`** - Reply to a conversation
+<AutoTypeTable
+  path="generated/tool-params/intercom.ts"
+  name="IntercomListContactsParams"
+/>
 
-### Companies
+### `intercom_get_contact`
 
-- **`intercom_list_companies`** - List companies
-- **`intercom_get_company`** - Get a specific company
+Get contact details
 
-## Examples
+<AutoTypeTable
+  path="generated/tool-params/intercom.ts"
+  name="IntercomGetContactParams"
+/>
 
-### Create a Contact
+### `intercom_create_contact`
 
-```typescript
-const result = await client.intercom.createContact({
-  email: "user@example.com",
-  name: "John Doe",
-  customAttributes: {
-    plan: "premium",
-    signup_date: "2024-01-15",
-  },
-});
+Create a new contact
 
-console.log("Contact created:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/intercom.ts"
+  name="IntercomCreateContactParams"
+/>
 
-### Reply to Conversation
+### `intercom_list_conversations`
 
-```typescript
-const result = await client.intercom.replyConversation({
-  conversationId: "12345",
-  type: "comment",
-  body: "Thanks for reaching out! I'll look into this for you.",
-});
+List conversations
 
-console.log("Reply sent:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/intercom.ts"
+  name="IntercomListConversationsParams"
+/>
 
-### Search Contacts
+### `intercom_get_conversation`
 
-```typescript
-const result = await client.intercom.searchContacts({
-  query: {
-    field: "email",
-    operator: "=",
-    value: "user@example.com",
-  },
-});
+Get conversation details
 
-console.log("Search results:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/intercom.ts"
+  name="IntercomGetConversationParams"
+/>
 
-## OAuth Scopes
+### `intercom_reply_conversation`
 
-Intercom uses app-level permissions instead of traditional OAuth scopes. Configure permissions in your Intercom app settings:
+Reply to a conversation
 
-- Read and write contacts
-- Read and write conversations
-- Read and write companies
-- Access user data
+<AutoTypeTable
+  path="generated/tool-params/intercom.ts"
+  name="IntercomReplyConversationParams"
+/>
 
-## Error Handling
+### `intercom_list_companies`
 
-```typescript
-try {
-  const result = await client.intercom.createContact({
-    email: "user@example.com",
-    name: "John Doe",
-  });
-} catch (error) {
-  if (error.message.includes("already exists")) {
-    console.error("Contact already exists");
-  } else if (error.message.includes("authentication")) {
-    console.error("Authentication failed");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+List companies
 
-## Next Steps
+<AutoTypeTable
+  path="generated/tool-params/intercom.ts"
+  name="IntercomListCompaniesParams"
+/>
 
-- Explore the [HubSpot Integration](/docs/integrations/hubspot)
-- Explore the [Zendesk Integration](/docs/integrations/zendesk)
-- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
+### `intercom_get_company`
+
+Get company details
+
+<AutoTypeTable
+  path="generated/tool-params/intercom.ts"
+  name="IntercomGetCompanyParams"
+/>
+
+### `intercom_search_contacts`
+
+Search for contacts
+
+<AutoTypeTable
+  path="generated/tool-params/intercom.ts"
+  name="IntercomSearchContactsParams"
+/>
+
+## Notes
+
+- Category: Business
+- Authentication mode: OAuth

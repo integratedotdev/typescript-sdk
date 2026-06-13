@@ -1,0 +1,151 @@
+---
+title: "Microsoft Ads Integration"
+description: "Manage Microsoft Ads get user, search accounts, get campaigns, add campaigns, get ad groups"
+---
+
+The Microsoft Ads integration provides access to manage Microsoft Ads get user, search accounts, get campaigns, add campaigns, get ad groups through the Integrate MCP server.
+
+## Installation
+
+The Microsoft Ads integration is included with the SDK:
+
+```typescript
+import { microsoftAdsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Microsoft Ads OAuth App
+
+1. Go to [Azure Portal — App Registrations](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Microsoft Ads integration to your server configuration. The integration automatically reads `MICROSOFT_ADS_CLIENT_ID` and `MICROSOFT_ADS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, microsoftAdsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    microsoftAdsIntegration({
+      scopes: ["https://ads.microsoft.com/msads.manage", "offline_access"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+microsoftAdsIntegration({
+  clientId: process.env.CUSTOM_MICROSOFT_ADS_ID,
+  clientSecret: process.env.CUSTOM_MICROSOFT_ADS_SECRET,
+      scopes: ["https://ads.microsoft.com/msads.manage", "offline_access"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("microsoft_ads");
+const result = await client.microsoft_ads.getUser({
+  query_json: "value",
+});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, microsoftAdsIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [microsoftAdsIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/microsoft_ads.ts"
+  name="MicrosoftAdsIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `https://ads.microsoft.com/msads.manage`
+- `offline_access`
+
+## Tools
+
+### `microsoft_ads_get_user`
+
+Ads get user
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_ads.ts"
+  name="MicrosoftAdsGetUserParams"
+/>
+
+### `microsoft_ads_search_accounts`
+
+Ads search accounts
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_ads.ts"
+  name="MicrosoftAdsSearchAccountsParams"
+/>
+
+### `microsoft_ads_get_campaigns`
+
+Ads get campaigns
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_ads.ts"
+  name="MicrosoftAdsGetCampaignsParams"
+/>
+
+### `microsoft_ads_add_campaigns`
+
+Ads add campaigns
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_ads.ts"
+  name="MicrosoftAdsAddCampaignsParams"
+/>
+
+### `microsoft_ads_get_ad_groups`
+
+Ads get ad groups
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_ads.ts"
+  name="MicrosoftAdsGetAdGroupsParams"
+/>
+
+### `microsoft_ads_get_keywords`
+
+Ads get keywords
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_ads.ts"
+  name="MicrosoftAdsGetKeywordsParams"
+/>
+
+## Notes
+
+- Category: Marketing
+- Authentication mode: OAuth

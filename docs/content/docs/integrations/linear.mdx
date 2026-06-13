@@ -1,9 +1,9 @@
 ---
-title: "Linear"
-description: "Manage issues, projects, and teams"
+title: "Linear Integration"
+description: "Manage Linear issues, projects, and cycles"
 ---
 
-The Linear integration provides access to Linear's API through the Integrate MCP server.
+The Linear integration provides access to manage Linear issues, projects, and cycles through the Integrate MCP server.
 
 ## Installation
 
@@ -33,7 +33,6 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     linearIntegration({
-      scopes: ["read", "write", "issues:create"], // Optional
     }),
   ],
 });
@@ -45,7 +44,6 @@ You can override the environment variables by passing explicit values:
 linearIntegration({
   clientId: process.env.CUSTOM_LINEAR_ID,
   clientSecret: process.env.CUSTOM_LINEAR_SECRET,
-  scopes: ["read", "write", "issues:create"],
 });
 ```
 
@@ -57,7 +55,11 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("linear");
-const issues = await client.linear.listIssues({});
+const result = await client.linear.createIssue({
+  teamId: "value",
+});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -77,104 +79,307 @@ const customClient = createMCPClient({
   name="LinearIntegrationConfig"
 />
 
-## Available Tools
 
-### Issues
+## Tools
 
-- **`linear_create_issue`** - Create a new issue
-- **`linear_list_issues`** - List issues
-- **`linear_get_issue`** - Get a specific issue
-- **`linear_update_issue`** - Update an issue
-- **`linear_search_issues`** - Search issues
+### `linear_create_issue`
 
-### Projects
+Create a new issue in Linear
 
-- **`linear_list_projects`** - List projects
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearCreateIssueParams"
+/>
 
-### Teams
+### `linear_list_issues`
 
-- **`linear_list_teams`** - List teams
+List issues in Linear
 
-### Comments
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearListIssuesParams"
+/>
 
-- **`linear_add_comment`** - Add a comment to an issue
+### `linear_get_issue`
 
-### Labels
+Get a specific issue by ID or identifier
 
-- **`linear_list_labels`** - List available labels
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearGetIssueParams"
+/>
 
-## Examples
+### `linear_update_issue`
 
-### Create an Issue
+Update an existing issue
 
-```typescript
-const result = await client.linear.createIssue({
-  teamId: "team_abc123",
-  title: "Fix login bug",
-  description: "Users are unable to log in with Google OAuth",
-  priority: 1,
-  labelIds: ["label_xyz789"],
-  assigneeId: "user_def456",
-});
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearUpdateIssueParams"
+/>
 
-console.log("Issue created:", result);
-```
+### `linear_archive_issue`
 
-### List Issues
+Archive an issue
 
-```typescript
-const result = await client.linear.listIssues({
-  teamId: "team_abc123",
-  filter: {
-    state: { name: { eq: "In Progress" } },
-  },
-  first: 50,
-});
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearArchiveIssueParams"
+/>
 
-console.log("Issues:", result);
-```
+### `linear_delete_issue`
 
-### Add Comment
+Delete an issue permanently
 
-```typescript
-const result = await client.linear.addComment({
-  issueId: "issue_abc123",
-  body: "I've started working on this issue",
-});
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearDeleteIssueParams"
+/>
 
-console.log("Comment added:", result);
-```
+### `linear_search_issues`
 
-## OAuth Scopes
+Search for issues
 
-The default scopes are `['read', 'write', 'issues:create']`. You may need different scopes:
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearSearchIssuesParams"
+/>
 
-- **`read`** - Read workspace data
-- **`write`** - Modify workspace data
-- **`issues:create`** - Create issues
-- **`admin`** - Administrative access
+### `linear_add_comment`
 
-## Error Handling
+Add a comment to an issue
 
-```typescript
-try {
-  const result = await client.linear.createIssue({
-    teamId: "team_abc123",
-    title: "New issue",
-  });
-} catch (error) {
-  if (error.message.includes("not found")) {
-    console.error("Team not found");
-  } else if (error.message.includes("authentication")) {
-    console.error("Authentication failed");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearAddCommentParams"
+/>
 
-## Next Steps
+### `linear_list_users`
 
-- Explore the [GitHub Integration](/docs/integrations/github)
-- Explore the [Notion Integration](/docs/integrations/notion)
-- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
+List users in the workspace
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearListUsersParams"
+/>
+
+### `linear_get_user`
+
+Get a specific user by ID
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearGetUserParams"
+/>
+
+### `linear_list_teams`
+
+List teams in Linear
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearListTeamsParams"
+/>
+
+### `linear_list_workflow_states`
+
+List workflow states
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearListWorkflowStatesParams"
+/>
+
+### `linear_create_workflow_state`
+
+Create a new workflow state
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearCreateWorkflowStateParams"
+/>
+
+### `linear_list_projects`
+
+List projects in Linear
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearListProjectsParams"
+/>
+
+### `linear_get_project`
+
+Get a specific project by ID
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearGetProjectParams"
+/>
+
+### `linear_create_project`
+
+Create a new project
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearCreateProjectParams"
+/>
+
+### `linear_update_project`
+
+Update an existing project
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearUpdateProjectParams"
+/>
+
+### `linear_list_cycles`
+
+List cycles (sprints)
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearListCyclesParams"
+/>
+
+### `linear_get_cycle`
+
+Get a specific cycle by ID
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearGetCycleParams"
+/>
+
+### `linear_create_cycle`
+
+Create a new cycle (sprint)
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearCreateCycleParams"
+/>
+
+### `linear_update_cycle`
+
+Update an existing cycle
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearUpdateCycleParams"
+/>
+
+### `linear_list_labels`
+
+List labels in Linear
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearListLabelsParams"
+/>
+
+### `linear_create_issue_relation`
+
+Create a relation between two issues
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearCreateIssueRelationParams"
+/>
+
+### `linear_delete_issue_relation`
+
+Delete an issue relation
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearDeleteIssueRelationParams"
+/>
+
+### `linear_list_documents`
+
+List documents
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearListDocumentsParams"
+/>
+
+### `linear_get_document`
+
+Get a specific document by ID
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearGetDocumentParams"
+/>
+
+### `linear_create_document`
+
+Create a new document
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearCreateDocumentParams"
+/>
+
+### `linear_update_document`
+
+Update an existing document
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearUpdateDocumentParams"
+/>
+
+### `linear_list_initiatives`
+
+List initiatives
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearListInitiativesParams"
+/>
+
+### `linear_get_initiative`
+
+Get a specific initiative by ID
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearGetInitiativeParams"
+/>
+
+### `linear_create_initiative`
+
+Create a new initiative
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearCreateInitiativeParams"
+/>
+
+### `linear_create_attachment`
+
+Create an attachment (link) on an issue
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearCreateAttachmentParams"
+/>
+
+### `linear_create_project_update`
+
+Create a status update for a project
+
+<AutoTypeTable
+  path="generated/tool-params/linear.ts"
+  name="LinearCreateProjectUpdateParams"
+/>
+
+## Notes
+
+- Category: Engineering
+- Authentication mode: OAuth

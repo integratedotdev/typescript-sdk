@@ -1,0 +1,170 @@
+---
+title: "Smartsheet Integration"
+description: "Manage Smartsheet sheets, rows, columns, workspaces, reports, and attachments"
+---
+
+The Smartsheet integration provides access to manage Smartsheet sheets, rows, columns, workspaces, reports, and attachments through the Integrate MCP server.
+
+## Installation
+
+The Smartsheet integration is included with the SDK:
+
+```typescript
+import { smartsheetIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Smartsheet OAuth App
+
+1. Create an OAuth application for Smartsheet
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Smartsheet integration to your server configuration. The integration automatically reads `SMARTSHEET_CLIENT_ID` and `SMARTSHEET_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, smartsheetIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    smartsheetIntegration({
+      scopes: ["READ_SHEETS", "WRITE_SHEETS", "ADMIN_SHEETS", "READ_USERS", "READ_WORKSPACES", "ADMIN_WORKSPACES"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+smartsheetIntegration({
+  clientId: process.env.CUSTOM_SMARTSHEET_ID,
+  clientSecret: process.env.CUSTOM_SMARTSHEET_SECRET,
+      scopes: ["READ_SHEETS", "WRITE_SHEETS", "ADMIN_SHEETS", "READ_USERS", "READ_WORKSPACES", "ADMIN_WORKSPACES"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("smartsheet");
+const result = await client.smartsheet.listSheets({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, smartsheetIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [smartsheetIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/smartsheet.ts"
+  name="SmartsheetIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `READ_SHEETS`
+- `WRITE_SHEETS`
+- `ADMIN_SHEETS`
+- `READ_USERS`
+- `READ_WORKSPACES`
+- `ADMIN_WORKSPACES`
+
+## Tools
+
+### `smartsheet_list_sheets`
+
+List sheets
+
+<AutoTypeTable
+  path="generated/tool-params/smartsheet.ts"
+  name="SmartsheetListSheetsParams"
+/>
+
+### `smartsheet_get_sheet`
+
+Get sheet
+
+<AutoTypeTable
+  path="generated/tool-params/smartsheet.ts"
+  name="SmartsheetGetSheetParams"
+/>
+
+### `smartsheet_create_sheet`
+
+Create sheet
+
+<AutoTypeTable
+  path="generated/tool-params/smartsheet.ts"
+  name="SmartsheetCreateSheetParams"
+/>
+
+### `smartsheet_add_rows`
+
+Add rows
+
+<AutoTypeTable
+  path="generated/tool-params/smartsheet.ts"
+  name="SmartsheetAddRowsParams"
+/>
+
+### `smartsheet_update_rows`
+
+Update rows
+
+<AutoTypeTable
+  path="generated/tool-params/smartsheet.ts"
+  name="SmartsheetUpdateRowsParams"
+/>
+
+### `smartsheet_list_workspaces`
+
+List workspaces
+
+<AutoTypeTable
+  path="generated/tool-params/smartsheet.ts"
+  name="SmartsheetListWorkspacesParams"
+/>
+
+### `smartsheet_list_reports`
+
+List reports
+
+<AutoTypeTable
+  path="generated/tool-params/smartsheet.ts"
+  name="SmartsheetListReportsParams"
+/>
+
+### `smartsheet_list_attachments`
+
+List attachments
+
+<AutoTypeTable
+  path="generated/tool-params/smartsheet.ts"
+  name="SmartsheetListAttachmentsParams"
+/>
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth

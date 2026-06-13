@@ -1,0 +1,178 @@
+---
+title: "Twitch Integration"
+description: "Manage Twitch users, streams, channels, clips, videos, games, follows, and subscriptions"
+---
+
+The Twitch integration provides access to manage Twitch users, streams, channels, clips, videos, games, follows, and subscriptions through the Integrate MCP server.
+
+## Installation
+
+The Twitch integration is included with the SDK:
+
+```typescript
+import { twitchIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Twitch OAuth App
+
+1. Create an OAuth application for Twitch
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Twitch integration to your server configuration. The integration automatically reads `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, twitchIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    twitchIntegration({
+      scopes: ["user:read:email", "channel:read:subscriptions", "clips:edit", "channel:manage:broadcast", "user:read:follows"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+twitchIntegration({
+  clientId: process.env.CUSTOM_TWITCH_ID,
+  clientSecret: process.env.CUSTOM_TWITCH_SECRET,
+      scopes: ["user:read:email", "channel:read:subscriptions", "clips:edit", "channel:manage:broadcast", "user:read:follows"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("twitch");
+const result = await client.twitch.getUsers({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, twitchIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [twitchIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/twitch.ts"
+  name="TwitchIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `user:read:email`
+- `channel:read:subscriptions`
+- `clips:edit`
+- `channel:manage:broadcast`
+- `user:read:follows`
+
+## Tools
+
+### `twitch_get_users`
+
+Get users
+
+<AutoTypeTable
+  path="generated/tool-params/twitch.ts"
+  name="TwitchGetUsersParams"
+/>
+
+### `twitch_get_streams`
+
+Get streams
+
+<AutoTypeTable
+  path="generated/tool-params/twitch.ts"
+  name="TwitchGetStreamsParams"
+/>
+
+### `twitch_get_channels`
+
+Get channels
+
+<AutoTypeTable
+  path="generated/tool-params/twitch.ts"
+  name="TwitchGetChannelsParams"
+/>
+
+### `twitch_modify_channel`
+
+Modify channel
+
+<AutoTypeTable
+  path="generated/tool-params/twitch.ts"
+  name="TwitchModifyChannelParams"
+/>
+
+### `twitch_create_clip`
+
+Create clip
+
+<AutoTypeTable
+  path="generated/tool-params/twitch.ts"
+  name="TwitchCreateClipParams"
+/>
+
+### `twitch_get_videos`
+
+Get videos
+
+<AutoTypeTable
+  path="generated/tool-params/twitch.ts"
+  name="TwitchGetVideosParams"
+/>
+
+### `twitch_get_games`
+
+Get games
+
+<AutoTypeTable
+  path="generated/tool-params/twitch.ts"
+  name="TwitchGetGamesParams"
+/>
+
+### `twitch_get_channel_followers`
+
+Get channel followers
+
+<AutoTypeTable
+  path="generated/tool-params/twitch.ts"
+  name="TwitchGetChannelFollowersParams"
+/>
+
+### `twitch_get_broadcaster_subscriptions`
+
+Get broadcaster subscriptions
+
+<AutoTypeTable
+  path="generated/tool-params/twitch.ts"
+  name="TwitchGetBroadcasterSubscriptionsParams"
+/>
+
+## Notes
+
+- Category: Entertainment
+- Authentication mode: OAuth

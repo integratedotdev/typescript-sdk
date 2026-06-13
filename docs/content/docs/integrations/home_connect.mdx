@@ -1,0 +1,147 @@
+---
+title: "Home Connect Integration"
+description: "Manage Home Connect list appliances, get appliance, get status, get programs, start program"
+---
+
+The Home Connect integration provides access to manage Home Connect list appliances, get appliance, get status, get programs, start program through the Integrate MCP server.
+
+## Installation
+
+The Home Connect integration is included with the SDK:
+
+```typescript
+import { homeConnectIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Home Connect OAuth App
+
+1. Create an OAuth application for Home Connect
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Home Connect integration to your server configuration. The integration automatically reads `HOME_CONNECT_CLIENT_ID` and `HOME_CONNECT_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, homeConnectIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    homeConnectIntegration({
+      scopes: ["IdentifyAppliance", "Monitor", "Settings", "Control"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+homeConnectIntegration({
+  clientId: process.env.CUSTOM_HOME_CONNECT_ID,
+  clientSecret: process.env.CUSTOM_HOME_CONNECT_SECRET,
+      scopes: ["IdentifyAppliance", "Monitor", "Settings", "Control"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("home_connect");
+const result = await client.home_connect.listAppliances({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, homeConnectIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [homeConnectIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/home_connect.ts"
+  name="HomeConnectIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `IdentifyAppliance`
+- `Monitor`
+- `Settings`
+- `Control`
+
+## Tools
+
+### `home_connect_list_appliances`
+
+Connect list appliances
+
+_No parameters._
+
+### `home_connect_get_appliance`
+
+Connect get appliance
+
+<AutoTypeTable
+  path="generated/tool-params/home_connect.ts"
+  name="HomeConnectGetApplianceParams"
+/>
+
+### `home_connect_get_status`
+
+Connect get status
+
+<AutoTypeTable
+  path="generated/tool-params/home_connect.ts"
+  name="HomeConnectGetStatusParams"
+/>
+
+### `home_connect_get_programs`
+
+Connect get programs
+
+<AutoTypeTable
+  path="generated/tool-params/home_connect.ts"
+  name="HomeConnectGetProgramsParams"
+/>
+
+### `home_connect_start_program`
+
+Connect start program
+
+<AutoTypeTable
+  path="generated/tool-params/home_connect.ts"
+  name="HomeConnectStartProgramParams"
+/>
+
+### `home_connect_set_setting`
+
+Connect set setting
+
+<AutoTypeTable
+  path="generated/tool-params/home_connect.ts"
+  name="HomeConnectSetSettingParams"
+/>
+
+## Notes
+
+- Category: Lifestyle
+- Authentication mode: OAuth

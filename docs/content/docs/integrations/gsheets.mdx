@@ -1,9 +1,9 @@
 ---
-title: "Google Sheets"
-description: "Read and write Google Sheets spreadsheets"
+title: "Google Sheets Integration"
+description: "Read and update Google Sheets spreadsheets"
 ---
 
-The Google Sheets integration provides access to Google Sheets through the Integrate MCP server.
+The Google Sheets integration provides access to read and update Google Sheets spreadsheets through the Integrate MCP server.
 
 ## Installation
 
@@ -15,14 +15,12 @@ import { gsheetsIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-### 1. Create Google OAuth Credentials
+### 1. Create a Google Sheets OAuth App
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create a new project or select an existing one
-3. Enable the **Google Sheets API**
-4. Create OAuth 2.0 credentials (Web application)
-5. Add your redirect URI (e.g. `https://yourdomain.com/api/integrate/oauth/callback`)
-6. Note your Client ID and Client Secret
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
 
 ### 2. Configure the Integration on Your Server
 
@@ -34,7 +32,8 @@ import { createMCPServer, gsheetsIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    gsheetsIntegration(),
+    gsheetsIntegration({
+    }),
   ],
 });
 ```
@@ -56,7 +55,9 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("gsheets");
-const sheets = await client.gsheets.list({});
+const result = await client.gsheets.list({});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -76,99 +77,100 @@ const customClient = createMCPClient({
   name="GSheetsIntegrationConfig"
 />
 
-## Available Tools
 
-- **`gsheets_list`** - List spreadsheets
-- **`gsheets_get`** - Get spreadsheet metadata and sheet names
-- **`gsheets_get_values`** - Read cell values from a range
-- **`gsheets_update_values`** - Write cell values to a range
-- **`gsheets_create`** - Create a new spreadsheet
-- **`gsheets_append_values`** - Append rows to a sheet
-- **`gsheets_clear_values`** - Clear a range of cells
-- **`gsheets_batch_update_values`** - Write to multiple ranges in one call
+## Tools
 
-## Examples
+### `gsheets_append_values`
 
-### Read Cell Values
+Append values
 
-```typescript
-const result = await client.gsheets.getValues({
-  spreadsheet_id: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
-  range: "Sheet1!A1:C10",
-});
-```
+<AutoTypeTable
+  path="generated/tool-params/gsheets.ts"
+  name="GsheetsAppendValuesParams"
+/>
 
-### Update Cell Values
+### `gsheets_batch_update`
 
-```typescript
-await client.gsheets.updateValues({
-  spreadsheet_id: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
-  range: "Sheet1!A1:B2",
-  values: JSON.stringify([["Name", "Score"], ["Alice", 95]]),
-  value_input_option: "USER_ENTERED",
-});
-```
+Batch update
 
-### Append Rows
+<AutoTypeTable
+  path="generated/tool-params/gsheets.ts"
+  name="GsheetsBatchUpdateParams"
+/>
 
-```typescript
-await client.gsheets.appendValues({
-  spreadsheet_id: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
-  range: "Sheet1!A:B",
-  values: JSON.stringify([["Bob", 88], ["Carol", 92]]),
-});
-```
+### `gsheets_batch_update_values`
 
-### Create a Spreadsheet
+Batch update values
 
-```typescript
-const sheet = await client.gsheets.create({
-  title: "Monthly Report",
-  sheet_titles: JSON.stringify(["Summary", "Details", "Raw Data"]),
-});
-```
+<AutoTypeTable
+  path="generated/tool-params/gsheets.ts"
+  name="GsheetsBatchUpdateValuesParams"
+/>
 
-### Batch Update Multiple Ranges
+### `gsheets_clear_values`
 
-```typescript
-await client.gsheets.batchUpdateValues({
-  spreadsheet_id: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
-  data: JSON.stringify([
-    { range: "Sheet1!A1", values: [["Updated"]] },
-    { range: "Sheet2!B2", values: [["Also updated"]] },
-  ]),
-  value_input_option: "USER_ENTERED",
-});
-```
+Clear values
 
-## OAuth Scopes
+<AutoTypeTable
+  path="generated/tool-params/gsheets.ts"
+  name="GsheetsClearValuesParams"
+/>
 
-The default scope provides full read/write access. You can restrict it:
+### `gsheets_create`
 
-- **`https://www.googleapis.com/auth/spreadsheets`** - Read and write spreadsheets
-- **`https://www.googleapis.com/auth/spreadsheets.readonly`** - Read-only access
+Create
 
-## Error Handling
+<AutoTypeTable
+  path="generated/tool-params/gsheets.ts"
+  name="GsheetsCreateParams"
+/>
 
-```typescript
-try {
-  const result = await client.gsheets.getValues({
-    spreadsheet_id: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
-    range: "Sheet1!A1:B10",
-  });
-} catch (error) {
-  if (error.message.includes("404")) {
-    console.error("Spreadsheet not found");
-  } else if (error.message.includes("403")) {
-    console.error("Insufficient permissions");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+### `gsheets_delete`
 
-## Next Steps
+Delete
 
-- Explore the [Google Docs Integration](/docs/integrations/gdocs)
-- Explore the [Google Slides Integration](/docs/integrations/gslides)
-- Explore the [Google Drive Integration](/docs/integrations/gdrive)
+<AutoTypeTable
+  path="generated/tool-params/gsheets.ts"
+  name="GsheetsDeleteParams"
+/>
+
+### `gsheets_get`
+
+Get
+
+<AutoTypeTable
+  path="generated/tool-params/gsheets.ts"
+  name="GsheetsGetParams"
+/>
+
+### `gsheets_get_values`
+
+Get values
+
+<AutoTypeTable
+  path="generated/tool-params/gsheets.ts"
+  name="GsheetsGetValuesParams"
+/>
+
+### `gsheets_list`
+
+List
+
+<AutoTypeTable
+  path="generated/tool-params/gsheets.ts"
+  name="GsheetsListParams"
+/>
+
+### `gsheets_update_values`
+
+Update values
+
+<AutoTypeTable
+  path="generated/tool-params/gsheets.ts"
+  name="GsheetsUpdateValuesParams"
+/>
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth

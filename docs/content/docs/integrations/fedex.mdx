@@ -1,0 +1,143 @@
+---
+title: "FedEx Integration"
+description: "Manage FedEx track shipments, rate shipment, create shipment, cancel shipment, validate address"
+---
+
+The FedEx integration provides access to manage FedEx track shipments, rate shipment, create shipment, cancel shipment, validate address through the Integrate MCP server.
+
+## Installation
+
+The FedEx integration is included with the SDK:
+
+```typescript
+import { fedexIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a FedEx OAuth App
+
+1. Create an OAuth application for FedEx
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the FedEx integration to your server configuration. The integration automatically reads `FEDEX_CLIENT_ID` and `FEDEX_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, fedexIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    fedexIntegration({
+      scopes: ["ship", "track", "rates", "address"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+fedexIntegration({
+  clientId: process.env.CUSTOM_FEDEX_ID,
+  clientSecret: process.env.CUSTOM_FEDEX_SECRET,
+      scopes: ["ship", "track", "rates", "address"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("fedex");
+const result = await client.fedex.trackShipments({
+  tracking_json: "value",
+});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, fedexIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [fedexIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/fedex.ts"
+  name="FedexIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `ship`
+- `track`
+- `rates`
+- `address`
+
+## Tools
+
+### `fedex_track_shipments`
+
+Track shipments
+
+<AutoTypeTable
+  path="generated/tool-params/fedex.ts"
+  name="FedexTrackShipmentsParams"
+/>
+
+### `fedex_rate_shipment`
+
+Rate shipment
+
+<AutoTypeTable
+  path="generated/tool-params/fedex.ts"
+  name="FedexRateShipmentParams"
+/>
+
+### `fedex_create_shipment`
+
+Create shipment
+
+<AutoTypeTable
+  path="generated/tool-params/fedex.ts"
+  name="FedexCreateShipmentParams"
+/>
+
+### `fedex_cancel_shipment`
+
+Cancel shipment
+
+<AutoTypeTable
+  path="generated/tool-params/fedex.ts"
+  name="FedexCancelShipmentParams"
+/>
+
+### `fedex_validate_address`
+
+Validate address
+
+<AutoTypeTable
+  path="generated/tool-params/fedex.ts"
+  name="FedexValidateAddressParams"
+/>
+
+## Notes
+
+- Category: Shipping & Logistics
+- Authentication mode: OAuth

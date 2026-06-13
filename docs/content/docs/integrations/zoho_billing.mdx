@@ -1,0 +1,145 @@
+---
+title: "Zoho Billing Integration"
+description: "Manage Zoho Billing organizations, customers, items, subscriptions, and invoices"
+---
+
+The Zoho Billing integration provides access to manage Zoho Billing organizations, customers, items, subscriptions, and invoices through the Integrate MCP server.
+
+## Installation
+
+The Zoho Billing integration is included with the SDK:
+
+```typescript
+import { zohoBillingIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Zoho Billing OAuth App
+
+1. Go to [Zoho API Console](https://api-console.zoho.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Zoho Billing integration to your server configuration. The integration automatically reads `ZOHO_BILLING_CLIENT_ID` and `ZOHO_BILLING_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, zohoBillingIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    zohoBillingIntegration({
+      scopes: ["ZohoBilling.fullaccess.all"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+zohoBillingIntegration({
+  clientId: process.env.CUSTOM_ZOHO_BILLING_ID,
+  clientSecret: process.env.CUSTOM_ZOHO_BILLING_SECRET,
+      scopes: ["ZohoBilling.fullaccess.all"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("zoho_billing");
+const result = await client.zoho_billing.listOrganizations({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, zohoBillingIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [zohoBillingIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/zoho_billing.ts"
+  name="ZohoBillingIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `ZohoBilling.fullaccess.all`
+
+## Tools
+
+### `zoho_billing_list_organizations`
+
+Billing list organizations
+
+_No parameters._
+
+### `zoho_billing_list_customers`
+
+Billing list customers
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_billing.ts"
+  name="ZohoBillingListCustomersParams"
+/>
+
+### `zoho_billing_list_items`
+
+Billing list items
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_billing.ts"
+  name="ZohoBillingListItemsParams"
+/>
+
+### `zoho_billing_list_subscriptions`
+
+Billing list subscriptions
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_billing.ts"
+  name="ZohoBillingListSubscriptionsParams"
+/>
+
+### `zoho_billing_create_subscription`
+
+Billing create subscription
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_billing.ts"
+  name="ZohoBillingCreateSubscriptionParams"
+/>
+
+### `zoho_billing_list_invoices`
+
+Billing list invoices
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_billing.ts"
+  name="ZohoBillingListInvoicesParams"
+/>
+
+## Notes
+
+- Category: Accounting
+- Authentication mode: OAuth

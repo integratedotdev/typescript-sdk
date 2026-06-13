@@ -1,9 +1,9 @@
 ---
-title: "Gmail"
-description: "Send, list, and search Gmail messages"
+title: "Gmail Integration"
+description: "Send, read, and search Gmail messages"
 ---
 
-The Gmail integration provides access to Gmail's API through the Integrate MCP server.
+The Gmail integration provides access to send, read, and search Gmail messages through the Integrate MCP server.
 
 ## Installation
 
@@ -15,13 +15,12 @@ import { gmailIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-### 1. Create Google OAuth Credentials
+### 1. Create a Gmail OAuth App
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create a new project or select an existing one
-3. Enable the Gmail API
-4. Create OAuth 2.0 credentials
-5. Note your Client ID and Client Secret
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
 
 ### 2. Configure the Integration on Your Server
 
@@ -34,11 +33,6 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     gmailIntegration({
-      scopes: [
-        // Optional - defaults are provided
-        "https://www.googleapis.com/auth/gmail.send",
-        "https://www.googleapis.com/auth/gmail.readonly",
-      ],
     }),
   ],
 });
@@ -50,7 +44,6 @@ You can override the environment variables by passing explicit values:
 gmailIntegration({
   clientId: process.env.CUSTOM_GMAIL_ID,
   clientSecret: process.env.CUSTOM_GMAIL_SECRET,
-  scopes: ["https://www.googleapis.com/auth/gmail.send"],
 });
 ```
 
@@ -62,7 +55,11 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("gmail");
-const messages = await client.gmail.listMessages({});
+const result = await client.gmail.sendMessage({
+  to: "value",
+});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -82,114 +79,109 @@ const customClient = createMCPClient({
   name="GmailIntegrationConfig"
 />
 
-## Available Tools
 
-### Messages
+## Tools
 
-- **`gmail_send_message`** - Send an email message
-- **`gmail_list_messages`** - List messages in your mailbox
-- **`gmail_get_message`** - Get a specific message
-- **`gmail_search_messages`** - Search messages with Gmail query syntax
+### `gmail_create_draft`
 
-## Examples
+Create a draft message
 
-### Send a Message
+<AutoTypeTable
+  path="generated/tool-params/gmail.ts"
+  name="GmailCreateDraftParams"
+/>
 
-```typescript
-const result = await client.gmail.sendMessage({
-  to: "recipient@example.com",
-  subject: "Hello from Integrate SDK",
-  body: "This email was sent using the Integrate SDK!",
-  cc: ["cc@example.com"],
-  bcc: ["bcc@example.com"],
-});
+### `gmail_get_attachment`
 
-console.log("Email sent:", result);
-```
+Get a message attachment payload
 
-### List Messages
+<AutoTypeTable
+  path="generated/tool-params/gmail.ts"
+  name="GmailGetAttachmentParams"
+/>
 
-```typescript
-const result = await client.gmail.listMessages({
-  maxResults: 10,
-  labelIds: ["INBOX"],
-  includeSpamTrash: false,
-});
+### `gmail_get_message`
 
-console.log("Emails:", result);
-```
+Get a specific message by ID
 
-### Get a Message
+<AutoTypeTable
+  path="generated/tool-params/gmail.ts"
+  name="GmailGetMessageParams"
+/>
 
-```typescript
-const result = await client.gmail.getMessage({
-  id: "message-id-1",
-  format: "full",
-});
+### `gmail_get_thread`
 
-console.log("Message:", result);
-```
+Get a specific thread by ID
 
-### Search Messages
+<AutoTypeTable
+  path="generated/tool-params/gmail.ts"
+  name="GmailGetThreadParams"
+/>
 
-```typescript
-const result = await client.gmail.searchMessages({
-  query: "from:sender@example.com subject:important",
-  maxResults: 20,
-});
+### `gmail_list_messages`
 
-console.log("Search results:", result);
-```
+List messages in the mailbox
 
-## OAuth Scopes
+<AutoTypeTable
+  path="generated/tool-params/gmail.ts"
+  name="GmailListMessagesParams"
+/>
 
-The default scopes provide common Gmail access. You may need additional scopes:
+### `gmail_list_threads`
 
-- **`https://www.googleapis.com/auth/gmail.send`** - Send email
-- **`https://www.googleapis.com/auth/gmail.readonly`** - Read email
-- **`https://www.googleapis.com/auth/gmail.modify`** - Modify email
-- **`https://www.googleapis.com/auth/gmail.labels`** - Manage labels
-- **`https://mail.google.com/`** - Full Gmail access
+List threads in the mailbox
 
-## Gmail Search Queries
+<AutoTypeTable
+  path="generated/tool-params/gmail.ts"
+  name="GmailListThreadsParams"
+/>
 
-The `gmail_search_messages` tool supports Gmail's search syntax:
+### `gmail_modify_message`
 
-- `from:sender@example.com` - From specific sender
-- `to:recipient@example.com` - To specific recipient
-- `subject:keyword` - Subject contains keyword
-- `has:attachment` - Has attachments
-- `is:unread` - Unread messages
-- `after:2024/01/01` - After specific date
-- `newer_than:7d` - Newer than 7 days
+Modify labels on a message
 
-Combine with operators:
+<AutoTypeTable
+  path="generated/tool-params/gmail.ts"
+  name="GmailModifyMessageParams"
+/>
 
-- `from:sender@example.com OR from:other@example.com`
-- `subject:urgent AND is:unread`
+### `gmail_reply_message`
 
-## Error Handling
+Reply to a message in a thread
 
-```typescript
-try {
-  const result = await client.gmail.sendMessage({
-    to: "recipient@example.com",
-    subject: "Test",
-    body: "Test email",
-  });
-} catch (error) {
-  if (error.message.includes("authentication")) {
-    console.error("Authentication failed - check OAuth credentials");
-  } else if (error.message.includes("quota")) {
-    console.error("Gmail API quota exceeded");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+<AutoTypeTable
+  path="generated/tool-params/gmail.ts"
+  name="GmailReplyMessageParams"
+/>
 
-## Next Steps
+### `gmail_search_messages`
 
-- Learn about the [GitHub Integration](/docs/integrations/github)
-- Configure [Additional Integrations](/docs/integrations/custom-integrations)
-- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
+Search messages with query
+
+<AutoTypeTable
+  path="generated/tool-params/gmail.ts"
+  name="GmailSearchMessagesParams"
+/>
+
+### `gmail_send_message`
+
+Send a message
+
+<AutoTypeTable
+  path="generated/tool-params/gmail.ts"
+  name="GmailSendMessageParams"
+/>
+
+### `gmail_trash_message`
+
+Move a message to trash
+
+<AutoTypeTable
+  path="generated/tool-params/gmail.ts"
+  name="GmailTrashMessageParams"
+/>
+
+## Notes
+
+- Category: Communication
+- Authentication mode: OAuth

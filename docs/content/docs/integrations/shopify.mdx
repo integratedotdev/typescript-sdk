@@ -1,11 +1,13 @@
 ---
-title: "Shopify"
-description: "Manage Shopify products, orders, customers, and inventory"
+title: "Shopify Integration"
+description: "Route-complete Shopify Admin access through GraphQL and REST tools"
 ---
 
-The Shopify integration provides access to manage shopify products, orders, customers, and inventory through the Integrate MCP server.
+The Shopify integration provides access to route-complete Shopify Admin access through GraphQL and REST tools through the Integrate MCP server.
 
 ## Installation
+
+The Shopify integration is included with the SDK:
 
 ```typescript
 import { shopifyIntegration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { shopifyIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Shopify to your server configuration. The integration automatically reads OAuth credentials from your environment (`SHOPIFY_CLIENT_ID`, `SHOPIFY_CLIENT_SECRET`, `SHOPIFY_SHOP`):
+### 1. Create a Shopify OAuth App
+
+1. Go to [Shopify Developer Portal](https://shopify.oauth.placeholder)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Shopify integration to your server configuration. The integration automatically reads `SHOPIFY_CLIENT_ID` and `SHOPIFY_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, shopifyIntegration } from "integrate-sdk/server";
@@ -21,22 +32,46 @@ import { createMCPServer, shopifyIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    shopifyIntegration(),
+    shopifyIntegration({
+      scopes: ["read_products", "write_products", "read_orders", "write_orders", "read_customers", "write_customers", "read_inventory", "write_inventory", "read_content", "write_content", "read_fulfillments", "write_fulfillments", "read_analytics"], // Optional
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+shopifyIntegration({
+  clientId: process.env.CUSTOM_SHOPIFY_ID,
+  clientSecret: process.env.CUSTOM_SHOPIFY_SECRET,
+      scopes: ["read_products", "write_products", "read_orders", "write_orders", "read_customers", "write_customers", "read_inventory", "write_inventory", "read_content", "write_content", "read_fulfillments", "write_fulfillments", "read_analytics"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("shopify");
 const result = await client.shopify.adminGraphql({
-  // Add the parameters required by this tool
+  query: "value",
 });
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, shopifyIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [shopifyIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,24 +81,82 @@ console.log(result);
   name="ShopifyIntegrationConfig"
 />
 
-## Environment Variables
 
-- `SHOPIFY_CLIENT_ID`
-- `SHOPIFY_CLIENT_SECRET`
-- `SHOPIFY_SHOP`
+## Default Scopes
 
-## Available Tools
+These defaults are applied unless you override `scopes` in the integration config:
 
-- `shopify_admin_graphql`
-- `shopify_rest_get`
-- `shopify_rest_post`
-- `shopify_rest_put`
-- `shopify_rest_delete`
-- `shopify_get_shop`
+- `read_products`
+- `write_products`
+- `read_orders`
+- `write_orders`
+- `read_customers`
+- `write_customers`
+- `read_inventory`
+- `write_inventory`
+- `read_content`
+- `write_content`
+- `read_fulfillments`
+- `write_fulfillments`
+- `read_analytics`
+
+## Tools
+
+### `shopify_admin_graphql`
+
+Admin graphql
+
+<AutoTypeTable
+  path="generated/tool-params/shopify.ts"
+  name="ShopifyAdminGraphqlParams"
+/>
+
+### `shopify_rest_get`
+
+Rest get
+
+<AutoTypeTable
+  path="generated/tool-params/shopify.ts"
+  name="ShopifyRestGetParams"
+/>
+
+### `shopify_rest_post`
+
+Rest post
+
+<AutoTypeTable
+  path="generated/tool-params/shopify.ts"
+  name="ShopifyRestPostParams"
+/>
+
+### `shopify_rest_put`
+
+Rest put
+
+<AutoTypeTable
+  path="generated/tool-params/shopify.ts"
+  name="ShopifyRestPutParams"
+/>
+
+### `shopify_rest_delete`
+
+Rest delete
+
+<AutoTypeTable
+  path="generated/tool-params/shopify.ts"
+  name="ShopifyRestDeleteParams"
+/>
+
+### `shopify_get_shop`
+
+Get shop
+
+<AutoTypeTable
+  path="generated/tool-params/shopify.ts"
+  name="ShopifyGetShopParams"
+/>
 
 ## Notes
 
-- Category: Business
+- Category: Commerce
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

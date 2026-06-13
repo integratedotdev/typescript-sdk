@@ -1,11 +1,13 @@
 ---
-title: "Postman"
+title: "Postman Integration"
 description: "Manage Postman workspaces, collections, and environments via the Postman API"
 ---
 
-The Postman integration provides access to manage postman workspaces, collections, and environments via the postman api through the Integrate MCP server.
+The Postman integration provides access to manage Postman workspaces, collections, and environments via the Postman API through the Integrate MCP server.
 
 ## Installation
+
+The Postman integration is included with the SDK:
 
 ```typescript
 import { postmanIntegration } from "integrate-sdk/server";
@@ -13,7 +15,7 @@ import { postmanIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Postman to your server configuration. This integration can read credentials from environment variables automatically (`POSTMAN_API_KEY`):
+Add Postman to your server configuration. Provide credentials via environment variables or integration config:
 
 ```typescript
 import { createMCPServer, postmanIntegration } from "integrate-sdk/server";
@@ -21,7 +23,9 @@ import { createMCPServer, postmanIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    postmanIntegration(),
+    postmanIntegration({
+      // See configuration options below
+    }),
   ],
 });
 ```
@@ -31,12 +35,14 @@ export const { client: serverClient } = createMCPServer({
 ```typescript
 import { client } from "integrate-sdk";
 
-const result = await client.postman.getMe({
-  // Add the parameters required by this tool
-});
+const result = await client.postman.getMe({});
 
 console.log(result);
 ```
+
+## Environment Variables
+
+- `POSTMAN_API_KEY` (when supported by this integration)
 
 ## Configuration Options
 
@@ -45,25 +51,88 @@ console.log(result);
   name="PostmanIntegrationOptions"
 />
 
-## Environment Variables
 
-- `POSTMAN_API_KEY`
+## Tools
 
-## Available Tools
+### `postman_get_me`
 
-- `postman_get_me`
-- `postman_list_workspaces`
-- `postman_get_workspace`
-- `postman_list_collections`
-- `postman_get_collection`
-- `postman_delete_collection`
-- `postman_list_environments`
-- `postman_get_environment`
-- `postman_create_collection`
+Get me
+
+_No parameters._
+
+### `postman_list_workspaces`
+
+List workspaces
+
+<AutoTypeTable
+  path="generated/tool-params/postman.ts"
+  name="PostmanListWorkspacesParams"
+/>
+
+### `postman_get_workspace`
+
+Get workspace
+
+<AutoTypeTable
+  path="generated/tool-params/postman.ts"
+  name="PostmanGetWorkspaceParams"
+/>
+
+### `postman_list_collections`
+
+List collections
+
+<AutoTypeTable
+  path="generated/tool-params/postman.ts"
+  name="PostmanListCollectionsParams"
+/>
+
+### `postman_get_collection`
+
+Get collection
+
+<AutoTypeTable
+  path="generated/tool-params/postman.ts"
+  name="PostmanGetCollectionParams"
+/>
+
+### `postman_delete_collection`
+
+Delete collection
+
+<AutoTypeTable
+  path="generated/tool-params/postman.ts"
+  name="PostmanDeleteCollectionParams"
+/>
+
+### `postman_list_environments`
+
+List environments
+
+<AutoTypeTable
+  path="generated/tool-params/postman.ts"
+  name="PostmanListEnvironmentsParams"
+/>
+
+### `postman_get_environment`
+
+Get environment
+
+<AutoTypeTable
+  path="generated/tool-params/postman.ts"
+  name="PostmanGetEnvironmentParams"
+/>
+
+### `postman_create_collection`
+
+Create collection
+
+<AutoTypeTable
+  path="generated/tool-params/postman.ts"
+  name="PostmanCreateCollectionParams"
+/>
 
 ## Notes
 
 - Category: Engineering
 - Authentication mode: API key
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

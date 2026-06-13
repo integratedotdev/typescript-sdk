@@ -1,11 +1,13 @@
 ---
-title: "TikTok"
-description: "Manage TikTok videos, account info, and creator analytics"
+title: "TikTok Integration"
+description: "Read TikTok user profile data and user-authorized video metadata"
 ---
 
-The TikTok integration provides access to manage tiktok videos, account info, and creator analytics through the Integrate MCP server.
+The TikTok integration provides access to read TikTok user profile data and user-authorized video metadata through the Integrate MCP server.
 
 ## Installation
+
+The TikTok integration is included with the SDK:
 
 ```typescript
 import { tiktokIntegration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { tiktokIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add TikTok to your server configuration. The integration automatically reads OAuth credentials from your environment (`TIKTOK_CLIENT_ID`, `TIKTOK_CLIENT_SECRET`):
+### 1. Create a TikTok OAuth App
+
+1. Go to [Tiktok Developer Portal](https://www.tiktok.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the TikTok integration to your server configuration. The integration automatically reads `TIKTOK_CLIENT_ID` and `TIKTOK_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, tiktokIntegration } from "integrate-sdk/server";
@@ -21,22 +32,44 @@ import { createMCPServer, tiktokIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    tiktokIntegration(),
+    tiktokIntegration({
+      scopes: ["user.info.basic", "video.list"], // Optional
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+tiktokIntegration({
+  clientId: process.env.CUSTOM_TIKTOK_ID,
+  clientSecret: process.env.CUSTOM_TIKTOK_SECRET,
+      scopes: ["user.info.basic", "video.list"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("tiktok");
-const result = await client.tiktok.getUserInfo({
-  // Add the parameters required by this tool
-});
+const result = await client.tiktok.getUserInfo({});
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, tiktokIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [tiktokIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,20 +79,44 @@ console.log(result);
   name="TikTokIntegrationConfig"
 />
 
-## Environment Variables
 
-- `TIKTOK_CLIENT_ID`
-- `TIKTOK_CLIENT_SECRET`
+## Default Scopes
 
-## Available Tools
+These defaults are applied unless you override `scopes` in the integration config:
 
-- `tiktok_get_user_info`
-- `tiktok_list_videos`
-- `tiktok_query_videos`
+- `user.info.basic`
+- `video.list`
+
+## Tools
+
+### `tiktok_get_user_info`
+
+Get user info
+
+<AutoTypeTable
+  path="generated/tool-params/tiktok.ts"
+  name="TiktokGetUserInfoParams"
+/>
+
+### `tiktok_list_videos`
+
+List videos
+
+<AutoTypeTable
+  path="generated/tool-params/tiktok.ts"
+  name="TiktokListVideosParams"
+/>
+
+### `tiktok_query_videos`
+
+Query videos
+
+<AutoTypeTable
+  path="generated/tool-params/tiktok.ts"
+  name="TiktokQueryVideosParams"
+/>
 
 ## Notes
 
-- Category: Social Media
+- Category: Entertainment
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

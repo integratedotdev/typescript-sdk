@@ -1,0 +1,149 @@
+---
+title: "Sage Integration"
+description: "Manage Sage business details, contacts, products, and sales invoices"
+---
+
+The Sage integration provides access to manage Sage business details, contacts, products, and sales invoices through the Integrate MCP server.
+
+## Installation
+
+The Sage integration is included with the SDK:
+
+```typescript
+import { sageIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Sage OAuth App
+
+1. Create an OAuth application for Sage
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Sage integration to your server configuration. The integration automatically reads `SAGE_CLIENT_ID` and `SAGE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, sageIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    sageIntegration({
+      scopes: ["full_access"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+sageIntegration({
+  clientId: process.env.CUSTOM_SAGE_ID,
+  clientSecret: process.env.CUSTOM_SAGE_SECRET,
+      scopes: ["full_access"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("sage");
+const result = await client.sage.getBusiness({
+  business_id: "value",
+});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, sageIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [sageIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/sage.ts"
+  name="SageIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `full_access`
+
+## Tools
+
+### `sage_get_business`
+
+Get business
+
+<AutoTypeTable
+  path="generated/tool-params/sage.ts"
+  name="SageGetBusinessParams"
+/>
+
+### `sage_list_contacts`
+
+List contacts
+
+<AutoTypeTable
+  path="generated/tool-params/sage.ts"
+  name="SageListContactsParams"
+/>
+
+### `sage_create_contact`
+
+Create contact
+
+<AutoTypeTable
+  path="generated/tool-params/sage.ts"
+  name="SageCreateContactParams"
+/>
+
+### `sage_list_products`
+
+List products
+
+<AutoTypeTable
+  path="generated/tool-params/sage.ts"
+  name="SageListProductsParams"
+/>
+
+### `sage_list_sales_invoices`
+
+List sales invoices
+
+<AutoTypeTable
+  path="generated/tool-params/sage.ts"
+  name="SageListSalesInvoicesParams"
+/>
+
+### `sage_create_sales_invoice`
+
+Create sales invoice
+
+<AutoTypeTable
+  path="generated/tool-params/sage.ts"
+  name="SageCreateSalesInvoiceParams"
+/>
+
+## Notes
+
+- Category: Accounting
+- Authentication mode: OAuth

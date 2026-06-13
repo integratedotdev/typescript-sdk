@@ -1,9 +1,9 @@
 ---
-title: "WhatsApp Business"
-description: "Send messages, templates, and media"
+title: "WhatsApp Business Integration"
+description: "Send WhatsApp messages and templates"
 ---
 
-The WhatsApp Business integration provides access to WhatsApp Business API through the Integrate MCP server.
+The WhatsApp Business integration provides access to send WhatsApp messages and templates through the Integrate MCP server.
 
 ## Installation
 
@@ -15,13 +15,12 @@ import { whatsappIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-### 1. Create a WhatsApp Business App
+### 1. Create a WhatsApp Business OAuth App
 
 1. Go to [Meta for Developers](https://developers.facebook.com)
-2. Create a new app with WhatsApp product
-3. Configure WhatsApp Business API
+2. Create a new OAuth application
+3. Configure your redirect URI
 4. Note your Client ID and Client Secret
-5. Get your WhatsApp Business Account ID
 
 ### 2. Configure the Integration on Your Server
 
@@ -34,12 +33,6 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     whatsappIntegration({
-      scopes: [
-        "business_management",
-        "whatsapp_business_messaging",
-        "whatsapp_business_management",
-      ], // Optional
-      businessAccountId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID,
     }),
   ],
 });
@@ -51,8 +44,6 @@ You can override the environment variables by passing explicit values:
 whatsappIntegration({
   clientId: process.env.CUSTOM_WHATSAPP_ID,
   clientSecret: process.env.CUSTOM_WHATSAPP_SECRET,
-  scopes: ["whatsapp_business_messaging"],
-  businessAccountId: "123456789",
 });
 ```
 
@@ -64,7 +55,11 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("whatsapp");
-const phoneNumbers = await client.whatsapp.getPhoneNumbers({});
+const result = await client.whatsapp.sendMessage({
+  phone_number_id: "value",
+});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -84,110 +79,244 @@ const customClient = createMCPClient({
   name="WhatsAppIntegrationConfig"
 />
 
-## Available Tools
 
-### Messages
+## Tools
 
-- **`whatsapp_send_message`** - Send a message
-- **`whatsapp_send_template`** - Send a template message
-- **`whatsapp_send_media`** - Send media (image, video, document)
-- **`whatsapp_get_message_status`** - Get message delivery status
-- **`whatsapp_mark_read`** - Mark message as read
+### `whatsapp_send_message`
 
-### Templates
+Send a plain text message
 
-- **`whatsapp_list_templates`** - List message templates
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappSendMessageParams"
+/>
 
-### Phone Numbers
+### `whatsapp_reply_message`
 
-- **`whatsapp_get_phone_numbers`** - Get registered phone numbers
+Reply to a specific message (quoted reply)
 
-### Profile
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappReplyMessageParams"
+/>
 
-- **`whatsapp_get_profile`** - Get business profile
+### `whatsapp_send_template`
 
-## Examples
+Send a pre-approved template message
 
-### Send a Message
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappSendTemplateParams"
+/>
 
-```typescript
-const result = await client.whatsapp.sendMessage({
-  to: "+1234567890",
-  type: "text",
-  text: {
-    body: "Hello from WhatsApp Business API!",
-  },
-});
+### `whatsapp_send_media`
 
-console.log("Message sent:", result);
-```
+Send an image, video, document, or audio file by URL
 
-### Send a Template
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappSendMediaParams"
+/>
 
-```typescript
-const result = await client.whatsapp.sendTemplate({
-  to: "+1234567890",
-  template: {
-    name: "hello_world",
-    language: {
-      code: "en_US",
-    },
-  },
-});
+### `whatsapp_send_reaction`
 
-console.log("Template sent:", result);
-```
+React to a message with an emoji
 
-### Send Media
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappSendReactionParams"
+/>
 
-```typescript
-const result = await client.whatsapp.sendMedia({
-  to: "+1234567890",
-  type: "image",
-  image: {
-    link: "https://example.com/image.jpg",
-    caption: "Check out this image!",
-  },
-});
+### `whatsapp_send_location`
 
-console.log("Media sent:", result);
-```
+Send a location pin
 
-## OAuth Scopes
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappSendLocationParams"
+/>
 
-The default scopes are `['business_management', 'whatsapp_business_messaging', 'whatsapp_business_management']`. You may need different scopes:
+### `whatsapp_send_contact`
 
-- **`business_management`** - Manage business assets
-- **`whatsapp_business_messaging`** - Send and receive messages
-- **`whatsapp_business_management`** - Manage WhatsApp Business account
-- **`public_profile`** - Access public profile information
+Send one or more vCard-style contact cards
 
-## Message Templates
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappSendContactParams"
+/>
 
-WhatsApp requires pre-approved templates for outbound messages outside of the 24-hour customer service window. Create and manage templates in the Meta Business Manager.
+### `whatsapp_send_interactive_buttons`
 
-## Error Handling
+Send a message with up to 3 quick-reply buttons
 
-```typescript
-try {
-  const result = await client.whatsapp.sendMessage({
-    to: "+1234567890",
-    type: "text",
-    text: { body: "Hello!" },
-  });
-} catch (error) {
-  if (error.message.includes("invalid recipient")) {
-    console.error("Invalid phone number");
-  } else if (error.message.includes("rate limit")) {
-    console.error("Rate limit exceeded");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappSendInteractiveButtonsParams"
+/>
 
-## Next Steps
+### `whatsapp_send_interactive_list`
 
-- Explore the [Slack Integration](/docs/integrations/slack)
-- Explore the [Intercom Integration](/docs/integrations/intercom)
-- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
+Send a message with a scrollable list of options
+
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappSendInteractiveListParams"
+/>
+
+### `whatsapp_mark_read`
+
+Mark a received message as read (shows blue ticks to sender)
+
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappMarkReadParams"
+/>
+
+### `whatsapp_get_media_url`
+
+Get the download URL and metadata for a received media object
+
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappGetMediaUrlParams"
+/>
+
+### `whatsapp_delete_media`
+
+Delete an uploaded media object from Meta's servers
+
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappDeleteMediaParams"
+/>
+
+### `whatsapp_list_templates`
+
+List all message templates for a WhatsApp Business Account
+
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappListTemplatesParams"
+/>
+
+### `whatsapp_get_template`
+
+Get a specific template by name
+
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappGetTemplateParams"
+/>
+
+### `whatsapp_create_template`
+
+Create a new message template (submitted for Meta review)
+
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappCreateTemplateParams"
+/>
+
+### `whatsapp_delete_template`
+
+Delete a template by name (all language variants)
+
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappDeleteTemplateParams"
+/>
+
+### `whatsapp_get_phone_numbers`
+
+List all phone numbers registered to a WABA
+
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappGetPhoneNumbersParams"
+/>
+
+### `whatsapp_get_phone_number`
+
+Get full details for a specific phone number
+
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappGetPhoneNumberParams"
+/>
+
+### `whatsapp_get_profile`
+
+Get the public business profile for a phone number
+
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappGetProfileParams"
+/>
+
+### `whatsapp_update_profile`
+
+Update the business profile (pass only the fields you want to change)
+
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappUpdateProfileParams"
+/>
+
+### `whatsapp_get_message_status`
+
+Get status of a sent message by message ID
+
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappGetMessageStatusParams"
+/>
+
+### `whatsapp_create_qr_code`
+
+Create a QR code that opens a chat with a prefilled message
+
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappCreateQrCodeParams"
+/>
+
+### `whatsapp_update_qr_code`
+
+Update qr code
+
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappUpdateQrCodeParams"
+/>
+
+### `whatsapp_list_qr_codes`
+
+List all QR codes for a phone number
+
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappListQrCodesParams"
+/>
+
+### `whatsapp_get_qr_code`
+
+Get qr code
+
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappGetQrCodeParams"
+/>
+
+### `whatsapp_delete_qr_code`
+
+Delete qr code
+
+<AutoTypeTable
+  path="generated/tool-params/whatsapp.ts"
+  name="WhatsappDeleteQrCodeParams"
+/>
+
+## Notes
+
+- Category: Communication
+- Authentication mode: OAuth

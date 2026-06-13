@@ -1,0 +1,146 @@
+---
+title: "Dropbox Sign Integration"
+description: "Manage Dropbox Sign get account, list signature requests, get signature request, send signature request, list templates"
+---
+
+The Dropbox Sign integration provides access to manage Dropbox Sign get account, list signature requests, get signature request, send signature request, list templates through the Integrate MCP server.
+
+## Installation
+
+The Dropbox Sign integration is included with the SDK:
+
+```typescript
+import { dropboxSignIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Dropbox Sign OAuth App
+
+1. Create an OAuth application for Dropbox Sign
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Dropbox Sign integration to your server configuration. The integration automatically reads `DROPBOX_SIGN_CLIENT_ID` and `DROPBOX_SIGN_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, dropboxSignIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    dropboxSignIntegration({
+      scopes: ["basic_account_info", "request_signature", "signature_request_access"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+dropboxSignIntegration({
+  clientId: process.env.CUSTOM_DROPBOX_SIGN_ID,
+  clientSecret: process.env.CUSTOM_DROPBOX_SIGN_SECRET,
+      scopes: ["basic_account_info", "request_signature", "signature_request_access"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("dropbox_sign");
+const result = await client.dropbox_sign.getAccount({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, dropboxSignIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [dropboxSignIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/dropbox_sign.ts"
+  name="DropboxSignIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `basic_account_info`
+- `request_signature`
+- `signature_request_access`
+
+## Tools
+
+### `dropbox_sign_get_account`
+
+Sign get account
+
+_No parameters._
+
+### `dropbox_sign_list_signature_requests`
+
+Sign list signature requests
+
+<AutoTypeTable
+  path="generated/tool-params/dropbox_sign.ts"
+  name="DropboxSignListSignatureRequestsParams"
+/>
+
+### `dropbox_sign_get_signature_request`
+
+Sign get signature request
+
+<AutoTypeTable
+  path="generated/tool-params/dropbox_sign.ts"
+  name="DropboxSignGetSignatureRequestParams"
+/>
+
+### `dropbox_sign_send_signature_request`
+
+Sign send signature request
+
+<AutoTypeTable
+  path="generated/tool-params/dropbox_sign.ts"
+  name="DropboxSignSendSignatureRequestParams"
+/>
+
+### `dropbox_sign_list_templates`
+
+Sign list templates
+
+<AutoTypeTable
+  path="generated/tool-params/dropbox_sign.ts"
+  name="DropboxSignListTemplatesParams"
+/>
+
+### `dropbox_sign_get_template`
+
+Sign get template
+
+<AutoTypeTable
+  path="generated/tool-params/dropbox_sign.ts"
+  name="DropboxSignGetTemplateParams"
+/>
+
+## Notes
+
+- Category: Legal
+- Authentication mode: OAuth

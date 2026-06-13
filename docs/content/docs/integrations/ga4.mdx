@@ -1,11 +1,13 @@
 ---
-title: "Google Analytics 4"
-description: "Read Google Analytics 4 reports, properties, and events"
+title: "Google Analytics Integration"
+description: "Read Google Analytics reports, properties, and events"
 ---
 
-The Google Analytics 4 integration provides access to read google analytics 4 reports, properties, and events through the Integrate MCP server.
+The Google Analytics integration provides access to read Google Analytics reports, properties, and events through the Integrate MCP server.
 
 ## Installation
+
+The Google Analytics integration is included with the SDK:
 
 ```typescript
 import { ga4Integration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { ga4Integration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Google Analytics 4 to your server configuration. The integration automatically reads OAuth credentials from your environment (`GA4_CLIENT_ID`, `GA4_CLIENT_SECRET`):
+### 1. Create a Google Analytics OAuth App
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Analytics integration to your server configuration. The integration automatically reads `GA4_CLIENT_ID` and `GA4_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, ga4Integration } from "integrate-sdk/server";
@@ -21,22 +32,42 @@ import { createMCPServer, ga4Integration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    ga4Integration(),
+    ga4Integration({
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+ga4Integration({
+  clientId: process.env.CUSTOM_GA4_ID,
+  clientSecret: process.env.CUSTOM_GA4_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("ga4");
-const result = await client.ga4.batchRunReports({
-  // Add the parameters required by this tool
-});
+const result = await client.ga4.batchRunReports({});
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, ga4Integration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [ga4Integration()],
+});
 ```
 
 ## Configuration Options
@@ -46,28 +77,55 @@ console.log(result);
   name="Ga4IntegrationConfig"
 />
 
-## Environment Variables
 
-- `GA4_CLIENT_ID`
-- `GA4_CLIENT_SECRET`
+## Tools
 
-## Default Scopes
+### `ga4_batch_run_reports`
 
-These defaults are applied unless you override `scopes` in the integration config:
+Batch run reports
 
-- `https://www.googleapis.com/auth/analytics.readonly`
+<AutoTypeTable
+  path="generated/tool-params/ga4.ts"
+  name="Ga4BatchRunReportsParams"
+/>
 
-## Available Tools
+### `ga4_get_property`
 
-- `ga4_batch_run_reports`
-- `ga4_get_property`
-- `ga4_list_account_summaries`
-- `ga4_run_realtime_report`
-- `ga4_run_report`
+Get property
+
+<AutoTypeTable
+  path="generated/tool-params/ga4.ts"
+  name="Ga4GetPropertyParams"
+/>
+
+### `ga4_list_account_summaries`
+
+List account summaries
+
+<AutoTypeTable
+  path="generated/tool-params/ga4.ts"
+  name="Ga4ListAccountSummariesParams"
+/>
+
+### `ga4_run_realtime_report`
+
+Run realtime report
+
+<AutoTypeTable
+  path="generated/tool-params/ga4.ts"
+  name="Ga4RunRealtimeReportParams"
+/>
+
+### `ga4_run_report`
+
+Run report
+
+<AutoTypeTable
+  path="generated/tool-params/ga4.ts"
+  name="Ga4RunReportParams"
+/>
 
 ## Notes
 
 - Category: Analytics
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

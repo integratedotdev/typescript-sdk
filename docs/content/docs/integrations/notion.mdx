@@ -1,9 +1,9 @@
 ---
-title: "Notion"
-description: "Search pages and databases in Notion"
+title: "Notion Integration"
+description: "Manage Notion pages and databases"
 ---
 
-The Notion integration provides access to Notion's API through the Integrate MCP server.
+The Notion integration provides access to manage Notion pages and databases through the Integrate MCP server.
 
 ## Installation
 
@@ -15,12 +15,12 @@ import { notionIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-### 1. Create a Notion Integration
+### 1. Create a Notion OAuth App
 
 1. Go to [Notion Integrations](https://www.notion.so/my-integrations)
-2. Create a new integration
-3. Note your OAuth Client ID and Client Secret
-4. Configure capabilities (read content, update content, etc.)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
 
 ### 2. Configure the Integration on Your Server
 
@@ -33,7 +33,6 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     notionIntegration({
-      owner: "user", // Optional: 'user' or 'workspace'
     }),
   ],
 });
@@ -45,7 +44,6 @@ You can override the environment variables by passing explicit values:
 notionIntegration({
   clientId: process.env.CUSTOM_NOTION_ID,
   clientSecret: process.env.CUSTOM_NOTION_SECRET,
-  owner: "user",
 });
 ```
 
@@ -57,7 +55,9 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("notion");
-const results = await client.notion.search({ query: "project" });
+const result = await client.notion.search({});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -77,83 +77,259 @@ const customClient = createMCPClient({
   name="NotionIntegrationConfig"
 />
 
-## Available Tools
 
-### Pages
+## Tools
 
-- **`notion_search`** - Search pages and databases
-- **`notion_get_page`** - Get page content
+### `notion_search`
 
-## Examples
+Search for pages and databases in Notion
 
-### Search Pages
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionSearchParams"
+/>
 
-```typescript
-const result = await client.notion.search({
-  query: "meeting notes",
-  filter: {
-    property: "object",
-    value: "page",
-  },
-  sort: {
-    direction: "descending",
-    timestamp: "last_edited_time",
-  },
-});
+### `notion_get_page`
 
-console.log("Search results:", result);
-```
+Retrieve a Notion page by ID
 
-### Get Page
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionGetPageParams"
+/>
 
-```typescript
-const result = await client.notion.getPage({
-  pageId: "1234567890abcdef",
-});
+### `notion_create_page`
 
-console.log("Page content:", result);
-```
+Create a new page under a page or database parent
 
-## OAuth Configuration
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionCreatePageParams"
+/>
 
-Notion uses a unique OAuth flow that doesn't use traditional scopes. Instead, permissions are configured at the integration level:
+### `notion_update_page`
 
-- **`owner`** - Set to `'user'` (default) for user-level access or `'workspace'` for workspace-level access
+Update a page's properties, icon, cover, or archive status
 
-The integration automatically handles Notion's custom OAuth endpoints:
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionUpdatePageParams"
+/>
 
-- Authorization: `https://api.notion.com/v1/oauth/authorize`
-- Token: `https://api.notion.com/v1/oauth/token`
+### `notion_get_page_property`
 
-## Sharing Pages with Your Integration
+Get a specific property value from a page with pagination support
 
-After connecting, users must explicitly share pages or databases with your integration:
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionGetPagePropertyParams"
+/>
 
-1. Open a page in Notion
-2. Click "Share" in the top right
-3. Invite your integration by name
-4. Grant appropriate permissions
+### `notion_get_database`
 
-## Error Handling
+Get a database by ID including its schema
 
-```typescript
-try {
-  const result = await client.notion.getPage({
-    pageId: "1234567890abcdef",
-  });
-} catch (error) {
-  if (error.message.includes("not found")) {
-    console.error("Page not found or not shared with integration");
-  } else if (error.message.includes("authentication")) {
-    console.error("Authentication failed");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionGetDatabaseParams"
+/>
 
-## Next Steps
+### `notion_query_database`
 
-- Explore the [Airtable Integration](/docs/integrations/airtable)
-- Explore the [Linear Integration](/docs/integrations/linear)
-- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
+Query a database with filters, sorts, and pagination
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionQueryDatabaseParams"
+/>
+
+### `notion_create_database`
+
+Create a new database under a parent page
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionCreateDatabaseParams"
+/>
+
+### `notion_update_database`
+
+Update a database's title, description, properties, or archive status
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionUpdateDatabaseParams"
+/>
+
+### `notion_get_block`
+
+Get a block by ID
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionGetBlockParams"
+/>
+
+### `notion_get_block_children`
+
+Get child blocks of a block with pagination
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionGetBlockChildrenParams"
+/>
+
+### `notion_append_blocks`
+
+Append child blocks to a parent block
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionAppendBlocksParams"
+/>
+
+### `notion_update_block`
+
+Update a block's content
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionUpdateBlockParams"
+/>
+
+### `notion_delete_block`
+
+Delete (archive) a block
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionDeleteBlockParams"
+/>
+
+### `notion_get_user`
+
+Get a user by ID
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionGetUserParams"
+/>
+
+### `notion_get_current_user`
+
+Get the bot user associated with the current token
+
+_No parameters._
+
+### `notion_list_users`
+
+List workspace users with pagination
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionListUsersParams"
+/>
+
+### `notion_create_comment`
+
+Create a comment on a page or reply to a discussion
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionCreateCommentParams"
+/>
+
+### `notion_list_comments`
+
+List comments on a block or page
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionListCommentsParams"
+/>
+
+### `notion_move_page`
+
+Move a page to a new parent page or data source
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionMovePageParams"
+/>
+
+### `notion_create_file_upload`
+
+Create a Notion file upload. Use mode "external_url" to import from a URL,
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionCreateFileUploadParams"
+/>
+
+### `notion_send_file_upload`
+
+Send file content for a Notion file upload (single_part mode).
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionSendFileUploadParams"
+/>
+
+### `notion_complete_file_upload`
+
+Complete a Notion file upload after sending content
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionCompleteFileUploadParams"
+/>
+
+### `notion_get_file_upload`
+
+Get the status of a Notion file upload
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionGetFileUploadParams"
+/>
+
+### `notion_create_data_source`
+
+Create a new Notion data source under a parent page
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionCreateDataSourceParams"
+/>
+
+### `notion_get_data_source`
+
+Get a Notion data source by its ID
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionGetDataSourceParams"
+/>
+
+### `notion_update_data_source`
+
+Update a Notion data source's title, description, properties, or status
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionUpdateDataSourceParams"
+/>
+
+### `notion_query_data_source`
+
+Query a Notion data source with optional filters, sorts, and pagination
+
+<AutoTypeTable
+  path="generated/tool-params/notion.ts"
+  name="NotionQueryDataSourceParams"
+/>
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth

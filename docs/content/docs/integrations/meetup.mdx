@@ -1,0 +1,147 @@
+---
+title: "Meetup Integration"
+description: "Manage Meetup get self, search groups, list events, get event, create event"
+---
+
+The Meetup integration provides access to manage Meetup get self, search groups, list events, get event, create event through the Integrate MCP server.
+
+## Installation
+
+The Meetup integration is included with the SDK:
+
+```typescript
+import { meetupIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Meetup OAuth App
+
+1. Create an OAuth application for Meetup
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Meetup integration to your server configuration. The integration automatically reads `MEETUP_CLIENT_ID` and `MEETUP_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, meetupIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    meetupIntegration({
+      scopes: ["basic", "event_management", "group_edit", "rsvp"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+meetupIntegration({
+  clientId: process.env.CUSTOM_MEETUP_ID,
+  clientSecret: process.env.CUSTOM_MEETUP_SECRET,
+      scopes: ["basic", "event_management", "group_edit", "rsvp"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("meetup");
+const result = await client.meetup.getSelf({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, meetupIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [meetupIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/meetup.ts"
+  name="MeetupIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `basic`
+- `event_management`
+- `group_edit`
+- `rsvp`
+
+## Tools
+
+### `meetup_get_self`
+
+Get self
+
+_No parameters._
+
+### `meetup_search_groups`
+
+Search groups
+
+<AutoTypeTable
+  path="generated/tool-params/meetup.ts"
+  name="MeetupSearchGroupsParams"
+/>
+
+### `meetup_list_events`
+
+List events
+
+<AutoTypeTable
+  path="generated/tool-params/meetup.ts"
+  name="MeetupListEventsParams"
+/>
+
+### `meetup_get_event`
+
+Get event
+
+<AutoTypeTable
+  path="generated/tool-params/meetup.ts"
+  name="MeetupGetEventParams"
+/>
+
+### `meetup_create_event`
+
+Create event
+
+<AutoTypeTable
+  path="generated/tool-params/meetup.ts"
+  name="MeetupCreateEventParams"
+/>
+
+### `meetup_rsvp_event`
+
+Rsvp event
+
+<AutoTypeTable
+  path="generated/tool-params/meetup.ts"
+  name="MeetupRsvpEventParams"
+/>
+
+## Notes
+
+- Category: Events & Ticketing
+- Authentication mode: OAuth

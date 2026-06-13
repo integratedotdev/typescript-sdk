@@ -1,0 +1,150 @@
+---
+title: "Looker Integration"
+description: "Manage Looker me, search dashboards, get dashboard, run query, list looks"
+---
+
+The Looker integration provides access to manage Looker me, search dashboards, get dashboard, run query, list looks through the Integrate MCP server.
+
+## Installation
+
+The Looker integration is included with the SDK:
+
+```typescript
+import { lookerIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Looker OAuth App
+
+1. Create an OAuth application for Looker
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Looker integration to your server configuration. The integration automatically reads `LOOKER_CLIENT_ID` and `LOOKER_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, lookerIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    lookerIntegration({
+      scopes: ["read", "write"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+lookerIntegration({
+  clientId: process.env.CUSTOM_LOOKER_ID,
+  clientSecret: process.env.CUSTOM_LOOKER_SECRET,
+      scopes: ["read", "write"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("looker");
+const result = await client.looker.me({
+  looker_base_url: "value",
+});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, lookerIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [lookerIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/looker.ts"
+  name="LookerIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `read`
+- `write`
+
+## Tools
+
+### `looker_me`
+
+Me
+
+<AutoTypeTable
+  path="generated/tool-params/looker.ts"
+  name="LookerMeParams"
+/>
+
+### `looker_search_dashboards`
+
+Search dashboards
+
+<AutoTypeTable
+  path="generated/tool-params/looker.ts"
+  name="LookerSearchDashboardsParams"
+/>
+
+### `looker_get_dashboard`
+
+Get dashboard
+
+<AutoTypeTable
+  path="generated/tool-params/looker.ts"
+  name="LookerGetDashboardParams"
+/>
+
+### `looker_run_query`
+
+Run query
+
+<AutoTypeTable
+  path="generated/tool-params/looker.ts"
+  name="LookerRunQueryParams"
+/>
+
+### `looker_list_looks`
+
+List looks
+
+<AutoTypeTable
+  path="generated/tool-params/looker.ts"
+  name="LookerListLooksParams"
+/>
+
+### `looker_get_look`
+
+Get look
+
+<AutoTypeTable
+  path="generated/tool-params/looker.ts"
+  name="LookerGetLookParams"
+/>
+
+## Notes
+
+- Category: Data & BI
+- Authentication mode: OAuth

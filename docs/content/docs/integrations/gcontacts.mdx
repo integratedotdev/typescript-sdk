@@ -1,11 +1,13 @@
 ---
-title: "Google Contacts"
+title: "Google Contacts Integration"
 description: "List, search, create, update, and delete Google Contacts via the People API"
 ---
 
-The Google Contacts integration provides access to list, search, create, update, and delete google contacts via the people api through the Integrate MCP server.
+The Google Contacts integration provides access to list, search, create, update, and delete Google Contacts via the People API through the Integrate MCP server.
 
 ## Installation
+
+The Google Contacts integration is included with the SDK:
 
 ```typescript
 import { gcontactsIntegration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { gcontactsIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Google Contacts to your server configuration. The integration automatically reads OAuth credentials from your environment (`GCONTACTS_CLIENT_ID`, `GCONTACTS_CLIENT_SECRET`):
+### 1. Create a Google Contacts OAuth App
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Contacts integration to your server configuration. The integration automatically reads `GCONTACTS_CLIENT_ID` and `GCONTACTS_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, gcontactsIntegration } from "integrate-sdk/server";
@@ -21,22 +32,42 @@ import { createMCPServer, gcontactsIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    gcontactsIntegration(),
+    gcontactsIntegration({
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+gcontactsIntegration({
+  clientId: process.env.CUSTOM_GCONTACTS_ID,
+  clientSecret: process.env.CUSTOM_GCONTACTS_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("gcontacts");
-const result = await client.gcontacts.batchGetContacts({
-  // Add the parameters required by this tool
-});
+const result = await client.gcontacts.batchGetContacts({});
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, gcontactsIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [gcontactsIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,27 +77,100 @@ console.log(result);
   name="GcontactsIntegrationConfig"
 />
 
-## Environment Variables
 
-- `GCONTACTS_CLIENT_ID`
-- `GCONTACTS_CLIENT_SECRET`
+## Tools
 
-## Available Tools
+### `gcontacts_batch_get_contacts`
 
-- `gcontacts_batch_get_contacts`
-- `gcontacts_copy_other_contact`
-- `gcontacts_create_contact`
-- `gcontacts_delete_contact`
-- `gcontacts_get_person`
-- `gcontacts_get_self`
-- `gcontacts_list_connections`
-- `gcontacts_list_other_contacts`
-- `gcontacts_search_contacts`
-- `gcontacts_update_contact`
+Batch get contacts
+
+<AutoTypeTable
+  path="generated/tool-params/gcontacts.ts"
+  name="GcontactsBatchGetContactsParams"
+/>
+
+### `gcontacts_copy_other_contact`
+
+Copy other contact
+
+<AutoTypeTable
+  path="generated/tool-params/gcontacts.ts"
+  name="GcontactsCopyOtherContactParams"
+/>
+
+### `gcontacts_create_contact`
+
+Create contact
+
+<AutoTypeTable
+  path="generated/tool-params/gcontacts.ts"
+  name="GcontactsCreateContactParams"
+/>
+
+### `gcontacts_delete_contact`
+
+Delete contact
+
+<AutoTypeTable
+  path="generated/tool-params/gcontacts.ts"
+  name="GcontactsDeleteContactParams"
+/>
+
+### `gcontacts_get_person`
+
+Get person
+
+<AutoTypeTable
+  path="generated/tool-params/gcontacts.ts"
+  name="GcontactsGetPersonParams"
+/>
+
+### `gcontacts_get_self`
+
+Get self
+
+<AutoTypeTable
+  path="generated/tool-params/gcontacts.ts"
+  name="GcontactsGetSelfParams"
+/>
+
+### `gcontacts_list_connections`
+
+List connections
+
+<AutoTypeTable
+  path="generated/tool-params/gcontacts.ts"
+  name="GcontactsListConnectionsParams"
+/>
+
+### `gcontacts_list_other_contacts`
+
+List other contacts
+
+<AutoTypeTable
+  path="generated/tool-params/gcontacts.ts"
+  name="GcontactsListOtherContactsParams"
+/>
+
+### `gcontacts_search_contacts`
+
+Search contacts
+
+<AutoTypeTable
+  path="generated/tool-params/gcontacts.ts"
+  name="GcontactsSearchContactsParams"
+/>
+
+### `gcontacts_update_contact`
+
+Update contact
+
+<AutoTypeTable
+  path="generated/tool-params/gcontacts.ts"
+  name="GcontactsUpdateContactParams"
+/>
 
 ## Notes
 
 - Category: Communication
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

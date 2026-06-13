@@ -1,11 +1,13 @@
 ---
-title: "GitLab"
-description: "Manage GitLab repositories, issues, and merge requests"
+title: "GitLab Integration"
+description: "Manage GitLab projects, issues, merge requests, and CI/CD"
 ---
 
-The GitLab integration provides access to manage gitlab repositories, issues, and merge requests through the Integrate MCP server.
+The GitLab integration provides access to manage GitLab projects, issues, merge requests, and CI/CD through the Integrate MCP server.
 
 ## Installation
+
+The GitLab integration is included with the SDK:
 
 ```typescript
 import { gitlabIntegration } from "integrate-sdk/server";
@@ -13,7 +15,15 @@ import { gitlabIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add GitLab to your server configuration. The integration automatically reads OAuth credentials from your environment (`GITLAB_CLIENT_ID`, `GITLAB_CLIENT_SECRET`):
+### 1. Create a GitLab OAuth App
+
+1. Create an OAuth application for GitLab
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the GitLab integration to your server configuration. The integration automatically reads `GITLAB_CLIENT_ID` and `GITLAB_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, gitlabIntegration } from "integrate-sdk/server";
@@ -21,22 +31,40 @@ import { createMCPServer, gitlabIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    gitlabIntegration(),
+    gitlabIntegration({
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+gitlabIntegration({
+  clientId: process.env.CUSTOM_GITLAB_ID,
+  clientSecret: process.env.CUSTOM_GITLAB_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("gitlab");
-const result = await client.gitlab.listProjects({
-  // Add the parameters required by this tool
-});
+// Use client.gitlab methods after connecting
+```
 
-console.log(result);
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, gitlabIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [gitlabIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,47 +74,142 @@ console.log(result);
   name="GitLabIntegrationConfig"
 />
 
-## Environment Variables
 
-- `GITLAB_CLIENT_ID`
-- `GITLAB_CLIENT_SECRET`
+## Tools
 
-## Default Scopes
+### `gitlab_list_projects`
 
-These defaults are applied unless you override `scopes` in the integration config:
+List projects
 
-- `read_api`
-- `write_api`
-- `read_user`
+_No parameters._
 
-## Available Tools
+### `gitlab_list_own_projects`
 
-- `gitlab_list_projects`
-- `gitlab_list_own_projects`
-- `gitlab_get_project`
-- `gitlab_create_project`
-- `gitlab_create_issue`
-- `gitlab_list_issues`
-- `gitlab_get_issue`
-- `gitlab_update_issue`
-- `gitlab_close_issue`
-- `gitlab_create_merge_request`
-- `gitlab_list_merge_requests`
-- `gitlab_get_merge_request`
-- `gitlab_accept_merge_request`
-- `gitlab_list_branches`
-- `gitlab_create_branch`
-- `gitlab_list_commits`
-- `gitlab_get_commit`
-- `gitlab_list_issue_notes`
-- `gitlab_create_issue_note`
-- `gitlab_list_milestones`
-- `gitlab_create_milestone`
-- `gitlab_get_current_user`
+List own projects
+
+_No parameters._
+
+### `gitlab_get_project`
+
+Get project
+
+_No parameters._
+
+### `gitlab_create_project`
+
+Create project
+
+_No parameters._
+
+### `gitlab_create_issue`
+
+Create issue
+
+_No parameters._
+
+### `gitlab_list_issues`
+
+List issues
+
+_No parameters._
+
+### `gitlab_get_issue`
+
+Get issue
+
+_No parameters._
+
+### `gitlab_update_issue`
+
+Update issue
+
+_No parameters._
+
+### `gitlab_close_issue`
+
+Close issue
+
+_No parameters._
+
+### `gitlab_create_merge_request`
+
+Create merge request
+
+_No parameters._
+
+### `gitlab_list_merge_requests`
+
+List merge requests
+
+_No parameters._
+
+### `gitlab_get_merge_request`
+
+Get merge request
+
+_No parameters._
+
+### `gitlab_accept_merge_request`
+
+Accept merge request
+
+_No parameters._
+
+### `gitlab_list_branches`
+
+List branches
+
+_No parameters._
+
+### `gitlab_create_branch`
+
+Create branch
+
+_No parameters._
+
+### `gitlab_list_commits`
+
+List commits
+
+_No parameters._
+
+### `gitlab_get_commit`
+
+Get commit
+
+_No parameters._
+
+### `gitlab_list_issue_notes`
+
+List issue notes
+
+_No parameters._
+
+### `gitlab_create_issue_note`
+
+Create issue note
+
+_No parameters._
+
+### `gitlab_list_milestones`
+
+List milestones
+
+_No parameters._
+
+### `gitlab_create_milestone`
+
+Create milestone
+
+_No parameters._
+
+### `gitlab_get_current_user`
+
+Get current user
+
+_No parameters._
 
 ## Notes
 
 - Category: Engineering
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

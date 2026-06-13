@@ -1,11 +1,13 @@
 ---
-title: "Railway"
+title: "Railway Integration"
 description: "Manage Railway workspaces, projects, services, deployments, variables, domains, and volumes"
 ---
 
-The Railway integration provides access to manage railway workspaces, projects, services, deployments, variables, domains, and volumes through the Integrate MCP server.
+The Railway integration provides access to manage Railway workspaces, projects, services, deployments, variables, domains, and volumes through the Integrate MCP server.
 
 ## Installation
+
+The Railway integration is included with the SDK:
 
 ```typescript
 import { railwayIntegration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { railwayIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Railway to your server configuration. The integration automatically reads OAuth credentials from your environment (`RAILWAY_CLIENT_ID`, `RAILWAY_CLIENT_SECRET`):
+### 1. Create a Railway OAuth App
+
+1. Go to [Backboard Developer Portal](https://backboard.railway.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Railway integration to your server configuration. The integration automatically reads `RAILWAY_CLIENT_ID` and `RAILWAY_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, railwayIntegration } from "integrate-sdk/server";
@@ -21,22 +32,44 @@ import { createMCPServer, railwayIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    railwayIntegration(),
+    railwayIntegration({
+      scopes: ["openid", "profile", "email", "workspace:admin", "project:member"], // Optional
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+railwayIntegration({
+  clientId: process.env.CUSTOM_RAILWAY_ID,
+  clientSecret: process.env.CUSTOM_RAILWAY_SECRET,
+      scopes: ["openid", "profile", "email", "workspace:admin", "project:member"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("railway");
-const result = await client.railway.getCurrentUser({
-  // Add the parameters required by this tool
-});
+const result = await client.railway.getCurrentUser({});
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, railwayIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [railwayIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,85 +79,626 @@ console.log(result);
   name="RailwayIntegrationConfig"
 />
 
-## Environment Variables
 
-- `RAILWAY_CLIENT_ID`
-- `RAILWAY_CLIENT_SECRET`
+## Default Scopes
 
-## Available Tools
+These defaults are applied unless you override `scopes` in the integration config:
 
-- `railway_get_current_user`
-- `railway_get_workspace`
-- `railway_list_regions`
-- `railway_list_projects`
-- `railway_get_project`
-- `railway_create_project`
-- `railway_update_project`
-- `railway_delete_project`
-- `railway_transfer_project`
-- `railway_list_project_members`
-- `railway_list_environments`
-- `railway_get_environment`
-- `railway_create_environment`
-- `railway_rename_environment`
-- `railway_delete_environment`
-- `railway_get_environment_logs`
-- `railway_get_environment_staged_changes`
-- `railway_commit_environment_staged_changes`
-- `railway_get_service`
-- `railway_get_service_instance`
-- `railway_create_service`
-- `railway_update_service`
-- `railway_update_service_instance`
-- `railway_connect_service`
-- `railway_disconnect_service`
-- `railway_deploy_service`
-- `railway_redeploy_service`
-- `railway_get_service_limits`
-- `railway_delete_service`
-- `railway_list_deployments`
-- `railway_get_deployment`
-- `railway_get_latest_active_deployment`
-- `railway_get_deployment_build_logs`
-- `railway_get_deployment_runtime_logs`
-- `railway_get_deployment_http_logs`
-- `railway_redeploy_deployment`
-- `railway_restart_deployment`
-- `railway_rollback_deployment`
-- `railway_stop_deployment`
-- `railway_cancel_deployment`
-- `railway_remove_deployment`
-- `railway_get_variables`
-- `railway_get_unrendered_variables`
-- `railway_upsert_variable`
-- `railway_upsert_variables`
-- `railway_delete_variable`
-- `railway_get_rendered_variables`
-- `railway_list_domains`
-- `railway_create_service_domain`
-- `railway_delete_service_domain`
-- `railway_check_custom_domain_availability`
-- `railway_create_custom_domain`
-- `railway_get_custom_domain_status`
-- `railway_update_custom_domain`
-- `railway_delete_custom_domain`
-- `railway_list_project_volumes`
-- `railway_get_volume_instance`
-- `railway_create_volume`
-- `railway_update_volume`
-- `railway_update_volume_instance`
-- `railway_delete_volume`
-- `railway_list_volume_backups`
-- `railway_create_volume_backup`
-- `railway_restore_volume_backup`
-- `railway_lock_volume_backup`
-- `railway_delete_volume_backup`
-- `railway_list_volume_backup_schedules`
-- `railway_list_tcp_proxies`
+- `openid`
+- `profile`
+- `email`
+- `workspace:admin`
+- `project:member`
+
+## Tools
+
+### `railway_get_current_user`
+
+Get current user
+
+_No parameters._
+
+### `railway_get_workspace`
+
+Get workspace
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayGetWorkspaceParams"
+/>
+
+### `railway_list_regions`
+
+List regions
+
+_No parameters._
+
+### `railway_list_projects`
+
+List projects
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayListProjectsParams"
+/>
+
+### `railway_get_project`
+
+Get project
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayGetProjectParams"
+/>
+
+### `railway_create_project`
+
+Create project
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayCreateProjectParams"
+/>
+
+### `railway_update_project`
+
+Update project
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayUpdateProjectParams"
+/>
+
+### `railway_delete_project`
+
+Delete project
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayDeleteProjectParams"
+/>
+
+### `railway_transfer_project`
+
+Transfer project
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayTransferProjectParams"
+/>
+
+### `railway_list_project_members`
+
+List project members
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayListProjectMembersParams"
+/>
+
+### `railway_list_environments`
+
+List environments
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayListEnvironmentsParams"
+/>
+
+### `railway_get_environment`
+
+Get environment
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayGetEnvironmentParams"
+/>
+
+### `railway_create_environment`
+
+Create environment
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayCreateEnvironmentParams"
+/>
+
+### `railway_rename_environment`
+
+Rename environment
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayRenameEnvironmentParams"
+/>
+
+### `railway_delete_environment`
+
+Delete environment
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayDeleteEnvironmentParams"
+/>
+
+### `railway_get_environment_logs`
+
+Get environment logs
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayGetEnvironmentLogsParams"
+/>
+
+### `railway_get_environment_staged_changes`
+
+Get environment staged changes
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayGetEnvironmentStagedChangesParams"
+/>
+
+### `railway_commit_environment_staged_changes`
+
+Commit environment staged changes
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayCommitEnvironmentStagedChangesParams"
+/>
+
+### `railway_get_service`
+
+Get service
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayGetServiceParams"
+/>
+
+### `railway_get_service_instance`
+
+Get service instance
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayGetServiceInstanceParams"
+/>
+
+### `railway_create_service`
+
+Create service
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayCreateServiceParams"
+/>
+
+### `railway_update_service`
+
+Update service
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayUpdateServiceParams"
+/>
+
+### `railway_update_service_instance`
+
+Update service instance
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayUpdateServiceInstanceParams"
+/>
+
+### `railway_connect_service`
+
+Connect service
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayConnectServiceParams"
+/>
+
+### `railway_disconnect_service`
+
+Disconnect service
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayDisconnectServiceParams"
+/>
+
+### `railway_deploy_service`
+
+Deploy service
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayDeployServiceParams"
+/>
+
+### `railway_redeploy_service`
+
+Redeploy service
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayRedeployServiceParams"
+/>
+
+### `railway_get_service_limits`
+
+Get service limits
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayGetServiceLimitsParams"
+/>
+
+### `railway_delete_service`
+
+Delete service
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayDeleteServiceParams"
+/>
+
+### `railway_list_deployments`
+
+List deployments
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayListDeploymentsParams"
+/>
+
+### `railway_get_deployment`
+
+Get deployment
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayGetDeploymentParams"
+/>
+
+### `railway_get_latest_active_deployment`
+
+Get latest active deployment
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayGetLatestActiveDeploymentParams"
+/>
+
+### `railway_get_deployment_build_logs`
+
+Get deployment build logs
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayGetDeploymentBuildLogsParams"
+/>
+
+### `railway_get_deployment_runtime_logs`
+
+Get deployment runtime logs
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayGetDeploymentRuntimeLogsParams"
+/>
+
+### `railway_get_deployment_http_logs`
+
+Get deployment http logs
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayGetDeploymentHttpLogsParams"
+/>
+
+### `railway_redeploy_deployment`
+
+Redeploy deployment
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayRedeployDeploymentParams"
+/>
+
+### `railway_restart_deployment`
+
+Restart deployment
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayRestartDeploymentParams"
+/>
+
+### `railway_rollback_deployment`
+
+Rollback deployment
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayRollbackDeploymentParams"
+/>
+
+### `railway_stop_deployment`
+
+Stop deployment
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayStopDeploymentParams"
+/>
+
+### `railway_cancel_deployment`
+
+Cancel deployment
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayCancelDeploymentParams"
+/>
+
+### `railway_remove_deployment`
+
+Remove deployment
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayRemoveDeploymentParams"
+/>
+
+### `railway_get_variables`
+
+Get variables
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayGetVariablesParams"
+/>
+
+### `railway_get_unrendered_variables`
+
+Get unrendered variables
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayGetUnrenderedVariablesParams"
+/>
+
+### `railway_upsert_variable`
+
+Upsert variable
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayUpsertVariableParams"
+/>
+
+### `railway_upsert_variables`
+
+Upsert variables
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayUpsertVariablesParams"
+/>
+
+### `railway_delete_variable`
+
+Delete variable
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayDeleteVariableParams"
+/>
+
+### `railway_get_rendered_variables`
+
+Get rendered variables
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayGetRenderedVariablesParams"
+/>
+
+### `railway_list_domains`
+
+List domains
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayListDomainsParams"
+/>
+
+### `railway_create_service_domain`
+
+Create service domain
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayCreateServiceDomainParams"
+/>
+
+### `railway_delete_service_domain`
+
+Delete service domain
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayDeleteServiceDomainParams"
+/>
+
+### `railway_check_custom_domain_availability`
+
+Check custom domain availability
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayCheckCustomDomainAvailabilityParams"
+/>
+
+### `railway_create_custom_domain`
+
+Create custom domain
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayCreateCustomDomainParams"
+/>
+
+### `railway_get_custom_domain_status`
+
+Get custom domain status
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayGetCustomDomainStatusParams"
+/>
+
+### `railway_update_custom_domain`
+
+Update custom domain
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayUpdateCustomDomainParams"
+/>
+
+### `railway_delete_custom_domain`
+
+Delete custom domain
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayDeleteCustomDomainParams"
+/>
+
+### `railway_list_project_volumes`
+
+List project volumes
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayListProjectVolumesParams"
+/>
+
+### `railway_get_volume_instance`
+
+Get volume instance
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayGetVolumeInstanceParams"
+/>
+
+### `railway_create_volume`
+
+Create volume
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayCreateVolumeParams"
+/>
+
+### `railway_update_volume`
+
+Update volume
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayUpdateVolumeParams"
+/>
+
+### `railway_update_volume_instance`
+
+Update volume instance
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayUpdateVolumeInstanceParams"
+/>
+
+### `railway_delete_volume`
+
+Delete volume
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayDeleteVolumeParams"
+/>
+
+### `railway_list_volume_backups`
+
+List volume backups
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayListVolumeBackupsParams"
+/>
+
+### `railway_create_volume_backup`
+
+Create volume backup
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayCreateVolumeBackupParams"
+/>
+
+### `railway_restore_volume_backup`
+
+Restore volume backup
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayRestoreVolumeBackupParams"
+/>
+
+### `railway_lock_volume_backup`
+
+Lock volume backup
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayLockVolumeBackupParams"
+/>
+
+### `railway_delete_volume_backup`
+
+Delete volume backup
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayDeleteVolumeBackupParams"
+/>
+
+### `railway_list_volume_backup_schedules`
+
+List volume backup schedules
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayListVolumeBackupSchedulesParams"
+/>
+
+### `railway_list_tcp_proxies`
+
+List tcp proxies
+
+<AutoTypeTable
+  path="generated/tool-params/railway.ts"
+  name="RailwayListTcpProxiesParams"
+/>
 
 ## Notes
 
 - Category: Infrastructure
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

@@ -1,9 +1,9 @@
 ---
-title: "YouTube"
-description: "Search videos, manage playlists, and access channels"
+title: "YouTube Integration"
+description: "Search and access YouTube videos and channels"
 ---
 
-The YouTube integration provides access to YouTube's Data API through the Integrate MCP server.
+The YouTube integration provides access to search and access YouTube videos and channels through the Integrate MCP server.
 
 ## Installation
 
@@ -15,13 +15,12 @@ import { youtubeIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-### 1. Create Google OAuth Credentials
+### 1. Create a YouTube OAuth App
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create a new project or select an existing one
-3. Enable the YouTube Data API v3
-4. Create OAuth 2.0 credentials
-5. Note your Client ID and Client Secret
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
 
 ### 2. Configure the Integration on Your Server
 
@@ -34,7 +33,6 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     youtubeIntegration({
-      scopes: ["https://www.googleapis.com/auth/youtube.readonly"], // Optional
     }),
   ],
 });
@@ -46,7 +44,6 @@ You can override the environment variables by passing explicit values:
 youtubeIntegration({
   clientId: process.env.CUSTOM_YOUTUBE_ID,
   clientSecret: process.env.CUSTOM_YOUTUBE_SECRET,
-  scopes: ["https://www.googleapis.com/auth/youtube.readonly"],
 });
 ```
 
@@ -58,7 +55,11 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("youtube");
-const results = await client.youtube.search({ q: "coding tutorials" });
+const result = await client.youtube.search({
+  query: "value",
+});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -78,122 +79,223 @@ const customClient = createMCPClient({
   name="YouTubeIntegrationConfig"
 />
 
-## Available Tools
 
-### Search
+## Tools
 
-- **`youtube_search`** - Search for videos, channels, and playlists
+### `youtube_add_comment`
 
-### Videos
+Post a new top-level comment on a video
 
-- **`youtube_get_video`** - Get video details
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeAddCommentParams"
+/>
 
-### Playlists
+### `youtube_add_to_playlist`
 
-- **`youtube_list_playlists`** - List playlists
-- **`youtube_get_playlist`** - Get playlist details
-- **`youtube_list_playlist_items`** - List videos in a playlist
+Add a video to a playlist
 
-### Channels
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeAddToPlaylistParams"
+/>
 
-- **`youtube_get_channel`** - Get channel details
+### `youtube_create_playlist`
 
-### Subscriptions
+Create a new playlist
 
-- **`youtube_list_subscriptions`** - List channel subscriptions
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeCreatePlaylistParams"
+/>
 
-### Comments
+### `youtube_delete_playlist`
 
-- **`youtube_list_comments`** - List video comments
+Permanently delete a playlist
 
-### Captions
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeDeletePlaylistParams"
+/>
 
-- **`youtube_get_captions`** - Get video captions/subtitles
+### `youtube_get_captions`
 
-## Examples
+List available caption tracks for a video
 
-### Search Videos
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeGetCaptionsParams"
+/>
 
-```typescript
-const result = await client.youtube.search({
-  q: "machine learning tutorial",
-  type: "video",
-  maxResults: 10,
-  order: "relevance",
-});
+### `youtube_get_channel`
 
-console.log("Search results:", result);
-```
+Get details for any channel by ID
 
-### Get Video Details
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeGetChannelParams"
+/>
 
-```typescript
-const result = await client.youtube.getVideo({
-  id: "dQw4w9WgXcQ",
-  part: ["snippet", "statistics", "contentDetails"],
-});
+### `youtube_get_my_channel`
 
-console.log("Video details:", result);
-```
+Get the authenticated user's own channel
 
-### List Playlists
+_No parameters._
 
-```typescript
-const result = await client.youtube.listPlaylists({
-  mine: true,
-  part: ["snippet", "contentDetails"],
-  maxResults: 25,
-});
+### `youtube_get_playlist`
 
-console.log("My playlists:", result);
-```
+Get details for a specific playlist
 
-### Get Channel Info
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeGetPlaylistParams"
+/>
 
-```typescript
-const result = await client.youtube.getChannel({
-  id: "UC_x5XG1OV2P6uZZ5FSM9Ttw",
-  part: ["snippet", "statistics", "brandingSettings"],
-});
+### `youtube_get_video`
 
-console.log("Channel info:", result);
-```
+Get full details for a specific video
 
-## OAuth Scopes
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeGetVideoParams"
+/>
 
-The default scope is `['https://www.googleapis.com/auth/youtube.readonly']`. You may need different scopes:
+### `youtube_get_video_rating`
 
-- **`https://www.googleapis.com/auth/youtube.readonly`** - Read-only access (default)
-- **`https://www.googleapis.com/auth/youtube`** - Full access to account
-- **`https://www.googleapis.com/auth/youtube.upload`** - Upload videos
-- **`https://www.googleapis.com/auth/youtube.force-ssl`** - Manage account via secure connection
+Get the authenticated user's rating for one or more videos
 
-## Quota Management
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeGetVideoRatingParams"
+/>
 
-The YouTube Data API has daily quota limits. Each API call consumes quota units. Monitor your usage in the Google Cloud Console to avoid hitting limits.
+### `youtube_list_comment_replies`
 
-## Error Handling
+List replies to a specific comment thread
 
-```typescript
-try {
-  const result = await client.youtube.getVideo({
-    id: "dQw4w9WgXcQ",
-  });
-} catch (error) {
-  if (error.message.includes("not found")) {
-    console.error("Video not found");
-  } else if (error.message.includes("quota")) {
-    console.error("API quota exceeded");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeListCommentRepliesParams"
+/>
 
-## Next Steps
+### `youtube_list_comments`
 
-- Explore the [Google Drive Integration](/docs/integrations/gdrive)
-- Explore the [Google Docs Integration](/docs/integrations/gdocs)
-- Explore the [Google Sheets Integration](/docs/integrations/gsheets)
-- Explore the [Gmail Integration](/docs/integrations/gmail)
-- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
+List top-level comment threads on a video
+
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeListCommentsParams"
+/>
+
+### `youtube_list_my_videos`
+
+List videos uploaded by the authenticated user
+
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeListMyVideosParams"
+/>
+
+### `youtube_list_playlist_items`
+
+List videos in a playlist
+
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeListPlaylistItemsParams"
+/>
+
+### `youtube_list_playlists`
+
+List playlists for the authenticated user or a specific channel
+
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeListPlaylistsParams"
+/>
+
+### `youtube_list_subscriptions`
+
+List channels the authenticated user is subscribed to
+
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeListSubscriptionsParams"
+/>
+
+### `youtube_rate_video`
+
+Like, dislike, or remove a rating from a video
+
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeRateVideoParams"
+/>
+
+### `youtube_remove_from_playlist`
+
+Remove an item from a playlist
+
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeRemoveFromPlaylistParams"
+/>
+
+### `youtube_reply_to_comment`
+
+Reply to an existing comment thread
+
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeReplyToCommentParams"
+/>
+
+### `youtube_search`
+
+Search for videos, channels, or playlists
+
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeSearchParams"
+/>
+
+### `youtube_subscribe`
+
+Subscribe to a channel
+
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeSubscribeParams"
+/>
+
+### `youtube_unsubscribe`
+
+Unsubscribe from a channel
+
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeUnsubscribeParams"
+/>
+
+### `youtube_update_playlist`
+
+Update a playlist's metadata
+
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeUpdatePlaylistParams"
+/>
+
+### `youtube_update_video`
+
+Update a video's metadata
+
+<AutoTypeTable
+  path="generated/tool-params/youtube.ts"
+  name="YoutubeUpdateVideoParams"
+/>
+
+## Notes
+
+- Category: Entertainment
+- Authentication mode: OAuth

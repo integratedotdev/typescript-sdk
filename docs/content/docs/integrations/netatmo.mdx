@@ -1,0 +1,145 @@
+---
+title: "Netatmo Integration"
+description: "Manage Netatmo get homesdata, get stationsdata, get measure, set thermpoint, get events"
+---
+
+The Netatmo integration provides access to manage Netatmo get homesdata, get stationsdata, get measure, set thermpoint, get events through the Integrate MCP server.
+
+## Installation
+
+The Netatmo integration is included with the SDK:
+
+```typescript
+import { netatmoIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Netatmo OAuth App
+
+1. Create an OAuth application for Netatmo
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Netatmo integration to your server configuration. The integration automatically reads `NETATMO_CLIENT_ID` and `NETATMO_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, netatmoIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    netatmoIntegration({
+      scopes: ["read_station", "read_thermostat", "write_thermostat", "read_camera", "access_camera", "read_presence", "write_presence", "read_homecoach"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+netatmoIntegration({
+  clientId: process.env.CUSTOM_NETATMO_ID,
+  clientSecret: process.env.CUSTOM_NETATMO_SECRET,
+      scopes: ["read_station", "read_thermostat", "write_thermostat", "read_camera", "access_camera", "read_presence", "write_presence", "read_homecoach"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("netatmo");
+const result = await client.netatmo.getHomesdata({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, netatmoIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [netatmoIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/netatmo.ts"
+  name="NetatmoIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `read_station`
+- `read_thermostat`
+- `write_thermostat`
+- `read_camera`
+- `access_camera`
+- `read_presence`
+- `write_presence`
+- `read_homecoach`
+
+## Tools
+
+### `netatmo_get_homesdata`
+
+Get homesdata
+
+<AutoTypeTable
+  path="generated/tool-params/netatmo.ts"
+  name="NetatmoGetHomesdataParams"
+/>
+
+### `netatmo_get_stationsdata`
+
+Get stationsdata
+
+<AutoTypeTable
+  path="generated/tool-params/netatmo.ts"
+  name="NetatmoGetStationsdataParams"
+/>
+
+### `netatmo_get_measure`
+
+Get measure
+
+<AutoTypeTable
+  path="generated/tool-params/netatmo.ts"
+  name="NetatmoGetMeasureParams"
+/>
+
+### `netatmo_set_thermpoint`
+
+Set thermpoint
+
+<AutoTypeTable
+  path="generated/tool-params/netatmo.ts"
+  name="NetatmoSetThermpointParams"
+/>
+
+### `netatmo_get_events`
+
+Get events
+
+<AutoTypeTable
+  path="generated/tool-params/netatmo.ts"
+  name="NetatmoGetEventsParams"
+/>
+
+## Notes
+
+- Category: Lifestyle
+- Authentication mode: OAuth

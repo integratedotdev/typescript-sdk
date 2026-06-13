@@ -1,0 +1,136 @@
+---
+title: "MapMyFitness Integration"
+description: "Manage MapMyFitness get user, list workouts, get workout, create workout, list routes"
+---
+
+The MapMyFitness integration provides access to manage MapMyFitness get user, list workouts, get workout, create workout, list routes through the Integrate MCP server.
+
+## Installation
+
+The MapMyFitness integration is included with the SDK:
+
+```typescript
+import { mapmyfitnessIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a MapMyFitness OAuth App
+
+1. Create an OAuth application for MapMyFitness
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the MapMyFitness integration to your server configuration. The integration automatically reads `MAPMYFITNESS_CLIENT_ID` and `MAPMYFITNESS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, mapmyfitnessIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    mapmyfitnessIntegration({
+      scopes: ["read", "write"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+mapmyfitnessIntegration({
+  clientId: process.env.CUSTOM_MAPMYFITNESS_ID,
+  clientSecret: process.env.CUSTOM_MAPMYFITNESS_SECRET,
+      scopes: ["read", "write"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("mapmyfitness");
+const result = await client.mapmyfitness.getUser({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, mapmyfitnessIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [mapmyfitnessIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/mapmyfitness.ts"
+  name="MapmyfitnessIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `read`
+- `write`
+
+## Tools
+
+### `mapmyfitness_get_user`
+
+Get user
+
+_No parameters._
+
+### `mapmyfitness_list_workouts`
+
+List workouts
+
+<AutoTypeTable
+  path="generated/tool-params/mapmyfitness.ts"
+  name="MapmyfitnessListWorkoutsParams"
+/>
+
+### `mapmyfitness_get_workout`
+
+Get workout
+
+<AutoTypeTable
+  path="generated/tool-params/mapmyfitness.ts"
+  name="MapmyfitnessGetWorkoutParams"
+/>
+
+### `mapmyfitness_create_workout`
+
+Create workout
+
+<AutoTypeTable
+  path="generated/tool-params/mapmyfitness.ts"
+  name="MapmyfitnessCreateWorkoutParams"
+/>
+
+### `mapmyfitness_list_routes`
+
+List routes
+
+<AutoTypeTable
+  path="generated/tool-params/mapmyfitness.ts"
+  name="MapmyfitnessListRoutesParams"
+/>
+
+## Notes
+
+- Category: Fitness
+- Authentication mode: OAuth

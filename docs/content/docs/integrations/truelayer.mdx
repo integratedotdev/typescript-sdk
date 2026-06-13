@@ -1,0 +1,145 @@
+---
+title: "TrueLayer Integration"
+description: "Manage TrueLayer get me, list accounts, get account, get balance, list transactions"
+---
+
+The TrueLayer integration provides access to manage TrueLayer get me, list accounts, get account, get balance, list transactions through the Integrate MCP server.
+
+## Installation
+
+The TrueLayer integration is included with the SDK:
+
+```typescript
+import { truelayerIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a TrueLayer OAuth App
+
+1. Create an OAuth application for TrueLayer
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the TrueLayer integration to your server configuration. The integration automatically reads `TRUELAYER_CLIENT_ID` and `TRUELAYER_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, truelayerIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    truelayerIntegration({
+      scopes: ["info", "accounts", "balance", "cards", "transactions", "direct_debits", "standing_orders", "offline_access"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+truelayerIntegration({
+  clientId: process.env.CUSTOM_TRUELAYER_ID,
+  clientSecret: process.env.CUSTOM_TRUELAYER_SECRET,
+      scopes: ["info", "accounts", "balance", "cards", "transactions", "direct_debits", "standing_orders", "offline_access"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("truelayer");
+const result = await client.truelayer.getMe({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, truelayerIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [truelayerIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/truelayer.ts"
+  name="TruelayerIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `info`
+- `accounts`
+- `balance`
+- `cards`
+- `transactions`
+- `direct_debits`
+- `standing_orders`
+- `offline_access`
+
+## Tools
+
+### `truelayer_get_me`
+
+Get me
+
+_No parameters._
+
+### `truelayer_list_accounts`
+
+List accounts
+
+_No parameters._
+
+### `truelayer_get_account`
+
+Get account
+
+<AutoTypeTable
+  path="generated/tool-params/truelayer.ts"
+  name="TruelayerGetAccountParams"
+/>
+
+### `truelayer_get_balance`
+
+Get balance
+
+<AutoTypeTable
+  path="generated/tool-params/truelayer.ts"
+  name="TruelayerGetBalanceParams"
+/>
+
+### `truelayer_list_transactions`
+
+List transactions
+
+<AutoTypeTable
+  path="generated/tool-params/truelayer.ts"
+  name="TruelayerListTransactionsParams"
+/>
+
+### `truelayer_list_cards`
+
+List cards
+
+_No parameters._
+
+## Notes
+
+- Category: Banking
+- Authentication mode: OAuth

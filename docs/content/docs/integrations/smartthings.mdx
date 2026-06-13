@@ -1,0 +1,232 @@
+---
+title: "Samsung SmartThings Integration"
+description: "Manage SmartThings locations, rooms, devices, commands, scenes, and rules"
+---
+
+The Samsung SmartThings integration provides access to manage SmartThings locations, rooms, devices, commands, scenes, and rules through the Integrate MCP server.
+
+## Installation
+
+The Samsung SmartThings integration is included with the SDK:
+
+```typescript
+import { smartthingsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Samsung SmartThings OAuth App
+
+1. Create an OAuth application for Samsung SmartThings
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Samsung SmartThings integration to your server configuration. The integration automatically reads `SMARTTHINGS_CLIENT_ID` and `SMARTTHINGS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, smartthingsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    smartthingsIntegration({
+      scopes: ["r:locations:*", "x:locations:*", "r:devices:*", "x:devices:*", "r:scenes:*", "x:scenes:*", "r:rules:*", "x:rules:*"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+smartthingsIntegration({
+  clientId: process.env.CUSTOM_SMARTTHINGS_ID,
+  clientSecret: process.env.CUSTOM_SMARTTHINGS_SECRET,
+      scopes: ["r:locations:*", "x:locations:*", "r:devices:*", "x:devices:*", "r:scenes:*", "x:scenes:*", "r:rules:*", "x:rules:*"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("smartthings");
+const result = await client.smartthings.listLocations({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, smartthingsIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [smartthingsIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/smartthings.ts"
+  name="SmartThingsIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `r:locations:*`
+- `x:locations:*`
+- `r:devices:*`
+- `x:devices:*`
+- `r:scenes:*`
+- `x:scenes:*`
+- `r:rules:*`
+- `x:rules:*`
+
+## Tools
+
+### `smartthings_list_locations`
+
+List locations
+
+_No parameters._
+
+### `smartthings_get_location`
+
+Get location
+
+<AutoTypeTable
+  path="generated/tool-params/smartthings.ts"
+  name="SmartthingsGetLocationParams"
+/>
+
+### `smartthings_list_rooms`
+
+List rooms
+
+<AutoTypeTable
+  path="generated/tool-params/smartthings.ts"
+  name="SmartthingsListRoomsParams"
+/>
+
+### `smartthings_get_room`
+
+Get room
+
+<AutoTypeTable
+  path="generated/tool-params/smartthings.ts"
+  name="SmartthingsGetRoomParams"
+/>
+
+### `smartthings_list_devices`
+
+List devices
+
+<AutoTypeTable
+  path="generated/tool-params/smartthings.ts"
+  name="SmartthingsListDevicesParams"
+/>
+
+### `smartthings_get_device`
+
+Get device
+
+<AutoTypeTable
+  path="generated/tool-params/smartthings.ts"
+  name="SmartthingsGetDeviceParams"
+/>
+
+### `smartthings_get_device_status`
+
+Get device status
+
+<AutoTypeTable
+  path="generated/tool-params/smartthings.ts"
+  name="SmartthingsGetDeviceStatusParams"
+/>
+
+### `smartthings_execute_device_command`
+
+Execute device command
+
+<AutoTypeTable
+  path="generated/tool-params/smartthings.ts"
+  name="SmartthingsExecuteDeviceCommandParams"
+/>
+
+### `smartthings_list_scenes`
+
+List scenes
+
+<AutoTypeTable
+  path="generated/tool-params/smartthings.ts"
+  name="SmartthingsListScenesParams"
+/>
+
+### `smartthings_execute_scene`
+
+Execute scene
+
+<AutoTypeTable
+  path="generated/tool-params/smartthings.ts"
+  name="SmartthingsExecuteSceneParams"
+/>
+
+### `smartthings_list_rules`
+
+List rules
+
+<AutoTypeTable
+  path="generated/tool-params/smartthings.ts"
+  name="SmartthingsListRulesParams"
+/>
+
+### `smartthings_get_rule`
+
+Get rule
+
+<AutoTypeTable
+  path="generated/tool-params/smartthings.ts"
+  name="SmartthingsGetRuleParams"
+/>
+
+### `smartthings_create_rule`
+
+Create rule
+
+<AutoTypeTable
+  path="generated/tool-params/smartthings.ts"
+  name="SmartthingsCreateRuleParams"
+/>
+
+### `smartthings_update_rule`
+
+Update rule
+
+<AutoTypeTable
+  path="generated/tool-params/smartthings.ts"
+  name="SmartthingsUpdateRuleParams"
+/>
+
+### `smartthings_delete_rule`
+
+Delete rule
+
+<AutoTypeTable
+  path="generated/tool-params/smartthings.ts"
+  name="SmartthingsDeleteRuleParams"
+/>
+
+## Notes
+
+- Category: Lifestyle
+- Authentication mode: OAuth

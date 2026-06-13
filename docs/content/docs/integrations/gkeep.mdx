@@ -1,0 +1,157 @@
+---
+title: "Google Keep Integration"
+description: "Manage Google Keep notes, attachments, and sharing permissions"
+---
+
+The Google Keep integration provides access to manage Google Keep notes, attachments, and sharing permissions through the Integrate MCP server.
+
+## Installation
+
+The Google Keep integration is included with the SDK:
+
+```typescript
+import { gkeepIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Google Keep OAuth App
+
+1. Create an OAuth application for Google Keep
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Keep integration to your server configuration. The integration automatically reads `GKEEP_CLIENT_ID` and `GKEEP_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, gkeepIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    gkeepIntegration({
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+gkeepIntegration({
+  clientId: process.env.CUSTOM_GKEEP_ID,
+  clientSecret: process.env.CUSTOM_GKEEP_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("gkeep");
+const result = await client.gkeep.listNotes({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, gkeepIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [gkeepIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/gkeep.ts"
+  name="GkeepIntegrationConfig"
+/>
+
+
+## Tools
+
+### `gkeep_list_notes`
+
+List notes
+
+<AutoTypeTable
+  path="generated/tool-params/gkeep.ts"
+  name="GkeepListNotesParams"
+/>
+
+### `gkeep_get_note`
+
+Get note
+
+<AutoTypeTable
+  path="generated/tool-params/gkeep.ts"
+  name="GkeepGetNoteParams"
+/>
+
+### `gkeep_create_text_note`
+
+Create text note
+
+<AutoTypeTable
+  path="generated/tool-params/gkeep.ts"
+  name="GkeepCreateTextNoteParams"
+/>
+
+### `gkeep_create_list_note`
+
+Create list note
+
+<AutoTypeTable
+  path="generated/tool-params/gkeep.ts"
+  name="GkeepCreateListNoteParams"
+/>
+
+### `gkeep_delete_note`
+
+Delete note
+
+<AutoTypeTable
+  path="generated/tool-params/gkeep.ts"
+  name="GkeepDeleteNoteParams"
+/>
+
+### `gkeep_download_attachment`
+
+Download attachment
+
+<AutoTypeTable
+  path="generated/tool-params/gkeep.ts"
+  name="GkeepDownloadAttachmentParams"
+/>
+
+### `gkeep_batch_create_permissions`
+
+Batch create permissions
+
+<AutoTypeTable
+  path="generated/tool-params/gkeep.ts"
+  name="GkeepBatchCreatePermissionsParams"
+/>
+
+### `gkeep_batch_delete_permissions`
+
+Batch delete permissions
+
+<AutoTypeTable
+  path="generated/tool-params/gkeep.ts"
+  name="GkeepBatchDeletePermissionsParams"
+/>
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth

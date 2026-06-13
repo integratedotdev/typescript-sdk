@@ -51,3 +51,34 @@ jobs:
       - name: Type check
         run: bun run type-check
 
+  docs:
+    name: Build Docs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.21
+
+      - name: Install SDK dependencies
+        run: bun install
+
+      - name: Build SDK
+        run: bun run build
+
+      - name: Install docs dependencies
+        working-directory: docs
+        run: bun install
+
+      - name: Generate integration docs
+        working-directory: docs
+        run: bun run generate:integrations
+
+      - name: Build docs site
+        working-directory: docs
+        run: bun run build
+

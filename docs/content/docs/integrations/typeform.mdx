@@ -1,11 +1,13 @@
 ---
-title: "Typeform"
-description: "Create and manage Typeform surveys and responses"
+title: "Typeform Integration"
+description: "Manage Typeform workspaces, forms, and responses"
 ---
 
-The Typeform integration provides access to create and manage typeform surveys and responses through the Integrate MCP server.
+The Typeform integration provides access to manage Typeform workspaces, forms, and responses through the Integrate MCP server.
 
 ## Installation
+
+The Typeform integration is included with the SDK:
 
 ```typescript
 import { typeformIntegration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { typeformIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Typeform to your server configuration. The integration automatically reads OAuth credentials from your environment (`TYPEFORM_CLIENT_ID`, `TYPEFORM_CLIENT_SECRET`):
+### 1. Create a Typeform OAuth App
+
+1. Go to [Api Developer Portal](https://api.typeform.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Typeform integration to your server configuration. The integration automatically reads `TYPEFORM_CLIENT_ID` and `TYPEFORM_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, typeformIntegration } from "integrate-sdk/server";
@@ -21,22 +32,44 @@ import { createMCPServer, typeformIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    typeformIntegration(),
+    typeformIntegration({
+      scopes: ["offline", "accounts:read", "forms:read", "forms:write", "responses:read", "workspaces:read"], // Optional
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+typeformIntegration({
+  clientId: process.env.CUSTOM_TYPEFORM_ID,
+  clientSecret: process.env.CUSTOM_TYPEFORM_SECRET,
+      scopes: ["offline", "accounts:read", "forms:read", "forms:write", "responses:read", "workspaces:read"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("typeform");
-const result = await client.typeform.getMe({
-  // Add the parameters required by this tool
-});
+const result = await client.typeform.getMe({});
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, typeformIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [typeformIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,26 +79,99 @@ console.log(result);
   name="TypeformIntegrationConfig"
 />
 
-## Environment Variables
 
-- `TYPEFORM_CLIENT_ID`
-- `TYPEFORM_CLIENT_SECRET`
+## Default Scopes
 
-## Available Tools
+These defaults are applied unless you override `scopes` in the integration config:
 
-- `typeform_get_me`
-- `typeform_list_workspaces`
-- `typeform_get_workspace`
-- `typeform_list_forms`
-- `typeform_get_form`
-- `typeform_create_form`
-- `typeform_update_form`
-- `typeform_delete_form`
-- `typeform_list_responses`
+- `offline`
+- `accounts:read`
+- `forms:read`
+- `forms:write`
+- `responses:read`
+- `workspaces:read`
+
+## Tools
+
+### `typeform_get_me`
+
+Get me
+
+_No parameters._
+
+### `typeform_list_workspaces`
+
+List workspaces
+
+<AutoTypeTable
+  path="generated/tool-params/typeform.ts"
+  name="TypeformListWorkspacesParams"
+/>
+
+### `typeform_get_workspace`
+
+Get workspace
+
+<AutoTypeTable
+  path="generated/tool-params/typeform.ts"
+  name="TypeformGetWorkspaceParams"
+/>
+
+### `typeform_list_forms`
+
+List forms
+
+<AutoTypeTable
+  path="generated/tool-params/typeform.ts"
+  name="TypeformListFormsParams"
+/>
+
+### `typeform_get_form`
+
+Get form
+
+<AutoTypeTable
+  path="generated/tool-params/typeform.ts"
+  name="TypeformGetFormParams"
+/>
+
+### `typeform_create_form`
+
+Create form
+
+<AutoTypeTable
+  path="generated/tool-params/typeform.ts"
+  name="TypeformCreateFormParams"
+/>
+
+### `typeform_update_form`
+
+Update form
+
+<AutoTypeTable
+  path="generated/tool-params/typeform.ts"
+  name="TypeformUpdateFormParams"
+/>
+
+### `typeform_delete_form`
+
+Delete form
+
+<AutoTypeTable
+  path="generated/tool-params/typeform.ts"
+  name="TypeformDeleteFormParams"
+/>
+
+### `typeform_list_responses`
+
+List responses
+
+<AutoTypeTable
+  path="generated/tool-params/typeform.ts"
+  name="TypeformListResponsesParams"
+/>
 
 ## Notes
 
-- Category: Business
+- Category: Productivity
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

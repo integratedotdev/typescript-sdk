@@ -1,0 +1,151 @@
+---
+title: "Zoho Creator Integration"
+description: "Manage Zoho Creator applications, forms, reports, and app records"
+---
+
+The Zoho Creator integration provides access to manage Zoho Creator applications, forms, reports, and app records through the Integrate MCP server.
+
+## Installation
+
+The Zoho Creator integration is included with the SDK:
+
+```typescript
+import { zohoCreatorIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Zoho Creator OAuth App
+
+1. Go to [Zoho API Console](https://api-console.zoho.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Zoho Creator integration to your server configuration. The integration automatically reads `ZOHO_CREATOR_CLIENT_ID` and `ZOHO_CREATOR_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, zohoCreatorIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    zohoCreatorIntegration({
+      scopes: ["ZohoCreator.meta.READ", "ZohoCreator.data.READ", "ZohoCreator.data.CREATE", "ZohoCreator.data.UPDATE"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+zohoCreatorIntegration({
+  clientId: process.env.CUSTOM_ZOHO_CREATOR_ID,
+  clientSecret: process.env.CUSTOM_ZOHO_CREATOR_SECRET,
+      scopes: ["ZohoCreator.meta.READ", "ZohoCreator.data.READ", "ZohoCreator.data.CREATE", "ZohoCreator.data.UPDATE"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("zoho_creator");
+const result = await client.zoho_creator.listApplications({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, zohoCreatorIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [zohoCreatorIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/zoho_creator.ts"
+  name="ZohoCreatorIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `ZohoCreator.meta.READ`
+- `ZohoCreator.data.READ`
+- `ZohoCreator.data.CREATE`
+- `ZohoCreator.data.UPDATE`
+
+## Tools
+
+### `zoho_creator_list_applications`
+
+Creator list applications
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_creator.ts"
+  name="ZohoCreatorListApplicationsParams"
+/>
+
+### `zoho_creator_list_forms`
+
+Creator list forms
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_creator.ts"
+  name="ZohoCreatorListFormsParams"
+/>
+
+### `zoho_creator_list_reports`
+
+Creator list reports
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_creator.ts"
+  name="ZohoCreatorListReportsParams"
+/>
+
+### `zoho_creator_list_records`
+
+Creator list records
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_creator.ts"
+  name="ZohoCreatorListRecordsParams"
+/>
+
+### `zoho_creator_create_record`
+
+Creator create record
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_creator.ts"
+  name="ZohoCreatorCreateRecordParams"
+/>
+
+### `zoho_creator_update_record`
+
+Creator update record
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_creator.ts"
+  name="ZohoCreatorUpdateRecordParams"
+/>
+
+## Notes
+
+- Category: Business
+- Authentication mode: OAuth

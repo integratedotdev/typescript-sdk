@@ -1,11 +1,13 @@
 ---
-title: "Google Chat"
-description: "Send messages and manage Google Chat spaces and memberships"
+title: "Google Chat Integration"
+description: "List Google Chat spaces and manage messages and memberships"
 ---
 
-The Google Chat integration provides access to send messages and manage google chat spaces and memberships through the Integrate MCP server.
+The Google Chat integration provides access to list Google Chat spaces and manage messages and memberships through the Integrate MCP server.
 
 ## Installation
+
+The Google Chat integration is included with the SDK:
 
 ```typescript
 import { gchatIntegration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { gchatIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Google Chat to your server configuration. The integration automatically reads OAuth credentials from your environment (`GCHAT_CLIENT_ID`, `GCHAT_CLIENT_SECRET`):
+### 1. Create a Google Chat OAuth App
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Chat integration to your server configuration. The integration automatically reads `GCHAT_CLIENT_ID` and `GCHAT_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, gchatIntegration } from "integrate-sdk/server";
@@ -21,22 +32,44 @@ import { createMCPServer, gchatIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    gchatIntegration(),
+    gchatIntegration({
+      scopes: ["https://www.googleapis.com/auth/chat.messages", "https://www.googleapis.com/auth/chat.spaces.readonly"], // Optional
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+gchatIntegration({
+  clientId: process.env.CUSTOM_GCHAT_ID,
+  clientSecret: process.env.CUSTOM_GCHAT_SECRET,
+      scopes: ["https://www.googleapis.com/auth/chat.messages", "https://www.googleapis.com/auth/chat.spaces.readonly"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("gchat");
-const result = await client.gchat.deleteMessage({
-  // Add the parameters required by this tool
-});
+const result = await client.gchat.deleteMessage({});
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, gchatIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [gchatIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,25 +79,89 @@ console.log(result);
   name="GchatIntegrationConfig"
 />
 
-## Environment Variables
 
-- `GCHAT_CLIENT_ID`
-- `GCHAT_CLIENT_SECRET`
+## Default Scopes
 
-## Available Tools
+These defaults are applied unless you override `scopes` in the integration config:
 
-- `gchat_delete_message`
-- `gchat_get_message`
-- `gchat_get_space`
-- `gchat_list_members`
-- `gchat_list_messages`
-- `gchat_list_spaces`
-- `gchat_send_message`
-- `gchat_update_message`
+- `https://www.googleapis.com/auth/chat.messages`
+- `https://www.googleapis.com/auth/chat.spaces.readonly`
+
+## Tools
+
+### `gchat_delete_message`
+
+Delete message
+
+<AutoTypeTable
+  path="generated/tool-params/gchat.ts"
+  name="GchatDeleteMessageParams"
+/>
+
+### `gchat_get_message`
+
+Get message
+
+<AutoTypeTable
+  path="generated/tool-params/gchat.ts"
+  name="GchatGetMessageParams"
+/>
+
+### `gchat_get_space`
+
+Get space
+
+<AutoTypeTable
+  path="generated/tool-params/gchat.ts"
+  name="GchatGetSpaceParams"
+/>
+
+### `gchat_list_members`
+
+List members
+
+<AutoTypeTable
+  path="generated/tool-params/gchat.ts"
+  name="GchatListMembersParams"
+/>
+
+### `gchat_list_messages`
+
+List messages
+
+<AutoTypeTable
+  path="generated/tool-params/gchat.ts"
+  name="GchatListMessagesParams"
+/>
+
+### `gchat_list_spaces`
+
+List spaces
+
+<AutoTypeTable
+  path="generated/tool-params/gchat.ts"
+  name="GchatListSpacesParams"
+/>
+
+### `gchat_send_message`
+
+Send message
+
+<AutoTypeTable
+  path="generated/tool-params/gchat.ts"
+  name="GchatSendMessageParams"
+/>
+
+### `gchat_update_message`
+
+Update message
+
+<AutoTypeTable
+  path="generated/tool-params/gchat.ts"
+  name="GchatUpdateMessageParams"
+/>
 
 ## Notes
 
 - Category: Communication
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

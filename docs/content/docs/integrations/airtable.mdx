@@ -1,9 +1,9 @@
 ---
-title: "Airtable"
+title: "Airtable Integration"
 description: "Manage Airtable bases, tables, and records"
 ---
 
-The Airtable integration provides access to Airtable's API through the Integrate MCP server.
+The Airtable integration provides access to manage Airtable bases, tables, and records through the Integrate MCP server.
 
 ## Installation
 
@@ -18,7 +18,7 @@ import { airtableIntegration } from "integrate-sdk/server";
 ### 1. Create an Airtable OAuth App
 
 1. Go to [Airtable Developer Hub](https://airtable.com/create/oauth)
-2. Create a new OAuth integration
+2. Create a new OAuth application
 3. Configure your redirect URI
 4. Note your Client ID and Client Secret
 
@@ -33,7 +33,6 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     airtableIntegration({
-      scopes: ["data.records:read", "data.records:write", "schema.bases:read"], // Optional
     }),
   ],
 });
@@ -45,7 +44,6 @@ You can override the environment variables by passing explicit values:
 airtableIntegration({
   clientId: process.env.CUSTOM_AIRTABLE_ID,
   clientSecret: process.env.CUSTOM_AIRTABLE_SECRET,
-  scopes: ["data.records:read", "data.records:write", "schema.bases:read"],
 });
 ```
 
@@ -57,7 +55,9 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("airtable");
-const bases = await client.airtable.listBases({});
+const result = await client.airtable.listBases({});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -77,99 +77,226 @@ const customClient = createMCPClient({
   name="AirtableIntegrationConfig"
 />
 
-## Available Tools
 
-### Bases
+## Tools
 
-- **`airtable_list_bases`** - List all accessible bases
-- **`airtable_get_base`** - Get details of a specific base
+### `airtable_list_bases`
 
-### Tables
+List all accessible bases
 
-- **`airtable_list_tables`** - List tables in a base
-- **`airtable_get_table`** - Get table schema
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableListBasesParams"
+/>
 
-### Records
+### `airtable_get_base`
 
-- **`airtable_list_records`** - List records in a table
-- **`airtable_get_record`** - Get a specific record
-- **`airtable_create_record`** - Create a new record
-- **`airtable_update_record`** - Update an existing record
-- **`airtable_search_records`** - Search records with filters
+Get a specific base
 
-## Examples
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableGetBaseParams"
+/>
 
-### List Bases
+### `airtable_list_tables`
 
-```typescript
-const result = await client.airtable.listBases({});
+List tables in a base
 
-console.log("Bases:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableListTablesParams"
+/>
 
-### Create a Record
+### `airtable_get_table`
 
-```typescript
-const result = await client.airtable.createRecord({
-  baseId: "appXXXXXXXXXXXXXX",
-  tableId: "tblYYYYYYYYYYYYYY",
-  fields: {
-    Name: "New Task",
-    Status: "In Progress",
-    Priority: "High",
-  },
-});
+Get a specific table schema
 
-console.log("Record created:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableGetTableParams"
+/>
 
-### Search Records
+### `airtable_list_records`
 
-```typescript
-const result = await client.airtable.searchRecords({
-  baseId: "appXXXXXXXXXXXXXX",
-  tableId: "tblYYYYYYYYYYYYYY",
-  filterByFormula: "{Status} = 'In Progress'",
-  maxRecords: 100,
-});
+List records in a table
 
-console.log("Matching records:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableListRecordsParams"
+/>
 
-## OAuth Scopes
+### `airtable_get_record`
 
-The following scopes are supported. Enable them on your Airtable OAuth app based on the tools you need:
+Get a specific record
 
-- **`data.records:read`** - Read records from tables
-- **`data.records:write`** - Create, update, and delete records
-- **`data.recordComments:read`** - Read record comments
-- **`data.recordComments:write`** - Create and manage record comments
-- **`schema.bases:read`** - Read base and table schemas
-- **`schema.bases:write`** - Modify base and table schemas
-- **`webhook:manage`** - Create and manage webhooks
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableGetRecordParams"
+/>
 
-## Error Handling
+### `airtable_create_record`
 
-```typescript
-try {
-  const result = await client.airtable.createRecord({
-    baseId: "appXXXXXXXXXXXXXX",
-    tableId: "tblYYYYYYYYYYYYYY",
-    fields: { Name: "New Record" },
-  });
-} catch (error) {
-  if (error.message.includes("not found")) {
-    console.error("Base or table not found");
-  } else if (error.message.includes("authentication")) {
-    console.error("Authentication failed");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+Create a new record
 
-## Next Steps
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableCreateRecordParams"
+/>
 
-- Explore the [Linear Integration](/docs/integrations/linear)
-- Explore the [Notion Integration](/docs/integrations/notion)
-- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
+### `airtable_update_record`
+
+Update an existing record
+
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableUpdateRecordParams"
+/>
+
+### `airtable_search_records`
+
+Search for records using a formula
+
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableSearchRecordsParams"
+/>
+
+### `airtable_delete_record`
+
+Delete a record
+
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableDeleteRecordParams"
+/>
+
+### `airtable_create_base`
+
+Create a new base
+
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableCreateBaseParams"
+/>
+
+### `airtable_create_table`
+
+Create a new table in a base
+
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableCreateTableParams"
+/>
+
+### `airtable_update_table`
+
+Update a table's name or description
+
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableUpdateTableParams"
+/>
+
+### `airtable_create_field`
+
+Create a new field in a table
+
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableCreateFieldParams"
+/>
+
+### `airtable_update_field`
+
+Update a field's name or description
+
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableUpdateFieldParams"
+/>
+
+### `airtable_list_comments`
+
+List comments on a record
+
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableListCommentsParams"
+/>
+
+### `airtable_create_comment`
+
+Create a comment on a record
+
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableCreateCommentParams"
+/>
+
+### `airtable_update_comment`
+
+Update a comment
+
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableUpdateCommentParams"
+/>
+
+### `airtable_delete_comment`
+
+Delete a comment
+
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableDeleteCommentParams"
+/>
+
+### `airtable_list_webhooks`
+
+List webhooks for a base
+
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableListWebhooksParams"
+/>
+
+### `airtable_create_webhook`
+
+Create a webhook for a base
+
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableCreateWebhookParams"
+/>
+
+### `airtable_delete_webhook`
+
+Delete a webhook
+
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableDeleteWebhookParams"
+/>
+
+### `airtable_list_webhook_payloads`
+
+List webhook payloads
+
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableListWebhookPayloadsParams"
+/>
+
+### `airtable_refresh_webhook`
+
+Refresh a webhook to extend its expiration
+
+<AutoTypeTable
+  path="generated/tool-params/airtable.ts"
+  name="AirtableRefreshWebhookParams"
+/>
+
+## Notes
+
+- Category: Business
+- Authentication mode: OAuth

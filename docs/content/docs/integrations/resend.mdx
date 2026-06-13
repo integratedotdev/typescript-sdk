@@ -1,11 +1,13 @@
 ---
-title: "Resend"
+title: "Resend Integration"
 description: "Send email and manage domains with the Resend API"
 ---
 
-The Resend integration provides access to send email and manage domains with the resend api through the Integrate MCP server.
+The Resend integration provides access to send email and manage domains with the Resend API through the Integrate MCP server.
 
 ## Installation
+
+The Resend integration is included with the SDK:
 
 ```typescript
 import { resendIntegration } from "integrate-sdk/server";
@@ -13,7 +15,7 @@ import { resendIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Resend to your server configuration. This integration can read credentials from environment variables automatically (`RESEND_API_KEY`):
+Add Resend to your server configuration. Provide credentials via environment variables or integration config:
 
 ```typescript
 import { createMCPServer, resendIntegration } from "integrate-sdk/server";
@@ -21,7 +23,9 @@ import { createMCPServer, resendIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    resendIntegration(),
+    resendIntegration({
+      // See configuration options below
+    }),
   ],
 });
 ```
@@ -31,12 +35,12 @@ export const { client: serverClient } = createMCPServer({
 ```typescript
 import { client } from "integrate-sdk";
 
-const result = await client.resend.listDomains({
-  // Add the parameters required by this tool
-});
-
-console.log(result);
+// Use client.resend methods after connecting
 ```
+
+## Environment Variables
+
+- `RESEND_API_KEY` (when supported by this integration)
 
 ## Configuration Options
 
@@ -45,24 +49,58 @@ console.log(result);
   name="ResendIntegrationOptions"
 />
 
-## Environment Variables
 
-- `RESEND_API_KEY`
+## Tools
 
-## Available Tools
+### `resend_list_domains`
 
-- `resend_list_domains`
-- `resend_get_domain`
-- `resend_create_domain`
-- `resend_delete_domain`
-- `resend_verify_domain`
-- `resend_send_email`
-- `resend_get_email`
-- `resend_cancel_scheduled_email`
+List domains
+
+_No parameters._
+
+### `resend_get_domain`
+
+Get domain
+
+_No parameters._
+
+### `resend_create_domain`
+
+Create domain
+
+_No parameters._
+
+### `resend_delete_domain`
+
+Delete domain
+
+_No parameters._
+
+### `resend_verify_domain`
+
+Verify domain
+
+_No parameters._
+
+### `resend_send_email`
+
+Send email
+
+_No parameters._
+
+### `resend_get_email`
+
+Get email
+
+_No parameters._
+
+### `resend_cancel_scheduled_email`
+
+Cancel scheduled email
+
+_No parameters._
 
 ## Notes
 
 - Category: Communication
 - Authentication mode: API key
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

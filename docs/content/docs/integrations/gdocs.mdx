@@ -1,9 +1,9 @@
 ---
-title: "Google Docs"
+title: "Google Docs Integration"
 description: "Create and edit Google Docs documents"
 ---
 
-The Google Docs integration provides access to Google Docs through the Integrate MCP server.
+The Google Docs integration provides access to create and edit Google Docs documents through the Integrate MCP server.
 
 ## Installation
 
@@ -15,14 +15,12 @@ import { gdocsIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-### 1. Create Google OAuth Credentials
+### 1. Create a Google Docs OAuth App
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create a new project or select an existing one
-3. Enable the **Google Docs API**
-4. Create OAuth 2.0 credentials (Web application)
-5. Add your redirect URI (e.g. `https://yourdomain.com/api/integrate/oauth/callback`)
-6. Note your Client ID and Client Secret
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
 
 ### 2. Configure the Integration on Your Server
 
@@ -34,7 +32,8 @@ import { createMCPServer, gdocsIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    gdocsIntegration(),
+    gdocsIntegration({
+    }),
   ],
 });
 ```
@@ -56,7 +55,9 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("gdocs");
-const docs = await client.gdocs.list({});
+const result = await client.gdocs.list({});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -76,87 +77,100 @@ const customClient = createMCPClient({
   name="GDocsIntegrationConfig"
 />
 
-## Available Tools
 
-- **`gdocs_list`** - List Google Docs documents
-- **`gdocs_get`** - Get a document and its content
-- **`gdocs_create`** - Create a new document
-- **`gdocs_append_text`** - Append text to a document
-- **`gdocs_replace_text`** - Find and replace text in a document
+## Tools
 
-## Examples
+### `gdocs_append_text`
 
-### List Documents
+Append text
 
-```typescript
-const result = await client.gdocs.list({
-  page_size: 20,
-});
-```
+<AutoTypeTable
+  path="generated/tool-params/gdocs.ts"
+  name="GdocsAppendTextParams"
+/>
 
-### Get a Document
+### `gdocs_batch_update`
 
-```typescript
-const doc = await client.gdocs.get({
-  document_id: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
-});
-```
+Batch update
 
-### Create a Document
+<AutoTypeTable
+  path="generated/tool-params/gdocs.ts"
+  name="GdocsBatchUpdateParams"
+/>
 
-```typescript
-const doc = await client.gdocs.create({
-  title: "Q4 Planning Notes",
-});
-```
+### `gdocs_create`
 
-### Append Text
+Create
 
-```typescript
-await client.gdocs.appendText({
-  document_id: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
-  text: "\n## New Section\n\nContent goes here.",
-});
-```
+<AutoTypeTable
+  path="generated/tool-params/gdocs.ts"
+  name="GdocsCreateParams"
+/>
 
-### Find and Replace Text
+### `gdocs_create_comment`
 
-```typescript
-await client.gdocs.replaceText({
-  document_id: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
-  find: "{{company_name}}",
-  replace: "Acme Corp",
-  match_case: false,
-});
-```
+Create comment
 
-## OAuth Scopes
+<AutoTypeTable
+  path="generated/tool-params/gdocs.ts"
+  name="GdocsCreateCommentParams"
+/>
 
-The default scope provides full read/write access to documents. You can restrict it:
+### `gdocs_delete`
 
-- **`https://www.googleapis.com/auth/documents`** - Read and write documents
-- **`https://www.googleapis.com/auth/documents.readonly`** - Read-only access
+Delete
 
-## Error Handling
+<AutoTypeTable
+  path="generated/tool-params/gdocs.ts"
+  name="GdocsDeleteParams"
+/>
 
-```typescript
-try {
-  const doc = await client.gdocs.get({
-    document_id: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
-  });
-} catch (error) {
-  if (error.message.includes("404")) {
-    console.error("Document not found");
-  } else if (error.message.includes("403")) {
-    console.error("Insufficient permissions");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+### `gdocs_delete_comment`
 
-## Next Steps
+Delete comment
 
-- Explore the [Google Sheets Integration](/docs/integrations/gsheets)
-- Explore the [Google Slides Integration](/docs/integrations/gslides)
-- Explore the [Google Drive Integration](/docs/integrations/gdrive)
+<AutoTypeTable
+  path="generated/tool-params/gdocs.ts"
+  name="GdocsDeleteCommentParams"
+/>
+
+### `gdocs_get`
+
+Get
+
+<AutoTypeTable
+  path="generated/tool-params/gdocs.ts"
+  name="GdocsGetParams"
+/>
+
+### `gdocs_list`
+
+List
+
+<AutoTypeTable
+  path="generated/tool-params/gdocs.ts"
+  name="GdocsListParams"
+/>
+
+### `gdocs_list_comments`
+
+List comments
+
+<AutoTypeTable
+  path="generated/tool-params/gdocs.ts"
+  name="GdocsListCommentsParams"
+/>
+
+### `gdocs_replace_text`
+
+Replace text
+
+<AutoTypeTable
+  path="generated/tool-params/gdocs.ts"
+  name="GdocsReplaceTextParams"
+/>
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth

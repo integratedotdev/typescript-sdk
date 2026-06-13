@@ -1,0 +1,232 @@
+---
+title: "Spotify Integration"
+description: "Search Spotify, manage playlists and saved tracks, and control playback"
+---
+
+The Spotify integration provides access to search Spotify, manage playlists and saved tracks, and control playback through the Integrate MCP server.
+
+## Installation
+
+The Spotify integration is included with the SDK:
+
+```typescript
+import { spotifyIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Spotify OAuth App
+
+1. Create an OAuth application for Spotify
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Spotify integration to your server configuration. The integration automatically reads `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, spotifyIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    spotifyIntegration({
+      scopes: ["user-read-email", "playlist-read-private", "playlist-modify-private", "playlist-modify-public", "user-library-read", "user-library-modify", "user-read-playback-state", "user-modify-playback-state"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+spotifyIntegration({
+  clientId: process.env.CUSTOM_SPOTIFY_ID,
+  clientSecret: process.env.CUSTOM_SPOTIFY_SECRET,
+      scopes: ["user-read-email", "playlist-read-private", "playlist-modify-private", "playlist-modify-public", "user-library-read", "user-library-modify", "user-read-playback-state", "user-modify-playback-state"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("spotify");
+const result = await client.spotify.getCurrentUser({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, spotifyIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [spotifyIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/spotify.ts"
+  name="SpotifyIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `user-read-email`
+- `playlist-read-private`
+- `playlist-modify-private`
+- `playlist-modify-public`
+- `user-library-read`
+- `user-library-modify`
+- `user-read-playback-state`
+- `user-modify-playback-state`
+
+## Tools
+
+### `spotify_get_current_user`
+
+Get current user
+
+_No parameters._
+
+### `spotify_search`
+
+Search
+
+<AutoTypeTable
+  path="generated/tool-params/spotify.ts"
+  name="SpotifySearchParams"
+/>
+
+### `spotify_get_track`
+
+Get track
+
+<AutoTypeTable
+  path="generated/tool-params/spotify.ts"
+  name="SpotifyGetTrackParams"
+/>
+
+### `spotify_get_album`
+
+Get album
+
+<AutoTypeTable
+  path="generated/tool-params/spotify.ts"
+  name="SpotifyGetAlbumParams"
+/>
+
+### `spotify_list_user_playlists`
+
+List user playlists
+
+<AutoTypeTable
+  path="generated/tool-params/spotify.ts"
+  name="SpotifyListUserPlaylistsParams"
+/>
+
+### `spotify_get_playlist`
+
+Get playlist
+
+<AutoTypeTable
+  path="generated/tool-params/spotify.ts"
+  name="SpotifyGetPlaylistParams"
+/>
+
+### `spotify_create_playlist`
+
+Create playlist
+
+<AutoTypeTable
+  path="generated/tool-params/spotify.ts"
+  name="SpotifyCreatePlaylistParams"
+/>
+
+### `spotify_add_playlist_items`
+
+Add playlist items
+
+<AutoTypeTable
+  path="generated/tool-params/spotify.ts"
+  name="SpotifyAddPlaylistItemsParams"
+/>
+
+### `spotify_remove_playlist_items`
+
+Remove playlist items
+
+<AutoTypeTable
+  path="generated/tool-params/spotify.ts"
+  name="SpotifyRemovePlaylistItemsParams"
+/>
+
+### `spotify_get_saved_tracks`
+
+Get saved tracks
+
+<AutoTypeTable
+  path="generated/tool-params/spotify.ts"
+  name="SpotifyGetSavedTracksParams"
+/>
+
+### `spotify_save_tracks`
+
+Save tracks
+
+<AutoTypeTable
+  path="generated/tool-params/spotify.ts"
+  name="SpotifySaveTracksParams"
+/>
+
+### `spotify_remove_saved_tracks`
+
+Remove saved tracks
+
+<AutoTypeTable
+  path="generated/tool-params/spotify.ts"
+  name="SpotifyRemoveSavedTracksParams"
+/>
+
+### `spotify_get_playback_state`
+
+Get playback state
+
+<AutoTypeTable
+  path="generated/tool-params/spotify.ts"
+  name="SpotifyGetPlaybackStateParams"
+/>
+
+### `spotify_start_playback`
+
+Start playback
+
+<AutoTypeTable
+  path="generated/tool-params/spotify.ts"
+  name="SpotifyStartPlaybackParams"
+/>
+
+### `spotify_pause_playback`
+
+Pause playback
+
+<AutoTypeTable
+  path="generated/tool-params/spotify.ts"
+  name="SpotifyPausePlaybackParams"
+/>
+
+## Notes
+
+- Category: Entertainment
+- Authentication mode: OAuth

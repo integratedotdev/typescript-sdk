@@ -1,0 +1,162 @@
+---
+title: "Zoho Desk Integration"
+description: "Manage Zoho Desk tickets, contacts, accounts, agents, departments, and articles"
+---
+
+The Zoho Desk integration provides access to manage Zoho Desk tickets, contacts, accounts, agents, departments, and articles through the Integrate MCP server.
+
+## Installation
+
+The Zoho Desk integration is included with the SDK:
+
+```typescript
+import { zohoDeskIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Zoho Desk OAuth App
+
+1. Go to [Zoho API Console](https://api-console.zoho.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Zoho Desk integration to your server configuration. The integration automatically reads `ZOHO_DESK_CLIENT_ID` and `ZOHO_DESK_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, zohoDeskIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    zohoDeskIntegration({
+      scopes: ["Desk.tickets.ALL", "Desk.contacts.ALL", "Desk.settings.READ"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+zohoDeskIntegration({
+  clientId: process.env.CUSTOM_ZOHO_DESK_ID,
+  clientSecret: process.env.CUSTOM_ZOHO_DESK_SECRET,
+      scopes: ["Desk.tickets.ALL", "Desk.contacts.ALL", "Desk.settings.READ"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("zoho_desk");
+const result = await client.zoho_desk.listTickets({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, zohoDeskIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [zohoDeskIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/zoho_desk.ts"
+  name="ZohoDeskIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `Desk.tickets.ALL`
+- `Desk.contacts.ALL`
+- `Desk.settings.READ`
+
+## Tools
+
+### `zoho_desk_list_tickets`
+
+Desk list tickets
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_desk.ts"
+  name="ZohoDeskListTicketsParams"
+/>
+
+### `zoho_desk_get_ticket`
+
+Desk get ticket
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_desk.ts"
+  name="ZohoDeskGetTicketParams"
+/>
+
+### `zoho_desk_create_ticket`
+
+Desk create ticket
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_desk.ts"
+  name="ZohoDeskCreateTicketParams"
+/>
+
+### `zoho_desk_list_contacts`
+
+Desk list contacts
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_desk.ts"
+  name="ZohoDeskListContactsParams"
+/>
+
+### `zoho_desk_list_accounts`
+
+Desk list accounts
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_desk.ts"
+  name="ZohoDeskListAccountsParams"
+/>
+
+### `zoho_desk_list_agents`
+
+Desk list agents
+
+_No parameters._
+
+### `zoho_desk_list_departments`
+
+Desk list departments
+
+_No parameters._
+
+### `zoho_desk_search_articles`
+
+Desk search articles
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_desk.ts"
+  name="ZohoDeskSearchArticlesParams"
+/>
+
+## Notes
+
+- Category: Business
+- Authentication mode: OAuth

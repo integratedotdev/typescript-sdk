@@ -1,0 +1,149 @@
+---
+title: "Deezer Integration"
+description: "Manage Deezer get user, search, get album, get track, list playlists"
+---
+
+The Deezer integration provides access to manage Deezer get user, search, get album, get track, list playlists through the Integrate MCP server.
+
+## Installation
+
+The Deezer integration is included with the SDK:
+
+```typescript
+import { deezerIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Deezer OAuth App
+
+1. Create an OAuth application for Deezer
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Deezer integration to your server configuration. The integration automatically reads `DEEZER_CLIENT_ID` and `DEEZER_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, deezerIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    deezerIntegration({
+      scopes: ["basic_access", "email", "manage_library", "delete_library", "listening_history", "offline_access"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+deezerIntegration({
+  clientId: process.env.CUSTOM_DEEZER_ID,
+  clientSecret: process.env.CUSTOM_DEEZER_SECRET,
+      scopes: ["basic_access", "email", "manage_library", "delete_library", "listening_history", "offline_access"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("deezer");
+const result = await client.deezer.getUser({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, deezerIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [deezerIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/deezer.ts"
+  name="DeezerIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `basic_access`
+- `email`
+- `manage_library`
+- `delete_library`
+- `listening_history`
+- `offline_access`
+
+## Tools
+
+### `deezer_get_user`
+
+Get user
+
+_No parameters._
+
+### `deezer_search`
+
+Search
+
+<AutoTypeTable
+  path="generated/tool-params/deezer.ts"
+  name="DeezerSearchParams"
+/>
+
+### `deezer_get_album`
+
+Get album
+
+<AutoTypeTable
+  path="generated/tool-params/deezer.ts"
+  name="DeezerGetAlbumParams"
+/>
+
+### `deezer_get_track`
+
+Get track
+
+<AutoTypeTable
+  path="generated/tool-params/deezer.ts"
+  name="DeezerGetTrackParams"
+/>
+
+### `deezer_list_playlists`
+
+List playlists
+
+<AutoTypeTable
+  path="generated/tool-params/deezer.ts"
+  name="DeezerListPlaylistsParams"
+/>
+
+### `deezer_add_track_to_playlist`
+
+Add track to playlist
+
+<AutoTypeTable
+  path="generated/tool-params/deezer.ts"
+  name="DeezerAddTrackToPlaylistParams"
+/>
+
+## Notes
+
+- Category: Entertainment
+- Authentication mode: OAuth

@@ -1,0 +1,150 @@
+---
+title: "OneNote Integration"
+description: "Manage OneNote notebooks, sections, pages, and section creation through Microsoft Graph"
+---
+
+The OneNote integration provides access to manage OneNote notebooks, sections, pages, and section creation through Microsoft Graph through the Integrate MCP server.
+
+## Installation
+
+The OneNote integration is included with the SDK:
+
+```typescript
+import { onenoteIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create an OneNote OAuth App
+
+1. Go to [Azure Portal — App Registrations](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the OneNote integration to your server configuration. The integration automatically reads `ONENOTE_CLIENT_ID` and `ONENOTE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, onenoteIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    onenoteIntegration({
+      scopes: ["offline_access", "User.Read", "Notes.ReadWrite.All"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+onenoteIntegration({
+  clientId: process.env.CUSTOM_ONENOTE_ID,
+  clientSecret: process.env.CUSTOM_ONENOTE_SECRET,
+      scopes: ["offline_access", "User.Read", "Notes.ReadWrite.All"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("onenote");
+const result = await client.onenote.listNotebooks({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, onenoteIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [onenoteIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/onenote.ts"
+  name="OnenoteIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `offline_access`
+- `User.Read`
+- `Notes.ReadWrite.All`
+
+## Tools
+
+### `onenote_list_notebooks`
+
+List notebooks
+
+<AutoTypeTable
+  path="generated/tool-params/onenote.ts"
+  name="OnenoteListNotebooksParams"
+/>
+
+### `onenote_get_notebook`
+
+Get notebook
+
+<AutoTypeTable
+  path="generated/tool-params/onenote.ts"
+  name="OnenoteGetNotebookParams"
+/>
+
+### `onenote_list_sections`
+
+List sections
+
+<AutoTypeTable
+  path="generated/tool-params/onenote.ts"
+  name="OnenoteListSectionsParams"
+/>
+
+### `onenote_create_section`
+
+Create section
+
+<AutoTypeTable
+  path="generated/tool-params/onenote.ts"
+  name="OnenoteCreateSectionParams"
+/>
+
+### `onenote_list_pages`
+
+List pages
+
+<AutoTypeTable
+  path="generated/tool-params/onenote.ts"
+  name="OnenoteListPagesParams"
+/>
+
+### `onenote_get_page`
+
+Get page
+
+<AutoTypeTable
+  path="generated/tool-params/onenote.ts"
+  name="OnenoteGetPageParams"
+/>
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth

@@ -1,0 +1,149 @@
+---
+title: "Zoho Writer Integration"
+description: "Manage Zoho Writer documents, templates, merges, and exports"
+---
+
+The Zoho Writer integration provides access to manage Zoho Writer documents, templates, merges, and exports through the Integrate MCP server.
+
+## Installation
+
+The Zoho Writer integration is included with the SDK:
+
+```typescript
+import { zohoWriterIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Zoho Writer OAuth App
+
+1. Go to [Zoho API Console](https://api-console.zoho.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Zoho Writer integration to your server configuration. The integration automatically reads `ZOHO_WRITER_CLIENT_ID` and `ZOHO_WRITER_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, zohoWriterIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    zohoWriterIntegration({
+      scopes: ["ZohoWriter.documentEditor.ALL", "ZohoWriter.merge.ALL"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+zohoWriterIntegration({
+  clientId: process.env.CUSTOM_ZOHO_WRITER_ID,
+  clientSecret: process.env.CUSTOM_ZOHO_WRITER_SECRET,
+      scopes: ["ZohoWriter.documentEditor.ALL", "ZohoWriter.merge.ALL"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("zoho_writer");
+const result = await client.zoho_writer.listDocuments({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, zohoWriterIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [zohoWriterIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/zoho_writer.ts"
+  name="ZohoWriterIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `ZohoWriter.documentEditor.ALL`
+- `ZohoWriter.merge.ALL`
+
+## Tools
+
+### `zoho_writer_list_documents`
+
+Writer list documents
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_writer.ts"
+  name="ZohoWriterListDocumentsParams"
+/>
+
+### `zoho_writer_get_document`
+
+Writer get document
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_writer.ts"
+  name="ZohoWriterGetDocumentParams"
+/>
+
+### `zoho_writer_create_document`
+
+Writer create document
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_writer.ts"
+  name="ZohoWriterCreateDocumentParams"
+/>
+
+### `zoho_writer_list_templates`
+
+Writer list templates
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_writer.ts"
+  name="ZohoWriterListTemplatesParams"
+/>
+
+### `zoho_writer_merge_document`
+
+Writer merge document
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_writer.ts"
+  name="ZohoWriterMergeDocumentParams"
+/>
+
+### `zoho_writer_export_document`
+
+Writer export document
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_writer.ts"
+  name="ZohoWriterExportDocumentParams"
+/>
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth

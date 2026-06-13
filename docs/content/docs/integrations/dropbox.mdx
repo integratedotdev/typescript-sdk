@@ -1,11 +1,13 @@
 ---
-title: "Dropbox"
+title: "Dropbox Integration"
 description: "Manage Dropbox files, folders, and sharing"
 ---
 
-The Dropbox integration provides access to manage dropbox files, folders, and sharing through the Integrate MCP server.
+The Dropbox integration provides access to manage Dropbox files, folders, and sharing through the Integrate MCP server.
 
 ## Installation
+
+The Dropbox integration is included with the SDK:
 
 ```typescript
 import { dropboxIntegration } from "integrate-sdk/server";
@@ -13,7 +15,15 @@ import { dropboxIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Dropbox to your server configuration. The integration automatically reads OAuth credentials from your environment (`DROPBOX_CLIENT_ID`, `DROPBOX_CLIENT_SECRET`):
+### 1. Create a Dropbox OAuth App
+
+1. Create an OAuth application for Dropbox
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Dropbox integration to your server configuration. The integration automatically reads `DROPBOX_CLIENT_ID` and `DROPBOX_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, dropboxIntegration } from "integrate-sdk/server";
@@ -21,22 +31,40 @@ import { createMCPServer, dropboxIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    dropboxIntegration(),
+    dropboxIntegration({
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+dropboxIntegration({
+  clientId: process.env.CUSTOM_DROPBOX_ID,
+  clientSecret: process.env.CUSTOM_DROPBOX_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("dropbox");
-const result = await client.dropbox.getCurrentAccount({
-  // Add the parameters required by this tool
-});
+// Use client.dropbox methods after connecting
+```
 
-console.log(result);
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, dropboxIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [dropboxIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,33 +74,106 @@ console.log(result);
   name="DropboxIntegrationOptions"
 />
 
-## Environment Variables
 
-- `DROPBOX_CLIENT_ID`
-- `DROPBOX_CLIENT_SECRET`
+## Tools
 
-## Available Tools
+### `dropbox_get_current_account`
 
-- `dropbox_get_current_account`
-- `dropbox_get_space_usage`
-- `dropbox_list_folder`
-- `dropbox_list_folder_continue`
-- `dropbox_get_metadata`
-- `dropbox_search_files`
-- `dropbox_create_folder`
-- `dropbox_delete_path`
-- `dropbox_move_path`
-- `dropbox_copy_path`
-- `dropbox_upload_text_file`
-- `dropbox_download_file`
-- `dropbox_get_temporary_link`
-- `dropbox_create_shared_link`
-- `dropbox_list_shared_links`
-- `dropbox_revoke_shared_link`
+Get current account
+
+_No parameters._
+
+### `dropbox_get_space_usage`
+
+Get space usage
+
+_No parameters._
+
+### `dropbox_list_folder`
+
+List folder
+
+_No parameters._
+
+### `dropbox_list_folder_continue`
+
+List folder continue
+
+_No parameters._
+
+### `dropbox_get_metadata`
+
+Get metadata
+
+_No parameters._
+
+### `dropbox_search_files`
+
+Search files
+
+_No parameters._
+
+### `dropbox_create_folder`
+
+Create folder
+
+_No parameters._
+
+### `dropbox_delete_path`
+
+Delete path
+
+_No parameters._
+
+### `dropbox_move_path`
+
+Move path
+
+_No parameters._
+
+### `dropbox_copy_path`
+
+Copy path
+
+_No parameters._
+
+### `dropbox_upload_text_file`
+
+Upload text file
+
+_No parameters._
+
+### `dropbox_download_file`
+
+Download file
+
+_No parameters._
+
+### `dropbox_get_temporary_link`
+
+Get temporary link
+
+_No parameters._
+
+### `dropbox_create_shared_link`
+
+Create shared link
+
+_No parameters._
+
+### `dropbox_list_shared_links`
+
+List shared links
+
+_No parameters._
+
+### `dropbox_revoke_shared_link`
+
+Revoke shared link
+
+_No parameters._
 
 ## Notes
 
 - Category: Storage
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

@@ -1,9 +1,9 @@
 ---
-title: "HubSpot"
-description: "Manage contacts, companies, deals, and tickets"
+title: "HubSpot Integration"
+description: "Manage HubSpot contacts, deals, and tickets"
 ---
 
-The HubSpot integration provides access to HubSpot's CRM API through the Integrate MCP server.
+The HubSpot integration provides access to manage HubSpot contacts, deals, and tickets through the Integrate MCP server.
 
 ## Installation
 
@@ -15,11 +15,11 @@ import { hubspotIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-### 1. Create a HubSpot App
+### 1. Create a HubSpot OAuth App
 
 1. Go to [HubSpot Developer Apps](https://app.hubspot.com/developers)
-2. Create a new app
-3. Configure OAuth settings and scopes
+2. Create a new OAuth application
+3. Configure your redirect URI
 4. Note your Client ID and Client Secret
 
 ### 2. Configure the Integration on Your Server
@@ -33,15 +33,6 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     hubspotIntegration({
-      scopes: [
-        "crm.objects.contacts.read",
-        "crm.objects.contacts.write",
-        "crm.objects.companies.read",
-        "crm.objects.companies.write",
-        "crm.objects.deals.read",
-        "crm.objects.deals.write",
-        "tickets",
-      ], // Optional
     }),
   ],
 });
@@ -53,7 +44,6 @@ You can override the environment variables by passing explicit values:
 hubspotIntegration({
   clientId: process.env.CUSTOM_HUBSPOT_ID,
   clientSecret: process.env.CUSTOM_HUBSPOT_SECRET,
-  scopes: ["crm.objects.contacts.read", "crm.objects.contacts.write"],
 });
 ```
 
@@ -65,7 +55,9 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("hubspot");
-const contacts = await client.hubspot.listContacts({});
+const result = await client.hubspot.listContacts({});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -85,111 +77,262 @@ const customClient = createMCPClient({
   name="HubSpotIntegrationConfig"
 />
 
-## Available Tools
 
-### Contacts
+## Tools
 
-- **`hubspot_list_contacts`** - List contacts
-- **`hubspot_get_contact`** - Get a specific contact
-- **`hubspot_create_contact`** - Create a new contact
-- **`hubspot_update_contact`** - Update a contact
+### `hubspot_list_contacts`
 
-### Companies
+List contacts
 
-- **`hubspot_list_companies`** - List companies
-- **`hubspot_get_company`** - Get a specific company
-- **`hubspot_create_company`** - Create a new company
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotListContactsParams"
+/>
 
-### Deals
+### `hubspot_get_contact`
 
-- **`hubspot_list_deals`** - List deals
-- **`hubspot_get_deal`** - Get a specific deal
-- **`hubspot_create_deal`** - Create a new deal
+Get contact
 
-### Tickets
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotGetContactParams"
+/>
 
-- **`hubspot_list_tickets`** - List support tickets
-- **`hubspot_get_ticket`** - Get a specific ticket
+### `hubspot_create_contact`
 
-## Examples
+Create contact
 
-### Create a Contact
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotCreateContactParams"
+/>
 
-```typescript
-const result = await client.hubspot.createContact({
-  properties: {
-    email: "contact@example.com",
-    firstname: "Jane",
-    lastname: "Doe",
-    phone: "+1-555-0123",
-    company: "Acme Corp",
-  },
-});
+### `hubspot_update_contact`
 
-console.log("Contact created:", result);
-```
+Update contact
 
-### List Deals
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotUpdateContactParams"
+/>
 
-```typescript
-const result = await client.hubspot.listDeals({
-  limit: 50,
-  properties: ["dealname", "amount", "dealstage"],
-});
+### `hubspot_delete_contact`
 
-console.log("Deals:", result);
-```
+Delete contact
 
-### Create a Company
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotDeleteContactParams"
+/>
 
-```typescript
-const result = await client.hubspot.createCompany({
-  properties: {
-    name: "New Company Inc",
-    domain: "newcompany.com",
-    industry: "Technology",
-  },
-});
+### `hubspot_list_companies`
 
-console.log("Company created:", result);
-```
+List companies
 
-## OAuth Scopes
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotListCompaniesParams"
+/>
 
-The default scopes provide CRM access. You may need different scopes:
+### `hubspot_get_company`
 
-- **`crm.objects.contacts.read`** - Read contacts
-- **`crm.objects.contacts.write`** - Create and update contacts
-- **`crm.objects.companies.read`** - Read companies
-- **`crm.objects.companies.write`** - Create and update companies
-- **`crm.objects.deals.read`** - Read deals
-- **`crm.objects.deals.write`** - Create and update deals
-- **`tickets`** - Access support tickets
-- **`crm.objects.owners.read`** - Read owners
+Get company
 
-## Error Handling
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotGetCompanyParams"
+/>
 
-```typescript
-try {
-  const result = await client.hubspot.createContact({
-    properties: {
-      email: "contact@example.com",
-      firstname: "Jane",
-    },
-  });
-} catch (error) {
-  if (error.message.includes("already exists")) {
-    console.error("Contact already exists");
-  } else if (error.message.includes("authentication")) {
-    console.error("Authentication failed");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+### `hubspot_create_company`
 
-## Next Steps
+Create company
 
-- Explore the [Zendesk Integration](/docs/integrations/zendesk)
-- Explore the [Intercom Integration](/docs/integrations/intercom)
-- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotCreateCompanyParams"
+/>
+
+### `hubspot_update_company`
+
+Update company
+
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotUpdateCompanyParams"
+/>
+
+### `hubspot_delete_company`
+
+Delete company
+
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotDeleteCompanyParams"
+/>
+
+### `hubspot_list_deals`
+
+List deals
+
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotListDealsParams"
+/>
+
+### `hubspot_get_deal`
+
+Get deal
+
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotGetDealParams"
+/>
+
+### `hubspot_create_deal`
+
+Create deal
+
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotCreateDealParams"
+/>
+
+### `hubspot_update_deal`
+
+Update deal
+
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotUpdateDealParams"
+/>
+
+### `hubspot_delete_deal`
+
+Delete deal
+
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotDeleteDealParams"
+/>
+
+### `hubspot_list_tickets`
+
+List tickets
+
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotListTicketsParams"
+/>
+
+### `hubspot_get_ticket`
+
+Get ticket
+
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotGetTicketParams"
+/>
+
+### `hubspot_create_ticket`
+
+Create ticket
+
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotCreateTicketParams"
+/>
+
+### `hubspot_update_ticket`
+
+Update ticket
+
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotUpdateTicketParams"
+/>
+
+### `hubspot_delete_ticket`
+
+Delete ticket
+
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotDeleteTicketParams"
+/>
+
+### `hubspot_search_crm`
+
+Search crm
+
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotSearchCrmParams"
+/>
+
+### `hubspot_create_note`
+
+Create note
+
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotCreateNoteParams"
+/>
+
+### `hubspot_create_task`
+
+Create task
+
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotCreateTaskParams"
+/>
+
+### `hubspot_list_owners`
+
+List owners
+
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotListOwnersParams"
+/>
+
+### `hubspot_get_owner`
+
+Get owner
+
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotGetOwnerParams"
+/>
+
+### `hubspot_list_pipelines`
+
+List pipelines
+
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotListPipelinesParams"
+/>
+
+### `hubspot_list_pipeline_stages`
+
+List pipeline stages
+
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotListPipelineStagesParams"
+/>
+
+### `hubspot_create_association`
+
+Create association
+
+<AutoTypeTable
+  path="generated/tool-params/hubspot.ts"
+  name="HubspotCreateAssociationParams"
+/>
+
+## Notes
+
+- Category: Business
+- Authentication mode: OAuth

@@ -1,0 +1,152 @@
+---
+title: "TikTok Business Integration"
+description: "Manage TikTok Business list advertisers, list campaigns, create campaign, list adgroups, list ads"
+---
+
+The TikTok Business integration provides access to manage TikTok Business list advertisers, list campaigns, create campaign, list adgroups, list ads through the Integrate MCP server.
+
+## Installation
+
+The TikTok Business integration is included with the SDK:
+
+```typescript
+import { tiktokBusinessIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a TikTok Business OAuth App
+
+1. Create an OAuth application for TikTok Business
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the TikTok Business integration to your server configuration. The integration automatically reads `TIKTOK_BUSINESS_CLIENT_ID` and `TIKTOK_BUSINESS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, tiktokBusinessIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    tiktokBusinessIntegration({
+      scopes: ["user.info.basic", "advertiser.read", "campaign.read", "campaign.write", "adgroup.read", "adgroup.write", "ad.read", "ad.write", "report.read"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+tiktokBusinessIntegration({
+  clientId: process.env.CUSTOM_TIKTOK_BUSINESS_ID,
+  clientSecret: process.env.CUSTOM_TIKTOK_BUSINESS_SECRET,
+      scopes: ["user.info.basic", "advertiser.read", "campaign.read", "campaign.write", "adgroup.read", "adgroup.write", "ad.read", "ad.write", "report.read"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("tiktok_business");
+const result = await client.tiktok_business.listAdvertisers({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, tiktokBusinessIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [tiktokBusinessIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/tiktok_business.ts"
+  name="TiktokBusinessIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `user.info.basic`
+- `advertiser.read`
+- `campaign.read`
+- `campaign.write`
+- `adgroup.read`
+- `adgroup.write`
+- `ad.read`
+- `ad.write`
+- `report.read`
+
+## Tools
+
+### `tiktok_business_list_advertisers`
+
+Business list advertisers
+
+_No parameters._
+
+### `tiktok_business_list_campaigns`
+
+Business list campaigns
+
+<AutoTypeTable
+  path="generated/tool-params/tiktok_business.ts"
+  name="TiktokBusinessListCampaignsParams"
+/>
+
+### `tiktok_business_create_campaign`
+
+Business create campaign
+
+<AutoTypeTable
+  path="generated/tool-params/tiktok_business.ts"
+  name="TiktokBusinessCreateCampaignParams"
+/>
+
+### `tiktok_business_list_adgroups`
+
+Business list adgroups
+
+<AutoTypeTable
+  path="generated/tool-params/tiktok_business.ts"
+  name="TiktokBusinessListAdgroupsParams"
+/>
+
+### `tiktok_business_list_ads`
+
+Business list ads
+
+<AutoTypeTable
+  path="generated/tool-params/tiktok_business.ts"
+  name="TiktokBusinessListAdsParams"
+/>
+
+### `tiktok_business_run_report`
+
+Business run report
+
+<AutoTypeTable
+  path="generated/tool-params/tiktok_business.ts"
+  name="TiktokBusinessRunReportParams"
+/>
+
+## Notes
+
+- Category: Marketing
+- Authentication mode: OAuth

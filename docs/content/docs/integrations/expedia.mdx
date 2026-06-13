@@ -1,0 +1,138 @@
+---
+title: "Expedia Rapid Integration"
+description: "Manage Expedia Rapid search properties, get property content, get rate quote, create booking, get itinerary"
+---
+
+The Expedia Rapid integration provides access to manage Expedia Rapid search properties, get property content, get rate quote, create booking, get itinerary through the Integrate MCP server.
+
+## Installation
+
+The Expedia Rapid integration is included with the SDK:
+
+```typescript
+import { expediaIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create an Expedia Rapid OAuth App
+
+1. Create an OAuth application for Expedia Rapid
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Expedia Rapid integration to your server configuration. The integration automatically reads `EXPEDIA_CLIENT_ID` and `EXPEDIA_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, expediaIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    expediaIntegration({
+      scopes: ["rapid"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+expediaIntegration({
+  clientId: process.env.CUSTOM_EXPEDIA_ID,
+  clientSecret: process.env.CUSTOM_EXPEDIA_SECRET,
+      scopes: ["rapid"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("expedia");
+const result = await client.expedia.searchProperties({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, expediaIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [expediaIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/expedia.ts"
+  name="ExpediaIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `rapid`
+
+## Tools
+
+### `expedia_search_properties`
+
+Search properties
+
+<AutoTypeTable
+  path="generated/tool-params/expedia.ts"
+  name="ExpediaSearchPropertiesParams"
+/>
+
+### `expedia_get_property_content`
+
+Get property content
+
+<AutoTypeTable
+  path="generated/tool-params/expedia.ts"
+  name="ExpediaGetPropertyContentParams"
+/>
+
+### `expedia_get_rate_quote`
+
+Get rate quote
+
+<AutoTypeTable
+  path="generated/tool-params/expedia.ts"
+  name="ExpediaGetRateQuoteParams"
+/>
+
+### `expedia_create_booking`
+
+Create booking
+
+<AutoTypeTable
+  path="generated/tool-params/expedia.ts"
+  name="ExpediaCreateBookingParams"
+/>
+
+### `expedia_get_itinerary`
+
+Get itinerary
+
+<AutoTypeTable
+  path="generated/tool-params/expedia.ts"
+  name="ExpediaGetItineraryParams"
+/>
+
+## Notes
+
+- Category: Travel
+- Authentication mode: OAuth

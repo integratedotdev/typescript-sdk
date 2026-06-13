@@ -1,0 +1,146 @@
+---
+title: "WHOOP Integration"
+description: "Manage WHOOP get profile, get body measurement, list cycles, list recovery, list sleep"
+---
+
+The WHOOP integration provides access to manage WHOOP get profile, get body measurement, list cycles, list recovery, list sleep through the Integrate MCP server.
+
+## Installation
+
+The WHOOP integration is included with the SDK:
+
+```typescript
+import { whoopIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a WHOOP OAuth App
+
+1. Create an OAuth application for WHOOP
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the WHOOP integration to your server configuration. The integration automatically reads `WHOOP_CLIENT_ID` and `WHOOP_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, whoopIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    whoopIntegration({
+      scopes: ["read:profile", "read:cycles", "read:recovery", "read:sleep", "read:workout", "read:body_measurement"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+whoopIntegration({
+  clientId: process.env.CUSTOM_WHOOP_ID,
+  clientSecret: process.env.CUSTOM_WHOOP_SECRET,
+      scopes: ["read:profile", "read:cycles", "read:recovery", "read:sleep", "read:workout", "read:body_measurement"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("whoop");
+const result = await client.whoop.getProfile({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, whoopIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [whoopIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/whoop.ts"
+  name="WhoopIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `read:profile`
+- `read:cycles`
+- `read:recovery`
+- `read:sleep`
+- `read:workout`
+- `read:body_measurement`
+
+## Tools
+
+### `whoop_get_profile`
+
+Get profile
+
+_No parameters._
+
+### `whoop_get_body_measurement`
+
+Get body measurement
+
+_No parameters._
+
+### `whoop_list_cycles`
+
+List cycles
+
+<AutoTypeTable
+  path="generated/tool-params/whoop.ts"
+  name="WhoopListCyclesParams"
+/>
+
+### `whoop_list_recovery`
+
+List recovery
+
+<AutoTypeTable
+  path="generated/tool-params/whoop.ts"
+  name="WhoopListRecoveryParams"
+/>
+
+### `whoop_list_sleep`
+
+List sleep
+
+<AutoTypeTable
+  path="generated/tool-params/whoop.ts"
+  name="WhoopListSleepParams"
+/>
+
+### `whoop_list_workouts`
+
+List workouts
+
+<AutoTypeTable
+  path="generated/tool-params/whoop.ts"
+  name="WhoopListWorkoutsParams"
+/>
+
+## Notes
+
+- Category: Fitness
+- Authentication mode: OAuth

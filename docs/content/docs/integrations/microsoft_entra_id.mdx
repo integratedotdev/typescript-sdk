@@ -1,0 +1,153 @@
+---
+title: "Microsoft Entra ID Integration"
+description: "Manage Microsoft Entra ID list users, get user, create user, list groups, list applications"
+---
+
+The Microsoft Entra ID integration provides access to manage Microsoft Entra ID list users, get user, create user, list groups, list applications through the Integrate MCP server.
+
+## Installation
+
+The Microsoft Entra ID integration is included with the SDK:
+
+```typescript
+import { microsoftEntraIdIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Microsoft Entra ID OAuth App
+
+1. Go to [Azure Portal — App Registrations](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Microsoft Entra ID integration to your server configuration. The integration automatically reads `MICROSOFT_ENTRA_ID_CLIENT_ID` and `MICROSOFT_ENTRA_ID_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, microsoftEntraIdIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    microsoftEntraIdIntegration({
+      scopes: ["User.ReadWrite.All", "Group.ReadWrite.All", "Application.ReadWrite.All", "Directory.Read.All", "AuditLog.Read.All", "offline_access"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+microsoftEntraIdIntegration({
+  clientId: process.env.CUSTOM_MICROSOFT_ENTRA_ID_ID,
+  clientSecret: process.env.CUSTOM_MICROSOFT_ENTRA_ID_SECRET,
+      scopes: ["User.ReadWrite.All", "Group.ReadWrite.All", "Application.ReadWrite.All", "Directory.Read.All", "AuditLog.Read.All", "offline_access"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("microsoft_entra_id");
+const result = await client.microsoft_entra_id.listUsers({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, microsoftEntraIdIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [microsoftEntraIdIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/microsoft_entra_id.ts"
+  name="MicrosoftEntraIdIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `User.ReadWrite.All`
+- `Group.ReadWrite.All`
+- `Application.ReadWrite.All`
+- `Directory.Read.All`
+- `AuditLog.Read.All`
+- `offline_access`
+
+## Tools
+
+### `microsoft_entra_id_list_users`
+
+Entra id list users
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_entra_id.ts"
+  name="MicrosoftEntraIdListUsersParams"
+/>
+
+### `microsoft_entra_id_get_user`
+
+Entra id get user
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_entra_id.ts"
+  name="MicrosoftEntraIdGetUserParams"
+/>
+
+### `microsoft_entra_id_create_user`
+
+Entra id create user
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_entra_id.ts"
+  name="MicrosoftEntraIdCreateUserParams"
+/>
+
+### `microsoft_entra_id_list_groups`
+
+Entra id list groups
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_entra_id.ts"
+  name="MicrosoftEntraIdListGroupsParams"
+/>
+
+### `microsoft_entra_id_list_applications`
+
+Entra id list applications
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_entra_id.ts"
+  name="MicrosoftEntraIdListApplicationsParams"
+/>
+
+### `microsoft_entra_id_list_audit_logs`
+
+Entra id list audit logs
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_entra_id.ts"
+  name="MicrosoftEntraIdListAuditLogsParams"
+/>
+
+## Notes
+
+- Category: Identity & Access
+- Authentication mode: OAuth

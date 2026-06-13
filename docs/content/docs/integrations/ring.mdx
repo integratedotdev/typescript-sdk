@@ -1,0 +1,137 @@
+---
+title: "Ring Integration"
+description: "Manage Ring list locations, list devices, get device health, list events, activate siren"
+---
+
+The Ring integration provides access to manage Ring list locations, list devices, get device health, list events, activate siren through the Integrate MCP server.
+
+## Installation
+
+The Ring integration is included with the SDK:
+
+```typescript
+import { ringIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Ring OAuth App
+
+1. Create an OAuth application for Ring
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Ring integration to your server configuration. The integration automatically reads `RING_CLIENT_ID` and `RING_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, ringIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    ringIntegration({
+      scopes: ["openid", "profile", "offline_access"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+ringIntegration({
+  clientId: process.env.CUSTOM_RING_ID,
+  clientSecret: process.env.CUSTOM_RING_SECRET,
+      scopes: ["openid", "profile", "offline_access"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("ring");
+const result = await client.ring.listLocations({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, ringIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [ringIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/ring.ts"
+  name="RingIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `openid`
+- `profile`
+- `offline_access`
+
+## Tools
+
+### `ring_list_locations`
+
+List locations
+
+_No parameters._
+
+### `ring_list_devices`
+
+List devices
+
+<AutoTypeTable
+  path="generated/tool-params/ring.ts"
+  name="RingListDevicesParams"
+/>
+
+### `ring_get_device_health`
+
+Get device health
+
+<AutoTypeTable
+  path="generated/tool-params/ring.ts"
+  name="RingGetDeviceHealthParams"
+/>
+
+### `ring_list_events`
+
+List events
+
+<AutoTypeTable
+  path="generated/tool-params/ring.ts"
+  name="RingListEventsParams"
+/>
+
+### `ring_activate_siren`
+
+Activate siren
+
+<AutoTypeTable
+  path="generated/tool-params/ring.ts"
+  name="RingActivateSirenParams"
+/>
+
+## Notes
+
+- Category: Lifestyle
+- Authentication mode: OAuth

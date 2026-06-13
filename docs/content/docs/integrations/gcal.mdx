@@ -1,9 +1,9 @@
 ---
-title: "Google Calendar"
-description: "Manage calendars, events, and attendees"
+title: "Google Calendar Integration"
+description: "Manage Google Calendar events and schedules"
 ---
 
-The Google Calendar integration provides access to Google Calendar's API through the Integrate MCP server.
+The Google Calendar integration provides access to manage Google Calendar events and schedules through the Integrate MCP server.
 
 ## Installation
 
@@ -15,13 +15,12 @@ import { gcalIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-### 1. Create Google OAuth Credentials
+### 1. Create a Google Calendar OAuth App
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create a new project or select an existing one
-3. Enable the Google Calendar API
-4. Create OAuth 2.0 credentials
-5. Note your Client ID and Client Secret
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
 
 ### 2. Configure the Integration on Your Server
 
@@ -34,7 +33,6 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     gcalIntegration({
-      scopes: ["https://www.googleapis.com/auth/calendar"], // Optional
     }),
   ],
 });
@@ -46,7 +44,6 @@ You can override the environment variables by passing explicit values:
 gcalIntegration({
   clientId: process.env.CUSTOM_GCAL_ID,
   clientSecret: process.env.CUSTOM_GCAL_SECRET,
-  scopes: ["https://www.googleapis.com/auth/calendar"],
 });
 ```
 
@@ -58,7 +55,9 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("gcal");
-const events = await client.gcal.listEvents({ calendarId: "primary" });
+const result = await client.gcal.listCalendars({});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -78,107 +77,118 @@ const customClient = createMCPClient({
   name="GcalIntegrationConfig"
 />
 
-## Available Tools
 
-### Calendars
+## Tools
 
-- **`gcal_list_calendars`** - List all calendars
-- **`gcal_get_calendar`** - Get calendar details
+### `gcal_create_calendar`
 
-### Events
+Create a new calendar
 
-- **`gcal_list_events`** - List events in a calendar
-- **`gcal_get_event`** - Get a specific event
-- **`gcal_create_event`** - Create a new event
-- **`gcal_update_event`** - Update an event
-- **`gcal_delete_event`** - Delete an event
-- **`gcal_quick_add`** - Quick add event from text
+<AutoTypeTable
+  path="generated/tool-params/gcal.ts"
+  name="GcalCreateCalendarParams"
+/>
 
-### Attendees
+### `gcal_create_event`
 
-- **`gcal_list_attendees`** - List event attendees
+Create a new event
 
-## Examples
+<AutoTypeTable
+  path="generated/tool-params/gcal.ts"
+  name="GcalCreateEventParams"
+/>
 
-### Create an Event
+### `gcal_delete_calendar`
 
-```typescript
-const result = await client.gcal.createEvent({
-  calendarId: "primary",
-  summary: "Team Meeting",
-  description: "Weekly sync with the team",
-  start: {
-    dateTime: "2024-12-10T10:00:00-08:00",
-    timeZone: "America/Los_Angeles",
-  },
-  end: {
-    dateTime: "2024-12-10T11:00:00-08:00",
-    timeZone: "America/Los_Angeles",
-  },
-  attendees: [{ email: "colleague@example.com" }],
-});
+Delete a calendar
 
-console.log("Event created:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/gcal.ts"
+  name="GcalDeleteCalendarParams"
+/>
 
-### List Upcoming Events
+### `gcal_delete_event`
 
-```typescript
-const result = await client.gcal.listEvents({
-  calendarId: "primary",
-  timeMin: new Date().toISOString(),
-  maxResults: 10,
-  orderBy: "startTime",
-  singleEvents: true,
-});
+Delete an event
 
-console.log("Upcoming events:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/gcal.ts"
+  name="GcalDeleteEventParams"
+/>
 
-### Quick Add Event
+### `gcal_freebusy`
 
-```typescript
-const result = await client.gcal.quickAdd({
-  calendarId: "primary",
-  text: "Lunch with Sarah tomorrow at 12pm",
-});
+Freebusy
 
-console.log("Event created:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/gcal.ts"
+  name="GcalFreebusyParams"
+/>
 
-## OAuth Scopes
+### `gcal_get_calendar`
 
-The default scope is `['https://www.googleapis.com/auth/calendar']`. You may need different scopes:
+Get a specific calendar
 
-- **`https://www.googleapis.com/auth/calendar`** - Full access to calendars
-- **`https://www.googleapis.com/auth/calendar.readonly`** - Read-only access
-- **`https://www.googleapis.com/auth/calendar.events`** - Access to events only
+<AutoTypeTable
+  path="generated/tool-params/gcal.ts"
+  name="GcalGetCalendarParams"
+/>
 
-## Error Handling
+### `gcal_get_event`
 
-```typescript
-try {
-  const result = await client.gcal.createEvent({
-    calendarId: "primary",
-    summary: "New Meeting",
-    start: { dateTime: "2024-12-10T10:00:00Z" },
-    end: { dateTime: "2024-12-10T11:00:00Z" },
-  });
-} catch (error) {
-  if (error.message.includes("not found")) {
-    console.error("Calendar not found");
-  } else if (error.message.includes("authentication")) {
-    console.error("Authentication failed");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+Get a specific event
 
-## Next Steps
+<AutoTypeTable
+  path="generated/tool-params/gcal.ts"
+  name="GcalGetEventParams"
+/>
 
-- Explore the [Gmail Integration](/docs/integrations/gmail)
-- Explore the [Google Docs Integration](/docs/integrations/gdocs)
-- Explore the [Google Sheets Integration](/docs/integrations/gsheets)
-- Explore the [Google Slides Integration](/docs/integrations/gslides)
-- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
+### `gcal_list_attendees`
+
+List attendees for an event
+
+<AutoTypeTable
+  path="generated/tool-params/gcal.ts"
+  name="GcalListAttendeesParams"
+/>
+
+### `gcal_list_calendars`
+
+List calendars
+
+<AutoTypeTable
+  path="generated/tool-params/gcal.ts"
+  name="GcalListCalendarsParams"
+/>
+
+### `gcal_list_events`
+
+List events in a calendar
+
+<AutoTypeTable
+  path="generated/tool-params/gcal.ts"
+  name="GcalListEventsParams"
+/>
+
+### `gcal_quick_add`
+
+Quickly add an event using natural language
+
+<AutoTypeTable
+  path="generated/tool-params/gcal.ts"
+  name="GcalQuickAddParams"
+/>
+
+### `gcal_update_event`
+
+Update an existing event
+
+<AutoTypeTable
+  path="generated/tool-params/gcal.ts"
+  name="GcalUpdateEventParams"
+/>
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth

@@ -1,0 +1,144 @@
+---
+title: "Amazon Ads Integration"
+description: "Manage Amazon Ads list profiles, list campaigns, create campaigns, list ad groups, list keywords"
+---
+
+The Amazon Ads integration provides access to manage Amazon Ads list profiles, list campaigns, create campaigns, list ad groups, list keywords through the Integrate MCP server.
+
+## Installation
+
+The Amazon Ads integration is included with the SDK:
+
+```typescript
+import { amazonAdsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create an Amazon Ads OAuth App
+
+1. Create an OAuth application for Amazon Ads
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Amazon Ads integration to your server configuration. The integration automatically reads `AMAZON_ADS_CLIENT_ID` and `AMAZON_ADS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, amazonAdsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    amazonAdsIntegration({
+      scopes: ["advertising::campaign_management"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+amazonAdsIntegration({
+  clientId: process.env.CUSTOM_AMAZON_ADS_ID,
+  clientSecret: process.env.CUSTOM_AMAZON_ADS_SECRET,
+      scopes: ["advertising::campaign_management"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("amazon_ads");
+const result = await client.amazon_ads.listProfiles({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, amazonAdsIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [amazonAdsIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/amazon_ads.ts"
+  name="AmazonAdsIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `advertising::campaign_management`
+
+## Tools
+
+### `amazon_ads_list_profiles`
+
+Ads list profiles
+
+_No parameters._
+
+### `amazon_ads_list_campaigns`
+
+Ads list campaigns
+
+<AutoTypeTable
+  path="generated/tool-params/amazon_ads.ts"
+  name="AmazonAdsListCampaignsParams"
+/>
+
+### `amazon_ads_create_campaigns`
+
+Ads create campaigns
+
+<AutoTypeTable
+  path="generated/tool-params/amazon_ads.ts"
+  name="AmazonAdsCreateCampaignsParams"
+/>
+
+### `amazon_ads_list_ad_groups`
+
+Ads list ad groups
+
+<AutoTypeTable
+  path="generated/tool-params/amazon_ads.ts"
+  name="AmazonAdsListAdGroupsParams"
+/>
+
+### `amazon_ads_list_keywords`
+
+Ads list keywords
+
+<AutoTypeTable
+  path="generated/tool-params/amazon_ads.ts"
+  name="AmazonAdsListKeywordsParams"
+/>
+
+### `amazon_ads_request_report`
+
+Ads request report
+
+<AutoTypeTable
+  path="generated/tool-params/amazon_ads.ts"
+  name="AmazonAdsRequestReportParams"
+/>
+
+## Notes
+
+- Category: Marketing
+- Authentication mode: OAuth

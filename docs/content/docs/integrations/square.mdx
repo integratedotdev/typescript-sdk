@@ -1,0 +1,286 @@
+---
+title: "Square Integration"
+description: "Manage Square merchants, locations, customers, catalog, orders, payments, refunds, and invoices"
+---
+
+The Square integration provides access to manage Square merchants, locations, customers, catalog, orders, payments, refunds, and invoices through the Integrate MCP server.
+
+## Installation
+
+The Square integration is included with the SDK:
+
+```typescript
+import { squareIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Square OAuth App
+
+1. Create an OAuth application for Square
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Square integration to your server configuration. The integration automatically reads `SQUARE_CLIENT_ID` and `SQUARE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, squareIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    squareIntegration({
+      scopes: ["MERCHANT_PROFILE_READ", "PAYMENTS_READ", "PAYMENTS_WRITE", "CUSTOMERS_READ", "CUSTOMERS_WRITE", "ORDERS_READ", "ORDERS_WRITE", "ITEMS_READ", "ITEMS_WRITE", "INVOICES_READ", "INVOICES_WRITE"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+squareIntegration({
+  clientId: process.env.CUSTOM_SQUARE_ID,
+  clientSecret: process.env.CUSTOM_SQUARE_SECRET,
+      scopes: ["MERCHANT_PROFILE_READ", "PAYMENTS_READ", "PAYMENTS_WRITE", "CUSTOMERS_READ", "CUSTOMERS_WRITE", "ORDERS_READ", "ORDERS_WRITE", "ITEMS_READ", "ITEMS_WRITE", "INVOICES_READ", "INVOICES_WRITE"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("square");
+const result = await client.square.getMerchant({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, squareIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [squareIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/square.ts"
+  name="SquareIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `MERCHANT_PROFILE_READ`
+- `PAYMENTS_READ`
+- `PAYMENTS_WRITE`
+- `CUSTOMERS_READ`
+- `CUSTOMERS_WRITE`
+- `ORDERS_READ`
+- `ORDERS_WRITE`
+- `ITEMS_READ`
+- `ITEMS_WRITE`
+- `INVOICES_READ`
+- `INVOICES_WRITE`
+
+## Tools
+
+### `square_get_merchant`
+
+Get merchant
+
+_No parameters._
+
+### `square_list_locations`
+
+List locations
+
+_No parameters._
+
+### `square_list_customers`
+
+List customers
+
+<AutoTypeTable
+  path="generated/tool-params/square.ts"
+  name="SquareListCustomersParams"
+/>
+
+### `square_get_customer`
+
+Get customer
+
+<AutoTypeTable
+  path="generated/tool-params/square.ts"
+  name="SquareGetCustomerParams"
+/>
+
+### `square_create_customer`
+
+Create customer
+
+<AutoTypeTable
+  path="generated/tool-params/square.ts"
+  name="SquareCreateCustomerParams"
+/>
+
+### `square_update_customer`
+
+Update customer
+
+<AutoTypeTable
+  path="generated/tool-params/square.ts"
+  name="SquareUpdateCustomerParams"
+/>
+
+### `square_delete_customer`
+
+Delete customer
+
+<AutoTypeTable
+  path="generated/tool-params/square.ts"
+  name="SquareDeleteCustomerParams"
+/>
+
+### `square_search_catalog`
+
+Search catalog
+
+<AutoTypeTable
+  path="generated/tool-params/square.ts"
+  name="SquareSearchCatalogParams"
+/>
+
+### `square_retrieve_catalog_object`
+
+Retrieve catalog object
+
+<AutoTypeTable
+  path="generated/tool-params/square.ts"
+  name="SquareRetrieveCatalogObjectParams"
+/>
+
+### `square_upsert_catalog_object`
+
+Upsert catalog object
+
+<AutoTypeTable
+  path="generated/tool-params/square.ts"
+  name="SquareUpsertCatalogObjectParams"
+/>
+
+### `square_search_orders`
+
+Search orders
+
+<AutoTypeTable
+  path="generated/tool-params/square.ts"
+  name="SquareSearchOrdersParams"
+/>
+
+### `square_create_order`
+
+Create order
+
+<AutoTypeTable
+  path="generated/tool-params/square.ts"
+  name="SquareCreateOrderParams"
+/>
+
+### `square_pay_order`
+
+Pay order
+
+<AutoTypeTable
+  path="generated/tool-params/square.ts"
+  name="SquarePayOrderParams"
+/>
+
+### `square_list_payments`
+
+List payments
+
+<AutoTypeTable
+  path="generated/tool-params/square.ts"
+  name="SquareListPaymentsParams"
+/>
+
+### `square_get_payment`
+
+Get payment
+
+<AutoTypeTable
+  path="generated/tool-params/square.ts"
+  name="SquareGetPaymentParams"
+/>
+
+### `square_create_payment`
+
+Create payment
+
+<AutoTypeTable
+  path="generated/tool-params/square.ts"
+  name="SquareCreatePaymentParams"
+/>
+
+### `square_list_refunds`
+
+List refunds
+
+<AutoTypeTable
+  path="generated/tool-params/square.ts"
+  name="SquareListRefundsParams"
+/>
+
+### `square_refund_payment`
+
+Refund payment
+
+<AutoTypeTable
+  path="generated/tool-params/square.ts"
+  name="SquareRefundPaymentParams"
+/>
+
+### `square_list_invoices`
+
+List invoices
+
+<AutoTypeTable
+  path="generated/tool-params/square.ts"
+  name="SquareListInvoicesParams"
+/>
+
+### `square_get_invoice`
+
+Get invoice
+
+<AutoTypeTable
+  path="generated/tool-params/square.ts"
+  name="SquareGetInvoiceParams"
+/>
+
+### `square_create_invoice`
+
+Create invoice
+
+<AutoTypeTable
+  path="generated/tool-params/square.ts"
+  name="SquareCreateInvoiceParams"
+/>
+
+## Notes
+
+- Category: Finance
+- Authentication mode: OAuth

@@ -1,9 +1,9 @@
 ---
-title: "OneDrive"
-description: "Manage files and folders in Microsoft OneDrive"
+title: "OneDrive Integration"
+description: "Manage OneDrive files, folders, and sharing"
 ---
 
-The OneDrive integration provides file management access to Microsoft OneDrive through the Integrate MCP server. For Office document tools, see the dedicated [Word](/docs/integrations/word), [Excel](/docs/integrations/excel), and [PowerPoint](/docs/integrations/powerpoint) integrations.
+The OneDrive integration provides access to manage OneDrive files, folders, and sharing through the Integrate MCP server.
 
 ## Installation
 
@@ -15,17 +15,16 @@ import { onedriveIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-### 1. Create a Microsoft App Registration
+### 1. Create an OneDrive OAuth App
 
 1. Go to [Azure Portal — App Registrations](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps)
-2. Create a new registration
-3. Add your redirect URI under **Authentication** (e.g. `https://yourdomain.com/api/integrate/oauth/callback`)
-4. Create a client secret under **Certificates & secrets**
-5. Note your Application (client) ID and Client Secret
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
 
 ### 2. Configure the Integration on Your Server
 
-The integration automatically reads `ONEDRIVE_CLIENT_ID` and `ONEDRIVE_CLIENT_SECRET` from your environment:
+Add the OneDrive integration to your server configuration. The integration automatically reads `ONEDRIVE_CLIENT_ID` and `ONEDRIVE_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, onedriveIntegration } from "integrate-sdk/server";
@@ -33,7 +32,8 @@ import { createMCPServer, onedriveIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    onedriveIntegration(),
+    onedriveIntegration({
+    }),
   ],
 });
 ```
@@ -49,14 +49,18 @@ onedriveIntegration({
 
 ### 3. Client-Side Usage
 
+The default client automatically includes all integrations. You can use it directly:
+
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("onedrive");
-const files = await client.onedrive.listFiles({});
+const result = await client.onedrive.listFiles({});
+
+console.log(result);
 ```
 
-For a custom client:
+If you're using a custom client, add the integration to the integrations array:
 
 ```typescript
 import { createMCPClient, onedriveIntegration } from "integrate-sdk";
@@ -73,83 +77,100 @@ const customClient = createMCPClient({
   name="OneDriveIntegrationConfig"
 />
 
-## Available Tools
 
-- **`onedrive_list_files`** - List files and folders (supports path, filter, sort)
-- **`onedrive_get_file`** - Get metadata for a file or folder by item ID
-- **`onedrive_download_file`** - Download a file's content
-- **`onedrive_upload_file`** - Upload a file via PUT (base64 content)
-- **`onedrive_delete_file`** - Permanently delete a file or folder
-- **`onedrive_search_files`** - Full-text search across all files
-- **`onedrive_share_file`** - Create a sharing link
+## Tools
 
-## Examples
+### `onedrive_create_folder`
 
-### List Files in a Folder
+Create folder
 
-```typescript
-const result = await client.onedrive.listFiles({
-  path: "/Documents",
-  order_by: "lastModifiedDateTime desc",
-  top: 50,
-});
-```
+<AutoTypeTable
+  path="generated/tool-params/onedrive.ts"
+  name="OnedriveCreateFolderParams"
+/>
 
-### Search for Files
+### `onedrive_delete_file`
 
-```typescript
-const result = await client.onedrive.searchFiles({
-  query: "budget 2024",
-  top: 20,
-});
-```
+Delete a file or folder permanently
 
-### Upload a File
+<AutoTypeTable
+  path="generated/tool-params/onedrive.ts"
+  name="OnedriveDeleteFileParams"
+/>
 
-```typescript
-await client.onedrive.uploadFile({
-  path: "/Documents",
-  filename: "report.txt",
-  content: Buffer.from("Hello, world!").toString("base64"),
-});
-```
+### `onedrive_download_file`
 
-### Create a Sharing Link
+Get the download URL for a file
 
-```typescript
-const result = await client.onedrive.shareFile({
-  item_id: "ABC123",
-  type: "view",
-  scope: "anonymous",
-});
-```
+<AutoTypeTable
+  path="generated/tool-params/onedrive.ts"
+  name="OnedriveDownloadFileParams"
+/>
 
-## OAuth Scopes
+### `onedrive_get_file`
 
-The default scope is `Files.ReadWrite.All`. Available scopes:
+Get metadata for a file or folder
 
-- **`Files.ReadWrite.All`** - Read and write all files the user can access
-- **`Files.Read.All`** - Read-only access to all files
-- **`Files.ReadWrite`** - Read and write the user's own files only
+<AutoTypeTable
+  path="generated/tool-params/onedrive.ts"
+  name="OnedriveGetFileParams"
+/>
 
-## Error Handling
+### `onedrive_list_files`
 
-```typescript
-try {
-  const file = await client.onedrive.getFile({ item_id: "ABC123" });
-} catch (error) {
-  if (error.message.includes("404")) {
-    console.error("File not found");
-  } else if (error.message.includes("403")) {
-    console.error("Insufficient permissions");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+List files and folders in OneDrive
 
-## Next Steps
+<AutoTypeTable
+  path="generated/tool-params/onedrive.ts"
+  name="OnedriveListFilesParams"
+/>
 
-- Manage Word documents with the [Word Integration](/docs/integrations/word)
-- Manage Excel workbooks with the [Excel Integration](/docs/integrations/excel)
-- Manage PowerPoint presentations with the [PowerPoint Integration](/docs/integrations/powerpoint)
+### `onedrive_list_permissions`
+
+List permissions
+
+<AutoTypeTable
+  path="generated/tool-params/onedrive.ts"
+  name="OnedriveListPermissionsParams"
+/>
+
+### `onedrive_remove_permission`
+
+Remove permission
+
+<AutoTypeTable
+  path="generated/tool-params/onedrive.ts"
+  name="OnedriveRemovePermissionParams"
+/>
+
+### `onedrive_search_files`
+
+Search across all files in OneDrive
+
+<AutoTypeTable
+  path="generated/tool-params/onedrive.ts"
+  name="OnedriveSearchFilesParams"
+/>
+
+### `onedrive_share_file`
+
+Create a sharing link for a file or folder
+
+<AutoTypeTable
+  path="generated/tool-params/onedrive.ts"
+  name="OnedriveShareFileParams"
+/>
+
+### `onedrive_upload_file`
+
+Upload a file to OneDrive
+
+<AutoTypeTable
+  path="generated/tool-params/onedrive.ts"
+  name="OnedriveUploadFileParams"
+/>
+
+## Notes
+
+- Category: Storage
+- Authentication mode: OAuth

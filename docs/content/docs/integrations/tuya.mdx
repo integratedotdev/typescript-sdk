@@ -1,0 +1,144 @@
+---
+title: "Tuya Integration"
+description: "Manage Tuya list devices, get device, get device status, send device commands, list scenes"
+---
+
+The Tuya integration provides access to manage Tuya list devices, get device, get device status, send device commands, list scenes through the Integrate MCP server.
+
+## Installation
+
+The Tuya integration is included with the SDK:
+
+```typescript
+import { tuyaIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Tuya OAuth App
+
+1. Create an OAuth application for Tuya
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Tuya integration to your server configuration. The integration automatically reads `TUYA_CLIENT_ID` and `TUYA_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, tuyaIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    tuyaIntegration({
+      scopes: ["device:read", "device:write", "home:read", "scene:read", "scene:write"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+tuyaIntegration({
+  clientId: process.env.CUSTOM_TUYA_ID,
+  clientSecret: process.env.CUSTOM_TUYA_SECRET,
+      scopes: ["device:read", "device:write", "home:read", "scene:read", "scene:write"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("tuya");
+const result = await client.tuya.listDevices({
+  user_id: "value",
+});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, tuyaIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [tuyaIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/tuya.ts"
+  name="TuyaIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `device:read`
+- `device:write`
+- `home:read`
+- `scene:read`
+- `scene:write`
+
+## Tools
+
+### `tuya_list_devices`
+
+List devices
+
+<AutoTypeTable
+  path="generated/tool-params/tuya.ts"
+  name="TuyaListDevicesParams"
+/>
+
+### `tuya_get_device`
+
+Get device
+
+<AutoTypeTable
+  path="generated/tool-params/tuya.ts"
+  name="TuyaGetDeviceParams"
+/>
+
+### `tuya_get_device_status`
+
+Get device status
+
+<AutoTypeTable
+  path="generated/tool-params/tuya.ts"
+  name="TuyaGetDeviceStatusParams"
+/>
+
+### `tuya_send_device_commands`
+
+Send device commands
+
+<AutoTypeTable
+  path="generated/tool-params/tuya.ts"
+  name="TuyaSendDeviceCommandsParams"
+/>
+
+### `tuya_list_scenes`
+
+List scenes
+
+<AutoTypeTable
+  path="generated/tool-params/tuya.ts"
+  name="TuyaListScenesParams"
+/>
+
+## Notes
+
+- Category: Lifestyle
+- Authentication mode: OAuth

@@ -1,0 +1,183 @@
+---
+title: "X Integration"
+description: "Manage X users, posts, timelines, likes, bookmarks, follows, and posting"
+---
+
+The X integration provides access to manage X users, posts, timelines, likes, bookmarks, follows, and posting through the Integrate MCP server.
+
+## Installation
+
+The X integration is included with the SDK:
+
+```typescript
+import { xIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a X OAuth App
+
+1. Create an OAuth application for X
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the X integration to your server configuration. The integration automatically reads `X_CLIENT_ID` and `X_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, xIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    xIntegration({
+      scopes: ["tweet.read", "tweet.write", "users.read", "follows.read", "follows.write", "like.read", "like.write", "bookmark.read", "bookmark.write", "offline.access"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+xIntegration({
+  clientId: process.env.CUSTOM_X_ID,
+  clientSecret: process.env.CUSTOM_X_SECRET,
+      scopes: ["tweet.read", "tweet.write", "users.read", "follows.read", "follows.write", "like.read", "like.write", "bookmark.read", "bookmark.write", "offline.access"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("x");
+const result = await client.x.getMe({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, xIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [xIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/x.ts"
+  name="XIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `tweet.read`
+- `tweet.write`
+- `users.read`
+- `follows.read`
+- `follows.write`
+- `like.read`
+- `like.write`
+- `bookmark.read`
+- `bookmark.write`
+- `offline.access`
+
+## Tools
+
+### `x_get_me`
+
+Get me
+
+<AutoTypeTable
+  path="generated/tool-params/x.ts"
+  name="XGetMeParams"
+/>
+
+### `x_get_user`
+
+Get user
+
+<AutoTypeTable
+  path="generated/tool-params/x.ts"
+  name="XGetUserParams"
+/>
+
+### `x_search_posts`
+
+Search posts
+
+<AutoTypeTable
+  path="generated/tool-params/x.ts"
+  name="XSearchPostsParams"
+/>
+
+### `x_get_user_timeline`
+
+Get user timeline
+
+<AutoTypeTable
+  path="generated/tool-params/x.ts"
+  name="XGetUserTimelineParams"
+/>
+
+### `x_create_post`
+
+Create post
+
+<AutoTypeTable
+  path="generated/tool-params/x.ts"
+  name="XCreatePostParams"
+/>
+
+### `x_delete_post`
+
+Delete post
+
+<AutoTypeTable
+  path="generated/tool-params/x.ts"
+  name="XDeletePostParams"
+/>
+
+### `x_like_post`
+
+Like post
+
+<AutoTypeTable
+  path="generated/tool-params/x.ts"
+  name="XLikePostParams"
+/>
+
+### `x_get_bookmarks`
+
+Get bookmarks
+
+<AutoTypeTable
+  path="generated/tool-params/x.ts"
+  name="XGetBookmarksParams"
+/>
+
+### `x_follow_user`
+
+Follow user
+
+<AutoTypeTable
+  path="generated/tool-params/x.ts"
+  name="XFollowUserParams"
+/>
+
+## Notes
+
+- Category: Social Media
+- Authentication mode: OAuth

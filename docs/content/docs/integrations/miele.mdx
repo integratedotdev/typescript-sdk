@@ -1,0 +1,141 @@
+---
+title: "Miele Integration"
+description: "Manage Miele list devices, get device, get actions, execute action, get programs"
+---
+
+The Miele integration provides access to manage Miele list devices, get device, get actions, execute action, get programs through the Integrate MCP server.
+
+## Installation
+
+The Miele integration is included with the SDK:
+
+```typescript
+import { mieleIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Miele OAuth App
+
+1. Create an OAuth application for Miele
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Miele integration to your server configuration. The integration automatically reads `MIELE_CLIENT_ID` and `MIELE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, mieleIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    mieleIntegration({
+      scopes: ["openid", "offline_access", "read", "write"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+mieleIntegration({
+  clientId: process.env.CUSTOM_MIELE_ID,
+  clientSecret: process.env.CUSTOM_MIELE_SECRET,
+      scopes: ["openid", "offline_access", "read", "write"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("miele");
+const result = await client.miele.listDevices({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, mieleIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [mieleIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/miele.ts"
+  name="MieleIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `openid`
+- `offline_access`
+- `read`
+- `write`
+
+## Tools
+
+### `miele_list_devices`
+
+List devices
+
+<AutoTypeTable
+  path="generated/tool-params/miele.ts"
+  name="MieleListDevicesParams"
+/>
+
+### `miele_get_device`
+
+Get device
+
+<AutoTypeTable
+  path="generated/tool-params/miele.ts"
+  name="MieleGetDeviceParams"
+/>
+
+### `miele_get_actions`
+
+Get actions
+
+<AutoTypeTable
+  path="generated/tool-params/miele.ts"
+  name="MieleGetActionsParams"
+/>
+
+### `miele_execute_action`
+
+Execute action
+
+<AutoTypeTable
+  path="generated/tool-params/miele.ts"
+  name="MieleExecuteActionParams"
+/>
+
+### `miele_get_programs`
+
+Get programs
+
+<AutoTypeTable
+  path="generated/tool-params/miele.ts"
+  name="MieleGetProgramsParams"
+/>
+
+## Notes
+
+- Category: Lifestyle
+- Authentication mode: OAuth

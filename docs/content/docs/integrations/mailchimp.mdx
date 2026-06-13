@@ -1,11 +1,13 @@
 ---
-title: "Mailchimp"
+title: "Mailchimp Integration"
 description: "Manage Mailchimp audiences, members, and campaigns"
 ---
 
-The Mailchimp integration provides access to manage mailchimp audiences, members, and campaigns through the Integrate MCP server.
+The Mailchimp integration provides access to manage Mailchimp audiences, members, and campaigns through the Integrate MCP server.
 
 ## Installation
+
+The Mailchimp integration is included with the SDK:
 
 ```typescript
 import { mailchimpIntegration } from "integrate-sdk/server";
@@ -13,7 +15,15 @@ import { mailchimpIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Mailchimp to your server configuration. The integration automatically reads OAuth credentials from your environment (`MAILCHIMP_CLIENT_ID`, `MAILCHIMP_CLIENT_SECRET`):
+### 1. Create a Mailchimp OAuth App
+
+1. Create an OAuth application for Mailchimp
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Mailchimp integration to your server configuration. The integration automatically reads `MAILCHIMP_CLIENT_ID` and `MAILCHIMP_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, mailchimpIntegration } from "integrate-sdk/server";
@@ -21,22 +31,40 @@ import { createMCPServer, mailchimpIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    mailchimpIntegration(),
+    mailchimpIntegration({
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+mailchimpIntegration({
+  clientId: process.env.CUSTOM_MAILCHIMP_ID,
+  clientSecret: process.env.CUSTOM_MAILCHIMP_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("mailchimp");
-const result = await client.mailchimp.ping({
-  // Add the parameters required by this tool
-});
+// Use client.mailchimp methods after connecting
+```
 
-console.log(result);
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, mailchimpIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [mailchimpIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,25 +74,58 @@ console.log(result);
   name="MailchimpIntegrationConfig"
 />
 
-## Environment Variables
 
-- `MAILCHIMP_CLIENT_ID`
-- `MAILCHIMP_CLIENT_SECRET`
+## Tools
 
-## Available Tools
+### `mailchimp_ping`
 
-- `mailchimp_ping`
-- `mailchimp_list_audiences`
-- `mailchimp_get_audience`
-- `mailchimp_list_members`
-- `mailchimp_get_member`
-- `mailchimp_add_or_update_member`
-- `mailchimp_archive_member`
-- `mailchimp_list_campaigns`
+Ping
+
+_No parameters._
+
+### `mailchimp_list_audiences`
+
+List audiences
+
+_No parameters._
+
+### `mailchimp_get_audience`
+
+Get audience
+
+_No parameters._
+
+### `mailchimp_list_members`
+
+List members
+
+_No parameters._
+
+### `mailchimp_get_member`
+
+Get member
+
+_No parameters._
+
+### `mailchimp_add_or_update_member`
+
+Add or update member
+
+_No parameters._
+
+### `mailchimp_archive_member`
+
+Archive member
+
+_No parameters._
+
+### `mailchimp_list_campaigns`
+
+List campaigns
+
+_No parameters._
 
 ## Notes
 
-- Category: Communication
+- Category: Marketing
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

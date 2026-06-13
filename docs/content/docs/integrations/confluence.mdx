@@ -1,0 +1,203 @@
+---
+title: "Confluence Cloud Integration"
+description: "Manage Confluence spaces, pages, search, comments, and attachments"
+---
+
+The Confluence Cloud integration provides access to manage Confluence spaces, pages, search, comments, and attachments through the Integrate MCP server.
+
+## Installation
+
+The Confluence Cloud integration is included with the SDK:
+
+```typescript
+import { confluenceIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Confluence Cloud OAuth App
+
+1. Go to [Auth Developer Portal](https://auth.atlassian.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Confluence Cloud integration to your server configuration. The integration automatically reads `CONFLUENCE_CLIENT_ID` and `CONFLUENCE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, confluenceIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    confluenceIntegration({
+      scopes: ["read:confluence-content.all", "write:confluence-content", "read:confluence-space.summary", "read:confluence-props", "offline_access"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+confluenceIntegration({
+  clientId: process.env.CUSTOM_CONFLUENCE_ID,
+  clientSecret: process.env.CUSTOM_CONFLUENCE_SECRET,
+      scopes: ["read:confluence-content.all", "write:confluence-content", "read:confluence-space.summary", "read:confluence-props", "offline_access"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("confluence");
+const result = await client.confluence.listAccessibleResources({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, confluenceIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [confluenceIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/confluence.ts"
+  name="ConfluenceIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `read:confluence-content.all`
+- `write:confluence-content`
+- `read:confluence-space.summary`
+- `read:confluence-props`
+- `offline_access`
+
+## Tools
+
+### `confluence_list_accessible_resources`
+
+List accessible resources
+
+_No parameters._
+
+### `confluence_list_spaces`
+
+List spaces
+
+<AutoTypeTable
+  path="generated/tool-params/confluence.ts"
+  name="ConfluenceListSpacesParams"
+/>
+
+### `confluence_get_space`
+
+Get space
+
+<AutoTypeTable
+  path="generated/tool-params/confluence.ts"
+  name="ConfluenceGetSpaceParams"
+/>
+
+### `confluence_list_pages`
+
+List pages
+
+<AutoTypeTable
+  path="generated/tool-params/confluence.ts"
+  name="ConfluenceListPagesParams"
+/>
+
+### `confluence_get_page`
+
+Get page
+
+<AutoTypeTable
+  path="generated/tool-params/confluence.ts"
+  name="ConfluenceGetPageParams"
+/>
+
+### `confluence_create_page`
+
+Create page
+
+<AutoTypeTable
+  path="generated/tool-params/confluence.ts"
+  name="ConfluenceCreatePageParams"
+/>
+
+### `confluence_update_page`
+
+Update page
+
+<AutoTypeTable
+  path="generated/tool-params/confluence.ts"
+  name="ConfluenceUpdatePageParams"
+/>
+
+### `confluence_delete_page`
+
+Delete page
+
+<AutoTypeTable
+  path="generated/tool-params/confluence.ts"
+  name="ConfluenceDeletePageParams"
+/>
+
+### `confluence_search`
+
+Search
+
+<AutoTypeTable
+  path="generated/tool-params/confluence.ts"
+  name="ConfluenceSearchParams"
+/>
+
+### `confluence_list_comments`
+
+List comments
+
+<AutoTypeTable
+  path="generated/tool-params/confluence.ts"
+  name="ConfluenceListCommentsParams"
+/>
+
+### `confluence_create_comment`
+
+Create comment
+
+<AutoTypeTable
+  path="generated/tool-params/confluence.ts"
+  name="ConfluenceCreateCommentParams"
+/>
+
+### `confluence_list_attachments`
+
+List attachments
+
+<AutoTypeTable
+  path="generated/tool-params/confluence.ts"
+  name="ConfluenceListAttachmentsParams"
+/>
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth

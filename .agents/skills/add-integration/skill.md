@@ -333,6 +333,28 @@ Add to `INTEGRATION_LIBRARY_METADATA`:
 
 If the category is new (not in `IntegrationCategory`), add it to both the type union and the `INTEGRATION_CATEGORY_ORDER` array in the same file.
 
+### 9. `src/integrations/integration-docs-metadata.ts` — Add docs metadata
+
+For OAuth integrations, add a developer portal link used by the docs generator:
+
+```typescript
+  {provider}: {
+    authMode: "oauth",
+    developerPortal: {
+      label: "{Name} Developer Hub",
+      url: "https://provider.com/oauth/apps",
+    },
+  },
+```
+
+For API-key integrations, set `authMode: "apiKey"` and optional `setupNotes`.
+
+Docs pages are **auto-generated** at build time (`docs/scripts/generate-integration-docs.ts`). Do not create MDX files manually. After adding the SDK integration, run:
+
+```bash
+cd docs && bun run generate:integrations
+```
+
 ---
 
 ## Integration system test
@@ -419,5 +441,7 @@ Before reporting the integration as complete, verify every item:
 - [ ] `src/server.ts` — factory exported
 - [ ] `index.ts` (root) — import added, factory added to default client **only if** the integration does not require secrets at construction time (otherwise export via `src/index.ts` only)
 - [ ] `src/integrations/library-metadata.ts` — catalog entry added
+- [ ] `src/integrations/integration-docs-metadata.ts` — developer portal / auth metadata added (OAuth integrations need `developerPortal`)
+- [ ] `cd docs && bun run generate:integrations` — regenerate integration docs MDX
 - [ ] `bun run type-check` passes with zero errors
 - [ ] All new tests pass

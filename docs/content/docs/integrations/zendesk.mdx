@@ -1,9 +1,9 @@
 ---
-title: "Zendesk"
-description: "Manage tickets, users, and organizations"
+title: "Zendesk Integration"
+description: "Manage Zendesk tickets, users, and help center content"
 ---
 
-The Zendesk integration provides access to Zendesk's API through the Integrate MCP server.
+The Zendesk integration provides access to manage Zendesk tickets, users, and help center content through the Integrate MCP server.
 
 ## Installation
 
@@ -17,15 +17,13 @@ import { zendeskIntegration } from "integrate-sdk/server";
 
 ### 1. Create a Zendesk OAuth App
 
-1. Go to your Zendesk Admin Center
-2. Navigate to Apps and integrations > APIs > Zendesk API > OAuth Clients
-3. Create a new OAuth client
-4. Note your Client ID and Client Secret
-5. Configure your redirect URI
+1. Create an OAuth application for Zendesk
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
 
 ### 2. Configure the Integration on Your Server
 
-Add the Zendesk integration to your server configuration. The integration automatically reads `ZENDESK_CLIENT_ID`, `ZENDESK_CLIENT_SECRET`, and `ZENDESK_SUBDOMAIN` from your environment variables:
+Add the Zendesk integration to your server configuration. The integration automatically reads `ZENDESK_CLIENT_ID` and `ZENDESK_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, zendeskIntegration } from "integrate-sdk/server";
@@ -34,8 +32,6 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     zendeskIntegration({
-      scopes: ["read", "write"], // Optional
-      subdomain: "mycompany", // Your Zendesk subdomain
     }),
   ],
 });
@@ -47,8 +43,6 @@ You can override the environment variables by passing explicit values:
 zendeskIntegration({
   clientId: process.env.CUSTOM_ZENDESK_ID,
   clientSecret: process.env.CUSTOM_ZENDESK_SECRET,
-  scopes: ["read", "write"],
-  subdomain: "mycompany",
 });
 ```
 
@@ -60,7 +54,9 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("zendesk");
-const tickets = await client.zendesk.listTickets({});
+const result = await client.zendesk.listTickets({});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -80,111 +76,241 @@ const customClient = createMCPClient({
   name="ZendeskIntegrationConfig"
 />
 
-## Available Tools
 
-### Tickets
+## Tools
 
-- **`zendesk_list_tickets`** - List tickets
-- **`zendesk_get_ticket`** - Get a specific ticket
-- **`zendesk_create_ticket`** - Create a new ticket
-- **`zendesk_update_ticket`** - Update a ticket
-- **`zendesk_add_comment`** - Add a comment to a ticket
-- **`zendesk_search_tickets`** - Search tickets
+### `zendesk_list_tickets`
 
-### Users
+List tickets
 
-- **`zendesk_list_users`** - List users
-- **`zendesk_get_user`** - Get a specific user
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskListTicketsParams"
+/>
 
-### Organizations
+### `zendesk_get_ticket`
 
-- **`zendesk_list_organizations`** - List organizations
+Get a specific ticket
 
-## Examples
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskGetTicketParams"
+/>
 
-### Create a Ticket
+### `zendesk_create_ticket`
 
-```typescript
-const result = await client.zendesk.createTicket({
-  subject: "Help with login issue",
-  comment: {
-    body: "I'm unable to log in to my account. Getting error 'Invalid credentials'.",
-  },
-  priority: "high",
-  type: "incident",
-  tags: ["login", "authentication"],
-});
+Create a new ticket
 
-console.log("Ticket created:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskCreateTicketParams"
+/>
 
-### List Tickets
+### `zendesk_update_ticket`
 
-```typescript
-const result = await client.zendesk.listTickets({
-  status: "open",
-  sort_by: "created_at",
-  sort_order: "desc",
-});
+Update an existing ticket
 
-console.log("Open tickets:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskUpdateTicketParams"
+/>
 
-### Add Comment
+### `zendesk_delete_ticket`
 
-```typescript
-const result = await client.zendesk.addComment({
-  ticketId: 12345,
-  body: "We're looking into this issue and will update you shortly.",
-  public: true,
-});
+Delete a ticket
 
-console.log("Comment added:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskDeleteTicketParams"
+/>
 
-### Search Tickets
+### `zendesk_add_comment`
 
-```typescript
-const result = await client.zendesk.searchTickets({
-  query: "type:ticket status:open priority:high",
-});
+Add a comment to a ticket
 
-console.log("High priority open tickets:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskAddCommentParams"
+/>
 
-## OAuth Scopes
+### `zendesk_list_ticket_comments`
 
-The default scopes are `['read', 'write']`. Available scopes:
+List comments on a ticket
 
-- **`read`** - Read access to tickets, users, organizations
-- **`write`** - Create and update tickets, users, organizations
-- **`impersonate`** - Act on behalf of other users (admin only)
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskListTicketCommentsParams"
+/>
 
-## Subdomain Configuration
+### `zendesk_list_users`
 
-Zendesk requires your subdomain (e.g., "mycompany" from mycompany.zendesk.com) for API requests. Set this via the `subdomain` config option or the `ZENDESK_SUBDOMAIN` environment variable.
+List users
 
-## Error Handling
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskListUsersParams"
+/>
 
-```typescript
-try {
-  const result = await client.zendesk.createTicket({
-    subject: "Issue report",
-    comment: { body: "Description of the issue" },
-  });
-} catch (error) {
-  if (error.message.includes("not found")) {
-    console.error("Resource not found");
-  } else if (error.message.includes("authentication")) {
-    console.error("Authentication failed");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+### `zendesk_get_user`
 
-## Next Steps
+Get a specific user
 
-- Explore the [HubSpot Integration](/docs/integrations/hubspot)
-- Explore the [Intercom Integration](/docs/integrations/intercom)
-- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskGetUserParams"
+/>
+
+### `zendesk_create_user`
+
+Create a new user
+
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskCreateUserParams"
+/>
+
+### `zendesk_update_user`
+
+Update an existing user
+
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskUpdateUserParams"
+/>
+
+### `zendesk_search_users`
+
+Search for users
+
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskSearchUsersParams"
+/>
+
+### `zendesk_list_organizations`
+
+List organizations
+
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskListOrganizationsParams"
+/>
+
+### `zendesk_get_organization`
+
+Get a specific organization
+
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskGetOrganizationParams"
+/>
+
+### `zendesk_create_organization`
+
+Create a new organization
+
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskCreateOrganizationParams"
+/>
+
+### `zendesk_update_organization`
+
+Update an existing organization
+
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskUpdateOrganizationParams"
+/>
+
+### `zendesk_list_groups`
+
+List groups
+
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskListGroupsParams"
+/>
+
+### `zendesk_get_group`
+
+Get a specific group
+
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskGetGroupParams"
+/>
+
+### `zendesk_search_tickets`
+
+Search for tickets
+
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskSearchTicketsParams"
+/>
+
+### `zendesk_search`
+
+Search across all Zendesk resources (tickets, users, organizations)
+
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskSearchParams"
+/>
+
+### `zendesk_list_views`
+
+List views
+
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskListViewsParams"
+/>
+
+### `zendesk_get_view_tickets`
+
+Get tickets from a specific view
+
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskGetViewTicketsParams"
+/>
+
+### `zendesk_list_macros`
+
+List macros
+
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskListMacrosParams"
+/>
+
+### `zendesk_list_tags`
+
+List tags
+
+_No parameters._
+
+### `zendesk_add_tags`
+
+Add tags to a ticket
+
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskAddTagsParams"
+/>
+
+### `zendesk_remove_tags`
+
+Remove tags from a ticket
+
+<AutoTypeTable
+  path="generated/tool-params/zendesk.ts"
+  name="ZendeskRemoveTagsParams"
+/>
+
+## Notes
+
+- Category: Business
+- Authentication mode: OAuth

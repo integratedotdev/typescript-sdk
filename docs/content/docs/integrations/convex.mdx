@@ -1,11 +1,13 @@
 ---
-title: "Convex"
-description: "Run Convex functions, manage tables, and query your app backend"
+title: "Convex Integration"
+description: "Manage Convex projects, deployments, regions, classes, and environment variables"
 ---
 
-The Convex integration provides access to run convex functions, manage tables, and query your app backend through the Integrate MCP server.
+The Convex integration provides access to manage Convex projects, deployments, regions, classes, and environment variables through the Integrate MCP server.
 
 ## Installation
+
+The Convex integration is included with the SDK:
 
 ```typescript
 import { convexIntegration } from "integrate-sdk/server";
@@ -13,7 +15,7 @@ import { convexIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Convex to your server configuration. This integration can read credentials from environment variables automatically (`CONVEX_ACCESS_TOKEN`):
+Add Convex to your server configuration. Provide credentials via environment variables or integration config:
 
 ```typescript
 import { createMCPServer, convexIntegration } from "integrate-sdk/server";
@@ -21,7 +23,9 @@ import { createMCPServer, convexIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    convexIntegration(),
+    convexIntegration({
+      // See configuration options below
+    }),
   ],
 });
 ```
@@ -31,12 +35,14 @@ export const { client: serverClient } = createMCPServer({
 ```typescript
 import { client } from "integrate-sdk";
 
-const result = await client.convex.managementTokenDetails({
-  // Add the parameters required by this tool
-});
+const result = await client.convex.managementTokenDetails({});
 
 console.log(result);
 ```
+
+## Environment Variables
+
+- `CONVEX_API_KEY` (when supported by this integration)
 
 ## Configuration Options
 
@@ -45,33 +51,154 @@ console.log(result);
   name="ConvexIntegrationOptions"
 />
 
-## Environment Variables
 
-- `CONVEX_ACCESS_TOKEN`
+## Tools
 
-## Available Tools
+### `convex_management_token_details`
 
-- `convex_management_token_details`
-- `convex_management_list_projects`
-- `convex_management_create_project`
-- `convex_management_get_project`
-- `convex_management_delete_project`
-- `convex_management_list_deployments`
-- `convex_management_list_team_deployments`
-- `convex_management_get_deployment`
-- `convex_management_create_deployment`
-- `convex_management_update_deployment`
-- `convex_management_delete_deployment`
-- `convex_management_list_deployment_regions`
-- `convex_management_list_deployment_classes`
-- `convex_management_list_default_environment_variables`
-- `convex_management_update_default_environment_variables`
-- `convex_deployment_list_environment_variables`
-- `convex_deployment_update_environment_variables`
+Management token details
+
+_No parameters._
+
+### `convex_management_list_projects`
+
+Management list projects
+
+<AutoTypeTable
+  path="generated/tool-params/convex.ts"
+  name="ConvexManagementListProjectsParams"
+/>
+
+### `convex_management_create_project`
+
+Management create project
+
+<AutoTypeTable
+  path="generated/tool-params/convex.ts"
+  name="ConvexManagementCreateProjectParams"
+/>
+
+### `convex_management_get_project`
+
+Management get project
+
+<AutoTypeTable
+  path="generated/tool-params/convex.ts"
+  name="ConvexManagementGetProjectParams"
+/>
+
+### `convex_management_delete_project`
+
+Management delete project
+
+<AutoTypeTable
+  path="generated/tool-params/convex.ts"
+  name="ConvexManagementDeleteProjectParams"
+/>
+
+### `convex_management_list_deployments`
+
+Management list deployments
+
+<AutoTypeTable
+  path="generated/tool-params/convex.ts"
+  name="ConvexManagementListDeploymentsParams"
+/>
+
+### `convex_management_list_team_deployments`
+
+Management list team deployments
+
+<AutoTypeTable
+  path="generated/tool-params/convex.ts"
+  name="ConvexManagementListTeamDeploymentsParams"
+/>
+
+### `convex_management_get_deployment`
+
+Management get deployment
+
+<AutoTypeTable
+  path="generated/tool-params/convex.ts"
+  name="ConvexManagementGetDeploymentParams"
+/>
+
+### `convex_management_create_deployment`
+
+Management create deployment
+
+<AutoTypeTable
+  path="generated/tool-params/convex.ts"
+  name="ConvexManagementCreateDeploymentParams"
+/>
+
+### `convex_management_update_deployment`
+
+Management update deployment
+
+<AutoTypeTable
+  path="generated/tool-params/convex.ts"
+  name="ConvexManagementUpdateDeploymentParams"
+/>
+
+### `convex_management_delete_deployment`
+
+Management delete deployment
+
+<AutoTypeTable
+  path="generated/tool-params/convex.ts"
+  name="ConvexManagementDeleteDeploymentParams"
+/>
+
+### `convex_management_list_deployment_regions`
+
+Management list deployment regions
+
+_No parameters._
+
+### `convex_management_list_deployment_classes`
+
+Management list deployment classes
+
+_No parameters._
+
+### `convex_management_list_default_environment_variables`
+
+Management list default environment variables
+
+<AutoTypeTable
+  path="generated/tool-params/convex.ts"
+  name="ConvexManagementListDefaultEnvironmentVariablesParams"
+/>
+
+### `convex_management_update_default_environment_variables`
+
+Management update default environment variables
+
+<AutoTypeTable
+  path="generated/tool-params/convex.ts"
+  name="ConvexManagementUpdateDefaultEnvironmentVariablesParams"
+/>
+
+### `convex_deployment_list_environment_variables`
+
+Deployment list environment variables
+
+<AutoTypeTable
+  path="generated/tool-params/convex.ts"
+  name="ConvexDeploymentListEnvironmentVariablesParams"
+/>
+
+### `convex_deployment_update_environment_variables`
+
+Deployment update environment variables
+
+<AutoTypeTable
+  path="generated/tool-params/convex.ts"
+  name="ConvexDeploymentUpdateEnvironmentVariablesParams"
+/>
 
 ## Notes
 
 - Category: Engineering
 - Authentication mode: API key
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

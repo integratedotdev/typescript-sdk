@@ -1,0 +1,152 @@
+---
+title: "Fitbit Integration"
+description: "Manage Fitbit get profile, list activities, list sleep, list heart rate, list weight"
+---
+
+The Fitbit integration provides access to manage Fitbit get profile, list activities, list sleep, list heart rate, list weight through the Integrate MCP server.
+
+## Installation
+
+The Fitbit integration is included with the SDK:
+
+```typescript
+import { fitbitIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Fitbit OAuth App
+
+1. Create an OAuth application for Fitbit
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Fitbit integration to your server configuration. The integration automatically reads `FITBIT_CLIENT_ID` and `FITBIT_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, fitbitIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    fitbitIntegration({
+      scopes: ["activity", "heartrate", "location", "nutrition", "profile", "settings", "sleep", "social", "weight"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+fitbitIntegration({
+  clientId: process.env.CUSTOM_FITBIT_ID,
+  clientSecret: process.env.CUSTOM_FITBIT_SECRET,
+      scopes: ["activity", "heartrate", "location", "nutrition", "profile", "settings", "sleep", "social", "weight"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("fitbit");
+const result = await client.fitbit.getProfile({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, fitbitIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [fitbitIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/fitbit.ts"
+  name="FitbitIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `activity`
+- `heartrate`
+- `location`
+- `nutrition`
+- `profile`
+- `settings`
+- `sleep`
+- `social`
+- `weight`
+
+## Tools
+
+### `fitbit_get_profile`
+
+Get profile
+
+_No parameters._
+
+### `fitbit_list_activities`
+
+List activities
+
+<AutoTypeTable
+  path="generated/tool-params/fitbit.ts"
+  name="FitbitListActivitiesParams"
+/>
+
+### `fitbit_list_sleep`
+
+List sleep
+
+<AutoTypeTable
+  path="generated/tool-params/fitbit.ts"
+  name="FitbitListSleepParams"
+/>
+
+### `fitbit_list_heart_rate`
+
+List heart rate
+
+<AutoTypeTable
+  path="generated/tool-params/fitbit.ts"
+  name="FitbitListHeartRateParams"
+/>
+
+### `fitbit_list_weight`
+
+List weight
+
+<AutoTypeTable
+  path="generated/tool-params/fitbit.ts"
+  name="FitbitListWeightParams"
+/>
+
+### `fitbit_log_activity`
+
+Log activity
+
+<AutoTypeTable
+  path="generated/tool-params/fitbit.ts"
+  name="FitbitLogActivityParams"
+/>
+
+## Notes
+
+- Category: Fitness
+- Authentication mode: OAuth

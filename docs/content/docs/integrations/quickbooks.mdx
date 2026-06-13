@@ -1,0 +1,252 @@
+---
+title: "QuickBooks Online Integration"
+description: "Manage QuickBooks Online company data, customers, vendors, items, accounts, invoices, bills, payments, reports, and queries"
+---
+
+The QuickBooks Online integration provides access to manage QuickBooks Online company data, customers, vendors, items, accounts, invoices, bills, payments, reports, and queries through the Integrate MCP server.
+
+## Installation
+
+The QuickBooks Online integration is included with the SDK:
+
+```typescript
+import { quickbooksIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a QuickBooks Online OAuth App
+
+1. Create an OAuth application for QuickBooks Online
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the QuickBooks Online integration to your server configuration. The integration automatically reads `QUICKBOOKS_CLIENT_ID` and `QUICKBOOKS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, quickbooksIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    quickbooksIntegration({
+      scopes: ["com.intuit.quickbooks.accounting", "openid", "profile", "email", "offline_access"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+quickbooksIntegration({
+  clientId: process.env.CUSTOM_QUICKBOOKS_ID,
+  clientSecret: process.env.CUSTOM_QUICKBOOKS_SECRET,
+      scopes: ["com.intuit.quickbooks.accounting", "openid", "profile", "email", "offline_access"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("quickbooks");
+const result = await client.quickbooks.getCompanyInfo({
+  company_id: "value",
+});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, quickbooksIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [quickbooksIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/quickbooks.ts"
+  name="QuickBooksIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `com.intuit.quickbooks.accounting`
+- `openid`
+- `profile`
+- `email`
+- `offline_access`
+
+## Tools
+
+### `quickbooks_get_company_info`
+
+Get company info
+
+<AutoTypeTable
+  path="generated/tool-params/quickbooks.ts"
+  name="QuickbooksGetCompanyInfoParams"
+/>
+
+### `quickbooks_query`
+
+Query
+
+<AutoTypeTable
+  path="generated/tool-params/quickbooks.ts"
+  name="QuickbooksQueryParams"
+/>
+
+### `quickbooks_list_customers`
+
+List customers
+
+<AutoTypeTable
+  path="generated/tool-params/quickbooks.ts"
+  name="QuickbooksListCustomersParams"
+/>
+
+### `quickbooks_get_customer`
+
+Get customer
+
+<AutoTypeTable
+  path="generated/tool-params/quickbooks.ts"
+  name="QuickbooksGetCustomerParams"
+/>
+
+### `quickbooks_create_customer`
+
+Create customer
+
+<AutoTypeTable
+  path="generated/tool-params/quickbooks.ts"
+  name="QuickbooksCreateCustomerParams"
+/>
+
+### `quickbooks_list_vendors`
+
+List vendors
+
+<AutoTypeTable
+  path="generated/tool-params/quickbooks.ts"
+  name="QuickbooksListVendorsParams"
+/>
+
+### `quickbooks_create_vendor`
+
+Create vendor
+
+<AutoTypeTable
+  path="generated/tool-params/quickbooks.ts"
+  name="QuickbooksCreateVendorParams"
+/>
+
+### `quickbooks_list_items`
+
+List items
+
+<AutoTypeTable
+  path="generated/tool-params/quickbooks.ts"
+  name="QuickbooksListItemsParams"
+/>
+
+### `quickbooks_create_item`
+
+Create item
+
+<AutoTypeTable
+  path="generated/tool-params/quickbooks.ts"
+  name="QuickbooksCreateItemParams"
+/>
+
+### `quickbooks_list_accounts`
+
+List accounts
+
+<AutoTypeTable
+  path="generated/tool-params/quickbooks.ts"
+  name="QuickbooksListAccountsParams"
+/>
+
+### `quickbooks_list_invoices`
+
+List invoices
+
+<AutoTypeTable
+  path="generated/tool-params/quickbooks.ts"
+  name="QuickbooksListInvoicesParams"
+/>
+
+### `quickbooks_get_invoice`
+
+Get invoice
+
+<AutoTypeTable
+  path="generated/tool-params/quickbooks.ts"
+  name="QuickbooksGetInvoiceParams"
+/>
+
+### `quickbooks_create_invoice`
+
+Create invoice
+
+<AutoTypeTable
+  path="generated/tool-params/quickbooks.ts"
+  name="QuickbooksCreateInvoiceParams"
+/>
+
+### `quickbooks_list_bills`
+
+List bills
+
+<AutoTypeTable
+  path="generated/tool-params/quickbooks.ts"
+  name="QuickbooksListBillsParams"
+/>
+
+### `quickbooks_create_bill`
+
+Create bill
+
+<AutoTypeTable
+  path="generated/tool-params/quickbooks.ts"
+  name="QuickbooksCreateBillParams"
+/>
+
+### `quickbooks_create_payment`
+
+Create payment
+
+<AutoTypeTable
+  path="generated/tool-params/quickbooks.ts"
+  name="QuickbooksCreatePaymentParams"
+/>
+
+### `quickbooks_get_report`
+
+Get report
+
+<AutoTypeTable
+  path="generated/tool-params/quickbooks.ts"
+  name="QuickbooksGetReportParams"
+/>
+
+## Notes
+
+- Category: Accounting
+- Authentication mode: OAuth

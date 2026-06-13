@@ -1,11 +1,13 @@
 ---
-title: "Reddit"
+title: "Reddit Integration"
 description: "Browse subreddits, search posts, submit content, and vote on Reddit"
 ---
 
-The Reddit integration provides access to browse subreddits, search posts, submit content, and vote on reddit through the Integrate MCP server.
+The Reddit integration provides access to browse subreddits, search posts, submit content, and vote on Reddit through the Integrate MCP server.
 
 ## Installation
+
+The Reddit integration is included with the SDK:
 
 ```typescript
 import { redditIntegration } from "integrate-sdk/server";
@@ -13,7 +15,15 @@ import { redditIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Reddit to your server configuration. The integration automatically reads OAuth credentials from your environment (`REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`):
+### 1. Create a Reddit OAuth App
+
+1. Create an OAuth application for Reddit
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Reddit integration to your server configuration. The integration automatically reads `REDDIT_CLIENT_ID` and `REDDIT_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, redditIntegration } from "integrate-sdk/server";
@@ -21,22 +31,40 @@ import { createMCPServer, redditIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    redditIntegration(),
+    redditIntegration({
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+redditIntegration({
+  clientId: process.env.CUSTOM_REDDIT_ID,
+  clientSecret: process.env.CUSTOM_REDDIT_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("reddit");
-const result = await client.reddit.getMe({
-  // Add the parameters required by this tool
-});
+// Use client.reddit methods after connecting
+```
 
-console.log(result);
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, redditIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [redditIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,37 +74,70 @@ console.log(result);
   name="RedditIntegrationConfig"
 />
 
-## Environment Variables
 
-- `REDDIT_CLIENT_ID`
-- `REDDIT_CLIENT_SECRET`
+## Tools
 
-## Default Scopes
+### `reddit_get_me`
 
-These defaults are applied unless you override `scopes` in the integration config:
+Get me
 
-- `identity`
-- `read`
-- `submit`
-- `vote`
-- `mysubreddits`
+_No parameters._
 
-## Available Tools
+### `reddit_get_subreddit_about`
 
-- `reddit_get_me`
-- `reddit_get_subreddit_about`
-- `reddit_list_subreddit_posts`
-- `reddit_get_post_thread`
-- `reddit_search`
-- `reddit_submit_post`
-- `reddit_comment`
-- `reddit_vote`
-- `reddit_list_my_subreddits`
-- `reddit_list_popular_subreddits`
+Get subreddit about
+
+_No parameters._
+
+### `reddit_list_subreddit_posts`
+
+List subreddit posts
+
+_No parameters._
+
+### `reddit_get_post_thread`
+
+Get post thread
+
+_No parameters._
+
+### `reddit_search`
+
+Search
+
+_No parameters._
+
+### `reddit_submit_post`
+
+Submit post
+
+_No parameters._
+
+### `reddit_comment`
+
+Comment
+
+_No parameters._
+
+### `reddit_vote`
+
+Vote
+
+_No parameters._
+
+### `reddit_list_my_subreddits`
+
+List my subreddits
+
+_No parameters._
+
+### `reddit_list_popular_subreddits`
+
+List popular subreddits
+
+_No parameters._
 
 ## Notes
 
 - Category: Social Media
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

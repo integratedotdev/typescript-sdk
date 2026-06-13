@@ -1,0 +1,146 @@
+---
+title: "Zoho Recruit Integration"
+description: "Manage Zoho Recruit candidates, job openings, interviews, and custom modules"
+---
+
+The Zoho Recruit integration provides access to manage Zoho Recruit candidates, job openings, interviews, and custom modules through the Integrate MCP server.
+
+## Installation
+
+The Zoho Recruit integration is included with the SDK:
+
+```typescript
+import { zohoRecruitIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Zoho Recruit OAuth App
+
+1. Go to [Zoho API Console](https://api-console.zoho.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Zoho Recruit integration to your server configuration. The integration automatically reads `ZOHO_RECRUIT_CLIENT_ID` and `ZOHO_RECRUIT_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, zohoRecruitIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    zohoRecruitIntegration({
+      scopes: ["ZohoRecruit.modules.ALL", "ZohoRecruit.settings.ALL"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+zohoRecruitIntegration({
+  clientId: process.env.CUSTOM_ZOHO_RECRUIT_ID,
+  clientSecret: process.env.CUSTOM_ZOHO_RECRUIT_SECRET,
+      scopes: ["ZohoRecruit.modules.ALL", "ZohoRecruit.settings.ALL"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("zoho_recruit");
+const result = await client.zoho_recruit.listModules({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, zohoRecruitIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [zohoRecruitIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/zoho_recruit.ts"
+  name="ZohoRecruitIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `ZohoRecruit.modules.ALL`
+- `ZohoRecruit.settings.ALL`
+
+## Tools
+
+### `zoho_recruit_list_modules`
+
+Recruit list modules
+
+_No parameters._
+
+### `zoho_recruit_list_candidates`
+
+Recruit list candidates
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_recruit.ts"
+  name="ZohoRecruitListCandidatesParams"
+/>
+
+### `zoho_recruit_get_candidate`
+
+Recruit get candidate
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_recruit.ts"
+  name="ZohoRecruitGetCandidateParams"
+/>
+
+### `zoho_recruit_create_candidate`
+
+Recruit create candidate
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_recruit.ts"
+  name="ZohoRecruitCreateCandidateParams"
+/>
+
+### `zoho_recruit_list_job_openings`
+
+Recruit list job openings
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_recruit.ts"
+  name="ZohoRecruitListJobOpeningsParams"
+/>
+
+### `zoho_recruit_list_interviews`
+
+Recruit list interviews
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_recruit.ts"
+  name="ZohoRecruitListInterviewsParams"
+/>
+
+## Notes
+
+- Category: HR & Recruiting
+- Authentication mode: OAuth

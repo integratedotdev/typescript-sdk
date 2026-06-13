@@ -1,0 +1,154 @@
+---
+title: "DocuSign Integration"
+description: "Manage DocuSign eSignature accounts, envelopes, recipients, documents, and templates"
+---
+
+The DocuSign integration provides access to manage DocuSign eSignature accounts, envelopes, recipients, documents, and templates through the Integrate MCP server.
+
+## Installation
+
+The DocuSign integration is included with the SDK:
+
+```typescript
+import { docusignIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a DocuSign OAuth App
+
+1. Create an OAuth application for DocuSign
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the DocuSign integration to your server configuration. The integration automatically reads `DOCUSIGN_CLIENT_ID` and `DOCUSIGN_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, docusignIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    docusignIntegration({
+      scopes: ["signature", "impersonation"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+docusignIntegration({
+  clientId: process.env.CUSTOM_DOCUSIGN_ID,
+  clientSecret: process.env.CUSTOM_DOCUSIGN_SECRET,
+      scopes: ["signature", "impersonation"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("docusign");
+const result = await client.docusign.getUserInfo({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, docusignIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [docusignIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/docusign.ts"
+  name="DocusignIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `signature`
+- `impersonation`
+
+## Tools
+
+### `docusign_get_user_info`
+
+Get user info
+
+_No parameters._
+
+### `docusign_list_envelopes`
+
+List envelopes
+
+<AutoTypeTable
+  path="generated/tool-params/docusign.ts"
+  name="DocusignListEnvelopesParams"
+/>
+
+### `docusign_get_envelope`
+
+Get envelope
+
+<AutoTypeTable
+  path="generated/tool-params/docusign.ts"
+  name="DocusignGetEnvelopeParams"
+/>
+
+### `docusign_create_envelope`
+
+Create envelope
+
+<AutoTypeTable
+  path="generated/tool-params/docusign.ts"
+  name="DocusignCreateEnvelopeParams"
+/>
+
+### `docusign_list_recipients`
+
+List recipients
+
+<AutoTypeTable
+  path="generated/tool-params/docusign.ts"
+  name="DocusignListRecipientsParams"
+/>
+
+### `docusign_get_document`
+
+Get document
+
+<AutoTypeTable
+  path="generated/tool-params/docusign.ts"
+  name="DocusignGetDocumentParams"
+/>
+
+### `docusign_list_templates`
+
+List templates
+
+<AutoTypeTable
+  path="generated/tool-params/docusign.ts"
+  name="DocusignListTemplatesParams"
+/>
+
+## Notes
+
+- Category: Legal
+- Authentication mode: OAuth

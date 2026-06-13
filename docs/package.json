@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "generate:integrations": "bun run scripts/generate-integration-docs.ts",
+    "prebuild": "bun run generate:integrations",
+    "predev": "bun run generate:integrations",
     "build": "next build",
     "dev": "next dev",
     "start": "next start",
@@ -35,6 +38,7 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
-    "@biomejs/biome": "^2.3.13"
+    "@biomejs/biome": "^2.3.13",
+    "ts-morph": "^27.0.2"
   }
 }

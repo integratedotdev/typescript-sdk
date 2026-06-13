@@ -1,9 +1,9 @@
 ---
-title: "Figma"
-description: "Access Figma files, comments, and projects"
+title: "Figma Integration"
+description: "Access Figma files, comments, and components"
 ---
 
-The Figma integration provides access to Figma's API through the Integrate MCP server.
+The Figma integration provides access to access Figma files, comments, and components through the Integrate MCP server.
 
 ## Installation
 
@@ -18,8 +18,8 @@ import { figmaIntegration } from "integrate-sdk/server";
 ### 1. Create a Figma OAuth App
 
 1. Go to [Figma for Developers](https://www.figma.com/developers/apps)
-2. Create a new app
-3. Configure your OAuth settings and redirect URI
+2. Create a new OAuth application
+3. Configure your redirect URI
 4. Note your Client ID and Client Secret
 
 ### 2. Configure the Integration on Your Server
@@ -33,7 +33,6 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     figmaIntegration({
-      scopes: ["files:read", "file_comments:write"], // Optional
     }),
   ],
 });
@@ -45,7 +44,6 @@ You can override the environment variables by passing explicit values:
 figmaIntegration({
   clientId: process.env.CUSTOM_FIGMA_ID,
   clientSecret: process.env.CUSTOM_FIGMA_SECRET,
-  scopes: ["files:read", "file_comments:write"],
 });
 ```
 
@@ -57,7 +55,11 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("figma");
-const file = await client.figma.getFile({ fileKey: "abc123" });
+const result = await client.figma.getFile({
+  file_key: "value",
+});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -77,100 +79,403 @@ const customClient = createMCPClient({
   name="FigmaIntegrationConfig"
 />
 
-## Available Tools
 
-### Files
+## Tools
 
-- **`figma_get_file`** - Get file contents
-- **`figma_get_file_nodes`** - Get specific nodes from a file
-- **`figma_get_images`** - Export images from a file
-- **`figma_get_file_versions`** - Get file version history
+### `figma_get_file`
 
-### Comments
+Get a Figma file by key
 
-- **`figma_get_comments`** - Get comments on a file
-- **`figma_post_comment`** - Post a comment
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetFileParams"
+/>
 
-### Projects
+### `figma_get_file_nodes`
 
-- **`figma_list_projects`** - List team projects
-- **`figma_get_project_files`** - Get files in a project
+Get specific nodes from a file
 
-### Components
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetFileNodesParams"
+/>
 
-- **`figma_get_team_components`** - Get team component library
+### `figma_get_file_meta`
 
-## Examples
+Get file metadata (name, last modified, version, etc.) without the full document tree
 
-### Get File
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetFileMetaParams"
+/>
 
-```typescript
-const result = await client.figma.getFile({
-  fileKey: "abc123xyz",
-});
+### `figma_get_image_fills`
 
-console.log("File:", result);
-```
+Get URLs of image fills used in a file
 
-### Post a Comment
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetImageFillsParams"
+/>
 
-```typescript
-const result = await client.figma.postComment({
-  fileKey: "abc123xyz",
-  message: "This design looks great!",
-  clientMeta: {
-    x: 100,
-    y: 200,
-    node_id: "1:23",
-  },
-});
+### `figma_get_images`
 
-console.log("Comment posted:", result);
-```
+Export rendered images for nodes in a file
 
-### Export Images
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetImagesParams"
+/>
 
-```typescript
-const result = await client.figma.getImages({
-  fileKey: "abc123xyz",
-  ids: ["1:23", "1:24"],
-  format: "png",
-  scale: 2,
-});
+### `figma_get_file_versions`
 
-console.log("Image URLs:", result);
-```
+Get version history of a file
 
-## OAuth Scopes
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetFileVersionsParams"
+/>
 
-The default scopes are `['files:read', 'file_comments:write']`. You may need different scopes:
+### `figma_get_oembed`
 
-- **`files:read`** - Read file contents and metadata
-- **`file_comments:write`** - Post comments on files
-- **`file_variables:read`** - Read file variables
-- **`file_variables:write`** - Modify file variables
-- **`webhooks:write`** - Manage webhooks
+Get oEmbed data for a Figma file (embed metadata for external sites)
 
-## Error Handling
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetOembedParams"
+/>
 
-```typescript
-try {
-  const result = await client.figma.getFile({
-    fileKey: "abc123xyz",
-  });
-} catch (error) {
-  if (error.message.includes("not found")) {
-    console.error("File not found or no access");
-  } else if (error.message.includes("authentication")) {
-    console.error("Authentication failed");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+### `figma_get_me`
 
-## Next Steps
+Get the current authenticated user
 
-- Explore the [Notion Integration](/docs/integrations/notion)
-- Explore the [Linear Integration](/docs/integrations/linear)
-- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
+_No parameters._
+
+### `figma_get_comments`
+
+Get comments on a file
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetCommentsParams"
+/>
+
+### `figma_post_comment`
+
+Post a comment on a file
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaPostCommentParams"
+/>
+
+### `figma_delete_comment`
+
+Delete a comment from a file
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaDeleteCommentParams"
+/>
+
+### `figma_get_comment_reactions`
+
+Get reactions on a comment
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetCommentReactionsParams"
+/>
+
+### `figma_post_comment_reaction`
+
+Add a reaction to a comment
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaPostCommentReactionParams"
+/>
+
+### `figma_delete_comment_reaction`
+
+Delete a reaction from a comment
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaDeleteCommentReactionParams"
+/>
+
+### `figma_list_projects`
+
+List projects in a team
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaListProjectsParams"
+/>
+
+### `figma_get_project_files`
+
+Get files in a project
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetProjectFilesParams"
+/>
+
+### `figma_get_team_components`
+
+Get published components for a team
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetTeamComponentsParams"
+/>
+
+### `figma_get_file_components`
+
+Get components defined in a file
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetFileComponentsParams"
+/>
+
+### `figma_get_component`
+
+Get a single published component by key
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetComponentParams"
+/>
+
+### `figma_get_team_component_sets`
+
+Get published component sets for a team
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetTeamComponentSetsParams"
+/>
+
+### `figma_get_file_component_sets`
+
+Get component sets defined in a file
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetFileComponentSetsParams"
+/>
+
+### `figma_get_component_set`
+
+Get a single published component set by key
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetComponentSetParams"
+/>
+
+### `figma_get_team_styles`
+
+Get published styles for a team
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetTeamStylesParams"
+/>
+
+### `figma_get_file_styles`
+
+Get styles defined in a file
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetFileStylesParams"
+/>
+
+### `figma_get_style`
+
+Get a single published style by key
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetStyleParams"
+/>
+
+### `figma_list_webhooks`
+
+List all webhooks for the authenticated user
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaListWebhooksParams"
+/>
+
+### `figma_create_webhook`
+
+Create a webhook
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaCreateWebhookParams"
+/>
+
+### `figma_get_webhook`
+
+Get a webhook by ID
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetWebhookParams"
+/>
+
+### `figma_update_webhook`
+
+Update an existing webhook
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaUpdateWebhookParams"
+/>
+
+### `figma_delete_webhook`
+
+Delete a webhook
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaDeleteWebhookParams"
+/>
+
+### `figma_get_team_webhooks`
+
+Get all webhooks for a team
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetTeamWebhooksParams"
+/>
+
+### `figma_get_webhook_requests`
+
+Get recent delivery requests for a webhook
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetWebhookRequestsParams"
+/>
+
+### `figma_get_local_variables`
+
+Get local variables defined in a file
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetLocalVariablesParams"
+/>
+
+### `figma_get_published_variables`
+
+Get published variables available to a file
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetPublishedVariablesParams"
+/>
+
+### `figma_post_variables`
+
+Create, update, or delete variables and variable collections in a file
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaPostVariablesParams"
+/>
+
+### `figma_get_dev_resources`
+
+Get dev resources linked to nodes in a file
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetDevResourcesParams"
+/>
+
+### `figma_post_dev_resources`
+
+Create dev resources linked to file nodes
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaPostDevResourcesParams"
+/>
+
+### `figma_put_dev_resources`
+
+Update existing dev resources
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaPutDevResourcesParams"
+/>
+
+### `figma_delete_dev_resource`
+
+Delete a dev resource from a file
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaDeleteDevResourceParams"
+/>
+
+### `figma_get_payments`
+
+Get payment status for a plugin, widget, or community file.
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetPaymentsParams"
+/>
+
+### `figma_get_library_analytics_component_actions`
+
+Get analytics on component insert/detach actions from a library file
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetLibraryAnalyticsComponentActionsParams"
+/>
+
+### `figma_get_library_analytics_component_usages`
+
+Get analytics on component usages (instances) from a library file
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetLibraryAnalyticsComponentUsagesParams"
+/>
+
+### `figma_get_library_analytics_style_actions`
+
+Get analytics on style insert/detach actions from a library file
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetLibraryAnalyticsStyleActionsParams"
+/>
+
+### `figma_get_library_analytics_style_usages`
+
+Get analytics on style usages from a library file
+
+<AutoTypeTable
+  path="generated/tool-params/figma.ts"
+  name="FigmaGetLibraryAnalyticsStyleUsagesParams"
+/>
+
+## Notes
+
+- Category: Engineering
+- Authentication mode: OAuth

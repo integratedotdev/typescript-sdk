@@ -1,0 +1,150 @@
+---
+title: "Zoho Sign Integration"
+description: "Manage Zoho Sign requests, templates, contacts, and signature workflows"
+---
+
+The Zoho Sign integration provides access to manage Zoho Sign requests, templates, contacts, and signature workflows through the Integrate MCP server.
+
+## Installation
+
+The Zoho Sign integration is included with the SDK:
+
+```typescript
+import { zohoSignIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Zoho Sign OAuth App
+
+1. Go to [Zoho API Console](https://api-console.zoho.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Zoho Sign integration to your server configuration. The integration automatically reads `ZOHO_SIGN_CLIENT_ID` and `ZOHO_SIGN_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, zohoSignIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    zohoSignIntegration({
+      scopes: ["ZohoSign.documents.ALL", "ZohoSign.templates.READ", "ZohoSign.account.READ"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+zohoSignIntegration({
+  clientId: process.env.CUSTOM_ZOHO_SIGN_ID,
+  clientSecret: process.env.CUSTOM_ZOHO_SIGN_SECRET,
+      scopes: ["ZohoSign.documents.ALL", "ZohoSign.templates.READ", "ZohoSign.account.READ"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("zoho_sign");
+const result = await client.zoho_sign.listRequests({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, zohoSignIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [zohoSignIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/zoho_sign.ts"
+  name="ZohoSignIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `ZohoSign.documents.ALL`
+- `ZohoSign.templates.READ`
+- `ZohoSign.account.READ`
+
+## Tools
+
+### `zoho_sign_list_requests`
+
+Sign list requests
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_sign.ts"
+  name="ZohoSignListRequestsParams"
+/>
+
+### `zoho_sign_get_request`
+
+Sign get request
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_sign.ts"
+  name="ZohoSignGetRequestParams"
+/>
+
+### `zoho_sign_create_request`
+
+Sign create request
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_sign.ts"
+  name="ZohoSignCreateRequestParams"
+/>
+
+### `zoho_sign_list_templates`
+
+Sign list templates
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_sign.ts"
+  name="ZohoSignListTemplatesParams"
+/>
+
+### `zoho_sign_get_template`
+
+Sign get template
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_sign.ts"
+  name="ZohoSignGetTemplateParams"
+/>
+
+### `zoho_sign_list_contacts`
+
+Sign list contacts
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_sign.ts"
+  name="ZohoSignListContactsParams"
+/>
+
+## Notes
+
+- Category: Legal
+- Authentication mode: OAuth

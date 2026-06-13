@@ -1,0 +1,151 @@
+---
+title: "Azure DevOps Integration"
+description: "Manage Azure DevOps projects, repositories, pull requests, builds, and work items"
+---
+
+The Azure DevOps integration provides access to manage Azure DevOps projects, repositories, pull requests, builds, and work items through the Integrate MCP server.
+
+## Installation
+
+The Azure DevOps integration is included with the SDK:
+
+```typescript
+import { azureDevopsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create an Azure DevOps OAuth App
+
+1. Create an OAuth application for Azure DevOps
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Azure DevOps integration to your server configuration. The integration automatically reads `AZURE_DEVOPS_CLIENT_ID` and `AZURE_DEVOPS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, azureDevopsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    azureDevopsIntegration({
+      scopes: ["vso.profile", "vso.project", "vso.code_write", "vso.build", "vso.work_write"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+azureDevopsIntegration({
+  clientId: process.env.CUSTOM_AZURE_DEVOPS_ID,
+  clientSecret: process.env.CUSTOM_AZURE_DEVOPS_SECRET,
+      scopes: ["vso.profile", "vso.project", "vso.code_write", "vso.build", "vso.work_write"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("azure_devops");
+const result = await client.azure_devops.listProjects({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, azureDevopsIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [azureDevopsIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/azure_devops.ts"
+  name="AzureDevopsIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `vso.profile`
+- `vso.project`
+- `vso.code_write`
+- `vso.build`
+- `vso.work_write`
+
+## Tools
+
+### `azure_devops_list_projects`
+
+Devops list projects
+
+<AutoTypeTable
+  path="generated/tool-params/azure_devops.ts"
+  name="AzureDevopsListProjectsParams"
+/>
+
+### `azure_devops_list_repositories`
+
+Devops list repositories
+
+<AutoTypeTable
+  path="generated/tool-params/azure_devops.ts"
+  name="AzureDevopsListRepositoriesParams"
+/>
+
+### `azure_devops_list_pull_requests`
+
+Devops list pull requests
+
+<AutoTypeTable
+  path="generated/tool-params/azure_devops.ts"
+  name="AzureDevopsListPullRequestsParams"
+/>
+
+### `azure_devops_list_builds`
+
+Devops list builds
+
+<AutoTypeTable
+  path="generated/tool-params/azure_devops.ts"
+  name="AzureDevopsListBuildsParams"
+/>
+
+### `azure_devops_queue_build`
+
+Devops queue build
+
+<AutoTypeTable
+  path="generated/tool-params/azure_devops.ts"
+  name="AzureDevopsQueueBuildParams"
+/>
+
+### `azure_devops_get_work_item`
+
+Devops get work item
+
+<AutoTypeTable
+  path="generated/tool-params/azure_devops.ts"
+  name="AzureDevopsGetWorkItemParams"
+/>
+
+## Notes
+
+- Category: Engineering
+- Authentication mode: OAuth

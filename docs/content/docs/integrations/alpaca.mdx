@@ -1,11 +1,13 @@
 ---
-title: "Alpaca"
-description: "Trade equities with Alpaca: account, orders, positions, and market clock"
+title: "Alpaca Integration"
+description: "Trade US equities and crypto with Alpaca: account, orders, positions, clock, and assets"
 ---
 
-The Alpaca integration provides access to trade equities with alpaca: account, orders, positions, and market clock through the Integrate MCP server.
+The Alpaca integration provides access to trade US equities and crypto with Alpaca: account, orders, positions, clock, and assets through the Integrate MCP server.
 
 ## Installation
+
+The Alpaca integration is included with the SDK:
 
 ```typescript
 import { alpacaIntegration } from "integrate-sdk/server";
@@ -13,7 +15,7 @@ import { alpacaIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Alpaca to your server configuration. This integration can read credentials from environment variables automatically (`ALPACA_API_KEY_ID`, `ALPACA_API_SECRET_KEY`):
+Add Alpaca to your server configuration. Provide credentials via environment variables or integration config:
 
 ```typescript
 import { createMCPServer, alpacaIntegration } from "integrate-sdk/server";
@@ -21,7 +23,9 @@ import { createMCPServer, alpacaIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    alpacaIntegration(),
+    alpacaIntegration({
+      // See configuration options below
+    }),
   ],
 });
 ```
@@ -31,12 +35,14 @@ export const { client: serverClient } = createMCPServer({
 ```typescript
 import { client } from "integrate-sdk";
 
-const result = await client.alpaca.getAccount({
-  // Add the parameters required by this tool
-});
+const result = await client.alpaca.getAccount({});
 
 console.log(result);
 ```
+
+## Environment Variables
+
+- `ALPACA_API_KEY` (when supported by this integration)
 
 ## Configuration Options
 
@@ -45,30 +51,118 @@ console.log(result);
   name="AlpacaIntegrationOptions"
 />
 
-## Environment Variables
 
-- `ALPACA_API_KEY_ID`
-- `ALPACA_API_SECRET_KEY`
+## Tools
 
-## Available Tools
+### `alpaca_get_account`
 
-- `alpaca_get_account`
-- `alpaca_list_positions`
-- `alpaca_get_position`
-- `alpaca_list_orders`
-- `alpaca_get_order`
-- `alpaca_create_order`
-- `alpaca_cancel_order`
-- `alpaca_cancel_all_orders`
-- `alpaca_get_clock`
-- `alpaca_get_calendar`
-- `alpaca_list_assets`
-- `alpaca_get_asset`
-- `alpaca_get_portfolio_history`
+Get account
+
+_No parameters._
+
+### `alpaca_list_positions`
+
+List positions
+
+_No parameters._
+
+### `alpaca_get_position`
+
+Get position
+
+<AutoTypeTable
+  path="generated/tool-params/alpaca.ts"
+  name="AlpacaGetPositionParams"
+/>
+
+### `alpaca_list_orders`
+
+List orders
+
+<AutoTypeTable
+  path="generated/tool-params/alpaca.ts"
+  name="AlpacaListOrdersParams"
+/>
+
+### `alpaca_get_order`
+
+Get order
+
+<AutoTypeTable
+  path="generated/tool-params/alpaca.ts"
+  name="AlpacaGetOrderParams"
+/>
+
+### `alpaca_create_order`
+
+Create order
+
+<AutoTypeTable
+  path="generated/tool-params/alpaca.ts"
+  name="AlpacaCreateOrderParams"
+/>
+
+### `alpaca_cancel_order`
+
+Cancel order
+
+<AutoTypeTable
+  path="generated/tool-params/alpaca.ts"
+  name="AlpacaCancelOrderParams"
+/>
+
+### `alpaca_cancel_all_orders`
+
+Cancel all orders
+
+<AutoTypeTable
+  path="generated/tool-params/alpaca.ts"
+  name="AlpacaCancelAllOrdersParams"
+/>
+
+### `alpaca_get_clock`
+
+Get clock
+
+_No parameters._
+
+### `alpaca_get_calendar`
+
+Get calendar
+
+<AutoTypeTable
+  path="generated/tool-params/alpaca.ts"
+  name="AlpacaGetCalendarParams"
+/>
+
+### `alpaca_list_assets`
+
+List assets
+
+<AutoTypeTable
+  path="generated/tool-params/alpaca.ts"
+  name="AlpacaListAssetsParams"
+/>
+
+### `alpaca_get_asset`
+
+Get asset
+
+<AutoTypeTable
+  path="generated/tool-params/alpaca.ts"
+  name="AlpacaGetAssetParams"
+/>
+
+### `alpaca_get_portfolio_history`
+
+Get portfolio history
+
+<AutoTypeTable
+  path="generated/tool-params/alpaca.ts"
+  name="AlpacaGetPortfolioHistoryParams"
+/>
 
 ## Notes
 
 - Category: Finance
 - Authentication mode: API key
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

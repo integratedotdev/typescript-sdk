@@ -1,0 +1,141 @@
+---
+title: "Tink Integration"
+description: "Manage Tink get user, list accounts, get account, list transactions, list credentials"
+---
+
+The Tink integration provides access to manage Tink get user, list accounts, get account, list transactions, list credentials through the Integrate MCP server.
+
+## Installation
+
+The Tink integration is included with the SDK:
+
+```typescript
+import { tinkIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Tink OAuth App
+
+1. Create an OAuth application for Tink
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Tink integration to your server configuration. The integration automatically reads `TINK_CLIENT_ID` and `TINK_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, tinkIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    tinkIntegration({
+      scopes: ["accounts:read", "transactions:read", "user:read", "credentials:read"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+tinkIntegration({
+  clientId: process.env.CUSTOM_TINK_ID,
+  clientSecret: process.env.CUSTOM_TINK_SECRET,
+      scopes: ["accounts:read", "transactions:read", "user:read", "credentials:read"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("tink");
+const result = await client.tink.getUser({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, tinkIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [tinkIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/tink.ts"
+  name="TinkIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `accounts:read`
+- `transactions:read`
+- `user:read`
+- `credentials:read`
+
+## Tools
+
+### `tink_get_user`
+
+Get user
+
+_No parameters._
+
+### `tink_list_accounts`
+
+List accounts
+
+_No parameters._
+
+### `tink_get_account`
+
+Get account
+
+<AutoTypeTable
+  path="generated/tool-params/tink.ts"
+  name="TinkGetAccountParams"
+/>
+
+### `tink_list_transactions`
+
+List transactions
+
+<AutoTypeTable
+  path="generated/tool-params/tink.ts"
+  name="TinkListTransactionsParams"
+/>
+
+### `tink_list_credentials`
+
+List credentials
+
+_No parameters._
+
+### `tink_refresh_credentials`
+
+Refresh credentials
+
+<AutoTypeTable
+  path="generated/tool-params/tink.ts"
+  name="TinkRefreshCredentialsParams"
+/>
+
+## Notes
+
+- Category: Banking
+- Authentication mode: OAuth

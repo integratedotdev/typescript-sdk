@@ -1,11 +1,13 @@
 ---
-title: "Databricks"
+title: "Databricks Integration"
 description: "Run Databricks jobs, list clusters and SQL warehouses, and inspect workspace paths"
 ---
 
-The Databricks integration provides access to run databricks jobs, list clusters and sql warehouses, and inspect workspace paths through the Integrate MCP server.
+The Databricks integration provides access to run Databricks jobs, list clusters and SQL warehouses, and inspect workspace paths through the Integrate MCP server.
 
 ## Installation
+
+The Databricks integration is included with the SDK:
 
 ```typescript
 import { databricksIntegration } from "integrate-sdk/server";
@@ -13,7 +15,15 @@ import { databricksIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Databricks to your server configuration. The integration automatically reads OAuth credentials from your environment (`DATABRICKS_WORKSPACE_HOST`, `DATABRICKS_CLIENT_ID`, `DATABRICKS_CLIENT_SECRET`):
+### 1. Create a Databricks OAuth App
+
+1. Create an OAuth application for Databricks
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Databricks integration to your server configuration. The integration automatically reads `DATABRICKS_CLIENT_ID` and `DATABRICKS_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, databricksIntegration } from "integrate-sdk/server";
@@ -21,22 +31,44 @@ import { createMCPServer, databricksIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    databricksIntegration(),
+    databricksIntegration({
+      scopes: ["all-apis", "offline_access"], // Optional
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+databricksIntegration({
+  clientId: process.env.CUSTOM_DATABRICKS_ID,
+  clientSecret: process.env.CUSTOM_DATABRICKS_SECRET,
+      scopes: ["all-apis", "offline_access"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("databricks");
-const result = await client.databricks.currentUser({
-  // Add the parameters required by this tool
-});
+const result = await client.databricks.currentUser({});
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, databricksIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [databricksIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,26 +78,89 @@ console.log(result);
   name="DatabricksIntegrationConfig"
 />
 
-## Environment Variables
 
-- `DATABRICKS_WORKSPACE_HOST`
-- `DATABRICKS_CLIENT_ID`
-- `DATABRICKS_CLIENT_SECRET`
+## Default Scopes
 
-## Available Tools
+These defaults are applied unless you override `scopes` in the integration config:
 
-- `databricks_current_user`
-- `databricks_clusters_list`
-- `databricks_clusters_get`
-- `databricks_jobs_list`
-- `databricks_jobs_get`
-- `databricks_jobs_run_now`
-- `databricks_sql_warehouses_list`
-- `databricks_workspace_get_status`
+- `all-apis`
+- `offline_access`
+
+## Tools
+
+### `databricks_current_user`
+
+Current user
+
+<AutoTypeTable
+  path="generated/tool-params/databricks.ts"
+  name="DatabricksCurrentUserParams"
+/>
+
+### `databricks_clusters_list`
+
+Clusters list
+
+<AutoTypeTable
+  path="generated/tool-params/databricks.ts"
+  name="DatabricksClustersListParams"
+/>
+
+### `databricks_clusters_get`
+
+Clusters get
+
+<AutoTypeTable
+  path="generated/tool-params/databricks.ts"
+  name="DatabricksClustersGetParams"
+/>
+
+### `databricks_jobs_list`
+
+Jobs list
+
+<AutoTypeTable
+  path="generated/tool-params/databricks.ts"
+  name="DatabricksJobsListParams"
+/>
+
+### `databricks_jobs_get`
+
+Jobs get
+
+<AutoTypeTable
+  path="generated/tool-params/databricks.ts"
+  name="DatabricksJobsGetParams"
+/>
+
+### `databricks_jobs_run_now`
+
+Jobs run now
+
+<AutoTypeTable
+  path="generated/tool-params/databricks.ts"
+  name="DatabricksJobsRunNowParams"
+/>
+
+### `databricks_sql_warehouses_list`
+
+Sql warehouses list
+
+<AutoTypeTable
+  path="generated/tool-params/databricks.ts"
+  name="DatabricksSqlWarehousesListParams"
+/>
+
+### `databricks_workspace_get_status`
+
+Workspace get status
+
+<AutoTypeTable
+  path="generated/tool-params/databricks.ts"
+  name="DatabricksWorkspaceGetStatusParams"
+/>
 
 ## Notes
 
 - Category: Engineering
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

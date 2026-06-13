@@ -1,0 +1,166 @@
+---
+title: "Zoho Books Integration"
+description: "Manage Zoho Books organizations, contacts, items, invoices, bills, payments, and reports"
+---
+
+The Zoho Books integration provides access to manage Zoho Books organizations, contacts, items, invoices, bills, payments, and reports through the Integrate MCP server.
+
+## Installation
+
+The Zoho Books integration is included with the SDK:
+
+```typescript
+import { zohoBooksIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Zoho Books OAuth App
+
+1. Go to [Zoho API Console](https://api-console.zoho.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Zoho Books integration to your server configuration. The integration automatically reads `ZOHO_BOOKS_CLIENT_ID` and `ZOHO_BOOKS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, zohoBooksIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    zohoBooksIntegration({
+      scopes: ["ZohoBooks.fullaccess.all"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+zohoBooksIntegration({
+  clientId: process.env.CUSTOM_ZOHO_BOOKS_ID,
+  clientSecret: process.env.CUSTOM_ZOHO_BOOKS_SECRET,
+      scopes: ["ZohoBooks.fullaccess.all"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("zoho_books");
+const result = await client.zoho_books.listOrganizations({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, zohoBooksIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [zohoBooksIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/zoho_books.ts"
+  name="ZohoBooksIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `ZohoBooks.fullaccess.all`
+
+## Tools
+
+### `zoho_books_list_organizations`
+
+Books list organizations
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_books.ts"
+  name="ZohoBooksListOrganizationsParams"
+/>
+
+### `zoho_books_list_contacts`
+
+Books list contacts
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_books.ts"
+  name="ZohoBooksListContactsParams"
+/>
+
+### `zoho_books_list_items`
+
+Books list items
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_books.ts"
+  name="ZohoBooksListItemsParams"
+/>
+
+### `zoho_books_list_invoices`
+
+Books list invoices
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_books.ts"
+  name="ZohoBooksListInvoicesParams"
+/>
+
+### `zoho_books_list_bills`
+
+Books list bills
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_books.ts"
+  name="ZohoBooksListBillsParams"
+/>
+
+### `zoho_books_list_customerpayments`
+
+Books list customerpayments
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_books.ts"
+  name="ZohoBooksListCustomerpaymentsParams"
+/>
+
+### `zoho_books_create_invoice`
+
+Books create invoice
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_books.ts"
+  name="ZohoBooksCreateInvoiceParams"
+/>
+
+### `zoho_books_profit_and_loss`
+
+Books profit and loss
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_books.ts"
+  name="ZohoBooksProfitAndLossParams"
+/>
+
+## Notes
+
+- Category: Accounting
+- Authentication mode: OAuth

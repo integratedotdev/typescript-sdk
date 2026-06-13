@@ -1,0 +1,151 @@
+---
+title: "Greenhouse Integration"
+description: "Manage Greenhouse list candidates, get candidate, create candidate, list jobs, list applications"
+---
+
+The Greenhouse integration provides access to manage Greenhouse list candidates, get candidate, create candidate, list jobs, list applications through the Integrate MCP server.
+
+## Installation
+
+The Greenhouse integration is included with the SDK:
+
+```typescript
+import { greenhouseIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Greenhouse OAuth App
+
+1. Create an OAuth application for Greenhouse
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Greenhouse integration to your server configuration. The integration automatically reads `GREENHOUSE_CLIENT_ID` and `GREENHOUSE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, greenhouseIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    greenhouseIntegration({
+      scopes: ["candidates:read", "candidates:write", "jobs:read", "applications:read", "users:read"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+greenhouseIntegration({
+  clientId: process.env.CUSTOM_GREENHOUSE_ID,
+  clientSecret: process.env.CUSTOM_GREENHOUSE_SECRET,
+      scopes: ["candidates:read", "candidates:write", "jobs:read", "applications:read", "users:read"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("greenhouse");
+const result = await client.greenhouse.listCandidates({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, greenhouseIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [greenhouseIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/greenhouse.ts"
+  name="GreenhouseIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `candidates:read`
+- `candidates:write`
+- `jobs:read`
+- `applications:read`
+- `users:read`
+
+## Tools
+
+### `greenhouse_list_candidates`
+
+List candidates
+
+<AutoTypeTable
+  path="generated/tool-params/greenhouse.ts"
+  name="GreenhouseListCandidatesParams"
+/>
+
+### `greenhouse_get_candidate`
+
+Get candidate
+
+<AutoTypeTable
+  path="generated/tool-params/greenhouse.ts"
+  name="GreenhouseGetCandidateParams"
+/>
+
+### `greenhouse_create_candidate`
+
+Create candidate
+
+<AutoTypeTable
+  path="generated/tool-params/greenhouse.ts"
+  name="GreenhouseCreateCandidateParams"
+/>
+
+### `greenhouse_list_jobs`
+
+List jobs
+
+<AutoTypeTable
+  path="generated/tool-params/greenhouse.ts"
+  name="GreenhouseListJobsParams"
+/>
+
+### `greenhouse_list_applications`
+
+List applications
+
+<AutoTypeTable
+  path="generated/tool-params/greenhouse.ts"
+  name="GreenhouseListApplicationsParams"
+/>
+
+### `greenhouse_list_users`
+
+List users
+
+<AutoTypeTable
+  path="generated/tool-params/greenhouse.ts"
+  name="GreenhouseListUsersParams"
+/>
+
+## Notes
+
+- Category: HR & Recruiting
+- Authentication mode: OAuth

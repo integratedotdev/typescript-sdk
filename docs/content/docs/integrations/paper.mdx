@@ -1,11 +1,13 @@
 ---
-title: "Dropbox Paper"
+title: "Dropbox Paper Integration"
 description: "Create, update, and export Dropbox Paper documents"
 ---
 
-The Dropbox Paper integration provides access to create, update, and export dropbox paper documents through the Integrate MCP server.
+The Dropbox Paper integration provides access to create, update, and export Dropbox Paper documents through the Integrate MCP server.
 
 ## Installation
+
+The Dropbox Paper integration is included with the SDK:
 
 ```typescript
 import { paperIntegration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { paperIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Dropbox Paper to your server configuration. The integration automatically reads OAuth credentials from your environment (`PAPER_CLIENT_ID`, `DROPBOX_CLIENT_ID`, `PAPER_CLIENT_SECRET`, `DROPBOX_CLIENT_SECRET`):
+### 1. Create a Dropbox Paper OAuth App
+
+1. Go to [Dropbox Developer Portal](https://www.dropbox.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Dropbox Paper integration to your server configuration. The integration automatically reads `PAPER_CLIENT_ID` and `PAPER_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, paperIntegration } from "integrate-sdk/server";
@@ -21,22 +32,46 @@ import { createMCPServer, paperIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    paperIntegration(),
+    paperIntegration({
+      scopes: ["account_info.read", "files.metadata.read", "files.content.read", "files.content.write"], // Optional
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+paperIntegration({
+  clientId: process.env.CUSTOM_PAPER_ID,
+  clientSecret: process.env.CUSTOM_PAPER_SECRET,
+      scopes: ["account_info.read", "files.metadata.read", "files.content.read", "files.content.write"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("paper");
 const result = await client.paper.createDoc({
-  // Add the parameters required by this tool
+  path: "value",
 });
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, paperIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [paperIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,22 +81,46 @@ console.log(result);
   name="PaperIntegrationConfig"
 />
 
-## Environment Variables
 
-- `PAPER_CLIENT_ID`
-- `DROPBOX_CLIENT_ID`
-- `PAPER_CLIENT_SECRET`
-- `DROPBOX_CLIENT_SECRET`
+## Default Scopes
 
-## Available Tools
+These defaults are applied unless you override `scopes` in the integration config:
 
-- `paper_create_doc`
-- `paper_update_doc`
-- `paper_export_doc`
+- `account_info.read`
+- `files.metadata.read`
+- `files.content.read`
+- `files.content.write`
+
+## Tools
+
+### `paper_create_doc`
+
+Create doc
+
+<AutoTypeTable
+  path="generated/tool-params/paper.ts"
+  name="PaperCreateDocParams"
+/>
+
+### `paper_update_doc`
+
+Update doc
+
+<AutoTypeTable
+  path="generated/tool-params/paper.ts"
+  name="PaperUpdateDocParams"
+/>
+
+### `paper_export_doc`
+
+Export doc
+
+<AutoTypeTable
+  path="generated/tool-params/paper.ts"
+  name="PaperExportDocParams"
+/>
 
 ## Notes
 
 - Category: Productivity
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

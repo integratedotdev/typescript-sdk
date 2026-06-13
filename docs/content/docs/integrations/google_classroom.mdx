@@ -1,0 +1,151 @@
+---
+title: "Google Classroom Integration"
+description: "Manage Google Classroom list courses, get course, create course, list coursework, create coursework"
+---
+
+The Google Classroom integration provides access to manage Google Classroom list courses, get course, create course, list coursework, create coursework through the Integrate MCP server.
+
+## Installation
+
+The Google Classroom integration is included with the SDK:
+
+```typescript
+import { googleClassroomIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Google Classroom OAuth App
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Classroom integration to your server configuration. The integration automatically reads `GOOGLE_CLASSROOM_CLIENT_ID` and `GOOGLE_CLASSROOM_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, googleClassroomIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    googleClassroomIntegration({
+      scopes: ["https://www.googleapis.com/auth/classroom.courses", "https://www.googleapis.com/auth/classroom.coursework.me", "https://www.googleapis.com/auth/classroom.rosters", "https://www.googleapis.com/auth/classroom.profile.emails"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+googleClassroomIntegration({
+  clientId: process.env.CUSTOM_GOOGLE_CLASSROOM_ID,
+  clientSecret: process.env.CUSTOM_GOOGLE_CLASSROOM_SECRET,
+      scopes: ["https://www.googleapis.com/auth/classroom.courses", "https://www.googleapis.com/auth/classroom.coursework.me", "https://www.googleapis.com/auth/classroom.rosters", "https://www.googleapis.com/auth/classroom.profile.emails"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("google_classroom");
+const result = await client.google_classroom.listCourses({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, googleClassroomIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [googleClassroomIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/google_classroom.ts"
+  name="GoogleClassroomIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `https://www.googleapis.com/auth/classroom.courses`
+- `https://www.googleapis.com/auth/classroom.coursework.me`
+- `https://www.googleapis.com/auth/classroom.rosters`
+- `https://www.googleapis.com/auth/classroom.profile.emails`
+
+## Tools
+
+### `google_classroom_list_courses`
+
+Classroom list courses
+
+<AutoTypeTable
+  path="generated/tool-params/google_classroom.ts"
+  name="GoogleClassroomListCoursesParams"
+/>
+
+### `google_classroom_get_course`
+
+Classroom get course
+
+<AutoTypeTable
+  path="generated/tool-params/google_classroom.ts"
+  name="GoogleClassroomGetCourseParams"
+/>
+
+### `google_classroom_create_course`
+
+Classroom create course
+
+<AutoTypeTable
+  path="generated/tool-params/google_classroom.ts"
+  name="GoogleClassroomCreateCourseParams"
+/>
+
+### `google_classroom_list_coursework`
+
+Classroom list coursework
+
+<AutoTypeTable
+  path="generated/tool-params/google_classroom.ts"
+  name="GoogleClassroomListCourseworkParams"
+/>
+
+### `google_classroom_create_coursework`
+
+Classroom create coursework
+
+<AutoTypeTable
+  path="generated/tool-params/google_classroom.ts"
+  name="GoogleClassroomCreateCourseworkParams"
+/>
+
+### `google_classroom_list_students`
+
+Classroom list students
+
+<AutoTypeTable
+  path="generated/tool-params/google_classroom.ts"
+  name="GoogleClassroomListStudentsParams"
+/>
+
+## Notes
+
+- Category: Education
+- Authentication mode: OAuth

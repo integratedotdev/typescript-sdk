@@ -1,9 +1,9 @@
 ---
-title: "Google Slides"
-description: "Create and edit Google Slides presentations"
+title: "Google Slides Integration"
+description: "Create and update Google Slides presentations"
 ---
 
-The Google Slides integration provides access to Google Slides through the Integrate MCP server.
+The Google Slides integration provides access to create and update Google Slides presentations through the Integrate MCP server.
 
 ## Installation
 
@@ -15,14 +15,12 @@ import { gslidesIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-### 1. Create Google OAuth Credentials
+### 1. Create a Google Slides OAuth App
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create a new project or select an existing one
-3. Enable the **Google Slides API**
-4. Create OAuth 2.0 credentials (Web application)
-5. Add your redirect URI (e.g. `https://yourdomain.com/api/integrate/oauth/callback`)
-6. Note your Client ID and Client Secret
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
 
 ### 2. Configure the Integration on Your Server
 
@@ -34,7 +32,8 @@ import { createMCPServer, gslidesIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    gslidesIntegration(),
+    gslidesIntegration({
+    }),
   ],
 });
 ```
@@ -56,7 +55,9 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("gslides");
-const presentations = await client.gslides.list({});
+const result = await client.gslides.list({});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -76,108 +77,91 @@ const customClient = createMCPClient({
   name="GSlidesIntegrationConfig"
 />
 
-## Available Tools
 
-- **`gslides_list`** - List presentations
-- **`gslides_get`** - Get a presentation and its slides
-- **`gslides_get_page`** - Get a specific slide by page ID
-- **`gslides_create`** - Create a new presentation
-- **`gslides_add_slide`** - Add a slide to a presentation
-- **`gslides_delete_slide`** - Delete a slide from a presentation
-- **`gslides_update_text`** - Find and replace text across a presentation
+## Tools
 
-## Examples
+### `gslides_add_slide`
 
-### List Presentations
+Add slide
 
-```typescript
-const result = await client.gslides.list({
-  page_size: 20,
-});
-```
+<AutoTypeTable
+  path="generated/tool-params/gslides.ts"
+  name="GslidesAddSlideParams"
+/>
 
-### Get a Presentation
+### `gslides_batch_update`
 
-```typescript
-const presentation = await client.gslides.get({
-  presentation_id: "1EAYk18WDjIG-zp_0vLm3CsfQh_i8eXc67Jo2O9C6Bnc",
-});
-```
+Batch update
 
-### Get a Specific Slide
+<AutoTypeTable
+  path="generated/tool-params/gslides.ts"
+  name="GslidesBatchUpdateParams"
+/>
 
-```typescript
-const slide = await client.gslides.getPage({
-  presentation_id: "1EAYk18WDjIG-zp_0vLm3CsfQh_i8eXc67Jo2O9C6Bnc",
-  page_id: "g123abc456",
-});
-```
+### `gslides_create`
 
-### Create a Presentation
+Create
 
-```typescript
-const presentation = await client.gslides.create({
-  title: "Q4 Review",
-});
-```
+<AutoTypeTable
+  path="generated/tool-params/gslides.ts"
+  name="GslidesCreateParams"
+/>
 
-### Add a Slide
+### `gslides_delete`
 
-```typescript
-await client.gslides.addSlide({
-  presentation_id: "1EAYk18WDjIG-zp_0vLm3CsfQh_i8eXc67Jo2O9C6Bnc",
-  insertion_index: 2,
-  layout: "TITLE_AND_BODY",
-});
-```
+Delete
 
-### Find and Replace Text
+<AutoTypeTable
+  path="generated/tool-params/gslides.ts"
+  name="GslidesDeleteParams"
+/>
 
-```typescript
-await client.gslides.updateText({
-  presentation_id: "1EAYk18WDjIG-zp_0vLm3CsfQh_i8eXc67Jo2O9C6Bnc",
-  find: "{{quarter}}",
-  replace: "Q4 2024",
-  match_case: false,
-});
-```
+### `gslides_delete_slide`
 
-### Delete a Slide
+Delete slide
 
-```typescript
-await client.gslides.deleteSlide({
-  presentation_id: "1EAYk18WDjIG-zp_0vLm3CsfQh_i8eXc67Jo2O9C6Bnc",
-  page_id: "g123abc456",
-});
-```
+<AutoTypeTable
+  path="generated/tool-params/gslides.ts"
+  name="GslidesDeleteSlideParams"
+/>
 
-## OAuth Scopes
+### `gslides_get`
 
-The default scope provides full read/write access. You can restrict it:
+Get
 
-- **`https://www.googleapis.com/auth/presentations`** - Read and write presentations
-- **`https://www.googleapis.com/auth/presentations.readonly`** - Read-only access
+<AutoTypeTable
+  path="generated/tool-params/gslides.ts"
+  name="GslidesGetParams"
+/>
 
-## Error Handling
+### `gslides_get_page`
 
-```typescript
-try {
-  const presentation = await client.gslides.get({
-    presentation_id: "1EAYk18WDjIG-zp_0vLm3CsfQh_i8eXc67Jo2O9C6Bnc",
-  });
-} catch (error) {
-  if (error.message.includes("404")) {
-    console.error("Presentation not found");
-  } else if (error.message.includes("403")) {
-    console.error("Insufficient permissions");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+Get page
 
-## Next Steps
+<AutoTypeTable
+  path="generated/tool-params/gslides.ts"
+  name="GslidesGetPageParams"
+/>
 
-- Explore the [Google Docs Integration](/docs/integrations/gdocs)
-- Explore the [Google Sheets Integration](/docs/integrations/gsheets)
-- Explore the [Google Drive Integration](/docs/integrations/gdrive)
+### `gslides_list`
+
+List
+
+<AutoTypeTable
+  path="generated/tool-params/gslides.ts"
+  name="GslidesListParams"
+/>
+
+### `gslides_update_text`
+
+Update text
+
+<AutoTypeTable
+  path="generated/tool-params/gslides.ts"
+  name="GslidesUpdateTextParams"
+/>
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth

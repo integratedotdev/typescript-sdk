@@ -1,0 +1,157 @@
+---
+title: "Calendly Integration"
+description: "Manage Calendly user profiles, event types, scheduled events, invitees, and availability schedules"
+---
+
+The Calendly integration provides access to manage Calendly user profiles, event types, scheduled events, invitees, and availability schedules through the Integrate MCP server.
+
+## Installation
+
+The Calendly integration is included with the SDK:
+
+```typescript
+import { calendlyIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Calendly OAuth App
+
+1. Create an OAuth application for Calendly
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Calendly integration to your server configuration. The integration automatically reads `CALENDLY_CLIENT_ID` and `CALENDLY_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, calendlyIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    calendlyIntegration({
+      scopes: ["user:read", "event_types:read", "scheduled_events:read", "organization_memberships:read", "routing:read"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+calendlyIntegration({
+  clientId: process.env.CUSTOM_CALENDLY_ID,
+  clientSecret: process.env.CUSTOM_CALENDLY_SECRET,
+      scopes: ["user:read", "event_types:read", "scheduled_events:read", "organization_memberships:read", "routing:read"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("calendly");
+const result = await client.calendly.getCurrentUser({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, calendlyIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [calendlyIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/calendly.ts"
+  name="CalendlyIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `user:read`
+- `event_types:read`
+- `scheduled_events:read`
+- `organization_memberships:read`
+- `routing:read`
+
+## Tools
+
+### `calendly_get_current_user`
+
+Get current user
+
+_No parameters._
+
+### `calendly_list_event_types`
+
+List event types
+
+<AutoTypeTable
+  path="generated/tool-params/calendly.ts"
+  name="CalendlyListEventTypesParams"
+/>
+
+### `calendly_get_event_type`
+
+Get event type
+
+<AutoTypeTable
+  path="generated/tool-params/calendly.ts"
+  name="CalendlyGetEventTypeParams"
+/>
+
+### `calendly_list_scheduled_events`
+
+List scheduled events
+
+<AutoTypeTable
+  path="generated/tool-params/calendly.ts"
+  name="CalendlyListScheduledEventsParams"
+/>
+
+### `calendly_get_scheduled_event`
+
+Get scheduled event
+
+<AutoTypeTable
+  path="generated/tool-params/calendly.ts"
+  name="CalendlyGetScheduledEventParams"
+/>
+
+### `calendly_list_scheduled_event_invitees`
+
+List scheduled event invitees
+
+<AutoTypeTable
+  path="generated/tool-params/calendly.ts"
+  name="CalendlyListScheduledEventInviteesParams"
+/>
+
+### `calendly_list_availability_schedules`
+
+List availability schedules
+
+<AutoTypeTable
+  path="generated/tool-params/calendly.ts"
+  name="CalendlyListAvailabilitySchedulesParams"
+/>
+
+## Notes
+
+- Category: Scheduling
+- Authentication mode: OAuth

@@ -1,11 +1,13 @@
 ---
-title: "Wix"
+title: "Wix Integration"
 description: "Manage Wix site stores, products, and e-commerce orders via REST"
 ---
 
-The Wix integration provides access to manage wix site stores, products, and e-commerce orders via rest through the Integrate MCP server.
+The Wix integration provides access to manage Wix site stores, products, and e-commerce orders via REST through the Integrate MCP server.
 
 ## Installation
+
+The Wix integration is included with the SDK:
 
 ```typescript
 import { wixIntegration } from "integrate-sdk/server";
@@ -13,7 +15,7 @@ import { wixIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Wix to your server configuration. This integration can read credentials from environment variables automatically (`WIX_API_KEY`, `WIX_SITE_ID`):
+Add Wix to your server configuration. Provide credentials via environment variables or integration config:
 
 ```typescript
 import { createMCPServer, wixIntegration } from "integrate-sdk/server";
@@ -21,7 +23,9 @@ import { createMCPServer, wixIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    wixIntegration(),
+    wixIntegration({
+      // See configuration options below
+    }),
   ],
 });
 ```
@@ -31,12 +35,14 @@ export const { client: serverClient } = createMCPServer({
 ```typescript
 import { client } from "integrate-sdk";
 
-const result = await client.wix.queryProducts({
-  // Add the parameters required by this tool
-});
+const result = await client.wix.queryProducts({});
 
 console.log(result);
 ```
+
+## Environment Variables
+
+- `WIX_API_KEY` (when supported by this integration)
 
 ## Configuration Options
 
@@ -45,23 +51,64 @@ console.log(result);
   name="WixIntegrationOptions"
 />
 
-## Environment Variables
 
-- `WIX_API_KEY`
-- `WIX_SITE_ID`
+## Tools
 
-## Available Tools
+### `wix_query_products`
 
-- `wix_query_products`
-- `wix_get_product`
-- `wix_create_product`
-- `wix_update_product`
-- `wix_search_orders`
-- `wix_get_order`
+Query products
+
+<AutoTypeTable
+  path="generated/tool-params/wix.ts"
+  name="WixQueryProductsParams"
+/>
+
+### `wix_get_product`
+
+Get product
+
+<AutoTypeTable
+  path="generated/tool-params/wix.ts"
+  name="WixGetProductParams"
+/>
+
+### `wix_create_product`
+
+Create product
+
+<AutoTypeTable
+  path="generated/tool-params/wix.ts"
+  name="WixCreateProductParams"
+/>
+
+### `wix_update_product`
+
+Update product
+
+<AutoTypeTable
+  path="generated/tool-params/wix.ts"
+  name="WixUpdateProductParams"
+/>
+
+### `wix_search_orders`
+
+Search orders
+
+<AutoTypeTable
+  path="generated/tool-params/wix.ts"
+  name="WixSearchOrdersParams"
+/>
+
+### `wix_get_order`
+
+Get order
+
+<AutoTypeTable
+  path="generated/tool-params/wix.ts"
+  name="WixGetOrderParams"
+/>
 
 ## Notes
 
-- Category: Business
+- Category: Websites & CMS
 - Authentication mode: API key
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

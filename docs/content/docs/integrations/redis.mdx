@@ -1,27 +1,31 @@
 ---
-title: "Redis Cloud"
-description: "Manage Redis Cloud subscriptions, databases, async tasks, and audit logs"
+title: "Redis Cloud Integration"
+description: "Manage Redis Cloud subscriptions, databases, async tasks, and audit logs via the REST API"
 ---
 
-The Redis Cloud integration provides access to manage redis cloud subscriptions, databases, async tasks, and audit logs through the Integrate MCP server.
+The Redis Cloud integration provides access to manage Redis Cloud subscriptions, databases, async tasks, and audit logs via the REST API through the Integrate MCP server.
 
 ## Installation
 
+The Redis Cloud integration is included with the SDK:
+
 ```typescript
-import { encodeRedisCloudBearerToken } from "integrate-sdk/server";
+import { redisIntegration } from "integrate-sdk/server";
 ```
 
 ## Setup
 
-Add Redis Cloud to your server configuration. This integration can read credentials from environment variables automatically (`REDIS_CLOUD_ACCOUNT_KEY`, `REDIS_CLOUD_SECRET_KEY`):
+Add Redis Cloud to your server configuration. Provide credentials via environment variables or integration config:
 
 ```typescript
-import { createMCPServer, encodeRedisCloudBearerToken } from "integrate-sdk/server";
+import { createMCPServer, redisIntegration } from "integrate-sdk/server";
 
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    encodeRedisCloudBearerToken(),
+    redisIntegration({
+      // See configuration options below
+    }),
   ],
 });
 ```
@@ -31,12 +35,14 @@ export const { client: serverClient } = createMCPServer({
 ```typescript
 import { client } from "integrate-sdk";
 
-const result = await client.redis.listSubscriptions({
-  // Add the parameters required by this tool
-});
+const result = await client.redis.listSubscriptions({});
 
 console.log(result);
 ```
+
+## Environment Variables
+
+- `REDIS_API_KEY` (when supported by this integration)
 
 ## Configuration Options
 
@@ -45,33 +51,148 @@ console.log(result);
   name="RedisIntegrationOptions"
 />
 
-## Environment Variables
 
-- `REDIS_CLOUD_ACCOUNT_KEY`
-- `REDIS_CLOUD_SECRET_KEY`
+## Tools
 
-## Available Tools
+### `redis_list_subscriptions`
 
-- `redis_list_subscriptions`
-- `redis_get_subscription`
-- `redis_list_fixed_subscriptions`
-- `redis_get_fixed_subscription`
-- `redis_list_databases`
-- `redis_get_database`
-- `redis_create_database`
-- `redis_update_database`
-- `redis_delete_database`
-- `redis_list_essentials_databases`
-- `redis_get_essentials_database`
-- `redis_create_essentials_database`
-- `redis_update_essentials_database`
-- `redis_delete_essentials_database`
-- `redis_get_task`
-- `redis_list_logs`
+List subscriptions
+
+_No parameters._
+
+### `redis_get_subscription`
+
+Get subscription
+
+<AutoTypeTable
+  path="generated/tool-params/redis.ts"
+  name="RedisGetSubscriptionParams"
+/>
+
+### `redis_list_fixed_subscriptions`
+
+List fixed subscriptions
+
+_No parameters._
+
+### `redis_get_fixed_subscription`
+
+Get fixed subscription
+
+<AutoTypeTable
+  path="generated/tool-params/redis.ts"
+  name="RedisGetFixedSubscriptionParams"
+/>
+
+### `redis_list_databases`
+
+List databases
+
+<AutoTypeTable
+  path="generated/tool-params/redis.ts"
+  name="RedisListDatabasesParams"
+/>
+
+### `redis_get_database`
+
+Get database
+
+<AutoTypeTable
+  path="generated/tool-params/redis.ts"
+  name="RedisGetDatabaseParams"
+/>
+
+### `redis_create_database`
+
+Create database
+
+<AutoTypeTable
+  path="generated/tool-params/redis.ts"
+  name="RedisCreateDatabaseParams"
+/>
+
+### `redis_update_database`
+
+Update database
+
+<AutoTypeTable
+  path="generated/tool-params/redis.ts"
+  name="RedisUpdateDatabaseParams"
+/>
+
+### `redis_delete_database`
+
+Delete database
+
+<AutoTypeTable
+  path="generated/tool-params/redis.ts"
+  name="RedisDeleteDatabaseParams"
+/>
+
+### `redis_list_essentials_databases`
+
+List essentials databases
+
+<AutoTypeTable
+  path="generated/tool-params/redis.ts"
+  name="RedisListEssentialsDatabasesParams"
+/>
+
+### `redis_get_essentials_database`
+
+Get essentials database
+
+<AutoTypeTable
+  path="generated/tool-params/redis.ts"
+  name="RedisGetEssentialsDatabaseParams"
+/>
+
+### `redis_create_essentials_database`
+
+Create essentials database
+
+<AutoTypeTable
+  path="generated/tool-params/redis.ts"
+  name="RedisCreateEssentialsDatabaseParams"
+/>
+
+### `redis_update_essentials_database`
+
+Update essentials database
+
+<AutoTypeTable
+  path="generated/tool-params/redis.ts"
+  name="RedisUpdateEssentialsDatabaseParams"
+/>
+
+### `redis_delete_essentials_database`
+
+Delete essentials database
+
+<AutoTypeTable
+  path="generated/tool-params/redis.ts"
+  name="RedisDeleteEssentialsDatabaseParams"
+/>
+
+### `redis_get_task`
+
+Get task
+
+<AutoTypeTable
+  path="generated/tool-params/redis.ts"
+  name="RedisGetTaskParams"
+/>
+
+### `redis_list_logs`
+
+List logs
+
+<AutoTypeTable
+  path="generated/tool-params/redis.ts"
+  name="RedisListLogsParams"
+/>
 
 ## Notes
 
 - Category: Infrastructure
 - Authentication mode: API key
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

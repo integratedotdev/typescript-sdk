@@ -1,0 +1,147 @@
+---
+title: "PandaDoc Integration"
+description: "Manage PandaDoc list documents, get document, create document, send document, list templates"
+---
+
+The PandaDoc integration provides access to manage PandaDoc list documents, get document, create document, send document, list templates through the Integrate MCP server.
+
+## Installation
+
+The PandaDoc integration is included with the SDK:
+
+```typescript
+import { pandadocIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a PandaDoc OAuth App
+
+1. Create an OAuth application for PandaDoc
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the PandaDoc integration to your server configuration. The integration automatically reads `PANDADOC_CLIENT_ID` and `PANDADOC_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, pandadocIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    pandadocIntegration({
+      scopes: ["read+write"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+pandadocIntegration({
+  clientId: process.env.CUSTOM_PANDADOC_ID,
+  clientSecret: process.env.CUSTOM_PANDADOC_SECRET,
+      scopes: ["read+write"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("pandadoc");
+const result = await client.pandadoc.listDocuments({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, pandadocIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [pandadocIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/pandadoc.ts"
+  name="PandadocIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `read+write`
+
+## Tools
+
+### `pandadoc_list_documents`
+
+List documents
+
+<AutoTypeTable
+  path="generated/tool-params/pandadoc.ts"
+  name="PandadocListDocumentsParams"
+/>
+
+### `pandadoc_get_document`
+
+Get document
+
+<AutoTypeTable
+  path="generated/tool-params/pandadoc.ts"
+  name="PandadocGetDocumentParams"
+/>
+
+### `pandadoc_create_document`
+
+Create document
+
+<AutoTypeTable
+  path="generated/tool-params/pandadoc.ts"
+  name="PandadocCreateDocumentParams"
+/>
+
+### `pandadoc_send_document`
+
+Send document
+
+<AutoTypeTable
+  path="generated/tool-params/pandadoc.ts"
+  name="PandadocSendDocumentParams"
+/>
+
+### `pandadoc_list_templates`
+
+List templates
+
+<AutoTypeTable
+  path="generated/tool-params/pandadoc.ts"
+  name="PandadocListTemplatesParams"
+/>
+
+### `pandadoc_create_session`
+
+Create session
+
+<AutoTypeTable
+  path="generated/tool-params/pandadoc.ts"
+  name="PandadocCreateSessionParams"
+/>
+
+## Notes
+
+- Category: Legal
+- Authentication mode: OAuth

@@ -1,0 +1,148 @@
+---
+title: "Zoho Sprints Integration"
+description: "Manage Zoho Sprints portals, projects, sprints, epics, and work items"
+---
+
+The Zoho Sprints integration provides access to manage Zoho Sprints portals, projects, sprints, epics, and work items through the Integrate MCP server.
+
+## Installation
+
+The Zoho Sprints integration is included with the SDK:
+
+```typescript
+import { zohoSprintsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Zoho Sprints OAuth App
+
+1. Go to [Zoho API Console](https://api-console.zoho.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Zoho Sprints integration to your server configuration. The integration automatically reads `ZOHO_SPRINTS_CLIENT_ID` and `ZOHO_SPRINTS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, zohoSprintsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    zohoSprintsIntegration({
+      scopes: ["ZohoSprints.projects.ALL", "ZohoSprints.sprints.ALL", "ZohoSprints.workitems.ALL", "ZohoSprints.epics.ALL"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+zohoSprintsIntegration({
+  clientId: process.env.CUSTOM_ZOHO_SPRINTS_ID,
+  clientSecret: process.env.CUSTOM_ZOHO_SPRINTS_SECRET,
+      scopes: ["ZohoSprints.projects.ALL", "ZohoSprints.sprints.ALL", "ZohoSprints.workitems.ALL", "ZohoSprints.epics.ALL"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("zoho_sprints");
+const result = await client.zoho_sprints.listPortals({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, zohoSprintsIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [zohoSprintsIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/zoho_sprints.ts"
+  name="ZohoSprintsIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `ZohoSprints.projects.ALL`
+- `ZohoSprints.sprints.ALL`
+- `ZohoSprints.workitems.ALL`
+- `ZohoSprints.epics.ALL`
+
+## Tools
+
+### `zoho_sprints_list_portals`
+
+Sprints list portals
+
+_No parameters._
+
+### `zoho_sprints_list_projects`
+
+Sprints list projects
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_sprints.ts"
+  name="ZohoSprintsListProjectsParams"
+/>
+
+### `zoho_sprints_list_sprints`
+
+Sprints list sprints
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_sprints.ts"
+  name="ZohoSprintsListSprintsParams"
+/>
+
+### `zoho_sprints_list_work_items`
+
+Sprints list work items
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_sprints.ts"
+  name="ZohoSprintsListWorkItemsParams"
+/>
+
+### `zoho_sprints_create_work_item`
+
+Sprints create work item
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_sprints.ts"
+  name="ZohoSprintsCreateWorkItemParams"
+/>
+
+### `zoho_sprints_list_epics`
+
+Sprints list epics
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_sprints.ts"
+  name="ZohoSprintsListEpicsParams"
+/>
+
+## Notes
+
+- Category: Engineering
+- Authentication mode: OAuth

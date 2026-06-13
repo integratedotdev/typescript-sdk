@@ -1,0 +1,148 @@
+---
+title: "Moneybird Integration"
+description: "Manage Moneybird list administrations, list contacts, create contact, list sales invoices, create sales invoice"
+---
+
+The Moneybird integration provides access to manage Moneybird list administrations, list contacts, create contact, list sales invoices, create sales invoice through the Integrate MCP server.
+
+## Installation
+
+The Moneybird integration is included with the SDK:
+
+```typescript
+import { moneybirdIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Moneybird OAuth App
+
+1. Create an OAuth application for Moneybird
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Moneybird integration to your server configuration. The integration automatically reads `MONEYBIRD_CLIENT_ID` and `MONEYBIRD_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, moneybirdIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    moneybirdIntegration({
+      scopes: ["sales_invoices", "documents", "estimates", "bank", "settings"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+moneybirdIntegration({
+  clientId: process.env.CUSTOM_MONEYBIRD_ID,
+  clientSecret: process.env.CUSTOM_MONEYBIRD_SECRET,
+      scopes: ["sales_invoices", "documents", "estimates", "bank", "settings"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("moneybird");
+const result = await client.moneybird.listAdministrations({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, moneybirdIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [moneybirdIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/moneybird.ts"
+  name="MoneybirdIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `sales_invoices`
+- `documents`
+- `estimates`
+- `bank`
+- `settings`
+
+## Tools
+
+### `moneybird_list_administrations`
+
+List administrations
+
+_No parameters._
+
+### `moneybird_list_contacts`
+
+List contacts
+
+<AutoTypeTable
+  path="generated/tool-params/moneybird.ts"
+  name="MoneybirdListContactsParams"
+/>
+
+### `moneybird_create_contact`
+
+Create contact
+
+<AutoTypeTable
+  path="generated/tool-params/moneybird.ts"
+  name="MoneybirdCreateContactParams"
+/>
+
+### `moneybird_list_sales_invoices`
+
+List sales invoices
+
+<AutoTypeTable
+  path="generated/tool-params/moneybird.ts"
+  name="MoneybirdListSalesInvoicesParams"
+/>
+
+### `moneybird_create_sales_invoice`
+
+Create sales invoice
+
+<AutoTypeTable
+  path="generated/tool-params/moneybird.ts"
+  name="MoneybirdCreateSalesInvoiceParams"
+/>
+
+### `moneybird_list_financial_accounts`
+
+List financial accounts
+
+<AutoTypeTable
+  path="generated/tool-params/moneybird.ts"
+  name="MoneybirdListFinancialAccountsParams"
+/>
+
+## Notes
+
+- Category: Accounting
+- Authentication mode: OAuth

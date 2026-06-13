@@ -1,0 +1,154 @@
+---
+title: "Google Ads Integration"
+description: "Manage Google Ads customers, campaigns, ad groups, ads, keywords, and conversions"
+---
+
+The Google Ads integration provides access to manage Google Ads customers, campaigns, ad groups, ads, keywords, and conversions through the Integrate MCP server.
+
+## Installation
+
+The Google Ads integration is included with the SDK:
+
+```typescript
+import { googleAdsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Google Ads OAuth App
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Ads integration to your server configuration. The integration automatically reads `GOOGLE_ADS_CLIENT_ID` and `GOOGLE_ADS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, googleAdsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    googleAdsIntegration({
+      scopes: ["https://www.googleapis.com/auth/adwords"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+googleAdsIntegration({
+  clientId: process.env.CUSTOM_GOOGLE_ADS_ID,
+  clientSecret: process.env.CUSTOM_GOOGLE_ADS_SECRET,
+      scopes: ["https://www.googleapis.com/auth/adwords"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("google_ads");
+const result = await client.google_ads.listAccessibleCustomers({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, googleAdsIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [googleAdsIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/google_ads.ts"
+  name="GoogleAdsIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `https://www.googleapis.com/auth/adwords`
+
+## Tools
+
+### `google_ads_list_accessible_customers`
+
+Ads list accessible customers
+
+_No parameters._
+
+### `google_ads_search`
+
+Ads search
+
+<AutoTypeTable
+  path="generated/tool-params/google_ads.ts"
+  name="GoogleAdsSearchParams"
+/>
+
+### `google_ads_list_campaigns`
+
+Ads list campaigns
+
+<AutoTypeTable
+  path="generated/tool-params/google_ads.ts"
+  name="GoogleAdsListCampaignsParams"
+/>
+
+### `google_ads_list_ad_groups`
+
+Ads list ad groups
+
+<AutoTypeTable
+  path="generated/tool-params/google_ads.ts"
+  name="GoogleAdsListAdGroupsParams"
+/>
+
+### `google_ads_list_ads`
+
+Ads list ads
+
+<AutoTypeTable
+  path="generated/tool-params/google_ads.ts"
+  name="GoogleAdsListAdsParams"
+/>
+
+### `google_ads_list_keywords`
+
+Ads list keywords
+
+<AutoTypeTable
+  path="generated/tool-params/google_ads.ts"
+  name="GoogleAdsListKeywordsParams"
+/>
+
+### `google_ads_list_conversions`
+
+Ads list conversions
+
+<AutoTypeTable
+  path="generated/tool-params/google_ads.ts"
+  name="GoogleAdsListConversionsParams"
+/>
+
+## Notes
+
+- Category: Marketing
+- Authentication mode: OAuth

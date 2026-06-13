@@ -1,9 +1,9 @@
 ---
-title: "Vercel"
-description: "Manage projects, deployments, and domains"
+title: "Vercel Integration"
+description: "Manage Vercel projects, deployments, and domains"
 ---
 
-The Vercel integration provides access to Vercel's API through the Integrate MCP server.
+The Vercel integration provides access to manage Vercel projects, deployments, and domains through the Integrate MCP server.
 
 ## Installation
 
@@ -15,11 +15,11 @@ import { vercelIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-### 1. Create a Vercel Integration
+### 1. Create a Vercel OAuth App
 
 1. Go to [Vercel Integrations](https://vercel.com/dashboard/integrations)
-2. Create a new integration
-3. Configure OAuth settings
+2. Create a new OAuth application
+3. Configure your redirect URI
 4. Note your Client ID and Client Secret
 
 ### 2. Configure the Integration on Your Server
@@ -33,7 +33,6 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     vercelIntegration({
-      // Vercel doesn't use traditional OAuth scopes
     }),
   ],
 });
@@ -56,7 +55,9 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("vercel");
-const projects = await client.vercel.listProjects({});
+const result = await client.vercel.listProjects({});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -76,96 +77,199 @@ const customClient = createMCPClient({
   name="VercelIntegrationConfig"
 />
 
-## Available Tools
 
-### Projects
+## Tools
 
-- **`vercel_list_projects`** - List projects
-- **`vercel_get_project`** - Get a specific project
+### `vercel_list_projects`
 
-### Deployments
+List projects in Vercel
 
-- **`vercel_list_deployments`** - List deployments
-- **`vercel_get_deployment`** - Get a specific deployment
-- **`vercel_create_deployment`** - Create a new deployment
-- **`vercel_cancel_deployment`** - Cancel a deployment
-- **`vercel_get_deployment_logs`** - Get deployment logs
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelListProjectsParams"
+/>
 
-### Domains
+### `vercel_get_project`
 
-- **`vercel_list_domains`** - List domains
+Get a specific project
 
-### Environment Variables
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelGetProjectParams"
+/>
 
-- **`vercel_list_env_vars`** - List environment variables
+### `vercel_create_project`
 
-## Examples
+Create a new project
 
-### List Projects
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelCreateProjectParams"
+/>
 
-```typescript
-const result = await client.vercel.listProjects({
-  limit: 20,
-});
+### `vercel_update_project`
 
-console.log("Projects:", result);
-```
+Update an existing project
 
-### Get Deployment
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelUpdateProjectParams"
+/>
 
-```typescript
-const result = await client.vercel.getDeployment({
-  deploymentId: "dpl_123",
-});
+### `vercel_delete_project`
 
-console.log("Deployment:", result);
-```
+Delete a project
 
-### Get Deployment Logs
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelDeleteProjectParams"
+/>
 
-```typescript
-const result = await client.vercel.getDeploymentLogs({
-  deploymentId: "dpl_123",
-  limit: 100,
-});
+### `vercel_list_deployments`
 
-console.log("Logs:", result);
-```
+List deployments
 
-### List Domains
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelListDeploymentsParams"
+/>
 
-```typescript
-const result = await client.vercel.listDomains({
-  limit: 50,
-});
+### `vercel_get_deployment`
 
-console.log("Domains:", result);
-```
+Get a specific deployment
 
-## OAuth Scopes
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelGetDeploymentParams"
+/>
 
-Vercel doesn't use traditional OAuth scopes. Permissions are configured at the integration level when you create the integration in the Vercel dashboard.
+### `vercel_create_deployment`
 
-## Error Handling
+Create a new deployment
 
-```typescript
-try {
-  const result = await client.vercel.getDeployment({
-    deploymentId: "dpl_123",
-  });
-} catch (error) {
-  if (error.message.includes("not found")) {
-    console.error("Deployment not found");
-  } else if (error.message.includes("authentication")) {
-    console.error("Authentication failed");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelCreateDeploymentParams"
+/>
 
-## Next Steps
+### `vercel_cancel_deployment`
 
-- Explore the [GitHub Integration](/docs/integrations/github)
-- Explore the [Linear Integration](/docs/integrations/linear)
-- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
+Cancel a deployment
+
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelCancelDeploymentParams"
+/>
+
+### `vercel_delete_deployment`
+
+Delete a deployment
+
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelDeleteDeploymentParams"
+/>
+
+### `vercel_promote_deployment`
+
+Promote a deployment to production
+
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelPromoteDeploymentParams"
+/>
+
+### `vercel_get_deployment_logs`
+
+Get deployment logs
+
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelGetDeploymentLogsParams"
+/>
+
+### `vercel_list_domains`
+
+List domains for a project
+
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelListDomainsParams"
+/>
+
+### `vercel_add_domain`
+
+Add a domain to a project
+
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelAddDomainParams"
+/>
+
+### `vercel_remove_domain`
+
+Remove a domain from a project
+
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelRemoveDomainParams"
+/>
+
+### `vercel_get_domain_config`
+
+Get domain configuration
+
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelGetDomainConfigParams"
+/>
+
+### `vercel_list_env_vars`
+
+List environment variables for a project
+
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelListEnvVarsParams"
+/>
+
+### `vercel_create_env_var`
+
+Create an environment variable
+
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelCreateEnvVarParams"
+/>
+
+### `vercel_delete_env_var`
+
+Delete an environment variable
+
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelDeleteEnvVarParams"
+/>
+
+### `vercel_list_dns_records`
+
+List DNS records for a domain
+
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelListDnsRecordsParams"
+/>
+
+### `vercel_create_dns_record`
+
+Create a DNS record
+
+<AutoTypeTable
+  path="generated/tool-params/vercel.ts"
+  name="VercelCreateDnsRecordParams"
+/>
+
+## Notes
+
+- Category: Infrastructure
+- Authentication mode: OAuth

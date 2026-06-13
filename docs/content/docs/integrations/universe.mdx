@@ -1,0 +1,145 @@
+---
+title: "Universe Integration"
+description: "Manage Universe get user, list events, get event, create event, list orders"
+---
+
+The Universe integration provides access to manage Universe get user, list events, get event, create event, list orders through the Integrate MCP server.
+
+## Installation
+
+The Universe integration is included with the SDK:
+
+```typescript
+import { universeIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create an Universe OAuth App
+
+1. Create an OAuth application for Universe
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Universe integration to your server configuration. The integration automatically reads `UNIVERSE_CLIENT_ID` and `UNIVERSE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, universeIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    universeIntegration({
+      scopes: ["read", "write"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+universeIntegration({
+  clientId: process.env.CUSTOM_UNIVERSE_ID,
+  clientSecret: process.env.CUSTOM_UNIVERSE_SECRET,
+      scopes: ["read", "write"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("universe");
+const result = await client.universe.getUser({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, universeIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [universeIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/universe.ts"
+  name="UniverseIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `read`
+- `write`
+
+## Tools
+
+### `universe_get_user`
+
+Get user
+
+_No parameters._
+
+### `universe_list_events`
+
+List events
+
+<AutoTypeTable
+  path="generated/tool-params/universe.ts"
+  name="UniverseListEventsParams"
+/>
+
+### `universe_get_event`
+
+Get event
+
+<AutoTypeTable
+  path="generated/tool-params/universe.ts"
+  name="UniverseGetEventParams"
+/>
+
+### `universe_create_event`
+
+Create event
+
+<AutoTypeTable
+  path="generated/tool-params/universe.ts"
+  name="UniverseCreateEventParams"
+/>
+
+### `universe_list_orders`
+
+List orders
+
+<AutoTypeTable
+  path="generated/tool-params/universe.ts"
+  name="UniverseListOrdersParams"
+/>
+
+### `universe_list_attendees`
+
+List attendees
+
+<AutoTypeTable
+  path="generated/tool-params/universe.ts"
+  name="UniverseListAttendeesParams"
+/>
+
+## Notes
+
+- Category: Events & Ticketing
+- Authentication mode: OAuth

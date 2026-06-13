@@ -1,0 +1,237 @@
+---
+title: "Okta Integration"
+description: "Manage Okta users, groups, apps, authorization servers, policies, and system logs"
+---
+
+The Okta integration provides access to manage Okta users, groups, apps, authorization servers, policies, and system logs through the Integrate MCP server.
+
+## Installation
+
+The Okta integration is included with the SDK:
+
+```typescript
+import { oktaIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create an Okta OAuth App
+
+1. Create an OAuth application for Okta
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Okta integration to your server configuration. The integration automatically reads `OKTA_CLIENT_ID` and `OKTA_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, oktaIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    oktaIntegration({
+      scopes: ["openid", "profile", "email", "offline_access", "okta.users.read", "okta.users.manage", "okta.groups.read", "okta.groups.manage", "okta.apps.read", "okta.logs.read"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+oktaIntegration({
+  clientId: process.env.CUSTOM_OKTA_ID,
+  clientSecret: process.env.CUSTOM_OKTA_SECRET,
+      scopes: ["openid", "profile", "email", "offline_access", "okta.users.read", "okta.users.manage", "okta.groups.read", "okta.groups.manage", "okta.apps.read", "okta.logs.read"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("okta");
+const result = await client.okta.listUsers({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, oktaIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [oktaIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/okta.ts"
+  name="OktaIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `openid`
+- `profile`
+- `email`
+- `offline_access`
+- `okta.users.read`
+- `okta.users.manage`
+- `okta.groups.read`
+- `okta.groups.manage`
+- `okta.apps.read`
+- `okta.logs.read`
+
+## Tools
+
+### `okta_list_users`
+
+List users
+
+<AutoTypeTable
+  path="generated/tool-params/okta.ts"
+  name="OktaListUsersParams"
+/>
+
+### `okta_get_user`
+
+Get user
+
+<AutoTypeTable
+  path="generated/tool-params/okta.ts"
+  name="OktaGetUserParams"
+/>
+
+### `okta_create_user`
+
+Create user
+
+<AutoTypeTable
+  path="generated/tool-params/okta.ts"
+  name="OktaCreateUserParams"
+/>
+
+### `okta_update_user`
+
+Update user
+
+<AutoTypeTable
+  path="generated/tool-params/okta.ts"
+  name="OktaUpdateUserParams"
+/>
+
+### `okta_deactivate_user`
+
+Deactivate user
+
+<AutoTypeTable
+  path="generated/tool-params/okta.ts"
+  name="OktaDeactivateUserParams"
+/>
+
+### `okta_list_groups`
+
+List groups
+
+<AutoTypeTable
+  path="generated/tool-params/okta.ts"
+  name="OktaListGroupsParams"
+/>
+
+### `okta_get_group`
+
+Get group
+
+<AutoTypeTable
+  path="generated/tool-params/okta.ts"
+  name="OktaGetGroupParams"
+/>
+
+### `okta_create_group`
+
+Create group
+
+<AutoTypeTable
+  path="generated/tool-params/okta.ts"
+  name="OktaCreateGroupParams"
+/>
+
+### `okta_add_user_to_group`
+
+Add user to group
+
+<AutoTypeTable
+  path="generated/tool-params/okta.ts"
+  name="OktaAddUserToGroupParams"
+/>
+
+### `okta_remove_user_from_group`
+
+Remove user from group
+
+<AutoTypeTable
+  path="generated/tool-params/okta.ts"
+  name="OktaRemoveUserFromGroupParams"
+/>
+
+### `okta_list_apps`
+
+List apps
+
+<AutoTypeTable
+  path="generated/tool-params/okta.ts"
+  name="OktaListAppsParams"
+/>
+
+### `okta_get_app`
+
+Get app
+
+<AutoTypeTable
+  path="generated/tool-params/okta.ts"
+  name="OktaGetAppParams"
+/>
+
+### `okta_list_authorization_servers`
+
+List authorization servers
+
+<AutoTypeTable
+  path="generated/tool-params/okta.ts"
+  name="OktaListAuthorizationServersParams"
+/>
+
+### `okta_list_policies`
+
+List policies
+
+<AutoTypeTable
+  path="generated/tool-params/okta.ts"
+  name="OktaListPoliciesParams"
+/>
+
+### `okta_list_system_logs`
+
+List system logs
+
+<AutoTypeTable
+  path="generated/tool-params/okta.ts"
+  name="OktaListSystemLogsParams"
+/>
+
+## Notes
+
+- Category: Identity & Access
+- Authentication mode: OAuth

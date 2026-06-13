@@ -1,0 +1,150 @@
+---
+title: "Microsoft Bookings Integration"
+description: "Manage Microsoft Bookings businesses, services, staff members, and appointments"
+---
+
+The Microsoft Bookings integration provides access to manage Microsoft Bookings businesses, services, staff members, and appointments through the Integrate MCP server.
+
+## Installation
+
+The Microsoft Bookings integration is included with the SDK:
+
+```typescript
+import { microsoftBookingsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Microsoft Bookings OAuth App
+
+1. Go to [Azure Portal — App Registrations](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Microsoft Bookings integration to your server configuration. The integration automatically reads `MICROSOFT_BOOKINGS_CLIENT_ID` and `MICROSOFT_BOOKINGS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, microsoftBookingsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    microsoftBookingsIntegration({
+      scopes: ["offline_access", "User.Read", "Bookings.ReadWrite.All"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+microsoftBookingsIntegration({
+  clientId: process.env.CUSTOM_MICROSOFT_BOOKINGS_ID,
+  clientSecret: process.env.CUSTOM_MICROSOFT_BOOKINGS_SECRET,
+      scopes: ["offline_access", "User.Read", "Bookings.ReadWrite.All"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("microsoft_bookings");
+const result = await client.microsoft_bookings.listBusinesses({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, microsoftBookingsIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [microsoftBookingsIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/microsoft_bookings.ts"
+  name="MicrosoftBookingsIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `offline_access`
+- `User.Read`
+- `Bookings.ReadWrite.All`
+
+## Tools
+
+### `microsoft_bookings_list_businesses`
+
+Bookings list businesses
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_bookings.ts"
+  name="MicrosoftBookingsListBusinessesParams"
+/>
+
+### `microsoft_bookings_get_business`
+
+Bookings get business
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_bookings.ts"
+  name="MicrosoftBookingsGetBusinessParams"
+/>
+
+### `microsoft_bookings_list_services`
+
+Bookings list services
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_bookings.ts"
+  name="MicrosoftBookingsListServicesParams"
+/>
+
+### `microsoft_bookings_list_staff_members`
+
+Bookings list staff members
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_bookings.ts"
+  name="MicrosoftBookingsListStaffMembersParams"
+/>
+
+### `microsoft_bookings_list_appointments`
+
+Bookings list appointments
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_bookings.ts"
+  name="MicrosoftBookingsListAppointmentsParams"
+/>
+
+### `microsoft_bookings_create_appointment`
+
+Bookings create appointment
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_bookings.ts"
+  name="MicrosoftBookingsCreateAppointmentParams"
+/>
+
+## Notes
+
+- Category: Scheduling
+- Authentication mode: OAuth

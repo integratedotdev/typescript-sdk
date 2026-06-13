@@ -1,11 +1,13 @@
 ---
-title: "Trello"
-description: "Manage Trello boards, lists, and cards"
+title: "Trello Integration"
+description: "Manage Trello boards, lists, cards, comments, and search"
 ---
 
-The Trello integration provides access to manage trello boards, lists, and cards through the Integrate MCP server.
+The Trello integration provides access to manage Trello boards, lists, cards, comments, and search through the Integrate MCP server.
 
 ## Installation
+
+The Trello integration is included with the SDK:
 
 ```typescript
 import { trelloIntegration } from "integrate-sdk/server";
@@ -13,7 +15,7 @@ import { trelloIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Trello to your server configuration. This integration can read credentials from environment variables automatically (`TRELLO_API_KEY`, `TRELLO_TOKEN`):
+Add Trello to your server configuration. Provide credentials via environment variables or integration config:
 
 ```typescript
 import { createMCPServer, trelloIntegration } from "integrate-sdk/server";
@@ -21,7 +23,9 @@ import { createMCPServer, trelloIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    trelloIntegration(),
+    trelloIntegration({
+      // See configuration options below
+    }),
   ],
 });
 ```
@@ -31,12 +35,14 @@ export const { client: serverClient } = createMCPServer({
 ```typescript
 import { client } from "integrate-sdk";
 
-const result = await client.trello.getMember({
-  // Add the parameters required by this tool
-});
+const result = await client.trello.getMember({});
 
 console.log(result);
 ```
+
+## Environment Variables
+
+- `TRELLO_API_KEY` (when supported by this integration)
 
 ## Configuration Options
 
@@ -45,29 +51,118 @@ console.log(result);
   name="TrelloIntegrationOptions"
 />
 
-## Environment Variables
 
-- `TRELLO_API_KEY`
-- `TRELLO_TOKEN`
+## Tools
 
-## Available Tools
+### `trello_get_member`
 
-- `trello_get_member`
-- `trello_list_boards`
-- `trello_get_board`
-- `trello_list_lists`
-- `trello_get_list`
-- `trello_list_cards`
-- `trello_get_card`
-- `trello_create_card`
-- `trello_update_card`
-- `trello_delete_card`
-- `trello_add_card_comment`
-- `trello_search`
+Get member
+
+<AutoTypeTable
+  path="generated/tool-params/trello.ts"
+  name="TrelloGetMemberParams"
+/>
+
+### `trello_list_boards`
+
+List boards
+
+<AutoTypeTable
+  path="generated/tool-params/trello.ts"
+  name="TrelloListBoardsParams"
+/>
+
+### `trello_get_board`
+
+Get board
+
+<AutoTypeTable
+  path="generated/tool-params/trello.ts"
+  name="TrelloGetBoardParams"
+/>
+
+### `trello_list_lists`
+
+List lists
+
+<AutoTypeTable
+  path="generated/tool-params/trello.ts"
+  name="TrelloListListsParams"
+/>
+
+### `trello_get_list`
+
+Get list
+
+<AutoTypeTable
+  path="generated/tool-params/trello.ts"
+  name="TrelloGetListParams"
+/>
+
+### `trello_list_cards`
+
+List cards
+
+<AutoTypeTable
+  path="generated/tool-params/trello.ts"
+  name="TrelloListCardsParams"
+/>
+
+### `trello_get_card`
+
+Get card
+
+<AutoTypeTable
+  path="generated/tool-params/trello.ts"
+  name="TrelloGetCardParams"
+/>
+
+### `trello_create_card`
+
+Create card
+
+<AutoTypeTable
+  path="generated/tool-params/trello.ts"
+  name="TrelloCreateCardParams"
+/>
+
+### `trello_update_card`
+
+Update card
+
+<AutoTypeTable
+  path="generated/tool-params/trello.ts"
+  name="TrelloUpdateCardParams"
+/>
+
+### `trello_delete_card`
+
+Delete card
+
+<AutoTypeTable
+  path="generated/tool-params/trello.ts"
+  name="TrelloDeleteCardParams"
+/>
+
+### `trello_add_card_comment`
+
+Add card comment
+
+<AutoTypeTable
+  path="generated/tool-params/trello.ts"
+  name="TrelloAddCardCommentParams"
+/>
+
+### `trello_search`
+
+Search
+
+<AutoTypeTable
+  path="generated/tool-params/trello.ts"
+  name="TrelloSearchParams"
+/>
 
 ## Notes
 
 - Category: Productivity
 - Authentication mode: API key
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

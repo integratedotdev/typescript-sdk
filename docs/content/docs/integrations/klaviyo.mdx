@@ -1,0 +1,172 @@
+---
+title: "Klaviyo Integration"
+description: "Manage Klaviyo accounts, profiles, lists, segments, campaigns, and metrics"
+---
+
+The Klaviyo integration provides access to manage Klaviyo accounts, profiles, lists, segments, campaigns, and metrics through the Integrate MCP server.
+
+## Installation
+
+The Klaviyo integration is included with the SDK:
+
+```typescript
+import { klaviyoIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Klaviyo OAuth App
+
+1. Create an OAuth application for Klaviyo
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Klaviyo integration to your server configuration. The integration automatically reads `KLAVIYO_CLIENT_ID` and `KLAVIYO_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, klaviyoIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    klaviyoIntegration({
+      scopes: ["accounts:read", "profiles:read", "profiles:write", "lists:read", "lists:write", "campaigns:read", "campaigns:write", "metrics:read"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+klaviyoIntegration({
+  clientId: process.env.CUSTOM_KLAVIYO_ID,
+  clientSecret: process.env.CUSTOM_KLAVIYO_SECRET,
+      scopes: ["accounts:read", "profiles:read", "profiles:write", "lists:read", "lists:write", "campaigns:read", "campaigns:write", "metrics:read"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("klaviyo");
+const result = await client.klaviyo.listAccounts({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, klaviyoIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [klaviyoIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/klaviyo.ts"
+  name="KlaviyoIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `accounts:read`
+- `profiles:read`
+- `profiles:write`
+- `lists:read`
+- `lists:write`
+- `campaigns:read`
+- `campaigns:write`
+- `metrics:read`
+
+## Tools
+
+### `klaviyo_list_accounts`
+
+List accounts
+
+<AutoTypeTable
+  path="generated/tool-params/klaviyo.ts"
+  name="KlaviyoListAccountsParams"
+/>
+
+### `klaviyo_list_profiles`
+
+List profiles
+
+<AutoTypeTable
+  path="generated/tool-params/klaviyo.ts"
+  name="KlaviyoListProfilesParams"
+/>
+
+### `klaviyo_get_profile`
+
+Get profile
+
+<AutoTypeTable
+  path="generated/tool-params/klaviyo.ts"
+  name="KlaviyoGetProfileParams"
+/>
+
+### `klaviyo_create_profile`
+
+Create profile
+
+<AutoTypeTable
+  path="generated/tool-params/klaviyo.ts"
+  name="KlaviyoCreateProfileParams"
+/>
+
+### `klaviyo_list_lists`
+
+List lists
+
+<AutoTypeTable
+  path="generated/tool-params/klaviyo.ts"
+  name="KlaviyoListListsParams"
+/>
+
+### `klaviyo_list_campaigns`
+
+List campaigns
+
+<AutoTypeTable
+  path="generated/tool-params/klaviyo.ts"
+  name="KlaviyoListCampaignsParams"
+/>
+
+### `klaviyo_create_campaign`
+
+Create campaign
+
+<AutoTypeTable
+  path="generated/tool-params/klaviyo.ts"
+  name="KlaviyoCreateCampaignParams"
+/>
+
+### `klaviyo_list_metrics`
+
+List metrics
+
+<AutoTypeTable
+  path="generated/tool-params/klaviyo.ts"
+  name="KlaviyoListMetricsParams"
+/>
+
+## Notes
+
+- Category: Marketing
+- Authentication mode: OAuth

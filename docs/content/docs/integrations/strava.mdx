@@ -1,0 +1,311 @@
+---
+title: "Strava Integration"
+description: "Manage Strava athletes, activities, routes, clubs, segments, streams, gear, and uploads"
+---
+
+The Strava integration provides access to manage Strava athletes, activities, routes, clubs, segments, streams, gear, and uploads through the Integrate MCP server.
+
+## Installation
+
+The Strava integration is included with the SDK:
+
+```typescript
+import { stravaIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Strava OAuth App
+
+1. Create an OAuth application for Strava
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Strava integration to your server configuration. The integration automatically reads `STRAVA_CLIENT_ID` and `STRAVA_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, stravaIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    stravaIntegration({
+      scopes: ["read", "profile:read_all", "profile:write", "activity:read", "activity:read_all", "activity:write"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+stravaIntegration({
+  clientId: process.env.CUSTOM_STRAVA_ID,
+  clientSecret: process.env.CUSTOM_STRAVA_SECRET,
+      scopes: ["read", "profile:read_all", "profile:write", "activity:read", "activity:read_all", "activity:write"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("strava");
+const result = await client.strava.getLoggedInAthlete({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, stravaIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [stravaIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/strava.ts"
+  name="StravaIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `read`
+- `profile:read_all`
+- `profile:write`
+- `activity:read`
+- `activity:read_all`
+- `activity:write`
+
+## Tools
+
+### `strava_get_logged_in_athlete`
+
+Get logged in athlete
+
+_No parameters._
+
+### `strava_update_logged_in_athlete`
+
+Update logged in athlete
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaUpdateLoggedInAthleteParams"
+/>
+
+### `strava_get_athlete_stats`
+
+Get athlete stats
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaGetAthleteStatsParams"
+/>
+
+### `strava_list_athlete_activities`
+
+List athlete activities
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaListAthleteActivitiesParams"
+/>
+
+### `strava_get_activity`
+
+Get activity
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaGetActivityParams"
+/>
+
+### `strava_create_activity`
+
+Create activity
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaCreateActivityParams"
+/>
+
+### `strava_update_activity`
+
+Update activity
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaUpdateActivityParams"
+/>
+
+### `strava_delete_activity`
+
+Delete activity
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaDeleteActivityParams"
+/>
+
+### `strava_get_activity_streams`
+
+Get activity streams
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaGetActivityStreamsParams"
+/>
+
+### `strava_list_athlete_routes`
+
+List athlete routes
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaListAthleteRoutesParams"
+/>
+
+### `strava_get_route`
+
+Get route
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaGetRouteParams"
+/>
+
+### `strava_export_route_gpx`
+
+Export route gpx
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaExportRouteGpxParams"
+/>
+
+### `strava_list_athlete_clubs`
+
+List athlete clubs
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaListAthleteClubsParams"
+/>
+
+### `strava_get_club`
+
+Get club
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaGetClubParams"
+/>
+
+### `strava_list_club_activities`
+
+List club activities
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaListClubActivitiesParams"
+/>
+
+### `strava_list_club_members`
+
+List club members
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaListClubMembersParams"
+/>
+
+### `strava_get_segment`
+
+Get segment
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaGetSegmentParams"
+/>
+
+### `strava_explore_segments`
+
+Explore segments
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaExploreSegmentsParams"
+/>
+
+### `strava_get_segment_leaderboard`
+
+Get segment leaderboard
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaGetSegmentLeaderboardParams"
+/>
+
+### `strava_list_starred_segments`
+
+List starred segments
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaListStarredSegmentsParams"
+/>
+
+### `strava_star_segment`
+
+Star segment
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaStarSegmentParams"
+/>
+
+### `strava_get_gear`
+
+Get gear
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaGetGearParams"
+/>
+
+### `strava_get_upload`
+
+Get upload
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaGetUploadParams"
+/>
+
+### `strava_create_upload`
+
+Create upload
+
+<AutoTypeTable
+  path="generated/tool-params/strava.ts"
+  name="StravaCreateUploadParams"
+/>
+
+## Notes
+
+- Category: Fitness
+- Authentication mode: OAuth

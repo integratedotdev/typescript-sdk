@@ -1,0 +1,140 @@
+---
+title: "Withings Integration"
+description: "Manage Withings get measurements, get activity, get sleep, get workouts, get user"
+---
+
+The Withings integration provides access to manage Withings get measurements, get activity, get sleep, get workouts, get user through the Integrate MCP server.
+
+## Installation
+
+The Withings integration is included with the SDK:
+
+```typescript
+import { withingsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Withings OAuth App
+
+1. Create an OAuth application for Withings
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Withings integration to your server configuration. The integration automatically reads `WITHINGS_CLIENT_ID` and `WITHINGS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, withingsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    withingsIntegration({
+      scopes: ["user.info", "user.metrics", "user.activity"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+withingsIntegration({
+  clientId: process.env.CUSTOM_WITHINGS_ID,
+  clientSecret: process.env.CUSTOM_WITHINGS_SECRET,
+      scopes: ["user.info", "user.metrics", "user.activity"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("withings");
+const result = await client.withings.getMeasurements({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, withingsIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [withingsIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/withings.ts"
+  name="WithingsIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `user.info`
+- `user.metrics`
+- `user.activity`
+
+## Tools
+
+### `withings_get_measurements`
+
+Get measurements
+
+<AutoTypeTable
+  path="generated/tool-params/withings.ts"
+  name="WithingsGetMeasurementsParams"
+/>
+
+### `withings_get_activity`
+
+Get activity
+
+<AutoTypeTable
+  path="generated/tool-params/withings.ts"
+  name="WithingsGetActivityParams"
+/>
+
+### `withings_get_sleep`
+
+Get sleep
+
+<AutoTypeTable
+  path="generated/tool-params/withings.ts"
+  name="WithingsGetSleepParams"
+/>
+
+### `withings_get_workouts`
+
+Get workouts
+
+<AutoTypeTable
+  path="generated/tool-params/withings.ts"
+  name="WithingsGetWorkoutsParams"
+/>
+
+### `withings_get_user`
+
+Get user
+
+<AutoTypeTable
+  path="generated/tool-params/withings.ts"
+  name="WithingsGetUserParams"
+/>
+
+## Notes
+
+- Category: Fitness
+- Authentication mode: OAuth

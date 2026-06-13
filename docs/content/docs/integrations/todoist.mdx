@@ -1,9 +1,9 @@
 ---
-title: "Todoist"
-description: "Manage tasks, projects, and labels"
+title: "Todoist Integration"
+description: "Manage Todoist tasks, projects, and labels"
 ---
 
-The Todoist integration provides access to Todoist's API through the Integrate MCP server.
+The Todoist integration provides access to manage Todoist tasks, projects, and labels through the Integrate MCP server.
 
 ## Installation
 
@@ -15,11 +15,11 @@ import { todoistIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-### 1. Create a Todoist App
+### 1. Create a Todoist OAuth App
 
 1. Go to [Todoist App Console](https://developer.todoist.com/appconsole.html)
-2. Create a new app
-3. Configure OAuth settings
+2. Create a new OAuth application
+3. Configure your redirect URI
 4. Note your Client ID and Client Secret
 
 ### 2. Configure the Integration on Your Server
@@ -33,7 +33,6 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     todoistIntegration({
-      scopes: ["data:read_write"], // Optional
     }),
   ],
 });
@@ -45,7 +44,6 @@ You can override the environment variables by passing explicit values:
 todoistIntegration({
   clientId: process.env.CUSTOM_TODOIST_ID,
   clientSecret: process.env.CUSTOM_TODOIST_SECRET,
-  scopes: ["data:read_write"],
 });
 ```
 
@@ -57,7 +55,9 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("todoist");
-const tasks = await client.todoist.listTasks({});
+const result = await client.todoist.listProjects({});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -77,136 +77,298 @@ const customClient = createMCPClient({
   name="TodoistIntegrationConfig"
 />
 
-## Available Tools
 
-### Projects
+## Tools
 
-- **`todoist_list_projects`** - List all projects
-- **`todoist_get_project`** - Get details of a specific project
-- **`todoist_create_project`** - Create a new project
-- **`todoist_update_project`** - Update an existing project
-- **`todoist_delete_project`** - Delete a project
-- **`todoist_archive_project`** - Archive a project
+### `todoist_list_projects`
 
-### Tasks
+List all projects
 
-- **`todoist_list_tasks`** - List active tasks with optional filters
-- **`todoist_get_task`** - Get details of a specific task
-- **`todoist_create_task`** - Create a new task
-- **`todoist_update_task`** - Update an existing task
-- **`todoist_complete_task`** - Mark a task as complete
-- **`todoist_delete_task`** - Delete a task permanently
-- **`todoist_reopen_task`** - Reopen a completed task
-- **`todoist_move_task`** - Move a task to a different project, section, or parent
-- **`todoist_quick_add_task`** - Add a task using natural language
-- **`todoist_get_completed_tasks`** - Get completed tasks
-- **`todoist_filter_tasks`** - Get tasks matching a Todoist filter expression
+_No parameters._
 
-### Sections
+### `todoist_get_project`
 
-- **`todoist_list_sections`** - List sections, optionally filtered by project
-- **`todoist_create_section`** - Create a new section in a project
-- **`todoist_get_section`** - Get details of a specific section
-- **`todoist_update_section`** - Rename a section
-- **`todoist_delete_section`** - Delete a section (and all tasks in it)
+Get details of a specific project
 
-### Comments
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistGetProjectParams"
+/>
 
-- **`todoist_list_comments`** - List comments on a task or project
-- **`todoist_create_comment`** - Add a comment to a task or project
-- **`todoist_get_comment`** - Get details of a specific comment
-- **`todoist_update_comment`** - Update a comment's text
-- **`todoist_delete_comment`** - Delete a comment
+### `todoist_create_project`
 
-### Labels
+Create a new project
 
-- **`todoist_list_labels`** - List all personal labels
-- **`todoist_create_label`** - Create a new label
-- **`todoist_update_label`** - Update a label
-- **`todoist_delete_label`** - Delete a label
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistCreateProjectParams"
+/>
 
-### Reminders
+### `todoist_update_project`
 
-- **`todoist_list_reminders`** - List all reminders
-- **`todoist_create_reminder`** - Create a reminder for a task
+Update an existing project
 
-## Examples
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistUpdateProjectParams"
+/>
 
-### Create a Task
+### `todoist_delete_project`
 
-```typescript
-const result = await client.todoist.createTask({
-  content: "Review pull request",
-  description: "Review the authentication PR",
-  projectId: "2203306141",
-  priority: 4,
-  dueString: "tomorrow at 10:00",
-  labels: ["work", "urgent"],
-});
+Delete a project
 
-console.log("Task created:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistDeleteProjectParams"
+/>
 
-### List Tasks
+### `todoist_archive_project`
 
-```typescript
-const result = await client.todoist.listTasks({
-  projectId: "2203306141",
-  filter: "today | overdue",
-});
+Archive a project
 
-console.log("Tasks:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistArchiveProjectParams"
+/>
 
-### Create a Project
+### `todoist_list_tasks`
 
-```typescript
-const result = await client.todoist.createProject({
-  name: "New Project",
-  color: "blue",
-  isFavorite: true,
-});
+List active tasks with optional filters
 
-console.log("Project created:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistListTasksParams"
+/>
 
-### Complete a Task
+### `todoist_get_task`
 
-```typescript
-const result = await client.todoist.completeTask({
-  taskId: "1234567890",
-});
+Get details of a specific task
 
-console.log("Task completed:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistGetTaskParams"
+/>
 
-## OAuth Scopes
+### `todoist_create_task`
 
-The following scope is supported:
+Create a new task
 
-- **`data:read_write`** - Full access to read and write data (default)
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistCreateTaskParams"
+/>
 
-## Error Handling
+### `todoist_update_task`
 
-```typescript
-try {
-  const result = await client.todoist.createTask({
-    content: "New task",
-    projectId: "2203306141",
-  });
-} catch (error) {
-  if (error.message.includes("not found")) {
-    console.error("Project not found");
-  } else if (error.message.includes("authentication")) {
-    console.error("Authentication failed");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+Update an existing task
 
-## Next Steps
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistUpdateTaskParams"
+/>
 
-- Explore the [Linear Integration](/docs/integrations/linear)
-- Explore the [Notion Integration](/docs/integrations/notion)
-- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
+### `todoist_complete_task`
+
+Mark a task as complete
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistCompleteTaskParams"
+/>
+
+### `todoist_delete_task`
+
+Delete a task permanently
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistDeleteTaskParams"
+/>
+
+### `todoist_reopen_task`
+
+Reopen a completed task
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistReopenTaskParams"
+/>
+
+### `todoist_move_task`
+
+Move a task to a different project, section, or parent
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistMoveTaskParams"
+/>
+
+### `todoist_quick_add_task`
+
+Add a task using natural language
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistQuickAddTaskParams"
+/>
+
+### `todoist_get_completed_tasks`
+
+Get completed tasks
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistGetCompletedTasksParams"
+/>
+
+### `todoist_filter_tasks`
+
+Get tasks matching a Todoist filter expression
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistFilterTasksParams"
+/>
+
+### `todoist_list_sections`
+
+List sections, optionally filtered by project
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistListSectionsParams"
+/>
+
+### `todoist_create_section`
+
+Create a new section in a project
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistCreateSectionParams"
+/>
+
+### `todoist_get_section`
+
+Get details of a specific section
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistGetSectionParams"
+/>
+
+### `todoist_update_section`
+
+Rename a section
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistUpdateSectionParams"
+/>
+
+### `todoist_delete_section`
+
+Delete a section (and all tasks in it)
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistDeleteSectionParams"
+/>
+
+### `todoist_list_comments`
+
+List comments on a task or project
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistListCommentsParams"
+/>
+
+### `todoist_create_comment`
+
+Add a comment to a task or project
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistCreateCommentParams"
+/>
+
+### `todoist_get_comment`
+
+Get details of a specific comment
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistGetCommentParams"
+/>
+
+### `todoist_update_comment`
+
+Update a comment's text
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistUpdateCommentParams"
+/>
+
+### `todoist_delete_comment`
+
+Delete a comment
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistDeleteCommentParams"
+/>
+
+### `todoist_list_labels`
+
+List all personal labels
+
+_No parameters._
+
+### `todoist_create_label`
+
+Create a new label
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistCreateLabelParams"
+/>
+
+### `todoist_update_label`
+
+Update a label
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistUpdateLabelParams"
+/>
+
+### `todoist_delete_label`
+
+Delete a label
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistDeleteLabelParams"
+/>
+
+### `todoist_list_reminders`
+
+List all reminders
+
+_No parameters._
+
+### `todoist_create_reminder`
+
+Create a reminder for a task
+
+<AutoTypeTable
+  path="generated/tool-params/todoist.ts"
+  name="TodoistCreateReminderParams"
+/>
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth

@@ -1,0 +1,150 @@
+---
+title: "Oura Integration"
+description: "Manage Oura get personal info, list daily activity, list sleep, list workouts, list sessions"
+---
+
+The Oura integration provides access to manage Oura get personal info, list daily activity, list sleep, list workouts, list sessions through the Integrate MCP server.
+
+## Installation
+
+The Oura integration is included with the SDK:
+
+```typescript
+import { ouraIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create an Oura OAuth App
+
+1. Create an OAuth application for Oura
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Oura integration to your server configuration. The integration automatically reads `OURA_CLIENT_ID` and `OURA_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, ouraIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    ouraIntegration({
+      scopes: ["email", "personal", "daily", "heartrate", "workout", "session", "tag"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+ouraIntegration({
+  clientId: process.env.CUSTOM_OURA_ID,
+  clientSecret: process.env.CUSTOM_OURA_SECRET,
+      scopes: ["email", "personal", "daily", "heartrate", "workout", "session", "tag"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("oura");
+const result = await client.oura.getPersonalInfo({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, ouraIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [ouraIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/oura.ts"
+  name="OuraIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `email`
+- `personal`
+- `daily`
+- `heartrate`
+- `workout`
+- `session`
+- `tag`
+
+## Tools
+
+### `oura_get_personal_info`
+
+Get personal info
+
+_No parameters._
+
+### `oura_list_daily_activity`
+
+List daily activity
+
+<AutoTypeTable
+  path="generated/tool-params/oura.ts"
+  name="OuraListDailyActivityParams"
+/>
+
+### `oura_list_sleep`
+
+List sleep
+
+<AutoTypeTable
+  path="generated/tool-params/oura.ts"
+  name="OuraListSleepParams"
+/>
+
+### `oura_list_workouts`
+
+List workouts
+
+<AutoTypeTable
+  path="generated/tool-params/oura.ts"
+  name="OuraListWorkoutsParams"
+/>
+
+### `oura_list_sessions`
+
+List sessions
+
+<AutoTypeTable
+  path="generated/tool-params/oura.ts"
+  name="OuraListSessionsParams"
+/>
+
+### `oura_list_tags`
+
+List tags
+
+<AutoTypeTable
+  path="generated/tool-params/oura.ts"
+  name="OuraListTagsParams"
+/>
+
+## Notes
+
+- Category: Fitness
+- Authentication mode: OAuth

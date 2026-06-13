@@ -1,0 +1,159 @@
+---
+title: "Microsoft To Do Integration"
+description: "Manage Microsoft To Do task lists and tasks through Microsoft Graph"
+---
+
+The Microsoft To Do integration provides access to manage Microsoft To Do task lists and tasks through Microsoft Graph through the Integrate MCP server.
+
+## Installation
+
+The Microsoft To Do integration is included with the SDK:
+
+```typescript
+import { microsoftToDoIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Microsoft To Do OAuth App
+
+1. Go to [Azure Portal — App Registrations](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Microsoft To Do integration to your server configuration. The integration automatically reads `MICROSOFT_TO_DO_CLIENT_ID` and `MICROSOFT_TO_DO_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, microsoftToDoIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    microsoftToDoIntegration({
+      scopes: ["offline_access", "User.Read", "Tasks.ReadWrite"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+microsoftToDoIntegration({
+  clientId: process.env.CUSTOM_MICROSOFT_TO_DO_ID,
+  clientSecret: process.env.CUSTOM_MICROSOFT_TO_DO_SECRET,
+      scopes: ["offline_access", "User.Read", "Tasks.ReadWrite"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("microsoft_to_do");
+const result = await client.microsoft_to_do.listTaskLists({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, microsoftToDoIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [microsoftToDoIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/microsoft_to_do.ts"
+  name="MicrosoftToDoIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `offline_access`
+- `User.Read`
+- `Tasks.ReadWrite`
+
+## Tools
+
+### `microsoft_to_do_list_task_lists`
+
+To do list task lists
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_to_do.ts"
+  name="MicrosoftToDoListTaskListsParams"
+/>
+
+### `microsoft_to_do_get_task_list`
+
+To do get task list
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_to_do.ts"
+  name="MicrosoftToDoGetTaskListParams"
+/>
+
+### `microsoft_to_do_create_task_list`
+
+To do create task list
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_to_do.ts"
+  name="MicrosoftToDoCreateTaskListParams"
+/>
+
+### `microsoft_to_do_list_tasks`
+
+To do list tasks
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_to_do.ts"
+  name="MicrosoftToDoListTasksParams"
+/>
+
+### `microsoft_to_do_get_task`
+
+To do get task
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_to_do.ts"
+  name="MicrosoftToDoGetTaskParams"
+/>
+
+### `microsoft_to_do_create_task`
+
+To do create task
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_to_do.ts"
+  name="MicrosoftToDoCreateTaskParams"
+/>
+
+### `microsoft_to_do_update_task`
+
+To do update task
+
+<AutoTypeTable
+  path="generated/tool-params/microsoft_to_do.ts"
+  name="MicrosoftToDoUpdateTaskParams"
+/>
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth

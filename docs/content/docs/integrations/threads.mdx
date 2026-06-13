@@ -1,11 +1,13 @@
 ---
-title: "Threads"
-description: "Post and manage content on Threads (Meta)"
+title: "Threads Integration"
+description: "Publish Threads posts and manage media, replies, conversations, and keyword search"
 ---
 
-The Threads integration provides access to post and manage content on threads (meta) through the Integrate MCP server.
+The Threads integration provides access to publish Threads posts and manage media, replies, conversations, and keyword search through the Integrate MCP server.
 
 ## Installation
+
+The Threads integration is included with the SDK:
 
 ```typescript
 import { threadsIntegration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { threadsIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Threads to your server configuration. The integration automatically reads OAuth credentials from your environment (`THREADS_CLIENT_ID`, `THREADS_CLIENT_SECRET`):
+### 1. Create a Threads OAuth App
+
+1. Go to [Threads Developer Portal](https://threads.net)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Threads integration to your server configuration. The integration automatically reads `THREADS_CLIENT_ID` and `THREADS_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, threadsIntegration } from "integrate-sdk/server";
@@ -21,22 +32,44 @@ import { createMCPServer, threadsIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    threadsIntegration(),
+    threadsIntegration({
+      scopes: ["threads_basic", "threads_content_publish", "threads_read_replies", "threads_manage_replies", "threads_manage_insights", "threads_keyword_search", "threads_profile_discovery", "threads_manage_mentions"], // Optional
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+threadsIntegration({
+  clientId: process.env.CUSTOM_THREADS_ID,
+  clientSecret: process.env.CUSTOM_THREADS_SECRET,
+      scopes: ["threads_basic", "threads_content_publish", "threads_read_replies", "threads_manage_replies", "threads_manage_insights", "threads_keyword_search", "threads_profile_discovery", "threads_manage_mentions"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("threads");
-const result = await client.threads.getMe({
-  // Add the parameters required by this tool
-});
+const result = await client.threads.getMe({});
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, threadsIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [threadsIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,29 +79,131 @@ console.log(result);
   name="ThreadsIntegrationConfig"
 />
 
-## Environment Variables
 
-- `THREADS_CLIENT_ID`
-- `THREADS_CLIENT_SECRET`
+## Default Scopes
 
-## Available Tools
+These defaults are applied unless you override `scopes` in the integration config:
 
-- `threads_get_me`
-- `threads_list_user_media`
-- `threads_get_media`
+- `threads_basic`
+- `threads_content_publish`
+- `threads_read_replies`
+- `threads_manage_replies`
+- `threads_manage_insights`
 - `threads_keyword_search`
-- `threads_create_media_container`
-- `threads_publish_media_container`
-- `threads_get_container_status`
-- `threads_list_replies`
-- `threads_get_conversation`
-- `threads_manage_reply`
-- `threads_repost`
-- `threads_delete_media`
+- `threads_profile_discovery`
+- `threads_manage_mentions`
+
+## Tools
+
+### `threads_get_me`
+
+Get me
+
+<AutoTypeTable
+  path="generated/tool-params/threads.ts"
+  name="ThreadsGetMeParams"
+/>
+
+### `threads_list_user_media`
+
+List user media
+
+<AutoTypeTable
+  path="generated/tool-params/threads.ts"
+  name="ThreadsListUserMediaParams"
+/>
+
+### `threads_get_media`
+
+Get media
+
+<AutoTypeTable
+  path="generated/tool-params/threads.ts"
+  name="ThreadsGetMediaParams"
+/>
+
+### `threads_keyword_search`
+
+Keyword search
+
+<AutoTypeTable
+  path="generated/tool-params/threads.ts"
+  name="ThreadsKeywordSearchParams"
+/>
+
+### `threads_create_media_container`
+
+Create media container
+
+<AutoTypeTable
+  path="generated/tool-params/threads.ts"
+  name="ThreadsCreateMediaContainerParams"
+/>
+
+### `threads_publish_media_container`
+
+Publish media container
+
+<AutoTypeTable
+  path="generated/tool-params/threads.ts"
+  name="ThreadsPublishMediaContainerParams"
+/>
+
+### `threads_get_container_status`
+
+Get container status
+
+<AutoTypeTable
+  path="generated/tool-params/threads.ts"
+  name="ThreadsGetContainerStatusParams"
+/>
+
+### `threads_list_replies`
+
+List replies
+
+<AutoTypeTable
+  path="generated/tool-params/threads.ts"
+  name="ThreadsListRepliesParams"
+/>
+
+### `threads_get_conversation`
+
+Get conversation
+
+<AutoTypeTable
+  path="generated/tool-params/threads.ts"
+  name="ThreadsGetConversationParams"
+/>
+
+### `threads_manage_reply`
+
+Manage reply
+
+<AutoTypeTable
+  path="generated/tool-params/threads.ts"
+  name="ThreadsManageReplyParams"
+/>
+
+### `threads_repost`
+
+Repost
+
+<AutoTypeTable
+  path="generated/tool-params/threads.ts"
+  name="ThreadsRepostParams"
+/>
+
+### `threads_delete_media`
+
+Delete media
+
+<AutoTypeTable
+  path="generated/tool-params/threads.ts"
+  name="ThreadsDeleteMediaParams"
+/>
 
 ## Notes
 
 - Category: Social Media
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

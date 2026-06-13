@@ -1,11 +1,13 @@
 ---
-title: "Cloudflare"
-description: "Manage Cloudflare zones, DNS, CDN cache, and Workers"
+title: "Cloudflare Integration"
+description: "Manage Cloudflare zones, DNS, cache, and Workers via the Cloudflare API"
 ---
 
-The Cloudflare integration provides access to manage cloudflare zones, dns, cdn cache, and workers through the Integrate MCP server.
+The Cloudflare integration provides access to manage Cloudflare zones, DNS, cache, and Workers via the Cloudflare API through the Integrate MCP server.
 
 ## Installation
+
+The Cloudflare integration is included with the SDK:
 
 ```typescript
 import { cloudflareIntegration } from "integrate-sdk/server";
@@ -13,7 +15,7 @@ import { cloudflareIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Cloudflare to your server configuration. This integration supports OAuth and alternate token-based configuration; the config table below shows the available options.
+Add Cloudflare to your server configuration. Provide credentials via environment variables or integration config:
 
 ```typescript
 import { createMCPServer, cloudflareIntegration } from "integrate-sdk/server";
@@ -21,7 +23,9 @@ import { createMCPServer, cloudflareIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    cloudflareIntegration(),
+    cloudflareIntegration({
+      // See configuration options below
+    }),
   ],
 });
 ```
@@ -31,13 +35,14 @@ export const { client: serverClient } = createMCPServer({
 ```typescript
 import { client } from "integrate-sdk";
 
-await client.authorize("cloudflare");
-const result = await client.cloudflare.verifyToken({
-  // Add the parameters required by this tool
-});
+const result = await client.cloudflare.verifyToken({});
 
 console.log(result);
 ```
+
+## Environment Variables
+
+- `CLOUDFLARE_API_KEY` (when supported by this integration)
 
 ## Configuration Options
 
@@ -46,30 +51,124 @@ console.log(result);
   name="CloudflareIntegrationConfig"
 />
 
-## Environment Variables
 
-- `CLOUDFLARE_API_TOKEN`
-- `CLOUDFLARE_CLIENT_ID`
-- `CLOUDFLARE_CLIENT_SECRET`
+## Default Scopes
 
-## Available Tools
+These defaults are applied unless you override `scopes` in the integration config:
 
-- `cloudflare_verify_token`
-- `cloudflare_get_user`
-- `cloudflare_list_accounts`
-- `cloudflare_get_account`
-- `cloudflare_list_zones`
-- `cloudflare_get_zone`
-- `cloudflare_list_dns_records`
-- `cloudflare_create_dns_record`
-- `cloudflare_update_dns_record`
-- `cloudflare_delete_dns_record`
-- `cloudflare_purge_zone_cache`
-- `cloudflare_list_worker_scripts`
+- `account:read`
+- `user:read`
+- `zone:read`
+- `workers:read`
+- `workers:write`
+- `pages:write`
+- `offline_access`
+
+## Tools
+
+### `cloudflare_verify_token`
+
+Verify token
+
+_No parameters._
+
+### `cloudflare_get_user`
+
+Get user
+
+_No parameters._
+
+### `cloudflare_list_accounts`
+
+List accounts
+
+<AutoTypeTable
+  path="generated/tool-params/cloudflare.ts"
+  name="CloudflareListAccountsParams"
+/>
+
+### `cloudflare_get_account`
+
+Get account
+
+<AutoTypeTable
+  path="generated/tool-params/cloudflare.ts"
+  name="CloudflareGetAccountParams"
+/>
+
+### `cloudflare_list_zones`
+
+List zones
+
+<AutoTypeTable
+  path="generated/tool-params/cloudflare.ts"
+  name="CloudflareListZonesParams"
+/>
+
+### `cloudflare_get_zone`
+
+Get zone
+
+<AutoTypeTable
+  path="generated/tool-params/cloudflare.ts"
+  name="CloudflareGetZoneParams"
+/>
+
+### `cloudflare_list_dns_records`
+
+List dns records
+
+<AutoTypeTable
+  path="generated/tool-params/cloudflare.ts"
+  name="CloudflareListDnsRecordsParams"
+/>
+
+### `cloudflare_create_dns_record`
+
+Create dns record
+
+<AutoTypeTable
+  path="generated/tool-params/cloudflare.ts"
+  name="CloudflareCreateDnsRecordParams"
+/>
+
+### `cloudflare_update_dns_record`
+
+Update dns record
+
+<AutoTypeTable
+  path="generated/tool-params/cloudflare.ts"
+  name="CloudflareUpdateDnsRecordParams"
+/>
+
+### `cloudflare_delete_dns_record`
+
+Delete dns record
+
+<AutoTypeTable
+  path="generated/tool-params/cloudflare.ts"
+  name="CloudflareDeleteDnsRecordParams"
+/>
+
+### `cloudflare_purge_zone_cache`
+
+Purge zone cache
+
+<AutoTypeTable
+  path="generated/tool-params/cloudflare.ts"
+  name="CloudflarePurgeZoneCacheParams"
+/>
+
+### `cloudflare_list_worker_scripts`
+
+List worker scripts
+
+<AutoTypeTable
+  path="generated/tool-params/cloudflare.ts"
+  name="CloudflareListWorkerScriptsParams"
+/>
 
 ## Notes
 
 - Category: Infrastructure
-- Authentication mode: OAuth or token-based
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-
+- Authentication mode: API key

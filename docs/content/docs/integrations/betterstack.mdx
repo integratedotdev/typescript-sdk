@@ -1,11 +1,13 @@
 ---
-title: "Better Stack"
-description: "Monitor uptime, logs, and incident alerts with BetterStack"
+title: "Better Stack Integration"
+description: "Ingest and manage log sources, collectors, and metrics with Better Stack Logs (Logtail) Telemetry API"
 ---
 
-The Better Stack integration provides access to monitor uptime, logs, and incident alerts with betterstack through the Integrate MCP server.
+The Better Stack integration provides access to ingest and manage log sources, collectors, and metrics with Better Stack Logs (Logtail) Telemetry API through the Integrate MCP server.
 
 ## Installation
+
+The Better Stack integration is included with the SDK:
 
 ```typescript
 import { betterstackIntegration } from "integrate-sdk/server";
@@ -13,7 +15,7 @@ import { betterstackIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Better Stack to your server configuration. This integration can read credentials from environment variables automatically (`BETTERSTACK_API_KEY`):
+Add Better Stack to your server configuration. Provide credentials via environment variables or integration config:
 
 ```typescript
 import { createMCPServer, betterstackIntegration } from "integrate-sdk/server";
@@ -21,7 +23,9 @@ import { createMCPServer, betterstackIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    betterstackIntegration(),
+    betterstackIntegration({
+      // See configuration options below
+    }),
   ],
 });
 ```
@@ -31,12 +35,14 @@ export const { client: serverClient } = createMCPServer({
 ```typescript
 import { client } from "integrate-sdk";
 
-const result = await client.betterstack.listSources({
-  // Add the parameters required by this tool
-});
+const result = await client.betterstack.listSources({});
 
 console.log(result);
 ```
+
+## Environment Variables
+
+- `BETTERSTACK_API_KEY` (when supported by this integration)
 
 ## Configuration Options
 
@@ -45,27 +51,109 @@ console.log(result);
   name="BetterStackIntegrationOptions"
 />
 
-## Environment Variables
 
-- `BETTERSTACK_API_KEY`
+## Tools
 
-## Available Tools
+### `betterstack_list_sources`
 
-- `betterstack_list_sources`
-- `betterstack_get_source`
-- `betterstack_create_source`
-- `betterstack_update_source`
-- `betterstack_delete_source`
-- `betterstack_list_source_groups`
-- `betterstack_get_source_group`
-- `betterstack_update_source_group`
-- `betterstack_list_collectors`
-- `betterstack_list_source_metrics`
-- `betterstack_ingest_logs`
+List sources
+
+<AutoTypeTable
+  path="generated/tool-params/betterstack.ts"
+  name="BetterstackListSourcesParams"
+/>
+
+### `betterstack_get_source`
+
+Get source
+
+<AutoTypeTable
+  path="generated/tool-params/betterstack.ts"
+  name="BetterstackGetSourceParams"
+/>
+
+### `betterstack_create_source`
+
+Create source
+
+<AutoTypeTable
+  path="generated/tool-params/betterstack.ts"
+  name="BetterstackCreateSourceParams"
+/>
+
+### `betterstack_update_source`
+
+Update source
+
+<AutoTypeTable
+  path="generated/tool-params/betterstack.ts"
+  name="BetterstackUpdateSourceParams"
+/>
+
+### `betterstack_delete_source`
+
+Delete source
+
+<AutoTypeTable
+  path="generated/tool-params/betterstack.ts"
+  name="BetterstackDeleteSourceParams"
+/>
+
+### `betterstack_list_source_groups`
+
+List source groups
+
+<AutoTypeTable
+  path="generated/tool-params/betterstack.ts"
+  name="BetterstackListSourceGroupsParams"
+/>
+
+### `betterstack_get_source_group`
+
+Get source group
+
+<AutoTypeTable
+  path="generated/tool-params/betterstack.ts"
+  name="BetterstackGetSourceGroupParams"
+/>
+
+### `betterstack_update_source_group`
+
+Update source group
+
+<AutoTypeTable
+  path="generated/tool-params/betterstack.ts"
+  name="BetterstackUpdateSourceGroupParams"
+/>
+
+### `betterstack_list_collectors`
+
+List collectors
+
+<AutoTypeTable
+  path="generated/tool-params/betterstack.ts"
+  name="BetterstackListCollectorsParams"
+/>
+
+### `betterstack_list_source_metrics`
+
+List source metrics
+
+<AutoTypeTable
+  path="generated/tool-params/betterstack.ts"
+  name="BetterstackListSourceMetricsParams"
+/>
+
+### `betterstack_ingest_logs`
+
+Ingest logs
+
+<AutoTypeTable
+  path="generated/tool-params/betterstack.ts"
+  name="BetterstackIngestLogsParams"
+/>
 
 ## Notes
 
 - Category: Engineering
 - Authentication mode: API key
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

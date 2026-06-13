@@ -1,11 +1,13 @@
 ---
-title: "Binance"
-description: "Read Binance Spot prices, order books, and account data with read-only API keys"
+title: "Binance Integration"
+description: "Read Binance Spot market data and account information with API keys scoped to reading only"
 ---
 
-The Binance integration provides access to read binance spot prices, order books, and account data with read-only api keys through the Integrate MCP server.
+The Binance integration provides access to read Binance Spot market data and account information with API keys scoped to reading only through the Integrate MCP server.
 
 ## Installation
+
+The Binance integration is included with the SDK:
 
 ```typescript
 import { binanceIntegration } from "integrate-sdk/server";
@@ -13,7 +15,7 @@ import { binanceIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Binance to your server configuration. This integration can read credentials from environment variables automatically (`BINANCE_API_KEY`, `BINANCE_SECRET_KEY`):
+Add Binance to your server configuration. Provide credentials via environment variables or integration config:
 
 ```typescript
 import { createMCPServer, binanceIntegration } from "integrate-sdk/server";
@@ -21,7 +23,9 @@ import { createMCPServer, binanceIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    binanceIntegration(),
+    binanceIntegration({
+      // See configuration options below
+    }),
   ],
 });
 ```
@@ -31,12 +35,14 @@ export const { client: serverClient } = createMCPServer({
 ```typescript
 import { client } from "integrate-sdk";
 
-const result = await client.binance.ping({
-  // Add the parameters required by this tool
-});
+const result = await client.binance.ping({});
 
 console.log(result);
 ```
+
+## Environment Variables
+
+- `BINANCE_API_KEY` (when supported by this integration)
 
 ## Configuration Options
 
@@ -45,29 +51,106 @@ console.log(result);
   name="BinanceIntegrationOptions"
 />
 
-## Environment Variables
 
-- `BINANCE_API_KEY`
-- `BINANCE_SECRET_KEY`
+## Tools
 
-## Available Tools
+### `binance_ping`
 
-- `binance_ping`
-- `binance_get_server_time`
-- `binance_get_exchange_info`
-- `binance_get_ticker_price`
-- `binance_get_ticker_24hr`
-- `binance_get_order_book`
-- `binance_get_recent_trades`
-- `binance_get_klines`
-- `binance_get_account`
-- `binance_get_open_orders`
-- `binance_get_all_orders`
-- `binance_get_my_trades`
+Ping
+
+_No parameters._
+
+### `binance_get_server_time`
+
+Get server time
+
+_No parameters._
+
+### `binance_get_exchange_info`
+
+Get exchange info
+
+<AutoTypeTable
+  path="generated/tool-params/binance.ts"
+  name="BinanceGetExchangeInfoParams"
+/>
+
+### `binance_get_ticker_price`
+
+Get ticker price
+
+<AutoTypeTable
+  path="generated/tool-params/binance.ts"
+  name="BinanceGetTickerPriceParams"
+/>
+
+### `binance_get_ticker_24hr`
+
+Get ticker 24hr
+
+_No parameters._
+
+### `binance_get_order_book`
+
+Get order book
+
+<AutoTypeTable
+  path="generated/tool-params/binance.ts"
+  name="BinanceGetOrderBookParams"
+/>
+
+### `binance_get_recent_trades`
+
+Get recent trades
+
+<AutoTypeTable
+  path="generated/tool-params/binance.ts"
+  name="BinanceGetRecentTradesParams"
+/>
+
+### `binance_get_klines`
+
+Get klines
+
+<AutoTypeTable
+  path="generated/tool-params/binance.ts"
+  name="BinanceGetKlinesParams"
+/>
+
+### `binance_get_account`
+
+Get account
+
+_No parameters._
+
+### `binance_get_open_orders`
+
+Get open orders
+
+<AutoTypeTable
+  path="generated/tool-params/binance.ts"
+  name="BinanceGetOpenOrdersParams"
+/>
+
+### `binance_get_all_orders`
+
+Get all orders
+
+<AutoTypeTable
+  path="generated/tool-params/binance.ts"
+  name="BinanceGetAllOrdersParams"
+/>
+
+### `binance_get_my_trades`
+
+Get my trades
+
+<AutoTypeTable
+  path="generated/tool-params/binance.ts"
+  name="BinanceGetMyTradesParams"
+/>
 
 ## Notes
 
 - Category: Finance
 - Authentication mode: API key
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

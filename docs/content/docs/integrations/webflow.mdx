@@ -1,11 +1,13 @@
 ---
-title: "Webflow"
-description: "Manage Webflow sites, collections, and CMS content"
+title: "Webflow Integration"
+description: "Manage Webflow sites, CMS collections, pages, forms, and publishing"
 ---
 
-The Webflow integration provides access to manage webflow sites, collections, and cms content through the Integrate MCP server.
+The Webflow integration provides access to manage Webflow sites, CMS collections, pages, forms, and publishing through the Integrate MCP server.
 
 ## Installation
+
+The Webflow integration is included with the SDK:
 
 ```typescript
 import { webflowIntegration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { webflowIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Webflow to your server configuration. The integration automatically reads OAuth credentials from your environment (`WEBFLOW_CLIENT_ID`, `WEBFLOW_CLIENT_SECRET`):
+### 1. Create a Webflow OAuth App
+
+1. Go to [Webflow Developer Portal](https://webflow.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Webflow integration to your server configuration. The integration automatically reads `WEBFLOW_CLIENT_ID` and `WEBFLOW_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, webflowIntegration } from "integrate-sdk/server";
@@ -21,22 +32,44 @@ import { createMCPServer, webflowIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    webflowIntegration(),
+    webflowIntegration({
+      scopes: ["authorized_user:read", "assets:read", "assets:write", "cms:read", "cms:write", "custom_code:read", "custom_code:write", "forms:read", "forms:write", "pages:read", "pages:write", "sites:read", "sites:write"], // Optional
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+webflowIntegration({
+  clientId: process.env.CUSTOM_WEBFLOW_ID,
+  clientSecret: process.env.CUSTOM_WEBFLOW_SECRET,
+      scopes: ["authorized_user:read", "assets:read", "assets:write", "cms:read", "cms:write", "custom_code:read", "custom_code:write", "forms:read", "forms:write", "pages:read", "pages:write", "sites:read", "sites:write"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("webflow");
-const result = await client.webflow.tokenIntrospect({
-  // Add the parameters required by this tool
-});
+const result = await client.webflow.tokenIntrospect({});
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, webflowIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [webflowIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,35 +79,181 @@ console.log(result);
   name="WebflowIntegrationConfig"
 />
 
-## Environment Variables
 
-- `WEBFLOW_CLIENT_ID`
-- `WEBFLOW_CLIENT_SECRET`
+## Default Scopes
 
-## Available Tools
+These defaults are applied unless you override `scopes` in the integration config:
 
-- `webflow_token_introspect`
-- `webflow_get_authorized_user`
-- `webflow_list_sites`
-- `webflow_get_site`
-- `webflow_get_site_custom_domains`
-- `webflow_publish_site`
-- `webflow_list_site_pages`
-- `webflow_list_site_collections`
-- `webflow_get_collection`
-- `webflow_list_collection_items`
-- `webflow_list_live_collection_items`
-- `webflow_get_collection_item`
-- `webflow_create_collection_items`
-- `webflow_update_collection_items`
-- `webflow_delete_collection_items`
-- `webflow_publish_collection_items`
-- `webflow_list_site_forms`
-- `webflow_list_site_webhooks`
+- `authorized_user:read`
+- `assets:read`
+- `assets:write`
+- `cms:read`
+- `cms:write`
+- `custom_code:read`
+- `custom_code:write`
+- `forms:read`
+- `forms:write`
+- `pages:read`
+- `pages:write`
+- `sites:read`
+- `sites:write`
+
+## Tools
+
+### `webflow_token_introspect`
+
+Token introspect
+
+_No parameters._
+
+### `webflow_get_authorized_user`
+
+Get authorized user
+
+_No parameters._
+
+### `webflow_list_sites`
+
+List sites
+
+_No parameters._
+
+### `webflow_get_site`
+
+Get site
+
+<AutoTypeTable
+  path="generated/tool-params/webflow.ts"
+  name="WebflowGetSiteParams"
+/>
+
+### `webflow_get_site_custom_domains`
+
+Get site custom domains
+
+<AutoTypeTable
+  path="generated/tool-params/webflow.ts"
+  name="WebflowGetSiteCustomDomainsParams"
+/>
+
+### `webflow_publish_site`
+
+Publish site
+
+<AutoTypeTable
+  path="generated/tool-params/webflow.ts"
+  name="WebflowPublishSiteParams"
+/>
+
+### `webflow_list_site_pages`
+
+List site pages
+
+<AutoTypeTable
+  path="generated/tool-params/webflow.ts"
+  name="WebflowListSitePagesParams"
+/>
+
+### `webflow_list_site_collections`
+
+List site collections
+
+<AutoTypeTable
+  path="generated/tool-params/webflow.ts"
+  name="WebflowListSiteCollectionsParams"
+/>
+
+### `webflow_get_collection`
+
+Get collection
+
+<AutoTypeTable
+  path="generated/tool-params/webflow.ts"
+  name="WebflowGetCollectionParams"
+/>
+
+### `webflow_list_collection_items`
+
+List collection items
+
+<AutoTypeTable
+  path="generated/tool-params/webflow.ts"
+  name="WebflowListCollectionItemsParams"
+/>
+
+### `webflow_list_live_collection_items`
+
+List live collection items
+
+<AutoTypeTable
+  path="generated/tool-params/webflow.ts"
+  name="WebflowListLiveCollectionItemsParams"
+/>
+
+### `webflow_get_collection_item`
+
+Get collection item
+
+<AutoTypeTable
+  path="generated/tool-params/webflow.ts"
+  name="WebflowGetCollectionItemParams"
+/>
+
+### `webflow_create_collection_items`
+
+Create collection items
+
+<AutoTypeTable
+  path="generated/tool-params/webflow.ts"
+  name="WebflowCreateCollectionItemsParams"
+/>
+
+### `webflow_update_collection_items`
+
+Update collection items
+
+<AutoTypeTable
+  path="generated/tool-params/webflow.ts"
+  name="WebflowUpdateCollectionItemsParams"
+/>
+
+### `webflow_delete_collection_items`
+
+Delete collection items
+
+<AutoTypeTable
+  path="generated/tool-params/webflow.ts"
+  name="WebflowDeleteCollectionItemsParams"
+/>
+
+### `webflow_publish_collection_items`
+
+Publish collection items
+
+<AutoTypeTable
+  path="generated/tool-params/webflow.ts"
+  name="WebflowPublishCollectionItemsParams"
+/>
+
+### `webflow_list_site_forms`
+
+List site forms
+
+<AutoTypeTable
+  path="generated/tool-params/webflow.ts"
+  name="WebflowListSiteFormsParams"
+/>
+
+### `webflow_list_site_webhooks`
+
+List site webhooks
+
+<AutoTypeTable
+  path="generated/tool-params/webflow.ts"
+  name="WebflowListSiteWebhooksParams"
+/>
 
 ## Notes
 
-- Category: Engineering
+- Category: Websites & CMS
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

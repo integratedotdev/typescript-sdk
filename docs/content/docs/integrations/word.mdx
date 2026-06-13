@@ -1,9 +1,9 @@
 ---
-title: "Word"
-description: "Manage Microsoft Word documents stored in OneDrive"
+title: "Word Integration"
+description: "Manage Word documents and sharing"
 ---
 
-The Word integration provides access to Word documents (.docx) stored in OneDrive through the Integrate MCP server. It uses the Microsoft Graph API for file-level operations — the Graph API does not support paragraph-level editing for Word.
+The Word integration provides access to manage Word documents and sharing through the Integrate MCP server.
 
 ## Installation
 
@@ -15,17 +15,16 @@ import { wordIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-### 1. Create a Microsoft App Registration
+### 1. Create a Word OAuth App
 
 1. Go to [Azure Portal — App Registrations](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps)
-2. Create a new registration
-3. Add your redirect URI under **Authentication** (e.g. `https://yourdomain.com/api/integrate/oauth/callback`)
-4. Create a client secret under **Certificates & secrets**
-5. Note your Application (client) ID and Client Secret
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
 
 ### 2. Configure the Integration on Your Server
 
-The integration automatically reads `WORD_CLIENT_ID` and `WORD_CLIENT_SECRET` from your environment:
+Add the Word integration to your server configuration. The integration automatically reads `WORD_CLIENT_ID` and `WORD_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, wordIntegration } from "integrate-sdk/server";
@@ -33,7 +32,8 @@ import { createMCPServer, wordIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    wordIntegration(),
+    wordIntegration({
+    }),
   ],
 });
 ```
@@ -49,14 +49,18 @@ wordIntegration({
 
 ### 3. Client-Side Usage
 
+The default client automatically includes all integrations. You can use it directly:
+
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("word");
-const docs = await client.word.list({});
+const result = await client.word.list({});
+
+console.log(result);
 ```
 
-For a custom client:
+If you're using a custom client, add the integration to the integrations array:
 
 ```typescript
 import { createMCPClient, wordIntegration } from "integrate-sdk";
@@ -73,80 +77,73 @@ const customClient = createMCPClient({
   name="WordIntegrationConfig"
 />
 
-## Available Tools
 
-- **`word_list`** - Search for Word documents
-- **`word_get`** - Get metadata for a document by item ID
-- **`word_create`** - Create a new empty .docx file in OneDrive
-- **`word_copy`** - Copy a document (async for large files)
-- **`word_delete`** - Permanently delete a document
-- **`word_share`** - Create a sharing link
+## Tools
 
-## Examples
+### `word_copy`
 
-### Search for Documents
+Copy a Word document
 
-```typescript
-const result = await client.word.list({ query: "meeting notes" });
-```
+<AutoTypeTable
+  path="generated/tool-params/word.ts"
+  name="WordCopyParams"
+/>
 
-### Create a Document
+### `word_create`
 
-```typescript
-const doc = await client.word.create({
-  name: "Project Brief",       // .docx appended automatically
-  parent_id: "folderId123",    // optional, defaults to root
-});
-```
+Create a new empty .docx file in OneDrive
 
-### Copy a Document
+<AutoTypeTable
+  path="generated/tool-params/word.ts"
+  name="WordCreateParams"
+/>
 
-```typescript
-const result = await client.word.copy({
-  item_id: "ABC123",
-  name: "Project Brief — Copy",
-  parent_id: "archiveFolderId",
-});
+### `word_delete`
 
-// Large files return a pending status — poll monitor_url to confirm
-if (result.status === "pending") {
-  console.log("Copy in progress:", result.monitor_url);
-}
-```
+Delete a Word document permanently
 
-### Create a Sharing Link
+<AutoTypeTable
+  path="generated/tool-params/word.ts"
+  name="WordDeleteParams"
+/>
 
-```typescript
-const link = await client.word.share({
-  item_id: "ABC123",
-  type: "edit",
-  scope: "organization",
-});
-```
+### `word_get`
 
-## OAuth Scopes
+Get metadata for a Word document
 
-The default scope is `Files.ReadWrite.All`. Available scopes:
+<AutoTypeTable
+  path="generated/tool-params/word.ts"
+  name="WordGetParams"
+/>
 
-- **`Files.ReadWrite.All`** - Read and write all files the user can access
-- **`Files.Read.All`** - Read-only access
+### `word_list`
 
-## Error Handling
+Search for Word documents
 
-```typescript
-try {
-  const doc = await client.word.get({ item_id: "ABC123" });
-} catch (error) {
-  if (error.message.includes("404")) {
-    console.error("Document not found");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+<AutoTypeTable
+  path="generated/tool-params/word.ts"
+  name="WordListParams"
+/>
 
-## Next Steps
+### `word_share`
 
-- Manage spreadsheets with the [Excel Integration](/docs/integrations/excel)
-- Manage presentations with the [PowerPoint Integration](/docs/integrations/powerpoint)
-- Manage files and folders with the [OneDrive Integration](/docs/integrations/onedrive)
+Create a sharing link for a Word document
+
+<AutoTypeTable
+  path="generated/tool-params/word.ts"
+  name="WordShareParams"
+/>
+
+### `word_update_content`
+
+Update content
+
+<AutoTypeTable
+  path="generated/tool-params/word.ts"
+  name="WordUpdateContentParams"
+/>
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth

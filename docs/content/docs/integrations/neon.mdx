@@ -1,11 +1,13 @@
 ---
-title: "Neon"
-description: "Manage Neon Postgres projects, branches, and databases"
+title: "Neon Integration"
+description: "Manage Neon Postgres projects, branches, API keys, and connection strings"
 ---
 
-The Neon integration provides access to manage neon postgres projects, branches, and databases through the Integrate MCP server.
+The Neon integration provides access to manage Neon Postgres projects, branches, API keys, and connection strings through the Integrate MCP server.
 
 ## Installation
+
+The Neon integration is included with the SDK:
 
 ```typescript
 import { neonIntegration } from "integrate-sdk/server";
@@ -13,7 +15,7 @@ import { neonIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Neon to your server configuration. This integration can read credentials from environment variables automatically (`NEON_API_KEY`):
+Add Neon to your server configuration. Provide credentials via environment variables or integration config:
 
 ```typescript
 import { createMCPServer, neonIntegration } from "integrate-sdk/server";
@@ -21,7 +23,9 @@ import { createMCPServer, neonIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    neonIntegration(),
+    neonIntegration({
+      // See configuration options below
+    }),
   ],
 });
 ```
@@ -31,12 +35,14 @@ export const { client: serverClient } = createMCPServer({
 ```typescript
 import { client } from "integrate-sdk";
 
-const result = await client.neon.listApiKeys({
-  // Add the parameters required by this tool
-});
+const result = await client.neon.listApiKeys({});
 
 console.log(result);
 ```
+
+## Environment Variables
+
+- `NEON_API_KEY` (when supported by this integration)
 
 ## Configuration Options
 
@@ -45,34 +51,166 @@ console.log(result);
   name="NeonIntegrationOptions"
 />
 
-## Environment Variables
 
-- `NEON_API_KEY`
+## Tools
 
-## Available Tools
+### `neon_list_api_keys`
 
-- `neon_list_api_keys`
-- `neon_create_api_key`
-- `neon_revoke_api_key`
-- `neon_list_organizations`
-- `neon_list_projects`
-- `neon_list_shared_projects`
-- `neon_create_project`
-- `neon_get_project`
-- `neon_update_project`
-- `neon_delete_project`
-- `neon_recover_project`
-- `neon_list_branches`
-- `neon_create_branch`
-- `neon_get_branch`
-- `neon_delete_branch`
-- `neon_list_operations`
-- `neon_get_operation`
-- `neon_get_connection_uri`
+List api keys
+
+_No parameters._
+
+### `neon_create_api_key`
+
+Create api key
+
+<AutoTypeTable
+  path="generated/tool-params/neon.ts"
+  name="NeonCreateApiKeyParams"
+/>
+
+### `neon_revoke_api_key`
+
+Revoke api key
+
+<AutoTypeTable
+  path="generated/tool-params/neon.ts"
+  name="NeonRevokeApiKeyParams"
+/>
+
+### `neon_list_organizations`
+
+List organizations
+
+_No parameters._
+
+### `neon_list_projects`
+
+List projects
+
+<AutoTypeTable
+  path="generated/tool-params/neon.ts"
+  name="NeonListProjectsParams"
+/>
+
+### `neon_list_shared_projects`
+
+List shared projects
+
+<AutoTypeTable
+  path="generated/tool-params/neon.ts"
+  name="NeonListSharedProjectsParams"
+/>
+
+### `neon_create_project`
+
+Create project
+
+<AutoTypeTable
+  path="generated/tool-params/neon.ts"
+  name="NeonCreateProjectParams"
+/>
+
+### `neon_get_project`
+
+Get project
+
+<AutoTypeTable
+  path="generated/tool-params/neon.ts"
+  name="NeonGetProjectParams"
+/>
+
+### `neon_update_project`
+
+Update project
+
+<AutoTypeTable
+  path="generated/tool-params/neon.ts"
+  name="NeonUpdateProjectParams"
+/>
+
+### `neon_delete_project`
+
+Delete project
+
+<AutoTypeTable
+  path="generated/tool-params/neon.ts"
+  name="NeonDeleteProjectParams"
+/>
+
+### `neon_recover_project`
+
+Recover project
+
+<AutoTypeTable
+  path="generated/tool-params/neon.ts"
+  name="NeonRecoverProjectParams"
+/>
+
+### `neon_list_branches`
+
+List branches
+
+<AutoTypeTable
+  path="generated/tool-params/neon.ts"
+  name="NeonListBranchesParams"
+/>
+
+### `neon_create_branch`
+
+Create branch
+
+<AutoTypeTable
+  path="generated/tool-params/neon.ts"
+  name="NeonCreateBranchParams"
+/>
+
+### `neon_get_branch`
+
+Get branch
+
+<AutoTypeTable
+  path="generated/tool-params/neon.ts"
+  name="NeonGetBranchParams"
+/>
+
+### `neon_delete_branch`
+
+Delete branch
+
+<AutoTypeTable
+  path="generated/tool-params/neon.ts"
+  name="NeonDeleteBranchParams"
+/>
+
+### `neon_list_operations`
+
+List operations
+
+<AutoTypeTable
+  path="generated/tool-params/neon.ts"
+  name="NeonListOperationsParams"
+/>
+
+### `neon_get_operation`
+
+Get operation
+
+<AutoTypeTable
+  path="generated/tool-params/neon.ts"
+  name="NeonGetOperationParams"
+/>
+
+### `neon_get_connection_uri`
+
+Get connection uri
+
+<AutoTypeTable
+  path="generated/tool-params/neon.ts"
+  name="NeonGetConnectionUriParams"
+/>
 
 ## Notes
 
 - Category: Infrastructure
 - Authentication mode: API key
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

@@ -1,0 +1,147 @@
+---
+title: "Uber Integration"
+description: "Manage Uber get profile, list products, estimate price, estimate time, list requests"
+---
+
+The Uber integration provides access to manage Uber get profile, list products, estimate price, estimate time, list requests through the Integrate MCP server.
+
+## Installation
+
+The Uber integration is included with the SDK:
+
+```typescript
+import { uberIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create an Uber OAuth App
+
+1. Create an OAuth application for Uber
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Uber integration to your server configuration. The integration automatically reads `UBER_CLIENT_ID` and `UBER_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, uberIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    uberIntegration({
+      scopes: ["profile", "request", "history", "places"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+uberIntegration({
+  clientId: process.env.CUSTOM_UBER_ID,
+  clientSecret: process.env.CUSTOM_UBER_SECRET,
+      scopes: ["profile", "request", "history", "places"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("uber");
+const result = await client.uber.getProfile({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, uberIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [uberIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/uber.ts"
+  name="UberIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `profile`
+- `request`
+- `history`
+- `places`
+
+## Tools
+
+### `uber_get_profile`
+
+Get profile
+
+_No parameters._
+
+### `uber_list_products`
+
+List products
+
+<AutoTypeTable
+  path="generated/tool-params/uber.ts"
+  name="UberListProductsParams"
+/>
+
+### `uber_estimate_price`
+
+Estimate price
+
+<AutoTypeTable
+  path="generated/tool-params/uber.ts"
+  name="UberEstimatePriceParams"
+/>
+
+### `uber_estimate_time`
+
+Estimate time
+
+<AutoTypeTable
+  path="generated/tool-params/uber.ts"
+  name="UberEstimateTimeParams"
+/>
+
+### `uber_list_requests`
+
+List requests
+
+<AutoTypeTable
+  path="generated/tool-params/uber.ts"
+  name="UberListRequestsParams"
+/>
+
+### `uber_create_request`
+
+Create request
+
+<AutoTypeTable
+  path="generated/tool-params/uber.ts"
+  name="UberCreateRequestParams"
+/>
+
+## Notes
+
+- Category: Travel
+- Authentication mode: OAuth

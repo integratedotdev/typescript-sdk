@@ -1,0 +1,144 @@
+---
+title: "FreeAgent Integration"
+description: "Manage FreeAgent get company, list contacts, create contact, list invoices, create invoice"
+---
+
+The FreeAgent integration provides access to manage FreeAgent get company, list contacts, create contact, list invoices, create invoice through the Integrate MCP server.
+
+## Installation
+
+The FreeAgent integration is included with the SDK:
+
+```typescript
+import { freeagentIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a FreeAgent OAuth App
+
+1. Create an OAuth application for FreeAgent
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the FreeAgent integration to your server configuration. The integration automatically reads `FREEAGENT_CLIENT_ID` and `FREEAGENT_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, freeagentIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    freeagentIntegration({
+      scopes: ["full_access"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+freeagentIntegration({
+  clientId: process.env.CUSTOM_FREEAGENT_ID,
+  clientSecret: process.env.CUSTOM_FREEAGENT_SECRET,
+      scopes: ["full_access"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("freeagent");
+const result = await client.freeagent.getCompany({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, freeagentIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [freeagentIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/freeagent.ts"
+  name="FreeagentIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `full_access`
+
+## Tools
+
+### `freeagent_get_company`
+
+Get company
+
+_No parameters._
+
+### `freeagent_list_contacts`
+
+List contacts
+
+<AutoTypeTable
+  path="generated/tool-params/freeagent.ts"
+  name="FreeagentListContactsParams"
+/>
+
+### `freeagent_create_contact`
+
+Create contact
+
+<AutoTypeTable
+  path="generated/tool-params/freeagent.ts"
+  name="FreeagentCreateContactParams"
+/>
+
+### `freeagent_list_invoices`
+
+List invoices
+
+<AutoTypeTable
+  path="generated/tool-params/freeagent.ts"
+  name="FreeagentListInvoicesParams"
+/>
+
+### `freeagent_create_invoice`
+
+Create invoice
+
+<AutoTypeTable
+  path="generated/tool-params/freeagent.ts"
+  name="FreeagentCreateInvoiceParams"
+/>
+
+### `freeagent_list_bills`
+
+List bills
+
+<AutoTypeTable
+  path="generated/tool-params/freeagent.ts"
+  name="FreeagentListBillsParams"
+/>
+
+## Notes
+
+- Category: Accounting
+- Authentication mode: OAuth

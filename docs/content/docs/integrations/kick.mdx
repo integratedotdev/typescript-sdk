@@ -1,0 +1,142 @@
+---
+title: "Kick Integration"
+description: "Manage Kick get users, get channels, get livestreams, get categories, send chat message"
+---
+
+The Kick integration provides access to manage Kick get users, get channels, get livestreams, get categories, send chat message through the Integrate MCP server.
+
+## Installation
+
+The Kick integration is included with the SDK:
+
+```typescript
+import { kickIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Kick OAuth App
+
+1. Create an OAuth application for Kick
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Kick integration to your server configuration. The integration automatically reads `KICK_CLIENT_ID` and `KICK_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, kickIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    kickIntegration({
+      scopes: ["user:read", "channel:read", "channel:write", "chat:write", "events:subscribe"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+kickIntegration({
+  clientId: process.env.CUSTOM_KICK_ID,
+  clientSecret: process.env.CUSTOM_KICK_SECRET,
+      scopes: ["user:read", "channel:read", "channel:write", "chat:write", "events:subscribe"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("kick");
+const result = await client.kick.getUsers({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, kickIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [kickIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/kick.ts"
+  name="KickIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `user:read`
+- `channel:read`
+- `channel:write`
+- `chat:write`
+- `events:subscribe`
+
+## Tools
+
+### `kick_get_users`
+
+Get users
+
+<AutoTypeTable
+  path="generated/tool-params/kick.ts"
+  name="KickGetUsersParams"
+/>
+
+### `kick_get_channels`
+
+Get channels
+
+<AutoTypeTable
+  path="generated/tool-params/kick.ts"
+  name="KickGetChannelsParams"
+/>
+
+### `kick_get_livestreams`
+
+Get livestreams
+
+<AutoTypeTable
+  path="generated/tool-params/kick.ts"
+  name="KickGetLivestreamsParams"
+/>
+
+### `kick_get_categories`
+
+Get categories
+
+<AutoTypeTable
+  path="generated/tool-params/kick.ts"
+  name="KickGetCategoriesParams"
+/>
+
+### `kick_send_chat_message`
+
+Send chat message
+
+<AutoTypeTable
+  path="generated/tool-params/kick.ts"
+  name="KickSendChatMessageParams"
+/>
+
+## Notes
+
+- Category: Entertainment
+- Authentication mode: OAuth

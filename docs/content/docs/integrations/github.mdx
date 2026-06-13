@@ -1,9 +1,9 @@
 ---
-title: "GitHub"
-description: "Manage GitHub repositories, issues, and pull requests"
+title: "GitHub Integration"
+description: "Manage GitHub repos, issues, and pull requests"
 ---
 
-The GitHub integration provides access to GitHub's API through the Integrate MCP server.
+The GitHub integration provides access to manage GitHub repos, issues, and pull requests through the Integrate MCP server.
 
 ## Installation
 
@@ -18,8 +18,8 @@ import { githubIntegration } from "integrate-sdk/server";
 ### 1. Create a GitHub OAuth App
 
 1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
-2. Click "New OAuth App"
-3. Fill in the application details
+2. Create a new OAuth application
+3. Configure your redirect URI
 4. Note your Client ID and Client Secret
 
 ### 2. Configure the Integration on Your Server
@@ -33,7 +33,6 @@ export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
     githubIntegration({
-      scopes: ["repo", "user", "read:org"], // Optional
     }),
   ],
 });
@@ -45,7 +44,6 @@ You can override the environment variables by passing explicit values:
 githubIntegration({
   clientId: process.env.CUSTOM_GITHUB_ID,
   clientSecret: process.env.CUSTOM_GITHUB_SECRET,
-  scopes: ["repo", "user", "read:org"],
 });
 ```
 
@@ -57,7 +55,11 @@ The default client automatically includes all integrations. You can use it direc
 import { client } from "integrate-sdk";
 
 await client.authorize("github");
-const repos = await client.github.listOwnRepos({});
+const result = await client.github.createIssue({
+  owner: "value",
+});
+
+console.log(result);
 ```
 
 If you're using a custom client, add the integration to the integrations array:
@@ -77,135 +79,424 @@ const customClient = createMCPClient({
   name="GitHubIntegrationConfig"
 />
 
-## Available Tools
 
-### Issues
+## Tools
 
-- **`github_create_issue`** - Create a new issue
-- **`github_list_issues`** - List issues in a repository
-- **`github_get_issue`** - Get a specific issue
-- **`github_update_issue`** - Update an issue
-- **`github_close_issue`** - Close an issue
+### `github_create_issue`
 
-### Pull Requests
+Create a new issue in a repository
 
-- **`github_create_pull_request`** - Create a new pull request
-- **`github_list_pull_requests`** - List pull requests
-- **`github_get_pull_request`** - Get a specific pull request
-- **`github_merge_pull_request`** - Merge a pull request
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubCreateIssueParams"
+/>
 
-### Repositories
+### `github_list_issues`
 
-- **`github_list_repos`** - List repositories for a user/org
-- **`github_list_own_repos`** - List your repositories
-- **`github_get_repo`** - Get repository details
-- **`github_create_repo`** - Create a new repository
+List issues in a repository
 
-### Branches
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubListIssuesParams"
+/>
 
-- **`github_list_branches`** - List branches in a repository
-- **`github_create_branch`** - Create a branch from a commit
+### `github_get_issue`
 
-### Commits
+Get a specific issue
 
-- **`github_list_commits`** - List commits in a repository
-- **`github_get_commit`** - Get details for a specific commit
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubGetIssueParams"
+/>
 
-### Users
+### `github_update_issue`
 
-- **`github_get_user`** - Get the authenticated user profile
+Update an existing issue
 
-## Examples
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubUpdateIssueParams"
+/>
 
-### Create an Issue
+### `github_close_issue`
 
-```typescript
-const result = await client.github.createIssue({
-  owner: "username",
-  repo: "repository",
-  title: "Bug: App crashes on startup",
-  body: "When I start the app, it immediately crashes with error XYZ",
-  labels: ["bug", "priority:high"],
-  assignees: ["username"],
-});
+Close an issue
 
-console.log("Issue created:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubCloseIssueParams"
+/>
 
-### List Pull Requests
+### `github_create_pull_request`
 
-```typescript
-const result = await client.github.listPullRequests({
-  owner: "username",
-  repo: "repository",
-  state: "open",
-  sort: "created",
-  direction: "desc",
-});
+Create a pull request
 
-console.log("Open PRs:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubCreatePullRequestParams"
+/>
 
-### Create a Repository
+### `github_list_pull_requests`
 
-```typescript
-const result = await client.github.createRepo({
-  name: "my-new-project",
-  description: "A new project",
-  private: false,
-  autoInit: true,
-});
+List pull requests in a repository
 
-console.log("Repository created:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubListPullRequestsParams"
+/>
 
-### Merge a Pull Request
+### `github_get_pull_request`
 
-```typescript
-const result = await client.github.mergePullRequest({
-  owner: "username",
-  repo: "repository",
-  pullNumber: 42,
-  mergeMethod: "squash",
-  commitTitle: "Feature: Add new functionality",
-});
+Get a specific pull request
 
-console.log("PR merged:", result);
-```
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubGetPullRequestParams"
+/>
 
-## OAuth Scopes
+### `github_merge_pull_request`
 
-The default scopes are `['repo', 'user']`. You may need additional scopes depending on what tools you use:
+Merge a pull request
 
-- **`repo`** - Full control of private repositories
-- **`user`** - Read/write access to profile info
-- **`read:org`** - Read organization data
-- **`write:org`** - Manage organization data
-- **`admin:repo_hook`** - Manage repository webhooks
-- **`gist`** - Create and manage gists
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubMergePullRequestParams"
+/>
 
-## Error Handling
+### `github_list_repos`
 
-```typescript
-try {
-  const result = await client.github.createIssue({
-    owner: "username",
-    repo: "repository",
-    title: "New issue",
-  });
-} catch (error) {
-  if (error.message.includes("not found")) {
-    console.error("Repository not found");
-  } else if (error.message.includes("authentication")) {
-    console.error("Authentication failed");
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
+List repositories (for a user or organization)
 
-## Next Steps
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubListReposParams"
+/>
 
-- Explore the [Gmail Integration](/docs/integrations/gmail)
-- Configure [Additional Integrations](/docs/integrations/custom-integrations)
-- See [Advanced Usage](/docs/guides/advanced-usage) for more examples
+### `github_list_own_repos`
+
+List repositories for the authenticated user
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubListOwnReposParams"
+/>
+
+### `github_get_repo`
+
+Get a specific repository
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubGetRepoParams"
+/>
+
+### `github_create_repo`
+
+Create a new repository
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubCreateRepoParams"
+/>
+
+### `github_list_branches`
+
+List branches in a repository
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubListBranchesParams"
+/>
+
+### `github_create_branch`
+
+Create a new branch
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubCreateBranchParams"
+/>
+
+### `github_get_authenticated_user`
+
+Get information about the authenticated user
+
+_No parameters._
+
+### `github_get_user`
+
+Get information about a user
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubGetUserParams"
+/>
+
+### `github_list_commits`
+
+List commits in a repository
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubListCommitsParams"
+/>
+
+### `github_get_commit`
+
+Get a specific commit
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubGetCommitParams"
+/>
+
+### `github_list_issue_comments`
+
+List comments on an issue
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubListIssueCommentsParams"
+/>
+
+### `github_add_issue_comment`
+
+Add a comment to an issue
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubAddIssueCommentParams"
+/>
+
+### `github_update_issue_comment`
+
+Update an issue comment
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubUpdateIssueCommentParams"
+/>
+
+### `github_delete_issue_comment`
+
+Delete an issue comment
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubDeleteIssueCommentParams"
+/>
+
+### `github_list_pr_files`
+
+List pr files
+
+_No parameters._
+
+### `github_list_pr_commits`
+
+List pr commits
+
+_No parameters._
+
+### `github_list_pr_reviews`
+
+List pr reviews
+
+_No parameters._
+
+### `github_create_pr_review`
+
+Create pr review
+
+_No parameters._
+
+### `github_list_pr_review_comments`
+
+List pr review comments
+
+_No parameters._
+
+### `github_get_file_contents`
+
+Get the contents of a file or directory in a repository
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubGetFileContentsParams"
+/>
+
+### `github_create_or_update_file`
+
+Create or update a file in a repository
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubCreateOrUpdateFileParams"
+/>
+
+### `github_delete_file`
+
+Delete a file from a repository
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubDeleteFileParams"
+/>
+
+### `github_list_releases`
+
+List releases in a repository
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubListReleasesParams"
+/>
+
+### `github_get_release`
+
+Get a specific release
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubGetReleaseParams"
+/>
+
+### `github_get_latest_release`
+
+Get the latest release for a repository
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubGetLatestReleaseParams"
+/>
+
+### `github_create_release`
+
+Create a release
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubCreateReleaseParams"
+/>
+
+### `github_list_labels`
+
+List labels for a repository
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubListLabelsParams"
+/>
+
+### `github_create_label`
+
+Create a label in a repository
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubCreateLabelParams"
+/>
+
+### `github_add_issue_labels`
+
+Add labels to an issue
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubAddIssueLabelsParams"
+/>
+
+### `github_list_collaborators`
+
+List collaborators for a repository
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubListCollaboratorsParams"
+/>
+
+### `github_fork_repo`
+
+Fork a repository
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubForkRepoParams"
+/>
+
+### `github_search_repos`
+
+Search repositories
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubSearchReposParams"
+/>
+
+### `github_search_issues`
+
+Search issues and pull requests
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubSearchIssuesParams"
+/>
+
+### `github_search_code`
+
+Search code
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubSearchCodeParams"
+/>
+
+### `github_list_workflows`
+
+List workflows in a repository
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubListWorkflowsParams"
+/>
+
+### `github_list_workflow_runs`
+
+List workflow runs for a repository or workflow
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubListWorkflowRunsParams"
+/>
+
+### `github_trigger_workflow`
+
+Trigger a workflow dispatch event
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubTriggerWorkflowParams"
+/>
+
+### `github_list_milestones`
+
+List milestones for a repository
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubListMilestonesParams"
+/>
+
+### `github_create_milestone`
+
+Create a milestone
+
+<AutoTypeTable
+  path="generated/tool-params/github.ts"
+  name="GithubCreateMilestoneParams"
+/>
+
+## Notes
+
+- Category: Engineering
+- Authentication mode: OAuth

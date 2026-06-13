@@ -1,0 +1,148 @@
+---
+title: "Exact Online Integration"
+description: "Manage Exact Online list divisions, list accounts, list items, list sales invoices, create sales invoice"
+---
+
+The Exact Online integration provides access to manage Exact Online list divisions, list accounts, list items, list sales invoices, create sales invoice through the Integrate MCP server.
+
+## Installation
+
+The Exact Online integration is included with the SDK:
+
+```typescript
+import { exactOnlineIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create an Exact Online OAuth App
+
+1. Create an OAuth application for Exact Online
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Exact Online integration to your server configuration. The integration automatically reads `EXACT_ONLINE_CLIENT_ID` and `EXACT_ONLINE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, exactOnlineIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    exactOnlineIntegration({
+      scopes: ["financial", "crm", "sales", "purchase", "offline_access"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+exactOnlineIntegration({
+  clientId: process.env.CUSTOM_EXACT_ONLINE_ID,
+  clientSecret: process.env.CUSTOM_EXACT_ONLINE_SECRET,
+      scopes: ["financial", "crm", "sales", "purchase", "offline_access"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("exact_online");
+const result = await client.exact_online.listDivisions({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, exactOnlineIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [exactOnlineIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/exact_online.ts"
+  name="ExactOnlineIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `financial`
+- `crm`
+- `sales`
+- `purchase`
+- `offline_access`
+
+## Tools
+
+### `exact_online_list_divisions`
+
+Online list divisions
+
+_No parameters._
+
+### `exact_online_list_accounts`
+
+Online list accounts
+
+<AutoTypeTable
+  path="generated/tool-params/exact_online.ts"
+  name="ExactOnlineListAccountsParams"
+/>
+
+### `exact_online_list_items`
+
+Online list items
+
+<AutoTypeTable
+  path="generated/tool-params/exact_online.ts"
+  name="ExactOnlineListItemsParams"
+/>
+
+### `exact_online_list_sales_invoices`
+
+Online list sales invoices
+
+<AutoTypeTable
+  path="generated/tool-params/exact_online.ts"
+  name="ExactOnlineListSalesInvoicesParams"
+/>
+
+### `exact_online_create_sales_invoice`
+
+Online create sales invoice
+
+<AutoTypeTable
+  path="generated/tool-params/exact_online.ts"
+  name="ExactOnlineCreateSalesInvoiceParams"
+/>
+
+### `exact_online_list_gl_accounts`
+
+Online list gl accounts
+
+<AutoTypeTable
+  path="generated/tool-params/exact_online.ts"
+  name="ExactOnlineListGlAccountsParams"
+/>
+
+## Notes
+
+- Category: Accounting
+- Authentication mode: OAuth

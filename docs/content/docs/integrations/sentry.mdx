@@ -1,11 +1,13 @@
 ---
-title: "Sentry"
+title: "Sentry Integration"
 description: "Monitor Sentry errors, issues, releases, and projects"
 ---
 
-The Sentry integration provides access to monitor sentry errors, issues, releases, and projects through the Integrate MCP server.
+The Sentry integration provides access to monitor Sentry errors, issues, releases, and projects through the Integrate MCP server.
 
 ## Installation
+
+The Sentry integration is included with the SDK:
 
 ```typescript
 import { sentryIntegration } from "integrate-sdk/server";
@@ -13,7 +15,16 @@ import { sentryIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add Sentry to your server configuration. The integration automatically reads OAuth credentials from your environment (`SENTRY_CLIENT_ID`, `SENTRY_CLIENT_SECRET`):
+### 1. Create a Sentry OAuth App
+
+1. Go to [Sentry Developer Portal](https://sentry.io)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Sentry integration to your server configuration. The integration automatically reads `SENTRY_CLIENT_ID` and `SENTRY_CLIENT_SECRET` from your environment variables:
 
 ```typescript
 import { createMCPServer, sentryIntegration } from "integrate-sdk/server";
@@ -21,22 +32,46 @@ import { createMCPServer, sentryIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    sentryIntegration(),
+    sentryIntegration({
+      scopes: ["org:read", "project:read", "team:read", "member:read", "event:read", "event:write", "project:releases"], // Optional
+    }),
   ],
 });
 ```
 
-### Client-Side Usage
+You can override the environment variables by passing explicit values:
+
+```typescript
+sentryIntegration({
+  clientId: process.env.CUSTOM_SENTRY_ID,
+  clientSecret: process.env.CUSTOM_SENTRY_SECRET,
+      scopes: ["org:read", "project:read", "team:read", "member:read", "event:read", "event:write", "project:releases"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
 
 ```typescript
 import { client } from "integrate-sdk";
 
 await client.authorize("sentry");
 const result = await client.sentry.getOrganization({
-  // Add the parameters required by this tool
+  org_slug: "value",
 });
 
 console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, sentryIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [sentryIntegration()],
+});
 ```
 
 ## Configuration Options
@@ -46,31 +81,148 @@ console.log(result);
   name="SentryIntegrationConfig"
 />
 
-## Environment Variables
 
-- `SENTRY_CLIENT_ID`
-- `SENTRY_CLIENT_SECRET`
+## Default Scopes
 
-## Available Tools
+These defaults are applied unless you override `scopes` in the integration config:
 
-- `sentry_get_organization`
-- `sentry_list_org_projects`
-- `sentry_list_org_members`
-- `sentry_get_project`
-- `sentry_list_issues`
-- `sentry_get_issue`
-- `sentry_update_issue`
-- `sentry_list_issue_events`
-- `sentry_list_project_events`
-- `sentry_list_releases`
-- `sentry_get_release`
-- `sentry_create_release`
-- `sentry_list_release_commits`
-- `sentry_resolve_short_id`
+- `org:read`
+- `project:read`
+- `team:read`
+- `member:read`
+- `event:read`
+- `event:write`
+- `project:releases`
+
+## Tools
+
+### `sentry_get_organization`
+
+Get organization
+
+<AutoTypeTable
+  path="generated/tool-params/sentry.ts"
+  name="SentryGetOrganizationParams"
+/>
+
+### `sentry_list_org_projects`
+
+List org projects
+
+<AutoTypeTable
+  path="generated/tool-params/sentry.ts"
+  name="SentryListOrgProjectsParams"
+/>
+
+### `sentry_list_org_members`
+
+List org members
+
+<AutoTypeTable
+  path="generated/tool-params/sentry.ts"
+  name="SentryListOrgMembersParams"
+/>
+
+### `sentry_get_project`
+
+Get project
+
+<AutoTypeTable
+  path="generated/tool-params/sentry.ts"
+  name="SentryGetProjectParams"
+/>
+
+### `sentry_list_issues`
+
+List issues
+
+<AutoTypeTable
+  path="generated/tool-params/sentry.ts"
+  name="SentryListIssuesParams"
+/>
+
+### `sentry_get_issue`
+
+Get issue
+
+<AutoTypeTable
+  path="generated/tool-params/sentry.ts"
+  name="SentryGetIssueParams"
+/>
+
+### `sentry_update_issue`
+
+Update issue
+
+<AutoTypeTable
+  path="generated/tool-params/sentry.ts"
+  name="SentryUpdateIssueParams"
+/>
+
+### `sentry_list_issue_events`
+
+List issue events
+
+<AutoTypeTable
+  path="generated/tool-params/sentry.ts"
+  name="SentryListIssueEventsParams"
+/>
+
+### `sentry_list_project_events`
+
+List project events
+
+<AutoTypeTable
+  path="generated/tool-params/sentry.ts"
+  name="SentryListProjectEventsParams"
+/>
+
+### `sentry_list_releases`
+
+List releases
+
+<AutoTypeTable
+  path="generated/tool-params/sentry.ts"
+  name="SentryListReleasesParams"
+/>
+
+### `sentry_get_release`
+
+Get release
+
+<AutoTypeTable
+  path="generated/tool-params/sentry.ts"
+  name="SentryGetReleaseParams"
+/>
+
+### `sentry_create_release`
+
+Create release
+
+<AutoTypeTable
+  path="generated/tool-params/sentry.ts"
+  name="SentryCreateReleaseParams"
+/>
+
+### `sentry_list_release_commits`
+
+List release commits
+
+<AutoTypeTable
+  path="generated/tool-params/sentry.ts"
+  name="SentryListReleaseCommitsParams"
+/>
+
+### `sentry_resolve_short_id`
+
+Resolve short id
+
+<AutoTypeTable
+  path="generated/tool-params/sentry.ts"
+  name="SentryResolveShortIdParams"
+/>
 
 ## Notes
 
 - Category: Engineering
 - Authentication mode: OAuth
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-

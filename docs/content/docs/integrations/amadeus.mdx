@@ -1,0 +1,138 @@
+---
+title: "Amadeus Integration"
+description: "Manage Amadeus search flights, price flight, search hotels, get hotel offers, search locations"
+---
+
+The Amadeus integration provides access to manage Amadeus search flights, price flight, search hotels, get hotel offers, search locations through the Integrate MCP server.
+
+## Installation
+
+The Amadeus integration is included with the SDK:
+
+```typescript
+import { amadeusIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create an Amadeus OAuth App
+
+1. Create an OAuth application for Amadeus
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Amadeus integration to your server configuration. The integration automatically reads `AMADEUS_CLIENT_ID` and `AMADEUS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, amadeusIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    amadeusIntegration({
+      scopes: ["travel"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+amadeusIntegration({
+  clientId: process.env.CUSTOM_AMADEUS_ID,
+  clientSecret: process.env.CUSTOM_AMADEUS_SECRET,
+      scopes: ["travel"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("amadeus");
+const result = await client.amadeus.searchFlights({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, amadeusIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [amadeusIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/amadeus.ts"
+  name="AmadeusIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `travel`
+
+## Tools
+
+### `amadeus_search_flights`
+
+Search flights
+
+<AutoTypeTable
+  path="generated/tool-params/amadeus.ts"
+  name="AmadeusSearchFlightsParams"
+/>
+
+### `amadeus_price_flight`
+
+Price flight
+
+<AutoTypeTable
+  path="generated/tool-params/amadeus.ts"
+  name="AmadeusPriceFlightParams"
+/>
+
+### `amadeus_search_hotels`
+
+Search hotels
+
+<AutoTypeTable
+  path="generated/tool-params/amadeus.ts"
+  name="AmadeusSearchHotelsParams"
+/>
+
+### `amadeus_get_hotel_offers`
+
+Get hotel offers
+
+<AutoTypeTable
+  path="generated/tool-params/amadeus.ts"
+  name="AmadeusGetHotelOffersParams"
+/>
+
+### `amadeus_search_locations`
+
+Search locations
+
+<AutoTypeTable
+  path="generated/tool-params/amadeus.ts"
+  name="AmadeusSearchLocationsParams"
+/>
+
+## Notes
+
+- Category: Travel
+- Authentication mode: OAuth

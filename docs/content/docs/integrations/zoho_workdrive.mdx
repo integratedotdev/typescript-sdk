@@ -1,0 +1,147 @@
+---
+title: "Zoho WorkDrive Integration"
+description: "Manage Zoho WorkDrive team folders, files, folders, and collaborators"
+---
+
+The Zoho WorkDrive integration provides access to manage Zoho WorkDrive team folders, files, folders, and collaborators through the Integrate MCP server.
+
+## Installation
+
+The Zoho WorkDrive integration is included with the SDK:
+
+```typescript
+import { zohoWorkdriveIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Zoho WorkDrive OAuth App
+
+1. Go to [Zoho API Console](https://api-console.zoho.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Zoho WorkDrive integration to your server configuration. The integration automatically reads `ZOHO_WORKDRIVE_CLIENT_ID` and `ZOHO_WORKDRIVE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, zohoWorkdriveIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    zohoWorkdriveIntegration({
+      scopes: ["WorkDrive.files.ALL", "WorkDrive.teamfolders.READ", "WorkDrive.users.READ"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+zohoWorkdriveIntegration({
+  clientId: process.env.CUSTOM_ZOHO_WORKDRIVE_ID,
+  clientSecret: process.env.CUSTOM_ZOHO_WORKDRIVE_SECRET,
+      scopes: ["WorkDrive.files.ALL", "WorkDrive.teamfolders.READ", "WorkDrive.users.READ"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("zoho_workdrive");
+const result = await client.zoho_workdrive.listTeams({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, zohoWorkdriveIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [zohoWorkdriveIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/zoho_workdrive.ts"
+  name="ZohoWorkdriveIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `WorkDrive.files.ALL`
+- `WorkDrive.teamfolders.READ`
+- `WorkDrive.users.READ`
+
+## Tools
+
+### `zoho_workdrive_list_teams`
+
+Workdrive list teams
+
+_No parameters._
+
+### `zoho_workdrive_list_team_folders`
+
+Workdrive list team folders
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_workdrive.ts"
+  name="ZohoWorkdriveListTeamFoldersParams"
+/>
+
+### `zoho_workdrive_get_team_folder`
+
+Workdrive get team folder
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_workdrive.ts"
+  name="ZohoWorkdriveGetTeamFolderParams"
+/>
+
+### `zoho_workdrive_list_files`
+
+Workdrive list files
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_workdrive.ts"
+  name="ZohoWorkdriveListFilesParams"
+/>
+
+### `zoho_workdrive_get_file`
+
+Workdrive get file
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_workdrive.ts"
+  name="ZohoWorkdriveGetFileParams"
+/>
+
+### `zoho_workdrive_create_folder`
+
+Workdrive create folder
+
+<AutoTypeTable
+  path="generated/tool-params/zoho_workdrive.ts"
+  name="ZohoWorkdriveCreateFolderParams"
+/>
+
+## Notes
+
+- Category: Storage
+- Authentication mode: OAuth

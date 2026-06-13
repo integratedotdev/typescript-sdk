@@ -1,11 +1,13 @@
 ---
-title: "WorkOS"
-description: "Manage WorkOS organizations, users, directory sync, and AuthKit"
+title: "WorkOS Integration"
+description: "Manage WorkOS organizations, AuthKit users, memberships, and directory sync"
 ---
 
-The WorkOS integration provides access to manage workos organizations, users, directory sync, and authkit through the Integrate MCP server.
+The WorkOS integration provides access to manage WorkOS organizations, AuthKit users, memberships, and directory sync through the Integrate MCP server.
 
 ## Installation
+
+The WorkOS integration is included with the SDK:
 
 ```typescript
 import { workosIntegration } from "integrate-sdk/server";
@@ -13,7 +15,7 @@ import { workosIntegration } from "integrate-sdk/server";
 
 ## Setup
 
-Add WorkOS to your server configuration. This integration can read credentials from environment variables automatically (`WORKOS_API_KEY`):
+Add WorkOS to your server configuration. Provide credentials via environment variables or integration config:
 
 ```typescript
 import { createMCPServer, workosIntegration } from "integrate-sdk/server";
@@ -21,7 +23,9 @@ import { createMCPServer, workosIntegration } from "integrate-sdk/server";
 export const { client: serverClient } = createMCPServer({
   apiKey: process.env.INTEGRATE_API_KEY,
   integrations: [
-    workosIntegration(),
+    workosIntegration({
+      // See configuration options below
+    }),
   ],
 });
 ```
@@ -31,12 +35,14 @@ export const { client: serverClient } = createMCPServer({
 ```typescript
 import { client } from "integrate-sdk";
 
-const result = await client.workos.listOrganizations({
-  // Add the parameters required by this tool
-});
+const result = await client.workos.listOrganizations({});
 
 console.log(result);
 ```
+
+## Environment Variables
+
+- `WORKOS_API_KEY` (when supported by this integration)
 
 ## Configuration Options
 
@@ -45,27 +51,109 @@ console.log(result);
   name="WorkOSIntegrationOptions"
 />
 
-## Environment Variables
 
-- `WORKOS_API_KEY`
+## Tools
 
-## Available Tools
+### `workos_list_organizations`
 
-- `workos_list_organizations`
-- `workos_get_organization`
-- `workos_create_organization`
-- `workos_update_organization`
-- `workos_list_users`
-- `workos_get_user`
-- `workos_list_organization_memberships`
-- `workos_list_directories`
-- `workos_get_directory`
-- `workos_list_directory_users`
-- `workos_get_directory_user`
+List organizations
+
+<AutoTypeTable
+  path="generated/tool-params/workos.ts"
+  name="WorkosListOrganizationsParams"
+/>
+
+### `workos_get_organization`
+
+Get organization
+
+<AutoTypeTable
+  path="generated/tool-params/workos.ts"
+  name="WorkosGetOrganizationParams"
+/>
+
+### `workos_create_organization`
+
+Create organization
+
+<AutoTypeTable
+  path="generated/tool-params/workos.ts"
+  name="WorkosCreateOrganizationParams"
+/>
+
+### `workos_update_organization`
+
+Update organization
+
+<AutoTypeTable
+  path="generated/tool-params/workos.ts"
+  name="WorkosUpdateOrganizationParams"
+/>
+
+### `workos_list_users`
+
+List users
+
+<AutoTypeTable
+  path="generated/tool-params/workos.ts"
+  name="WorkosListUsersParams"
+/>
+
+### `workos_get_user`
+
+Get user
+
+<AutoTypeTable
+  path="generated/tool-params/workos.ts"
+  name="WorkosGetUserParams"
+/>
+
+### `workos_list_organization_memberships`
+
+List organization memberships
+
+<AutoTypeTable
+  path="generated/tool-params/workos.ts"
+  name="WorkosListOrganizationMembershipsParams"
+/>
+
+### `workos_list_directories`
+
+List directories
+
+<AutoTypeTable
+  path="generated/tool-params/workos.ts"
+  name="WorkosListDirectoriesParams"
+/>
+
+### `workos_get_directory`
+
+Get directory
+
+<AutoTypeTable
+  path="generated/tool-params/workos.ts"
+  name="WorkosGetDirectoryParams"
+/>
+
+### `workos_list_directory_users`
+
+List directory users
+
+<AutoTypeTable
+  path="generated/tool-params/workos.ts"
+  name="WorkosListDirectoryUsersParams"
+/>
+
+### `workos_get_directory_user`
+
+Get directory user
+
+<AutoTypeTable
+  path="generated/tool-params/workos.ts"
+  name="WorkosGetDirectoryUserParams"
+/>
 
 ## Notes
 
-- Category: Infrastructure
+- Category: Identity & Access
 - Authentication mode: API key
-- Tool names and input shapes are defined by the MCP server, so prefer the generated client methods and config table above when wiring this up.
-
