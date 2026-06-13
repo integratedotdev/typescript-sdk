@@ -35,6 +35,8 @@ export {
   parseScopes,
   providerTokenRecordToData,
   selectProviderTokenRow,
+  listConnectedProviders,
+  listConnectedProvidersFromRows,
 } from "./token-store.js";
 
 export {

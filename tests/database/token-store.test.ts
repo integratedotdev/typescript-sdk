@@ -3,6 +3,7 @@ import {
   normalizeAccountEmail,
   selectProviderTokenRow,
   providerTokenRecordToData,
+  listConnectedProvidersFromRows,
 } from "../../src/database/token-store.js";
 import type { ProviderTokenRecord } from "../../src/database/types.js";
 import { toDbSchedule, toSdkTrigger } from "../../src/database/trigger-store.js";
@@ -49,6 +50,22 @@ describe("token-store", () => {
 
   test("normalizeAccountEmail lowercases values", () => {
     expect(normalizeAccountEmail(" Dev@Example.com ")).toBe("dev@example.com");
+  });
+
+  test("listConnectedProvidersFromRows returns usable providers", () => {
+    const rows = [
+      tokenRow({ provider: "github" }),
+      tokenRow({ id: "tok_2", provider: "gmail", accountEmail: "a@b.com" }),
+      tokenRow({
+        id: "tok_3",
+        provider: "slack",
+        accessToken: "",
+        refreshToken: null,
+      }),
+    ];
+
+    expect(listConnectedProvidersFromRows(rows).sort()).toEqual(["github", "gmail"]);
+    expect(listConnectedProvidersFromRows(rows, ["github"]).sort()).toEqual(["github"]);
   });
 });
 

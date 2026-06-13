@@ -15,7 +15,8 @@ import { MCPMethod } from "./protocol/messages.js";
 import type { MCPIntegration, OAuthConfig } from "./integrations/types.js";
 import { toConfiguredIntegrationSummary, toConfiguredIntegrationWithToolMetadata } from "./integrations/integration-summary.js";
 import { integrationLibraryPresentationFields } from "./integrations/library-metadata.js";
-import type { MCPClientConfig, ReauthHandler, ToolCallOptions, MCPContext } from "./config/types.js";
+import type { MCPClientConfig, ReauthHandler, ToolCallOptions, MCPContext, EnabledToolsAsyncOptions } from "./config/types.js";
+import { listConnectedProviders } from "./database/token-store.js";
 import {
   parseServerError,
   isAuthError,
@@ -1566,65 +1567,65 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
    * // tools[0].inputSchema is guaranteed to be populated
    * ```
    */
-  async getEnabledToolsAsync(): Promise<MCPTool[]> {
-    // If connected and tools are cached, return from cache
-    if (this.isConnected() && this.availableTools.size > 0) {
-      return this.getEnabledTools();
+  async getEnabledToolsAsync(
+    options?: EnabledToolsAsyncOptions
+  ): Promise<MCPTool[]> {
+    const targetIntegrationIds = await this.resolveTargetIntegrationIds(options);
+
+    if (targetIntegrationIds.size === 0) {
+      return [];
     }
 
-    // If we have cached tools from a previous fetch, return them
-    if (this.availableTools.size > 0) {
-      return this.getEnabledTools();
+    const filterToTargets = (tools: MCPTool[]) =>
+      this.filterToolsToIntegrations(tools, targetIntegrationIds);
+
+    const hasCompleteCache = () => {
+      for (const integration of this.integrations) {
+        if (!targetIntegrationIds.has(integration.id)) continue;
+        for (const toolName of integration.tools) {
+          if (!this.enabledToolNames.has(toolName)) continue;
+          const cached = this.availableTools.get(toolName);
+          if (!cached?.inputSchema) return false;
+        }
+      }
+      return this.availableTools.size > 0;
+    };
+
+    if (this.availableTools.size > 0 && hasCompleteCache()) {
+      return filterToTargets(this.getEnabledTools());
     }
 
-    // Fetch tools from server via API for each enabled integration
     const tools: MCPTool[] = [];
-
-    // Get unique integration IDs from enabled tool names
-    const integrationIds = new Set<string>();
-    for (const integration of this.integrations) {
-      integrationIds.add(integration.id);
-    }
-
-    // Use parallelWithLimit to fetch tools for all integrations concurrently
     const { parallelWithLimit } = await import('./utils/concurrency.js');
+    const concurrency = options?.fetchConcurrency ?? 8;
 
     const integrationToolsResults = await parallelWithLimit(
-      Array.from(integrationIds),
+      Array.from(targetIntegrationIds),
       async (integrationId: string) => {
         try {
           const response = await this.callServerToolInternal('list_tools_by_integration', {
             integration: integrationId,
           });
 
-          // Parse tools from response
           const integrationTools: MCPTool[] = [];
           if (response.content && Array.isArray(response.content)) {
             for (const item of response.content) {
               if (item.type === 'text' && item.text) {
                 try {
                   const parsed = JSON.parse(item.text);
-                  if (Array.isArray(parsed)) {
-                    // Response is array of tools
-                    for (const tool of parsed) {
-                      if (tool.name && tool.inputSchema) {
-                        integrationTools.push({
-                          name: tool.name,
-                          description: tool.description,
-                          inputSchema: tool.inputSchema,
-                        });
-                      }
-                    }
-                  } else if (parsed.tools && Array.isArray(parsed.tools)) {
-                    // Response has tools property
-                    for (const tool of parsed.tools) {
-                      if (tool.name && tool.inputSchema) {
-                        integrationTools.push({
-                          name: tool.name,
-                          description: tool.description,
-                          inputSchema: tool.inputSchema,
-                        });
-                      }
+                  const parsedTools = Array.isArray(parsed)
+                    ? parsed
+                    : parsed.tools && Array.isArray(parsed.tools)
+                      ? parsed.tools
+                      : [];
+
+                  for (const tool of parsedTools) {
+                    if (tool.name && tool.inputSchema) {
+                      integrationTools.push({
+                        name: tool.name,
+                        description: tool.description,
+                        inputSchema: tool.inputSchema,
+                      });
                     }
                   }
                 } catch {
@@ -1639,21 +1640,67 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
           return [];
         }
       },
-      3 // Concurrency limit
+      concurrency
     );
 
-    // Flatten results and add to tools array
     for (const integrationTools of integrationToolsResults) {
       tools.push(...integrationTools);
     }
 
-    // Cache the fetched tools
     for (const tool of tools) {
       this.availableTools.set(tool.name, tool);
     }
 
-    // Filter to only enabled tools and return
-    return tools.filter((tool) => this.enabledToolNames.has(tool.name));
+    return filterToTargets(
+      tools.filter((tool) => this.enabledToolNames.has(tool.name))
+    );
+  }
+
+  private async resolveTargetIntegrationIds(
+    options?: EnabledToolsAsyncOptions
+  ): Promise<Set<string>> {
+    const configuredIds = this.integrations.map((integration) => integration.id);
+    const configuredSet = new Set(configuredIds);
+
+    if (options?.integrationIds && options.integrationIds.length > 0) {
+      return new Set(
+        options.integrationIds.filter((id) => configuredSet.has(id))
+      );
+    }
+
+    if (options?.connectedOnly && options.context?.userId) {
+      const connected = await listConnectedProviders(
+        configuredIds,
+        (provider, email, context) =>
+          this.oauthManager.getProviderToken(provider, email, context),
+        options.context
+      );
+      return new Set(connected);
+    }
+
+    return configuredSet;
+  }
+
+  private filterToolsToIntegrations(
+    tools: MCPTool[],
+    integrationIds: Set<string>
+  ): MCPTool[] {
+    if (integrationIds.size === 0) {
+      return [];
+    }
+
+    const allowedNames = new Set<string>();
+    for (const integration of this.integrations) {
+      if (!integrationIds.has(integration.id)) continue;
+      for (const toolName of integration.tools) {
+        allowedNames.add(toolName);
+      }
+    }
+
+    return tools.filter(
+      (tool) =>
+        this.enabledToolNames.has(tool.name) && allowedNames.has(tool.name)
+    );
   }
 
   /**

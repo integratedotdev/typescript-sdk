@@ -6,6 +6,8 @@
 
 import { z } from "zod";
 import type { MCPClient } from "../client.js";
+import type { MCPContext } from "../config/types.js";
+import type { EnabledToolsAsyncOptions } from "../config/types.js";
 
 /**
  * Options for AI provider tool conversions
@@ -40,6 +42,43 @@ export interface AIToolsOptions {
    * ```
    */
   providerTokens?: Record<string, string>;
+  /**
+   * Limit tool discovery to specific integration IDs (e.g. `['github', 'gmail']`).
+   * Only `list_tools_by_integration` calls for these integrations are made.
+   */
+  integrationIds?: string[];
+  /**
+   * When true with `context.userId`, only fetch tools for integrations the user
+   * has OAuth tokens for (via `getProviderToken` / database adapter).
+   */
+  connectedOnly?: boolean;
+  /** User context for connected-only filtering and multi-tenant token lookup */
+  context?: MCPContext;
+  /**
+   * Max parallel `list_tools_by_integration` requests during cold discovery.
+   * @default 8
+   */
+  fetchConcurrency?: number;
+}
+
+/** Map AI helper options to client tool-discovery options */
+export function toEnabledToolsAsyncOptions(
+  options?: Pick<
+    AIToolsOptions,
+    "integrationIds" | "connectedOnly" | "context" | "fetchConcurrency"
+  >
+): EnabledToolsAsyncOptions | undefined {
+  if (!options) return undefined;
+  const { integrationIds, connectedOnly, context, fetchConcurrency } = options;
+  if (
+    integrationIds === undefined &&
+    connectedOnly === undefined &&
+    context === undefined &&
+    fetchConcurrency === undefined
+  ) {
+    return undefined;
+  }
+  return { integrationIds, connectedOnly, context, fetchConcurrency };
 }
 
 /**

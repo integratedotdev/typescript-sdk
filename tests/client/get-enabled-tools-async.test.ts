@@ -492,4 +492,97 @@ describe("getEnabledToolsAsync", () => {
     expect(createIssueTool?.inputSchema.properties?.repo).toBeDefined();
     expect(createIssueTool?.inputSchema.properties?.title).toBeDefined();
   });
+
+  test("integrationIds limits list_tools_by_integration fan-out", async () => {
+    const fetchedIntegrations: string[] = [];
+    const mockFetch = mock(async (url: string, options?: any) => {
+      if (url.includes("/api/integrate/mcp")) {
+        const body = JSON.parse(options?.body || "{}");
+        const integration = body.arguments?.integration;
+        fetchedIntegrations.push(integration);
+
+        const toolsMap: Record<string, any[]> = {
+          github: [
+            {
+              name: "github_create_issue",
+              description: "Create issue",
+              inputSchema: { type: "object", properties: {} },
+            },
+          ],
+          slack: [
+            {
+              name: "slack_send_message",
+              description: "Send message",
+              inputSchema: { type: "object", properties: {} },
+            },
+          ],
+        };
+
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            content: [{
+              type: "text",
+              text: JSON.stringify(toolsMap[integration] || []),
+            }],
+          }),
+          headers: new Headers(),
+        } as Response;
+      }
+      return { ok: false } as Response;
+    }) as any;
+
+    globalThis.fetch = mockFetch;
+
+    const client = createMCPClient({
+      integrations: [
+        createSimpleIntegration({
+          id: "github",
+          tools: ["github_create_issue"],
+        }),
+        createSimpleIntegration({
+          id: "slack",
+          tools: ["slack_send_message"],
+        }),
+      ],
+      connectionMode: "manual",
+      singleton: false,
+    });
+
+    (client as any).transport = { isConnected: () => false };
+
+    const tools = await client.getEnabledToolsAsync({ integrationIds: ["github"] });
+
+    expect(tools).toHaveLength(1);
+    expect(tools[0].name).toBe("github_create_issue");
+    expect(fetchedIntegrations).toEqual(["github"]);
+  });
+
+  test("connectedOnly returns empty when no tokens are available", async () => {
+    const mockFetch = mock(async () => ({ ok: false } as Response)) as any;
+    globalThis.fetch = mockFetch;
+
+    const client = createMCPClient({
+      integrations: [
+        createSimpleIntegration({
+          id: "github",
+          tools: ["github_create_issue"],
+        }),
+      ],
+      getProviderToken: async () => undefined,
+      connectionMode: "manual",
+      singleton: false,
+    });
+
+    (client as any).transport = { isConnected: () => false };
+
+    const tools = await client.getEnabledToolsAsync({
+      connectedOnly: true,
+      context: { userId: "user_1" },
+    });
+
+    expect(tools).toHaveLength(0);
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
 });

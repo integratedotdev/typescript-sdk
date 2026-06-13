@@ -2337,6 +2337,8 @@ export {
   parseScopes,
   providerTokenRecordToData,
   selectProviderTokenRow,
+  listConnectedProviders,
+  listConnectedProvidersFromRows,
   flattenedTriggerToCreateInput,
   toDbSchedule,
   toDbTriggerUpdates,

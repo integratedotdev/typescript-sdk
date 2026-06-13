@@ -63,6 +63,26 @@ export interface ToolCallOptions {
 }
 
 /**
+ * Options for async tool discovery (`getEnabledToolsAsync` and AI helpers).
+ */
+export interface EnabledToolsAsyncOptions {
+  /** Only discover tools for these integration IDs */
+  integrationIds?: string[];
+  /**
+   * When true with `context.userId`, only integrations with OAuth tokens
+   * for that user are discovered.
+   */
+  connectedOnly?: boolean;
+  /** User context for connected-only filtering */
+  context?: MCPContext;
+  /**
+   * Parallel `list_tools_by_integration` requests during cold discovery.
+   * @default 8
+   */
+  fetchConcurrency?: number;
+}
+
+/**
  * Server-side configuration (extends client config with API key)
  * 
  * API key is only available server-side for security reasons.

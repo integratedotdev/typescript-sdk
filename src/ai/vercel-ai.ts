@@ -13,6 +13,7 @@ import {
   getProviderTokens,
   executeToolWithToken,
   ensureClientConnected,
+  toEnabledToolsAsyncOptions,
   type AIToolsOptions
 } from "./utils.js";
 import { createTriggerTools } from "./trigger-tools.js";
@@ -158,7 +159,7 @@ export async function getVercelAITools(
 
   // Use getEnabledToolsAsync to ensure schemas are always populated
   // This fetches from server if not connected, otherwise uses cached tools
-  const mcpTools = await client.getEnabledToolsAsync();
+  const mcpTools = await client.getEnabledToolsAsync(toEnabledToolsAsyncOptions(options));
   const vercelTools: Record<string, any> = {};
 
   let effectiveMode: 'code' | 'tools';

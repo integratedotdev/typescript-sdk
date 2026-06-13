@@ -7,7 +7,7 @@
 import type { MCPClient } from "../client.js";
 import type { MCPTool } from "../protocol/messages.js";
 import type { MCPContext } from "../config/types.js";
-import { executeToolWithToken, getProviderTokens, ensureClientConnected, type AIToolsOptions } from "./utils.js";
+import { executeToolWithToken, getProviderTokens, ensureClientConnected, type AIToolsOptions, toEnabledToolsAsyncOptions } from "./utils.js";
 import { createTriggerTools } from "./trigger-tools.js";
 import {
   buildCodeModeTool,
@@ -148,7 +148,7 @@ export async function getOpenAITools(
 
   // Use getEnabledToolsAsync to ensure schemas are always populated
   // This fetches from server if not connected, otherwise uses cached tools
-  const mcpTools = await client.getEnabledToolsAsync();
+  const mcpTools = await client.getEnabledToolsAsync(toEnabledToolsAsyncOptions(options));
   let effectiveMode: 'code' | 'tools';
   if (options?.mode !== undefined) {
     effectiveMode = options.mode;
@@ -264,7 +264,7 @@ async function handleOpenAIToolCalls(
   let cachedCodeModeTool: Awaited<ReturnType<typeof buildCodeModeTool>> | null = null;
   const getCodeModeTool = async () => {
     if (cachedCodeModeTool) return cachedCodeModeTool;
-    const mcpTools = await client.getEnabledToolsAsync();
+    const mcpTools = await client.getEnabledToolsAsync(toEnabledToolsAsyncOptions(options));
     cachedCodeModeTool = buildCodeModeTool(client, {
       tools: mcpTools,
       providerTokens: options?.providerTokens,

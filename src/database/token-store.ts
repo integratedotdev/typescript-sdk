@@ -1,3 +1,4 @@
+import type { MCPContext } from "../config/types.js";
 import type { ProviderTokenData } from "../oauth/types.js";
 import type { ProviderTokenRecord } from "./types.js";
 
@@ -166,6 +167,77 @@ export function providerTokenRecordToData(
     email: row.accountEmail ?? undefined,
     accountId: row.accountId ?? undefined,
   };
+}
+
+/**
+ * Derive connected provider IDs from token rows (one provider per distinct `provider` field).
+ */
+export function listConnectedProvidersFromRows(
+  rows: ProviderTokenRecord[],
+  configuredIntegrationIds?: readonly string[]
+): string[] {
+  const allowed = configuredIntegrationIds
+    ? new Set(configuredIntegrationIds)
+    : undefined;
+
+  const rowsByProvider = new Map<string, ProviderTokenRecord[]>();
+  for (const row of rows) {
+    if (allowed && !allowed.has(row.provider)) continue;
+    const existing = rowsByProvider.get(row.provider);
+    if (existing) {
+      existing.push(row);
+    } else {
+      rowsByProvider.set(row.provider, [row]);
+    }
+  }
+
+  const connected: string[] = [];
+  for (const [provider, providerRows] of rowsByProvider.entries()) {
+    const selected = selectProviderTokenRow(providerRows);
+    if (selected && isLikelyUsableToken(selected)) {
+      connected.push(provider);
+    }
+  }
+
+  return connected.sort();
+}
+
+/**
+ * Resolve which configured integrations have usable OAuth tokens for a user.
+ * Uses `getProviderToken` so it works with database adapters and custom callbacks.
+ */
+export async function listConnectedProviders(
+  configuredIntegrationIds: readonly string[],
+  getProviderToken: (
+    provider: string,
+    email?: string,
+    context?: MCPContext
+  ) => Promise<ProviderTokenData | undefined> | ProviderTokenData | undefined,
+  context: MCPContext
+): Promise<string[]> {
+  if (!context.userId || configuredIntegrationIds.length === 0) {
+    return [];
+  }
+
+  const connected: string[] = [];
+
+  await Promise.all(
+    configuredIntegrationIds.map(async (provider) => {
+      try {
+        const token = await getProviderToken(provider, undefined, context);
+        if (
+          token?.accessToken ||
+          (typeof token?.refreshToken === "string" && token.refreshToken.length > 0)
+        ) {
+          connected.push(provider);
+        }
+      } catch {
+        // Skip providers that fail token lookup
+      }
+    })
+  );
+
+  return connected.sort();
 }
 
 export function defaultResolveAccountIdentity(
