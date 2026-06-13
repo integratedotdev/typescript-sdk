@@ -1,0 +1,115 @@
+---
+title: Production Next.js App
+description: Recommended integrate-sdk setup for multi-integration AI apps (drizzleAdapter, code mode, caching)
+---
+
+This guide summarizes patterns proven in production apps using integrate-sdk with Next.js App Router, Better Auth, and Vercel AI SDK.
+
+## Server setup
+
+```typescript
+// lib/integrate.ts
+import {
+  createMCPServer,
+  createIntegrationBundle,
+  createMemoryToolDiscoveryCache,
+  createToolDiscoveryCacheInvalidator,
+} from "integrate-sdk/server";
+import { drizzleAdapter } from "integrate-sdk/adapters/drizzle";
+import { db } from "@/database";
+import { providerToken, trigger } from "@/database/schema";
+
+const toolDiscoveryCache = createMemoryToolDiscoveryCache();
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY!,
+  apiBaseUrl: process.env.APP_URL,
+  codeMode: { publicUrl: process.env.INTEGRATE_URL ?? process.env.APP_URL },
+  integrations: createIntegrationBundle({ include: ["github", "gmail", "slack"] }),
+  enabledProviders: ["github", "gmail", "slack"],
+  database: drizzleAdapter(db, {
+    provider: "pg",
+    schema: { providerToken, trigger },
+    hooks: {
+      onTokenChange: ({ userId }) => {
+        void toolDiscoveryCache.invalidate(userId);
+      },
+    },
+  }),
+  getSessionContext: async (req) => {
+    const session = await auth.api.getSession({ headers: req.headers });
+    return session?.user?.id ? { userId: session.user.id } : undefined;
+  },
+  triggers: {
+    onComplete: handleTriggerCompletion,
+    getCallbackUrl: () => process.env.APP_URL!,
+  },
+});
+```
+
+## Route handler
+
+```typescript
+// app/api/integrate/[...all]/route.ts
+import { serverClient } from "@/lib/integrate";
+import { toNextJsHandler } from "integrate-sdk/server";
+
+export const maxDuration = 300;
+export const { POST, GET } = toNextJsHandler(serverClient);
+```
+
+Tool name normalization runs inside the SDK handler — no app-level POST wrapper required.
+
+## AI chat tools
+
+```typescript
+import { getVercelAITools } from "integrate-sdk/server";
+import { serverClient } from "@/lib/integrate";
+
+const tools = await getVercelAITools(serverClient, {
+  context: { userId: session.user.id },
+  connectedOnly: true,
+  mode: "code",
+  cache: { cache: toolDiscoveryCache, ttlMs: 300_000 },
+});
+```
+
+See [Performance](/docs/guides/performance) and [MCP Tool Scoping](/docs/guides/mcp-tool-scoping).
+
+## Browser OAuth UI
+
+```tsx
+"use client";
+import { client } from "integrate-sdk";
+import { useIntegrateAuth } from "integrate-sdk/react";
+
+function ConnectGitHub() {
+  const { isAuthorized, authorize, isLoading } = useIntegrateAuth(client, "github");
+
+  return (
+    <button disabled={isLoading || isAuthorized} onClick={() => void authorize()}>
+      {isAuthorized ? "Connected" : "Connect GitHub"}
+    </button>
+  );
+}
+```
+
+Disconnect multi-account tokens with `disconnectAccount(provider, email, { userId })` on the server.
+
+## Internal service auth
+
+Background jobs that call MCP tools without a user session should pass explicit context:
+
+```typescript
+await serverClient.callTool("gmail_list_messages", { maxResults: 5 }, {
+  context: { userId: actorUserId },
+});
+```
+
+Protect internal routes with shared secrets validated in `getSessionContext`.
+
+## Related guides
+
+- [Native Automations](/docs/guides/native-automations) — hybrid scheduling
+- [Code Mode](/docs/artificial-intelligence/code-mode)
+- [Triggers](/docs/getting-started/triggers)

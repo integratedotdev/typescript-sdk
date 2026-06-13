@@ -2,6 +2,8 @@
   "title": "Guides",
   "pages": [
     "mcp-tool-scoping",
-    "performance"
+    "performance",
+    "production-nextjs",
+    "native-automations"
   ]
 }

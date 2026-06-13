@@ -1,0 +1,78 @@
+---
+title: Native Automations with SDK Primitives
+description: Run app-owned schedulers while using integrate-sdk for OAuth, tool execution, and step results
+---
+
+Production apps like [Individu](https://github.com/integratedotdev/individu) often outgrow SDK-managed trigger CRUD but still rely on integrate-sdk for the hard parts: OAuth tokens, MCP tool execution, and multi-step callbacks.
+
+## When to use what
+
+| Pattern | Use when |
+|---------|----------|
+| **SDK triggers** (`triggers.onComplete`, `serverClient.trigger.*`) | You want scheduler registration + CRUD handled by the SDK |
+| **Native orchestration** | You own scheduling (cron, queues, Vercel cron) but call MCP tools server-side |
+| **Hybrid** | Legacy SDK triggers + new native automations; share `onComplete` for multi-step flows |
+
+## Server-side tool execution
+
+Use the public `callTool` API (not `_callToolByName`):
+
+```typescript
+import { serverClient } from "@/lib/integrate";
+import { parseMCPToolResult } from "integrate-sdk/server";
+
+const raw = await serverClient.callTool("github_list_repos", { per_page: 10 }, {
+  context: { userId },
+});
+
+const result = parseMCPToolResult(raw);
+if (!result.ok) {
+  throw new Error(result.error);
+}
+```
+
+`parseMCPToolResult` normalizes MCP `isError`, `success: false`, `structuredContent`, and text `content` blocks.
+
+## Multi-step orchestration (`onComplete`)
+
+Wire SDK trigger callbacks when steps should chain:
+
+```typescript
+createMCPServer({
+  // ...
+  triggers: {
+    onComplete: async (ctx) => {
+      // ctx.request.steps — normalize with parseMCPToolResult per step
+      // return { hasMore, nextStep } for chained execution
+      return { hasMore: false };
+    },
+    getCallbackUrl: () => process.env.APP_URL!,
+  },
+});
+```
+
+Types: `StepResult`, `CompleteCallbackContext`, `CompleteResponse` from `integrate-sdk`.
+
+## Template variables between steps
+
+Resolve outputs from prior steps in your orchestrator (see Individu's `lib/automations/template.ts` pattern). Keep templates in your app; the SDK provides execution + result parsing only.
+
+## Performance for automation agents
+
+Reuse cached AI tools across chat and automation paths:
+
+```typescript
+import { getVercelAITools } from "integrate-sdk/server";
+import { createMemoryToolDiscoveryCache } from "integrate-sdk/server";
+
+const cache = createMemoryToolDiscoveryCache();
+
+const tools = await getVercelAITools(serverClient, {
+  context: { userId },
+  connectedOnly: true,
+  mode: "code",
+  cache: { cache, ttlMs: 5 * 60 * 1000 },
+});
+```
+
+Invalidate on OAuth connect/disconnect via `createToolDiscoveryCacheInvalidator(cache)` in your database adapter `onTokenChange` hook.

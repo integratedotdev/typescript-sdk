@@ -762,6 +762,12 @@ export type {
 
 export { MCPMethod } from "./protocol/messages.js";
 
+export {
+  parseMCPToolResult,
+  isMCPToolError,
+  type ParsedMCPToolResult,
+} from "./utils/parse-tool-result.js";
+
 // Transport
 export { HttpSessionTransport } from "./transport/http-session.js";
 export type {

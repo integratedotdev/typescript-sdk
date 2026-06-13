@@ -24,6 +24,11 @@ import {
   CODE_MODE_TOOL_NAME,
   TYPES_TOOL_NAME,
 } from "../code-mode/tool-builder.js";
+import {
+  persistToolDiscoveryCache,
+  resolveToolDiscoveryCacheKey,
+  warmToolDiscoveryFromCache,
+} from "./tool-cache.js";
 
 /**
  * Tool definition compatible with Vercel AI SDK v5
@@ -157,9 +162,31 @@ export async function getVercelAITools(
   // Auto-connect if needed (handles server actions/functions where connect() wasn't called)
   await ensureClientConnected(client);
 
+  const cacheConfig = options?.cache;
+  let cacheKey: string | undefined;
+  if (cacheConfig?.cache && options?.context) {
+    cacheKey = await resolveToolDiscoveryCacheKey(client, options.context, {
+      integrationIds: options.integrationIds,
+      connectedOnly: options.connectedOnly,
+    });
+    if (cacheKey) {
+      await warmToolDiscoveryFromCache(client, cacheConfig.cache, cacheKey);
+    }
+  }
+
   // Use getEnabledToolsAsync to ensure schemas are always populated
   // This fetches from server if not connected, otherwise uses cached tools
   const mcpTools = await client.getEnabledToolsAsync(toEnabledToolsAsyncOptions(options));
+
+  if (cacheConfig?.cache && cacheKey) {
+    await persistToolDiscoveryCache(
+      client,
+      cacheConfig.cache,
+      cacheKey,
+      cacheConfig.ttlMs
+    );
+  }
+
   const vercelTools: Record<string, any> = {};
 
   let effectiveMode: 'code' | 'tools';

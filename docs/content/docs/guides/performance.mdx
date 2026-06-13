@@ -38,6 +38,32 @@ await getVercelAITools(serverClient, {
 
 Invalidate your app-level cache when tokens change (OAuth connect/disconnect).
 
+## Built-in tool discovery cache (v0.9.60+)
+
+Pass a `cache` adapter to `getVercelAITools` instead of hand-rolling Redis + `hydrateToolCache`:
+
+```typescript
+import {
+  getVercelAITools,
+  createMemoryToolDiscoveryCache,
+  createToolDiscoveryCacheInvalidator,
+} from "integrate-sdk/server";
+
+const cache = createMemoryToolDiscoveryCache();
+
+const tools = await getVercelAITools(serverClient, {
+  context: { userId },
+  connectedOnly: true,
+  mode: "code",
+  cache: { cache, ttlMs: 5 * 60 * 1000 },
+});
+
+// In drizzleAdapter onTokenChange:
+createToolDiscoveryCacheInvalidator(cache)({ userId });
+```
+
+Implement `ToolDiscoveryCacheAdapter` for Redis (see production Next.js guide). Keys default to `userId:provider1,provider2`.
+
 ## `hydrateToolCache` for serverless
 
 The SDK exposes `hydrateToolCache` on the server client so you can restore tool metadata without per-integration fetches:

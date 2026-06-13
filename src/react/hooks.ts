@@ -364,3 +364,116 @@ export function useIntegrateAI(
   }, [client, apiPattern, debug]);
 }
 
+export interface UseIntegrateAuthResult {
+  isAuthorized: boolean;
+  isLoading: boolean;
+  error: string | null;
+  authorize: () => Promise<void>;
+  disconnect: (email?: string) => Promise<void>;
+  refresh: () => Promise<void>;
+}
+
+/**
+ * OAuth connection state and actions for a single provider.
+ * Replaces manual `client.on('auth:*')` listeners in connect UIs.
+ */
+export function useIntegrateAuth(
+  client: MCPClient<any> | null | undefined,
+  provider: string,
+  options?: { email?: string; returnUrl?: string }
+): UseIntegrateAuthResult {
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const refresh = async () => {
+    if (!client) {
+      setIsAuthorized(false);
+      setIsLoading(false);
+      return;
+    }
+    try {
+      const authorized = await client.isAuthorized(provider, options?.email);
+      setIsAuthorized(authorized);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!client || !isReactHooksAvailable()) {
+      setIsLoading(false);
+      return;
+    }
+
+    void refresh();
+
+    const onChange = () => {
+      void refresh();
+    };
+    const onError = (event: unknown) => {
+      const payload = event as { provider?: string; error?: string };
+      if (payload.provider === provider) {
+        setError(payload.error ?? "Authorization failed");
+      }
+    };
+
+    client.on("auth:complete", onChange);
+    client.on("auth:disconnect", onChange);
+    client.on("auth:logout", onChange);
+    client.on("auth:error" as "auth:complete", onError);
+
+    return () => {
+      client.off("auth:complete", onChange);
+      client.off("auth:disconnect", onChange);
+      client.off("auth:logout", onChange);
+      client.off("auth:error" as "auth:complete", onError);
+    };
+  }, [client, provider, options?.email]);
+
+  const authorize = async () => {
+    if (!client) return;
+    setError(null);
+    setIsLoading(true);
+    try {
+      await client.authorize(
+        provider,
+        options?.returnUrl ? { returnUrl: options.returnUrl } : undefined
+      );
+      await refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      setIsLoading(false);
+    }
+  };
+
+  const disconnect = async (email?: string) => {
+    if (!client) return;
+    setError(null);
+    setIsLoading(true);
+    try {
+      if (email) {
+        await client.disconnectAccount(provider, email);
+      } else {
+        await client.disconnectProvider(provider);
+      }
+      await refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      setIsLoading(false);
+    }
+  };
+
+  return {
+    isAuthorized,
+    isLoading,
+    error,
+    authorize,
+    disconnect,
+    refresh,
+  };
+}
+

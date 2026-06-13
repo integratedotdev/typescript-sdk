@@ -1206,16 +1206,14 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
   }
 
   /**
-   * Internal method for integrations to call tools by name
-   * Used by integrations like Vercel AI that need to map from tool names
-   * @internal
+   * @deprecated Use {@link MCPClientBase.callTool} instead. Alias retained for compatibility.
    */
   async _callToolByName(
     name: string,
     args?: Record<string, unknown>,
     options?: ToolCallOptions
   ): Promise<MCPToolCallResponse> {
-    return await this.callToolWithRetry(name, args, 0, options);
+    return await this.callTool(name, args, options);
   }
 
   /**

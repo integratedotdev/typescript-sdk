@@ -59,6 +59,11 @@ export interface AIToolsOptions {
    * @default 8
    */
   fetchConcurrency?: number;
+  /**
+   * Optional cache for tool metadata (serverless cold-start optimization).
+   * Pair with {@link createToolDiscoveryCacheInvalidator} on `onTokenChange`.
+   */
+  cache?: import("./tool-cache.js").ToolDiscoveryCacheOptions;
 }
 
 /** Map AI helper options to client tool-discovery options */

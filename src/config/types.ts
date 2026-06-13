@@ -341,6 +341,13 @@ export interface MCPServerConfig<TIntegrations extends readonly MCPIntegration[]
   schedulerUrl?: string;
 
   /**
+   * Product-level allowlist of integration ids to register on this server.
+   * Filters `integrations` before OAuth registration and `listConfiguredIntegrations`.
+   * Use with `allIntegrations()` / `createIntegrationBundle({ include })` for a single source of truth.
+   */
+  enabledProviders?: readonly string[];
+
+  /**
    * Code Mode configuration
    *
    * When the AI helpers (`getVercelAITools`, `getOpenAITools`, etc.) are called with
@@ -725,6 +732,12 @@ export interface MCPClientConfig<TIntegrations extends readonly MCPIntegration[]
    */
   useServerConfig?: boolean;
 }
+
+/**
+ * When set on `createMCPServer`, only these integration ids are registered
+ * and returned from `listConfiguredIntegrations`. Replaces ad-hoc allowlists in apps.
+ */
+export type MCPServerEnabledProviders = readonly string[];
 
 /**
  * Input config for `createMCPServer`. `triggers` may be partial when using a

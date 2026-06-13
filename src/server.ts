@@ -16,6 +16,7 @@ import { toWebRequest, sendWebResponse } from './adapters/node.js';
 import { setLogLevel, createLogger, type LogContext } from './utils/logger.js';
 import { resolveAccessToken as resolveAccessTokenHelper, RefreshRejectedError } from './oauth/refresh.js';
 import type { ProviderTokenData } from './oauth/types.js';
+import { normalizeToolName } from './utils/normalize-tool-name.js';
 
 /**
  * Logger context for server-side logging
@@ -124,6 +125,14 @@ async function refreshTokenIfNeeded(
  * Server client with attached handler, POST, and GET route handlers
  */
 export type MCPServerClient<TIntegrations extends readonly MCPIntegration[]> = MCPClient<TIntegrations> & {
+  /** Call an MCP tool by name with optional user context for token resolution. */
+  callTool: MCPClient<TIntegrations>['callTool'];
+  /** Seed tool metadata cache without network discovery (serverless cold-start optimization). */
+  hydrateToolCache: MCPClient<TIntegrations>['hydrateToolCache'];
+  /** All tool metadata currently in the local cache. */
+  getAvailableTools: MCPClient<TIntegrations>['getAvailableTools'];
+  /** Enabled tools from local cache only (no network). */
+  getCachedEnabledTools: MCPClient<TIntegrations>['getCachedEnabledTools'];
   /** Unified handler function that handles both POST and GET requests. Supports both Web API Request and Node.js IncomingMessage. 
    * If a ServerResponse is provided, the response will be automatically sent to it. Otherwise, returns a Response object. */
   handler: (request: Request | IncomingMessage, contextOrRes?: { params?: { action?: string; all?: string | string[] } } | ServerResponse, context?: { params?: { action?: string; all?: string | string[] } }) => Promise<Response | void>;
@@ -176,44 +185,6 @@ function resolveProviderFromToolName(toolName: string, candidates: string[]): st
     }
   }
   return best;
-}
-
-const TOOL_ALIASES: Record<string, string> = {
-  // Known hallucinated → real tool name mappings (extend as discovered)
-  github_list_repo_contents: 'github_get_file_contents',
-  gdrive_list: 'gdrive_list_files',
-  gdrive_get: 'gdrive_get_file',
-  gdrive_delete: 'gdrive_delete_file',
-  gdrive_trash: 'gdrive_trash_file',
-  gdrive_upload: 'gdrive_upload_text_file',
-  gdrive_download: 'gdrive_download_file',
-};
-
-/**
- * Normalize common client-side tool name mistakes before forwarding to mcp.integrate.dev:
- * 1. Alias table for known hallucinated names
- * 2. Strip integration prefix from MCP meta-tools: github___list_tools → ___list_tools
- * 3. Strip duplicate integration prefix: github_github_X → github_X
- */
-function normalizeToolName(toolName: string, candidates: string[]): string {
-  if (TOOL_ALIASES[toolName]) return TOOL_ALIASES[toolName];
-
-  const tripleIdx = toolName.indexOf('___');
-  if (tripleIdx > 0) {
-    const prefix = toolName.slice(0, tripleIdx);
-    if (candidates.some(c => c === prefix)) {
-      return toolName.slice(tripleIdx);
-    }
-  }
-
-  for (const candidate of candidates) {
-    const doublePrefix = `${candidate}_${candidate}_`;
-    if (toolName.startsWith(doublePrefix)) {
-      return `${candidate}_${toolName.slice(doublePrefix.length)}`;
-    }
-  }
-
-  return toolName;
 }
 
 const unauthenticatedCodeModeWarnings = new Set<string>();
@@ -393,7 +364,17 @@ function getDefaultRedirectUri(): string {
 export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>(
   inputConfig: MCPServerConfigInput<TIntegrations>
 ) {
-  const config = mergeDatabaseConfig(inputConfig);
+  let config = mergeDatabaseConfig(inputConfig);
+
+  if (config.enabledProviders?.length) {
+    const allowed = new Set(config.enabledProviders);
+    config = {
+      ...config,
+      integrations: config.integrations.filter((i) =>
+        allowed.has(i.id)
+      ) as unknown as TIntegrations,
+    };
+  }
 
   // Initialize logger based on debug flag (server context only)
   setLogLevel(config.debug ? 'debug' : 'error', SERVER_LOG_CONTEXT);
@@ -2315,6 +2296,12 @@ export { zohoWriterIntegration } from './integrations/zoho_writer.js';
 export { zohoSprintsIntegration } from './integrations/zoho_sprints.js';
 
 export {
+  allIntegrations,
+  createIntegrationBundle,
+  type IntegrationBundleOptions,
+} from './integrations/bundle.js';
+
+export {
   createDatabaseAdapterCallbacks,
   createDatabaseAdapterFactory,
   drizzleAdapter,
@@ -2353,3 +2340,25 @@ export {
   type ProviderTokenRecord,
   type TokenChangeEvent,
 } from './database/index.js';
+
+export {
+  parseMCPToolResult,
+  isMCPToolError,
+  type ParsedMCPToolResult,
+} from './utils/parse-tool-result.js';
+
+export { normalizeToolName, TOOL_ALIASES } from './utils/normalize-tool-name.js';
+
+export {
+  buildToolDiscoveryCacheKey,
+  createMemoryToolDiscoveryCache,
+  createToolDiscoveryCacheInvalidator,
+  resolveToolDiscoveryCacheKey,
+  applyToolDiscoveryCache,
+  persistToolDiscoveryCache,
+  warmToolDiscoveryFromCache,
+  stubsFromTools,
+  type ToolDiscoveryCacheAdapter,
+  type ToolDiscoveryCacheOptions,
+  type ToolMetadataStub,
+} from './ai/tool-cache.js';
