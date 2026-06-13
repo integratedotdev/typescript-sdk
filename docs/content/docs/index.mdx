@@ -5,17 +5,17 @@ description: A universal TypeScript SDK for seamlessly connecting your applicati
 
 import { Cards, Card } from "fumadocs-ui/components/card";
 
-The Integrate SDK is a universal, type-safe TypeScript library that bridges your applications to third-party services through the Model Context Protocol (MCP). It provides seamless integration with services like GitHub, Gmail, Notion, and more—both in the browser and on the server—without the complexity of managing OAuth flows, API differences, or connection states.
+The Integrate SDK is a universal, type-safe TypeScript library that bridges your applications to third-party services through the Model Context Protocol (MCP). It provides seamless integration with services like GitHub, Gmail, Notion, and more, both in the browser and on the server, without the complexity of managing OAuth flows, API differences, or connection states.
 
 ## Why Integrate SDK?
 
 Building applications that connect to multiple third-party services is challenging. Each service has its own OAuth implementation, API quirks, and authentication patterns. You need to handle OAuth flows in the browser, manage tokens securely, make API calls from your backend, and deal with re-authentication when tokens expire.
 
-The Integrate SDK solves this by providing a unified, type-safe interface to all your integrations. You configure your OAuth credentials once, authorize users through a seamless flow (popup or redirect), and then make API calls from anywhere in your stack—whether that's client-side JavaScript, server-side API routes, or serverless functions. The SDK handles token management, streaming connections to the MCP server, and provides full TypeScript support so you know exactly what tools are available and what parameters they need.
+The Integrate SDK solves this by providing a unified, type-safe interface to all your integrations. You configure your OAuth credentials once, authorize users through a seamless flow (popup or redirect), and then make API calls from anywhere in your stack, whether that's client-side JavaScript, server-side API routes, or serverless functions. The SDK handles token management, streaming connections to the MCP server, and provides full TypeScript support so you know exactly what tools are available and what parameters they need.
 
 ## How It Works
 
-The SDK connects to the Integrate MCP server (`https://mcp.integrate.dev/api/v1/mcp`) using HTTP streaming with newline-delimited JSON. You bring your own OAuth app credentials for each integration you want to use—whether that's a GitHub OAuth app, Google Cloud project, or Notion integration.
+The SDK connects to the Integrate MCP server (`https://mcp.integrate.dev/api/v1/mcp`) using HTTP streaming with newline-delimited JSON. You bring your own OAuth app credentials for each integration you want to use, whether that's a GitHub OAuth app, Google Cloud project, or Notion integration.
 
 When a user authorizes your app, the OAuth flow happens through the server, which securely stores the credentials. The SDK receives a session token that it uses for all subsequent API calls. This token works everywhere: in the browser for rich user experiences, in your Next.js API routes for server-side operations, or in your Node.js backend services.
 
@@ -46,7 +46,7 @@ The Integrate SDK is designed to be both powerful and simple to use:
   />
   <Card
     title="Quick Start"
-    href="/docs/getting-started/quick-start"
+    href="/docs/getting-started/basic-usage"
     description="Get up and running in minutes"
   />
   <Card
@@ -56,7 +56,7 @@ The Integrate SDK is designed to be both powerful and simple to use:
   />
   <Card
     title="OAuth Flow"
-    href="/docs/guides/oauth-flow"
+    href="/docs/getting-started/basic-usage"
     description="Learn how to authorize users with OAuth 2.0"
   />
   <Card
@@ -66,7 +66,7 @@ The Integrate SDK is designed to be both powerful and simple to use:
   />
   <Card
     title="Advanced Usage"
-    href="/docs/guides/advanced-usage"
+    href="/docs/getting-started/advanced-usage"
     description="Error handling, re-auth, and more"
   />
   <Card
@@ -82,7 +82,7 @@ Here's what happens when you integrate a third-party service into your applicati
 
 ### 1. **Configuration**
 
-You configure the SDK with integrations for each integration you want to use—GitHub for repository management, Gmail for email, Notion for knowledge base access, and so on. Each integration knows what OAuth credentials it needs and what tools it provides.
+You configure the SDK with integrations for each service you want to use: GitHub for repository management, Gmail for email, Notion for knowledge base access, and so on. Each integration knows what OAuth credentials it needs and what tools it provides.
 
 ### 2. **Authorization**
 
@@ -90,7 +90,7 @@ When a user needs to connect their account, the SDK orchestrates the OAuth 2.0 f
 
 ### 3. **Connection**
 
-The SDK establishes a streaming connection to `https://mcp.integrate.dev/api/v1/mcp` and receives a session token. This token is your golden ticket—it represents the user's authorized connections and works anywhere in your application.
+The SDK establishes a streaming connection to `https://mcp.integrate.dev/api/v1/mcp` and receives a session token. This token is your golden ticket: it represents the user's authorized connections and works anywhere in your application.
 
 ### 4. **Discovery**
 
@@ -98,7 +98,7 @@ The SDK queries the server for available tools and intelligently filters them ba
 
 ### 5. **Execution**
 
-When you call a tool—say, creating a GitHub issue or sending an email—the SDK sends a JSON-RPC request over the streaming connection. The server executes the action using the stored OAuth credentials and streams the response back to your application.
+When you call a tool (for example, creating a GitHub issue or sending an email), the SDK sends a JSON-RPC request over the streaming connection. The server executes the action using the stored OAuth credentials and streams the response back to your application.
 
 ### 6. **Persistence**
 
@@ -114,7 +114,7 @@ In the browser, the SDK provides the complete user experience. Users can authori
 
 ### 🖥️ Server Environments
 
-On the server—whether that's Node.js, Edge runtimes, or serverless functions—the SDK focuses on execution. Given a valid session token (typically obtained from browser authorization and passed via cookies or headers), it makes API calls efficiently without any UI concerns. This is ideal for backend operations, scheduled jobs, or API routes that need to interact with third-party services on behalf of users.
+On the server, whether that's Node.js, Edge runtimes, or serverless functions, the SDK focuses on execution. Given a valid session token (typically obtained from browser authorization and passed via cookies or headers), it makes API calls efficiently without any UI concerns. This is ideal for backend operations, scheduled jobs, or API routes that need to interact with third-party services on behalf of users.
 
 ### 🔄 The Typical Pattern
 

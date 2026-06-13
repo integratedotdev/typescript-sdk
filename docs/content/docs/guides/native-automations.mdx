@@ -42,7 +42,7 @@ createMCPServer({
   // ...
   triggers: {
     onComplete: async (ctx) => {
-      // ctx.request.steps — normalize with parseMCPToolResult per step
+      // ctx.request.steps: normalize with parseMCPToolResult per step
       // return { hasMore, nextStep } for chained execution
       return { hasMore: false };
     },

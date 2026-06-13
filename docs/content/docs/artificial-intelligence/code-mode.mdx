@@ -5,7 +5,7 @@ description: Let the LLM write TypeScript against a typed API instead of calling
 
 Code Mode is the default way the Integrate SDK exposes your integrations to AI models. Instead of sending every MCP tool (potentially hundreds across 25+ integrations) to the model on each request, Code Mode hands the LLM a single `execute_code` tool and a typed TypeScript API it can write code against.
 
-The LLM writes a snippet, the snippet runs in an isolated [Vercel Sandbox](https://vercel.com/docs/vercel-sandbox), and the results come back in one round-trip — no matter how many integrations the code touches.
+The LLM writes a snippet, the snippet runs in an isolated [Vercel Sandbox](https://vercel.com/docs/vercel-sandbox), and the results come back in one round-trip, no matter how many integrations the code touches.
 
 ## Why Code Mode
 
@@ -13,7 +13,7 @@ The LLM writes a snippet, the snippet runs in an isolated [Vercel Sandbox](https
 |---|---|---|
 | Tools sent to model | 1 per MCP tool (25+ × N) | 1 (`execute_code`) |
 | Round-trips for multi-step tasks | 1 per tool call | 1 for the whole snippet |
-| Context window pressure | High — full tool list every request | Low — typed API surface only |
+| Context window pressure | High (full tool list every request) | Low (typed API surface only) |
 | Model strength | Structured tool-calling | Writing code (what LLMs do best) |
 
 ## Requirements
@@ -49,7 +49,7 @@ INTEGRATE_URL=https://myapp.com
 ```
 
 <Callout type="warn">
-Code Mode will return a clear error if `publicUrl` is not set. The sandbox needs it to call back into your `/api/integrate/mcp` route. On the server, set `codeMode.publicUrl` in `createMCPServer` or export `INTEGRATE_URL` — auto-detection uses either value.
+Code Mode will return a clear error if `publicUrl` is not set. The sandbox needs it to call back into your `/api/integrate/mcp` route. On the server, set `codeMode.publicUrl` in `createMCPServer` or export `INTEGRATE_URL`. Auto-detection uses either value.
 </Callout>
 
 ### Scoping tools to connected integrations
@@ -68,7 +68,7 @@ See [MCP Tool Scoping](/docs/guides/mcp-tool-scoping) and [Performance](/docs/gu
 
 ## Usage
 
-No API changes are required — `getVercelAITools`, `getOpenAITools`, `getAnthropicTools`, and `getGoogleTools` all default to Code Mode automatically.
+No API changes are required. `getVercelAITools`, `getOpenAITools`, `getAnthropicTools`, and `getGoogleTools` all default to Code Mode automatically.
 
 ### Vercel AI SDK
 
@@ -219,7 +219,7 @@ for (const issue of open.slice(0, 3)) {
   await client.gmail.sendMessage({
     to: "team@acme.com",
     subject: `Open issue: ${issue.title}`,
-    body: `#${issue.number} — ${issue.html_url}`,
+    body: `#${issue.number} - ${issue.html_url}`,
   });
 }
 
@@ -242,10 +242,10 @@ createMCPServer({
 
 ## Opting out
 
-If you need the legacy behavior — one tool per MCP tool — pass `mode: 'tools'` to any helper:
+If you need the legacy behavior (one tool per MCP tool), pass `mode: 'tools'` to any helper:
 
 ```typescript
-// One tool per integration method — useful if your model doesn't handle code well
+// One tool per integration method. Useful if your model doesn't handle code well.
 const tools = await getVercelAITools(serverClient, { mode: "tools" });
 const tools = await getOpenAITools(serverClient, { mode: "tools" });
 const tools = await getAnthropicTools(serverClient, { mode: "tools" });

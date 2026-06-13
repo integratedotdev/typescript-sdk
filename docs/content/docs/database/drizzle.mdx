@@ -52,7 +52,7 @@ export const { client } = createMCPServer({
 
 ## Better Auth example
 
-Better Auth's own `drizzleAdapter` handles auth tables. Integrate's adapter is separate — it persists **integration OAuth tokens** in `provider_token`, not Better Auth `account` rows.
+Better Auth's own `drizzleAdapter` handles auth tables. Integrate's adapter is separate: it persists **integration OAuth tokens** in `provider_token`, not Better Auth `account` rows.
 
 ```typescript
 import { auth } from "./auth";

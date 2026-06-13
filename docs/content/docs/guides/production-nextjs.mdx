@@ -58,7 +58,7 @@ export const maxDuration = 300;
 export const { POST, GET } = toNextJsHandler(serverClient);
 ```
 
-Tool name normalization runs inside the SDK handler — no app-level POST wrapper required.
+Tool name normalization runs inside the SDK handler. No app-level POST wrapper is required.
 
 ## AI chat tools
 
@@ -110,6 +110,6 @@ Protect internal routes with shared secrets validated in `getSessionContext`.
 
 ## Related guides
 
-- [Native Automations](/docs/guides/native-automations) — hybrid scheduling
+- [Native Automations](/docs/guides/native-automations): hybrid scheduling
 - [Code Mode](/docs/artificial-intelligence/code-mode)
 - [Triggers](/docs/getting-started/triggers)

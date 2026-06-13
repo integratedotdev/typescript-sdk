@@ -11,9 +11,9 @@ Cold-start tool discovery is the most common performance issue in production app
 
 Mitigations (use together):
 
-1. **`connectedOnly: true`** — only fetch integrations the user has OAuth tokens for
-2. **`mode: 'code'`** — expose 2 AI tools instead of hundreds ([Code Mode](/docs/artificial-intelligence/code-mode))
-3. **`hydrateToolCache`** — skip network discovery when metadata is already known
+1. **`connectedOnly: true`**: only fetch integrations the user has OAuth tokens for
+2. **`mode: 'code'`**: expose 2 AI tools instead of hundreds ([Code Mode](/docs/artificial-intelligence/code-mode))
+3. **`hydrateToolCache`**: skip network discovery when metadata is already known
 4. **Raise `fetchConcurrency`** when you must fetch many integrations at once
 
 ## Connected-only discovery
@@ -113,4 +113,4 @@ See your dashboard `ENV_SETUP.md` for the full usage pipeline.
 
 - [MCP Tool Scoping](/docs/guides/mcp-tool-scoping)
 - [Code Mode](/docs/artificial-intelligence/code-mode)
-- [Database hooks](/docs/database/hooks) — `onTokenChange` for cache invalidation
+- [Database hooks](/docs/database/hooks): `onTokenChange` for cache invalidation

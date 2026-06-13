@@ -16,7 +16,7 @@ You can configure persistence in two ways:
 
 | Approach | When to use |
 |----------|-------------|
-| **Database adapter** (recommended) | Drizzle, Prisma, or MongoDB — mirrors [Better Auth's adapter pattern](https://www.better-auth.com/docs/concepts/database) |
+| **Database adapter** (recommended) | Drizzle, Prisma, or MongoDB. Mirrors [Better Auth's adapter pattern](https://www.better-auth.com/docs/concepts/database) |
 | **Raw callbacks** | Custom storage, legacy setups, or non-standard schemas |
 
 With adapters, pass `database` to `createMCPServer`. Token and trigger CRUD are handled for you. You still provide **`getSessionContext`** to map requests to a `userId` (Better Auth, Clerk, cron headers, etc.).
@@ -61,19 +61,19 @@ Use `listConnectedProviders` from `integrate-sdk/server` when you need the conne
 
 ## Guides
 
-- [Drizzle](/docs/database/drizzle) — PostgreSQL, MySQL, SQLite
-- [Prisma](/docs/database/prisma) — `@prisma/client`
-- [MongoDB](/docs/database/mongodb) — native driver collections
-- [Schema](/docs/database/schema) — canonical tables and indexes
-- [Triggers](/docs/database/triggers) — composing `onComplete` and `getCallbackUrl`
-- [Hooks](/docs/database/hooks) — cache invalidation, identity resolution, trigger authorization
+- [Drizzle](/docs/database/drizzle): PostgreSQL, MySQL, SQLite
+- [Prisma](/docs/database/prisma): `@prisma/client`
+- [MongoDB](/docs/database/mongodb): native driver collections
+- [Schema](/docs/database/schema): canonical tables and indexes
+- [Triggers](/docs/database/triggers): composing `onComplete` and `getCallbackUrl`
+- [Hooks](/docs/database/hooks): cache invalidation, identity resolution, trigger authorization
 
 ## What stays app-specific
 
-`getSessionContext` cannot be fully abstracted — each app wires its auth library or internal service headers. Optional [hooks](/docs/database/hooks) cover app-specific behavior (cache revalidation, GitHub email resolution, trigger ownership repair) without forking the adapter.
+`getSessionContext` cannot be fully abstracted. Each app wires its auth library or internal service headers. Optional [hooks](/docs/database/hooks) cover app-specific behavior (cache revalidation, GitHub email resolution, trigger ownership repair) without forking the adapter.
 
 ## Next steps
 
-- [OAuth Authorization Flow](/docs/guides/oauth-flow)
+- [OAuth authorization](/docs/getting-started/basic-usage)
 - [Triggers (getting started)](/docs/getting-started/triggers)
 - [Built-in Integrations](/docs/integrations)

@@ -67,7 +67,7 @@ const connected = await listConnectedProviders(
 );
 ```
 
-With a database adapter, `getProviderToken` is already wired — you can also derive connected providers from token rows using `listConnectedProvidersFromRows`.
+With a database adapter, `getProviderToken` is already wired. You can also derive connected providers from token rows using `listConnectedProvidersFromRows`.
 
 ## Code Mode + scoping
 
@@ -87,10 +87,10 @@ Set `codeMode.publicUrl` or `INTEGRATE_URL` so Code Mode can call back into `/ap
 
 Scheduled work belongs in **your application database**, not the Integrate platform dashboard. Configure `triggers` callbacks or the [database adapter](/docs/database) in your app; the MCP scheduler calls your `/api/integrate/triggers/notify` route.
 
-The hosted dashboard at integrate.dev is for API keys, billing, and usage — not for creating triggers on behalf of your users.
+The hosted dashboard at integrate.dev is for API keys, billing, and usage, not for creating triggers on behalf of your users.
 
 ## Related
 
-- [Performance](/docs/guides/performance) — caching and concurrency
-- [Database adapters](/docs/database) — token storage and `connectedOnly`
-- [Triggers](/docs/getting-started/triggers) — SDK trigger callbacks
+- [Performance](/docs/guides/performance): caching and concurrency
+- [Database adapters](/docs/database): token storage and `connectedOnly`
+- [Triggers](/docs/getting-started/triggers): SDK trigger callbacks

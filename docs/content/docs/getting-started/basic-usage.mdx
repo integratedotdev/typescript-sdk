@@ -120,17 +120,19 @@ const result = await client.github.createIssue({
 
 ## List Available Tools
 
-To see what tools are available:
+To see what tools are available from the server:
 
 ```typescript
 import { client } from "integrate-sdk";
 
-const tools = client.getEnabledTools();
+const tools = await client.getEnabledToolsAsync();
 console.log(
   "Available tools:",
   tools.map((t) => t.name)
 );
 ```
+
+`getEnabledTools()` returns only tools already cached locally. Use `getEnabledToolsAsync()` when you need fresh tool metadata from the server.
 
 ## Error Handling
 
@@ -153,7 +155,7 @@ try {
 
 ## Next Steps
 
-- Learn about [OAuth Authorization Flow](/docs/guides/oauth-flow) to handle user authentication
+- Learn about [OAuth authorization](/docs/getting-started/basic-usage) to handle user authentication
 - Explore [Built-in Integrations](/docs/integrations) to see what integrations are available
-- Check out [Advanced Usage](/docs/guides/advanced-usage) for re-authentication, error handling, and more
+- Check out [Advanced Usage](/docs/getting-started/advanced-usage) for re-authentication, error handling, and more
 - Integrate with [Vercel AI SDK](/docs/artificial-intelligence/vercel-ai-sdk) to give AI models access to your tools
