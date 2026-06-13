@@ -69,7 +69,7 @@ export function FloatingLogos({ logos }: FloatingLogosProps) {
               <img
                 src={logo.logoUrl}
                 alt={logo.name}
-                className="h-full w-full rounded-xl object-contain"
+                className="h-full w-full rounded-xl object-cover"
               />
             </div>
           </motion.div>

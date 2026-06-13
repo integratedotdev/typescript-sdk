@@ -5,8 +5,6 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-import { cn } from "@/lib/cn";
-
 export type IntegrationCard = {
   name: string;
   slug: string;
@@ -104,15 +102,11 @@ export function IntegrationsGrid({ integrations }: IntegrationsGridProps) {
                   href={`/docs/integrations/${integration.slug}`}
                   className="group flex h-full items-start gap-4 rounded-xl border border-zinc-200 bg-white p-4 transition-all hover:border-zinc-900 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-white"
                 >
-                  <div
-                    className={cn(
-                      "flex aspect-square size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-800",
-                    )}
-                  >
+                  <div className="aspect-square size-10 shrink-0 overflow-hidden rounded-lg">
                     <img
                       src={integration.logoUrl}
                       alt={integration.name}
-                      className="h-full w-full object-contain"
+                      className="h-full w-full object-cover"
                       loading="lazy"
                     />
                   </div>
