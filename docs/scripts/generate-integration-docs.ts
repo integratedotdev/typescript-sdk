@@ -6,6 +6,7 @@
 
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { Project, SyntaxKind } from "ts-morph";
 import {
   INTEGRATION_LIBRARY_METADATA,
@@ -17,7 +18,10 @@ import {
 } from "../../src/integrations/integration-docs-metadata.js";
 import { methodToToolName } from "../../src/utils/naming.js";
 
-const DOCS_ROOT = path.resolve(import.meta.dir, "..");
+const DOCS_ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+);
 const SDK_ROOT = path.resolve(DOCS_ROOT, "..");
 const INTEGRATIONS_DIR = path.join(SDK_ROOT, "src/integrations");
 const OUTPUT_DIR = path.join(DOCS_ROOT, "content/docs/integrations");
