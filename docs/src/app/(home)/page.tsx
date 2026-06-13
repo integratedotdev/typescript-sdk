@@ -89,7 +89,7 @@ async function getIntegrationLogos(): Promise<LogoItem[]> {
     const response = await fetch(
       "https://mcp.integrate.dev/api/v1/integrations",
       {
-        next: { revalidate: 60 * 60 },
+        next: { revalidate: 300 },
       },
     );
 

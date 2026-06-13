@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Footer } from "@/components/footer";
 import { type IntegrationCard, IntegrationsGrid } from "./integrations-grid";
 
+export const revalidate = 60;
+
 type IntegrationResponse = {
   integrations: {
     name: string;
@@ -25,7 +27,7 @@ async function getIntegrations(): Promise<IntegrationCard[]> {
     const response = await fetch(
       "https://mcp.integrate.dev/api/v1/integrations",
       {
-        next: { revalidate: 60 * 60 },
+        next: { revalidate: 60 },
       },
     );
 
