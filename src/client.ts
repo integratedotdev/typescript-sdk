@@ -1584,8 +1584,7 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
         if (!targetIntegrationIds.has(integration.id)) continue;
         for (const toolName of integration.tools) {
           if (!this.enabledToolNames.has(toolName)) continue;
-          const cached = this.availableTools.get(toolName);
-          if (!cached?.inputSchema) return false;
+          if (!this.availableTools.has(toolName)) return false;
         }
       }
       return this.availableTools.size > 0;
