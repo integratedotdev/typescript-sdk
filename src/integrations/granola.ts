@@ -26,6 +26,9 @@ export function granolaIntegration(
   return {
     id: "granola",
     name: "Granola",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/granola.png",
+    description: "List and read Granola meeting notes and folders",
+    category: "Productivity",
     tools: [...GRANOLA_TOOLS],
     authType: "apiKey",
     getHeaders() {

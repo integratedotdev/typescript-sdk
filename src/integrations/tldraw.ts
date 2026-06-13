@@ -18,6 +18,9 @@ export function tldrawIntegration(options: TldrawIntegrationOptions = {}): MCPIn
   return {
     id: "tldraw",
     name: "tldraw",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/tldraw.png",
+    description: "Create and manage tldraw collaborative whiteboards",
+    category: "Productivity",
     tools: [...TLDRAW_TOOLS],
     authType: apiKey ? "apiKey" : undefined,
     getHeaders: apiKey ? () => ({ Authorization: `Bearer ${apiKey}` }) : undefined,

@@ -86,6 +86,9 @@ export function mercuryIntegration(
   return {
     id: "mercury",
     name: "Mercury",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/mercury.png",
+    description: "Manage Mercury bank accounts, cards, and transactions",
+    category: "Finance",
     tools: [...MERCURY_TOOLS],
     authType: "apiKey",
     getHeaders() {

@@ -28,6 +28,9 @@ export function resendIntegration(options: ResendIntegrationOptions = {}): MCPIn
   return {
     id: "resend",
     name: "Resend",
+    logoUrl: "https://wdvtnli2jn3texa6.public.blob.vercel-storage.com/resend.png",
+    description: "Send email and manage domains with the Resend API",
+    category: "Communication",
     tools: [...RESEND_TOOLS],
     authType: "apiKey",
     getHeaders() {
