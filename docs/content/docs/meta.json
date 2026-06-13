@@ -2,6 +2,7 @@
   "pages": [
     "index",
     "getting-started",
+    "database",
     "artificial-intelligence",
     "frameworks",
     "integrations",

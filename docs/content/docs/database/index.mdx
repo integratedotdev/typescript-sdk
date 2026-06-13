@@ -1,0 +1,63 @@
+---
+title: Database
+description: Store OAuth tokens and triggers in your database with ORM adapters
+---
+
+The Integrate SDK can persist OAuth provider tokens and scheduled triggers in your database instead of relying on hand-written callbacks for every CRUD operation. This enables:
+
+- **Multi-device sync**: Access tokens across devices and sessions
+- **Server-side usage**: Use tokens in API routes and background jobs
+- **Long-term persistence**: Tokens survive browser clears and device changes
+- **Trigger storage**: Schedule tool executions with database-backed triggers
+
+## Adapters vs callbacks
+
+You can configure persistence in two ways:
+
+| Approach | When to use |
+|----------|-------------|
+| **Database adapter** (recommended) | Drizzle, Prisma, or MongoDB — mirrors [Better Auth's adapter pattern](https://www.better-auth.com/docs/concepts/database) |
+| **Raw callbacks** | Custom storage, legacy setups, or non-standard schemas |
+
+With adapters, pass `database` to `createMCPServer`. Token and trigger CRUD are handled for you. You still provide **`getSessionContext`** to map requests to a `userId` (Better Auth, Clerk, cron headers, etc.).
+
+```typescript
+import { createMCPServer, githubIntegration } from "integrate-sdk/server";
+import { drizzleAdapter } from "integrate-sdk/adapters/drizzle";
+import { db } from "./db";
+import { providerToken, trigger } from "./db/schema";
+
+export const { client } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [githubIntegration({ scopes: ["repo"] })],
+  database: drizzleAdapter(db, {
+    provider: "pg",
+    schema: { providerToken, trigger },
+  }),
+  getSessionContext: async (req) => {
+    const session = await auth.api.getSession({ headers: req.headers });
+    return session?.user?.id ? { userId: session.user.id } : undefined;
+  },
+});
+```
+
+Explicit callbacks on `createMCPServer` still work and **override** adapter defaults when both are set.
+
+## Guides
+
+- [Drizzle](/docs/database/drizzle) — PostgreSQL, MySQL, SQLite
+- [Prisma](/docs/database/prisma) — `@prisma/client`
+- [MongoDB](/docs/database/mongodb) — native driver collections
+- [Schema](/docs/database/schema) — canonical tables and indexes
+- [Triggers](/docs/database/triggers) — composing `onComplete` and `getCallbackUrl`
+- [Hooks](/docs/database/hooks) — cache invalidation, identity resolution, trigger authorization
+
+## What stays app-specific
+
+`getSessionContext` cannot be fully abstracted — each app wires its auth library or internal service headers. Optional [hooks](/docs/database/hooks) cover app-specific behavior (cache revalidation, GitHub email resolution, trigger ownership repair) without forking the adapter.
+
+## Next steps
+
+- [OAuth Authorization Flow](/docs/guides/oauth-flow)
+- [Triggers (getting started)](/docs/getting-started/triggers)
+- [Built-in Integrations](/docs/integrations)

@@ -1,0 +1,99 @@
+---
+title: Hooks
+description: Extend database adapters with app-specific behavior
+---
+
+Database adapters accept optional `hooks` to customize token persistence and trigger authorization without forking the SDK.
+
+```typescript
+drizzleAdapter(db, {
+  provider: "pg",
+  schema: { providerToken, trigger },
+  hooks: {
+    onTokenChange: async ({ userId, provider, action }) => { /* ... */ },
+    resolveAccountIdentity: async (provider, tokenData, emailHint, context) => { /* ... */ },
+    authorizeTrigger: async (row, context) => { /* ... */ },
+  },
+});
+```
+
+## onTokenChange
+
+Called after a token is saved or removed.
+
+```typescript
+onTokenChange: ({ userId, provider, action }) => {
+  // action: "set" | "remove"
+  revalidateTag(`library-integrations:${userId}`);
+},
+```
+
+Use for cache invalidation, analytics, or webhooks.
+
+## resolveAccountIdentity
+
+Resolve `account_email` and `account_id` before upserting a token. The default derives `accountId` from `provider:email` when email is known.
+
+For GitHub, fetch the user's profile when email is missing:
+
+```typescript
+resolveAccountIdentity: async (provider, tokenData, emailHint) => {
+  let accountEmail = normalizeAccountEmail(emailHint);
+  let accountId = tokenData.accountId ?? null;
+
+  if (provider === "github" && (!accountEmail || !accountId)) {
+    const identity = await resolveGitHubIdentity(tokenData.accessToken);
+    accountEmail = accountEmail ?? identity.accountEmail;
+    accountId = accountId ?? identity.accountId;
+  }
+
+  if (!accountId && accountEmail) {
+    accountId = `${provider}:${accountEmail}`;
+  }
+
+  return { accountEmail, accountId };
+},
+```
+
+Import helpers from `integrate-sdk/server`:
+
+```typescript
+import { normalizeAccountEmail } from "integrate-sdk/server";
+```
+
+## authorizeTrigger
+
+Called when loading or mutating a trigger. Return a (possibly updated) row, or `null` to deny access.
+
+Use for ownership repair when `user_id` on the trigger row is stale:
+
+```typescript
+authorizeTrigger: async (row) => {
+  const ownerId = await resolveOwnerFromAutomationTables(row.id);
+  if (ownerId && ownerId !== row.userId) {
+    await db.update(trigger).set({ userId: ownerId }).where(eq(trigger.id, row.id));
+    return { ...row, userId: ownerId };
+  }
+  return row;
+},
+```
+
+After the hook, the adapter checks `context.userId` against the returned row's `userId`.
+
+## getSessionContext (not a hook)
+
+Session resolution stays on `createMCPServer`, not the adapter. Wire your auth library or internal headers:
+
+```typescript
+getSessionContext: async (req) => {
+  const internal = resolveCronActor(req);
+  if (internal) return internal;
+
+  const session = await auth.api.getSession({ headers: req.headers });
+  return session?.user?.id ? { userId: session.user.id } : undefined;
+},
+```
+
+## Raw callbacks override hooks
+
+If you pass explicit `getProviderToken` / `setProviderToken` / `removeProviderToken` or individual `triggers.*` callbacks on `createMCPServer`, those take precedence over the adapter. Hooks still run inside the adapter for operations the adapter handles.

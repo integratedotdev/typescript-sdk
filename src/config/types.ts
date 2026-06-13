@@ -94,7 +94,25 @@ export interface MCPServerConfig<TIntegrations extends readonly MCPIntegration[]
   apiKey?: string;
 
   /**
-   * Custom token retrieval callback (SERVER-SIDE ONLY)
+   * Database adapter for OAuth token and trigger persistence (SERVER-SIDE ONLY)
+   *
+   * Use `drizzleAdapter`, `prismaAdapter`, or `mongodbAdapter` instead of hand-written
+   * `getProviderToken` / `setProviderToken` / `removeProviderToken` / `triggers` callbacks.
+   * Explicit callbacks take precedence when both are provided.
+   *
+   * @example
+   * ```typescript
+   * import { drizzleAdapter } from 'integrate-sdk/adapters/drizzle';
+   *
+   * createMCPServer({
+   *   database: drizzleAdapter(db, { provider: 'pg', schema: { providerToken, trigger } }),
+   *   getSessionContext: async (req) => ({ userId: session.user.id }),
+   * });
+   * ```
+   */
+  database?: import('../database/types.js').IntegrateDatabaseAdapter;
+
+  /** * Custom token retrieval callback (SERVER-SIDE ONLY)
    * Allows storing OAuth provider tokens in your database instead of IndexedDB
    * 
    * When provided, this callback is used exclusively for token retrieval (no IndexedDB fallback).
@@ -687,6 +705,15 @@ export interface MCPClientConfig<TIntegrations extends readonly MCPIntegration[]
    */
   useServerConfig?: boolean;
 }
+
+/**
+ * Input config for `createMCPServer`. `triggers` may be partial when using a
+ * `database` adapter that supplies CRUD callbacks.
+ */
+export type MCPServerConfigInput<TIntegrations extends readonly MCPIntegration[]> =
+  Omit<MCPServerConfig<TIntegrations>, "triggers"> & {
+    triggers?: Partial<import("../triggers/types.js").TriggerCallbacks>;
+  };
 
 /**
  * Helper type to infer enabled tools from integrations

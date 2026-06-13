@@ -1,0 +1,102 @@
+---
+title: Schema
+description: Canonical provider_token and trigger table definitions
+---
+
+Database adapters expect tables (or collections) with these fields. Column names use snake_case in SQL; Drizzle/Prisma models typically map to camelCase.
+
+## provider_token
+
+Stores OAuth access and refresh tokens per user, provider, and account.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | text | Primary key |
+| `user_id` | text | Owner user |
+| `provider` | text | e.g. `github`, `gmail` |
+| `account_email` | text, nullable | Identifies account for multi-account providers |
+| `account_id` | text, nullable | Provider-specific account id |
+| `access_token` | text | Required |
+| `refresh_token` | text, nullable | |
+| `token_type` | text | Default `Bearer` |
+| `expires_at` | timestamp, nullable | |
+| `scope` | text, nullable | Space-separated scopes |
+| `created_at` | timestamp | |
+| `updated_at` | timestamp | |
+
+### Indexes
+
+```sql
+CREATE INDEX provider_token_user_id_idx ON provider_token(user_id);
+CREATE INDEX provider_token_provider_idx ON provider_token(provider);
+CREATE INDEX provider_token_user_provider_idx ON provider_token(user_id, provider);
+CREATE UNIQUE INDEX provider_token_user_provider_account_email_uidx
+  ON provider_token(user_id, provider, account_email);
+```
+
+The unique index on `(user_id, provider, account_email)` supports multiple accounts per provider. Legacy rows with null `account_email` may coexist until migrated.
+
+### Reference Drizzle schema
+
+Import from the SDK:
+
+```typescript
+import { integrateProviderToken } from "integrate-sdk/server";
+```
+
+Or copy from `integrate-sdk` source: `src/database/schemas/drizzle.ts`.
+
+## trigger
+
+Stores scheduled tool executions.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | text | Primary key |
+| `user_id` | text, nullable | Owner; may be repaired via hooks |
+| `name` | text, nullable | |
+| `description` | text, nullable | |
+| `tool_name` | text | MCP tool to execute |
+| `tool_arguments` | json/jsonb | Tool arguments |
+| `schedule_type` | text | `once` or `cron` |
+| `schedule_value` | text | ISO timestamp (once) or cron expression |
+| `status` | text | `active`, `paused`, `completed`, `failed` |
+| `provider` | text, nullable | OAuth provider for the tool |
+| `last_run_at` | timestamp, nullable | |
+| `next_run_at` | timestamp, nullable | |
+| `run_count` | integer | Default 0 |
+| `last_error` | text, nullable | |
+| `last_result` | json/jsonb, nullable | |
+| `created_at` | timestamp | |
+| `updated_at` | timestamp | |
+
+### Indexes
+
+```sql
+CREATE INDEX trigger_user_id_idx ON trigger(user_id);
+CREATE INDEX trigger_status_idx ON trigger(status);
+CREATE INDEX trigger_next_run_at_idx ON trigger(next_run_at);
+```
+
+## ProviderTokenData mapping
+
+When the SDK reads tokens, it returns:
+
+```typescript
+interface ProviderTokenData {
+  accessToken: string;
+  refreshToken?: string;
+  tokenType: string;
+  expiresIn: number;
+  expiresAt?: string;
+  scopes?: string[];
+  email?: string;
+  accountId?: string;
+}
+```
+
+The adapter selects the best row when multiple accounts exist (email/accountId hints from context or OAuth flow).
+
+## Raw callbacks
+
+If you do not use an adapter, implement `getProviderToken`, `setProviderToken`, and `removeProviderToken` manually. See the legacy guide content in the [Database overview](/docs/database) and [Triggers](/docs/database/triggers) pages.

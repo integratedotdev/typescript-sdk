@@ -1,0 +1,76 @@
+---
+title: MongoDB
+description: Use the MongoDB database adapter with createMCPServer
+---
+
+The MongoDB adapter stores documents in configurable collections with string `id` fields (no `ObjectId` requirement).
+
+## Install
+
+```bash
+bun add integrate-sdk mongodb
+```
+
+## Collections
+
+Default collection names:
+
+| Collection | Purpose |
+|------------|---------|
+| `provider_tokens` | OAuth tokens |
+| `triggers` | Scheduled triggers |
+
+Documents use a string `id` field as the primary key, plus camelCase fields matching the [canonical schema](/docs/database/schema).
+
+## Configuration
+
+```typescript
+import { createMCPServer } from "integrate-sdk/server";
+import { mongodbAdapter } from "integrate-sdk/adapters/mongodb";
+import { MongoClient } from "mongodb";
+
+const client = new MongoClient(process.env.MONGODB_URI!);
+const db = client.db("myapp");
+
+export const { client: integrateClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [...],
+  database: mongodbAdapter(db, {
+    collectionNames: {
+      providerTokens: "provider_tokens",
+      triggers: "triggers",
+    },
+  }),
+  getSessionContext: async (req) => { /* ... */ },
+});
+```
+
+## API
+
+```typescript
+mongodbAdapter(db, {
+  client?: MongoClient,
+  collectionNames?: {
+    providerTokens?: string;
+    triggers?: string;
+  },
+  hooks?: IntegrateAdapterHooks,
+  debugLogs?: boolean,
+})
+```
+
+Pass `client` if you need lifecycle management outside the adapter. Triggers are enabled when `collectionNames.triggers` is set (default: `"triggers"`).
+
+## Indexes
+
+Create indexes for production workloads:
+
+```javascript
+db.provider_tokens.createIndex({ userId: 1, provider: 1 });
+db.provider_tokens.createIndex(
+  { userId: 1, provider: 1, accountEmail: 1 },
+  { unique: true, sparse: true }
+);
+db.triggers.createIndex({ userId: 1, status: 1 });
+db.triggers.createIndex({ nextRunAt: 1 });
+```

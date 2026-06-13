@@ -2,7 +2,6 @@
   "pages": [
     "installation",
     "basic-usage",
-    "database",
     "triggers",
     "advanced-usage"
   ]

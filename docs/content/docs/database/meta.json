@@ -1,0 +1,11 @@
+{
+  "pages": [
+    "index",
+    "drizzle",
+    "prisma",
+    "mongodb",
+    "schema",
+    "triggers",
+    "hooks"
+  ]
+}

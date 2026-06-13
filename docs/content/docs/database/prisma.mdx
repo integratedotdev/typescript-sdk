@@ -1,0 +1,95 @@
+---
+title: Prisma
+description: Use the Prisma database adapter with createMCPServer
+---
+
+The Prisma adapter uses dynamic model access (`prisma.providerToken.findFirst`, etc.) so you can map custom model names.
+
+## Install
+
+```bash
+bun add integrate-sdk @prisma/client
+```
+
+## Prisma schema
+
+```prisma
+model ProviderToken {
+  id           String    @id
+  userId       String    @map("user_id")
+  provider     String
+  accountEmail String?   @map("account_email")
+  accountId    String?   @map("account_id")
+  accessToken  String    @map("access_token")
+  refreshToken String?   @map("refresh_token")
+  tokenType    String    @default("Bearer") @map("token_type")
+  expiresAt    DateTime? @map("expires_at")
+  scope        String?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@unique([userId, provider, accountEmail])
+  @@map("provider_token")
+}
+
+model Trigger {
+  id            String   @id
+  userId        String?  @map("user_id")
+  name          String?
+  description   String?
+  toolName      String   @map("tool_name")
+  toolArguments Json     @map("tool_arguments")
+  scheduleType  String   @map("schedule_type")
+  scheduleValue String   @map("schedule_value")
+  status        String   @default("active")
+  provider      String?
+  lastRunAt     DateTime? @map("last_run_at")
+  nextRunAt     DateTime? @map("next_run_at")
+  runCount      Int      @default(0) @map("run_count")
+  lastError     String?  @map("last_error")
+  lastResult    Json?    @map("last_result")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("trigger")
+}
+```
+
+See [Schema](/docs/database/schema) for field semantics.
+
+## Configuration
+
+```typescript
+import { createMCPServer } from "integrate-sdk/server";
+import { prismaAdapter } from "integrate-sdk/adapters/prisma";
+import { prisma } from "./db";
+
+export const { client } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [...],
+  database: prismaAdapter(prisma, {
+    provider: "postgresql", // dialect hint for date handling
+    modelNames: {
+      providerToken: "providerToken",
+      trigger: "trigger",
+    },
+  }),
+  getSessionContext: async (req) => { /* ... */ },
+});
+```
+
+## API
+
+```typescript
+prismaAdapter(prisma, {
+  provider?: "postgresql" | "mysql" | "sqlite",
+  modelNames?: {
+    providerToken?: string;
+    trigger?: string;
+  },
+  hooks?: IntegrateAdapterHooks,
+  debugLogs?: boolean,
+})
+```
+
+Triggers are enabled when a `trigger` model is configured in `modelNames`.

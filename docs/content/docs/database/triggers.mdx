@@ -1,0 +1,59 @@
+---
+title: Triggers
+description: Database-backed trigger storage with adapters
+---
+
+When your schema includes a `trigger` table (or MongoDB collection), database adapters register `TriggerCallbacks` for create, get, list, update, and delete. The MCP scheduler calls your app to load triggers and OAuth tokens at execution time.
+
+## Adapter + app callbacks
+
+Merge adapter defaults with app-specific completion logic:
+
+```typescript
+import { createMCPServer } from "integrate-sdk/server";
+import { drizzleAdapter } from "integrate-sdk/adapters/drizzle";
+
+export const { client } = createMCPServer({
+  database: drizzleAdapter(db, {
+    provider: "pg",
+    schema: { providerToken, trigger },
+  }),
+  getSessionContext: async (req) => { /* ... */ },
+  triggers: {
+    // Adapter provides create, get, list, update, delete
+    onComplete: async (context) => {
+      return handleTriggerCompletion(context);
+    },
+    getCallbackUrl: () => process.env.APP_URL!,
+  },
+});
+```
+
+Explicit `triggers` fields override adapter callbacks. Only specify what you need beyond CRUD.
+
+## onComplete
+
+`onComplete` runs after a trigger step finishes. Use it for multi-step workflows, notifications, or updating related app tables. It is **not** part of the database adapter — keep it in your `createMCPServer` config.
+
+## getCallbackUrl
+
+Return the public origin the MCP scheduler should call back into your app (e.g. `https://app.example.com`).
+
+## Authorization
+
+By default, trigger get/update/delete enforce `context.userId` matches `trigger.user_id`. For ownership repair (e.g. triggers linked via automation tables), use the [`authorizeTrigger` hook](/docs/database/hooks).
+
+## Schedule format
+
+The SDK accepts nested schedules on create:
+
+```typescript
+{ type: "once", runAt: "2026-06-13T12:00:00.000Z" }
+{ type: "cron", expression: "0 9 * * *" }
+```
+
+Adapters flatten these to `schedule_type` and `schedule_value` in the database. See [Schema](/docs/database/schema).
+
+## Without an adapter
+
+You can still implement `triggers: { create, get, list, update, delete, onComplete, getCallbackUrl }` manually. See [Getting Started: Triggers](/docs/getting-started/triggers) for the full callback API.

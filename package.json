@@ -1,6 +1,6 @@
 {
   "name": "integrate-sdk",
-  "version": "0.9.55",
+  "version": "0.9.56",
   "description": "Type-safe 3rd party integration SDK for the Integrate MCP server",
   "type": "module",
   "main": "./dist/index.js",
@@ -50,6 +50,18 @@
     "./code-mode": {
       "types": "./dist/code-mode/index.d.ts",
       "import": "./dist/code-mode/index.js"
+    },
+    "./adapters/drizzle": {
+      "types": "./dist/database/adapters/drizzle.d.ts",
+      "import": "./dist/database/adapters/drizzle.js"
+    },
+    "./adapters/prisma": {
+      "types": "./dist/database/adapters/prisma.d.ts",
+      "import": "./dist/database/adapters/prisma.js"
+    },
+    "./adapters/mongodb": {
+      "types": "./dist/database/adapters/mongodb.d.ts",
+      "import": "./dist/database/adapters/mongodb.js"
     }
   },
   "files": [
@@ -62,14 +74,15 @@
   ],
   "scripts": {
     "prep": "bun run type-check && bun run build",
-    "build": "bun run build:client && bun run build:server && bun run build:adapters && bun run build:ai && bun run build:code-mode && bun run build:types && bun run build:copy-types",
+    "build": "bun run build:client && bun run build:server && bun run build:adapters && bun run build:database && bun run build:ai && bun run build:code-mode && bun run build:types && bun run build:copy-types",
     "build:client": "bun build index.ts react.ts integrations.ts --outdir dist --target browser --format esm --external react --external @vercel/sandbox",
     "build:server": "bun build server.ts oauth.ts --outdir dist --target node --format esm --external @google/genai --external @anthropic-ai/sdk --external openai --external ai --external @openai/agents --external @vercel/sandbox",
     "build:adapters": "cd src/adapters && bun build auto-routes.ts base-handler.ts context-cookie.ts index.ts nextjs-oauth-redirect.ts nextjs.ts node.ts session-detector.ts solid-start.ts svelte-kit.ts tanstack-start.ts --outdir ../../dist/adapters --target node --format esm && cd ../..",
+    "build:database": "mkdir -p dist/database/adapters && bun build src/database/index.ts --outdir dist/database --target node --format esm --external drizzle-orm --external @prisma/client --external mongodb && bun build src/database/adapters/drizzle.ts --outdir dist/database/adapters --target node --format esm --external drizzle-orm && bun build src/database/adapters/prisma.ts --outdir dist/database/adapters --target node --format esm --external @prisma/client && bun build src/database/adapters/mongodb.ts --outdir dist/database/adapters --target node --format esm --external mongodb",
     "build:ai": "cd src/ai && bun build anthropic.ts google.ts index.ts openai.ts trigger-tools.ts utils.ts vercel-ai.ts --outdir ../../dist/ai --target node --format esm --external @google/genai --external @anthropic-ai/sdk --external openai --external ai --external @openai/agents --external zod-to-json-schema --external @vercel/sandbox && cd ../..",
     "build:code-mode": "cd src/code-mode && bun build index.ts executor.ts runtime-stub.ts tool-builder.ts type-generator.ts --outdir ../../dist/code-mode --target node --format esm --external @vercel/sandbox && cd ../..",
     "build:types": "tsc --emitDeclarationOnly --declaration --declarationMap",
-    "build:copy-types": "cp dist/src/ai/*.d.ts dist/ai/ && cp dist/src/ai/*.d.ts.map dist/ai/ && cp dist/src/adapters/*.d.ts dist/adapters/ && cp dist/src/adapters/*.d.ts.map dist/adapters/ && mkdir -p dist/code-mode && cp dist/src/code-mode/*.d.ts dist/code-mode/ && cp dist/src/code-mode/*.d.ts.map dist/code-mode/",
+    "build:copy-types": "cp dist/src/ai/*.d.ts dist/ai/ && cp dist/src/ai/*.d.ts.map dist/ai/ && cp dist/src/adapters/*.d.ts dist/adapters/ && cp dist/src/adapters/*.d.ts.map dist/adapters/ && mkdir -p dist/code-mode && cp dist/src/code-mode/*.d.ts dist/code-mode/ && cp dist/src/code-mode/*.d.ts.map dist/code-mode/ && mkdir -p dist/database/adapters && cp dist/src/database/index.d.ts dist/database/ && cp dist/src/database/index.d.ts.map dist/database/ && cp dist/src/database/adapters/*.d.ts dist/database/adapters/ && cp dist/src/database/adapters/*.d.ts.map dist/database/adapters/",
     "dev": "bun --watch src/index.ts",
     "type-check": "tsc --noEmit",
     "test": "bun test tests/",
@@ -95,8 +108,10 @@
     "zod-to-json-schema": "^3.25.1"
   },
   "devDependencies": {
-    "@types/bun": "latest",
+    "@types/bun": "^1.3.14",
     "@types/react": "^18.3.0",
+    "drizzle-orm": "^0.44.2",
+    "mongodb": "^6.17.0",
     "react": "^19.2.0",
     "simple-git-hooks": "^2.13.1",
     "typescript": "^5.3.3"
@@ -107,7 +122,10 @@
     "ai": ">=4.0.0",
     "openai": ">=4.0.0",
     "@anthropic-ai/sdk": ">=0.20.0",
-    "@google/genai": ""
+    "@google/genai": "",
+    "drizzle-orm": "",
+    "@prisma/client": ">=5.0.0",
+    "mongodb": ""
   },
   "peerDependenciesMeta": {
     "react": {
@@ -126,6 +144,15 @@
       "optional": true
     },
     "@google/genai": {
+      "optional": true
+    },
+    "drizzle-orm": {
+      "optional": true
+    },
+    "@prisma/client": {
+      "optional": true
+    },
+    "mongodb": {
       "optional": true
     }
   },

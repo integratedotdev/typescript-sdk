@@ -5,7 +5,9 @@
 
 import { MCPClient } from './client.js';
 import { MCPClientBase } from './client.js';
-import type { MCPContext, MCPServerConfig } from './config/types.js';
+import type { MCPContext, MCPServerConfig, MCPServerConfigInput } from './config/types.js';
+import type { IntegrateDatabaseCallbacks } from './database/types.js';
+import type { TriggerCallbacks } from './triggers/types.js';
 import type { MCPIntegration } from './integrations/types.js';
 import { toConfiguredIntegrationSummary } from './integrations/integration-summary.js';
 import { createNextOAuthHandler } from './adapters/nextjs.js';
@@ -25,6 +27,49 @@ import type { IncomingMessage, ServerResponse } from 'http';
  * Logger instances
  */
 const logger = createLogger('MCPServer', SERVER_LOG_CONTEXT);
+
+function mergeTriggerCallbacks(
+  fromDatabase?: TriggerCallbacks,
+  explicit?: Partial<TriggerCallbacks>
+): TriggerCallbacks | undefined {
+  if (!fromDatabase && !explicit) {
+    return undefined;
+  }
+
+  return {
+    create: explicit?.create ?? fromDatabase!.create,
+    get: explicit?.get ?? fromDatabase!.get,
+    list: explicit?.list ?? fromDatabase!.list,
+    update: explicit?.update ?? fromDatabase!.update,
+    delete: explicit?.delete ?? fromDatabase!.delete,
+    onComplete: explicit?.onComplete ?? fromDatabase?.onComplete,
+    getCallbackUrl: explicit?.getCallbackUrl ?? fromDatabase?.getCallbackUrl,
+  };
+}
+
+function mergeDatabaseConfig<TIntegrations extends readonly MCPIntegration[]>(
+  config: MCPServerConfigInput<TIntegrations>
+): MCPServerConfig<TIntegrations> {
+  if (!config.database) {
+    return config as MCPServerConfig<TIntegrations>;
+  }
+
+  const databaseCallbacks: IntegrateDatabaseCallbacks = config.database();
+
+  return {
+    ...config,
+    getProviderToken:
+      config.getProviderToken ?? databaseCallbacks.getProviderToken,
+    setProviderToken:
+      config.setProviderToken ?? databaseCallbacks.setProviderToken,
+    removeProviderToken:
+      config.removeProviderToken ?? databaseCallbacks.removeProviderToken,
+    triggers: mergeTriggerCallbacks(
+      databaseCallbacks.triggers,
+      config.triggers
+    ) as MCPServerConfig<TIntegrations>["triggers"],
+  };
+}
 
 /**
  * Refresh the stored access token if it is near expiry, using the
@@ -346,8 +391,10 @@ function getDefaultRedirectUri(): string {
  * ```
  */
 export function createMCPServer<TIntegrations extends readonly MCPIntegration[]>(
-  config: MCPServerConfig<TIntegrations>
+  inputConfig: MCPServerConfigInput<TIntegrations>
 ) {
+  const config = mergeDatabaseConfig(inputConfig);
+
   // Initialize logger based on debug flag (server context only)
   setLogLevel(config.debug ? 'debug' : 'error', SERVER_LOG_CONTEXT);
 
@@ -1436,7 +1483,7 @@ function createOAuthRouteHandlers(config: {
 
 // Re-export integration types for convenience
 export type { MCPIntegration } from './integrations/types.js';
-export type { MCPClientConfig, MCPContext, ToolCallOptions } from './config/types.js';
+export type { MCPClientConfig, MCPContext, MCPServerConfig, MCPServerConfigInput, ToolCallOptions } from './config/types.js';
 export type { ProviderTokenData } from './oauth/types.js';
 
 // Re-export integrations
@@ -2266,3 +2313,41 @@ export { zohoInventoryIntegration } from './integrations/zoho_inventory.js';
 export { zohoBillingIntegration } from './integrations/zoho_billing.js';
 export { zohoWriterIntegration } from './integrations/zoho_writer.js';
 export { zohoSprintsIntegration } from './integrations/zoho_sprints.js';
+
+export {
+  createDatabaseAdapterCallbacks,
+  createDatabaseAdapterFactory,
+  drizzleAdapter,
+  drizzleAdapterCallbacks,
+  prismaAdapter,
+  prismaAdapterCallbacks,
+  mongodbAdapter,
+  mongodbAdapterCallbacks,
+  integrateProviderToken,
+  integrateTrigger,
+  defaultResolveAccountIdentity,
+  hasMeaningfulExpiresAt,
+  hasUsableAccessToken,
+  isLikelyUsableToken,
+  normalizeAccountEmail,
+  normalizeAccountEmailHint,
+  normalizeAccountIdHint,
+  normalizeAccountIdentifier,
+  normalizeProviderTokenType,
+  parseScopes,
+  providerTokenRecordToData,
+  selectProviderTokenRow,
+  flattenedTriggerToCreateInput,
+  toDbSchedule,
+  toDbTriggerUpdates,
+  toSdkSchedule,
+  toSdkTrigger,
+  type IntegrateDatabaseAdapter,
+  type IntegrateAdapterHooks,
+  type DrizzleAdapterConfig,
+  type PrismaAdapterConfig,
+  type MongoAdapterConfig,
+  type TriggerRecord,
+  type ProviderTokenRecord,
+  type TokenChangeEvent,
+} from './database/index.js';

@@ -1,0 +1,92 @@
+---
+title: Drizzle
+description: Use the Drizzle ORM database adapter with createMCPServer
+---
+
+The Drizzle adapter stores provider tokens and triggers using your existing Drizzle schema.
+
+## Install
+
+```bash
+bun add integrate-sdk drizzle-orm
+```
+
+`drizzle-orm` is a peer dependency of the adapter.
+
+## Schema
+
+Define `provider_token` and optional `trigger` tables. You can copy the [reference schema](/docs/database/schema) or align your existing tables with the same column names.
+
+```typescript
+// db/schema/integrate.ts
+import { integrateProviderToken, integrateTrigger } from "integrate-sdk/server";
+
+export const providerToken = integrateProviderToken;
+export const trigger = integrateTrigger;
+```
+
+## Configuration
+
+```typescript
+import { createMCPServer, githubIntegration } from "integrate-sdk/server";
+import { drizzleAdapter } from "integrate-sdk/adapters/drizzle";
+import { db } from "./db";
+import { providerToken, trigger } from "./db/schema";
+
+export const { client } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [githubIntegration({ scopes: ["repo"] })],
+  database: drizzleAdapter(db, {
+    provider: "pg", // "pg" | "mysql" | "sqlite"
+    schema: { providerToken, trigger },
+    hooks: {
+      onTokenChange: ({ userId }) => revalidateTag(`integrations:${userId}`),
+    },
+  }),
+  getSessionContext: async (req) => {
+    const session = await auth.api.getSession({ headers: req.headers });
+    return session?.user?.id ? { userId: session.user.id } : undefined;
+  },
+});
+```
+
+## Better Auth example
+
+Better Auth's own `drizzleAdapter` handles auth tables. Integrate's adapter is separate — it persists **integration OAuth tokens** in `provider_token`, not Better Auth `account` rows.
+
+```typescript
+import { auth } from "./auth";
+import { drizzleAdapter } from "integrate-sdk/adapters/drizzle";
+
+database: drizzleAdapter(db, {
+  provider: "pg",
+  schema: { providerToken, trigger },
+}),
+getSessionContext: async (req) => {
+  const session = await auth.api.getSession({ headers: req.headers });
+  if (!session?.user?.id) return undefined;
+  return {
+    userId: session.user.id,
+    organizationId: session.session?.activeOrganizationId,
+  };
+},
+```
+
+## API
+
+```typescript
+drizzleAdapter(db, {
+  provider: "pg",
+  schema: { providerToken, trigger? },
+  hooks?: IntegrateAdapterHooks,
+  debugLogs?: boolean,
+})
+```
+
+Returns a lazy factory `() => IntegrateDatabaseCallbacks` compatible with `createMCPServer({ database })`.
+
+You can also use `drizzleAdapterCallbacks(db, config)` if you need the callback object directly without the factory wrapper.
+
+## Multi-account tokens
+
+The adapter handles multiple accounts per provider via `account_email` and `account_id`. See [Schema](/docs/database/schema) for the recommended unique index.
