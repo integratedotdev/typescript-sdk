@@ -5,6 +5,10 @@ description: Schedule tool executions with one-time and recurring triggers
 
 Triggers allow you to schedule tool executions for a specific time or on a recurring schedule. This enables use cases like sending scheduled emails, daily reports, automated reminders, and AI agents that schedule actions for later.
 
+<Callout type="info">
+Triggers are created and managed **in your application** via `createMCPServer` trigger callbacks or the [database adapter](/docs/database/triggers). The Integrate hosted dashboard is for API keys, billing, and usage — not for creating triggers on behalf of your users.
+</Callout>
+
 ## Overview
 
 Triggers are stored in your database and executed by the MCP server scheduler. When a trigger fires, the MCP server calls your Next.js API to get the trigger details and OAuth token, executes the tool, and reports the result back.

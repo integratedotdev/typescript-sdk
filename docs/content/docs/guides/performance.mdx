@@ -1,0 +1,90 @@
+---
+title: Performance
+description: Faster MCP tool discovery with connected-only loading, caching, and Code Mode
+---
+
+Cold-start tool discovery is the most common performance issue in production apps with many integrations. This guide covers patterns that keep chat and automation startup fast.
+
+## Problem: N integrations × network round-trips
+
+`getEnabledToolsAsync()` fetches tool schemas via `list_tools_by_integration` once per configured integration. With 100+ integrations and concurrency 8, a cold serverless instance can still take several seconds before the first chat turn.
+
+Mitigations (use together):
+
+1. **`connectedOnly: true`** — only fetch integrations the user has OAuth tokens for
+2. **`mode: 'code'`** — expose 2 AI tools instead of hundreds ([Code Mode](/docs/artificial-intelligence/code-mode))
+3. **`hydrateToolCache`** — skip network discovery when metadata is already known
+4. **Raise `fetchConcurrency`** when you must fetch many integrations at once
+
+## Connected-only discovery
+
+```typescript
+await serverClient.getEnabledToolsAsync({
+  connectedOnly: true,
+  context: { userId },
+  fetchConcurrency: 8, // default in v0.9.57+
+});
+```
+
+For AI helpers:
+
+```typescript
+await getVercelAITools(serverClient, {
+  context: { userId },
+  connectedOnly: true,
+  mode: "code",
+});
+```
+
+Invalidate your app-level cache when tokens change (OAuth connect/disconnect).
+
+## `hydrateToolCache` for serverless
+
+The SDK exposes `hydrateToolCache` on the server client so you can restore tool metadata without per-integration fetches:
+
+```typescript
+// After a previous discovery pass, persist stubs (name, description, inputSchema)
+serverClient.hydrateToolCache(cachedStubs);
+
+// Subsequent getEnabledToolsAsync / getVercelAITools calls use the cache
+const tools = await getVercelAITools(serverClient, {
+  context: { userId },
+  connectedOnly: true,
+});
+```
+
+**Production pattern:** persist stubs in Redis keyed by `userId` (and connected-provider set). On cold start, hydrate before calling `getVercelAITools`. Clear the cache when `onTokenChange` fires from your database adapter.
+
+Include connected providers in your cache key so reconnecting OAuth invalidates stale tool lists:
+
+```typescript
+const cacheKey = `${userId}:${connectedProviders.sort().join(",")}`;
+```
+
+## Code Mode default
+
+Code Mode still runs discovery internally, but the model only receives `execute_code` and `get_types`. Always set `codeMode.publicUrl` or `INTEGRATE_URL` on the server:
+
+```typescript
+createMCPServer({
+  codeMode: { publicUrl: process.env.INTEGRATE_URL },
+  // ...
+});
+```
+
+## Usage tracking
+
+Tool calls must include your server `apiKey` so the MCP server can attribute usage to the correct customer. Ensure:
+
+- `INTEGRATE_API_KEY` is set in your app (server-only)
+- Your dashboard `/api/usage` route is reachable from the MCP server (no auth session redirect)
+- `MCP_SERVER_SECRET` matches between MCP server and dashboard
+- `APP_BASE_URL` on the MCP server points at your dashboard origin
+
+See your dashboard `ENV_SETUP.md` for the full usage pipeline.
+
+## Related
+
+- [MCP Tool Scoping](/docs/guides/mcp-tool-scoping)
+- [Code Mode](/docs/artificial-intelligence/code-mode)
+- [Database hooks](/docs/database/hooks) — `onTokenChange` for cache invalidation

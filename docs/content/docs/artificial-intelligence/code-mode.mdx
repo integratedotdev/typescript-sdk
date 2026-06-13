@@ -49,8 +49,22 @@ INTEGRATE_URL=https://myapp.com
 ```
 
 <Callout type="warn">
-Code Mode will return a clear error if `publicUrl` is not set. The sandbox needs it to call back into your `/api/integrate/mcp` route.
+Code Mode will return a clear error if `publicUrl` is not set. The sandbox needs it to call back into your `/api/integrate/mcp` route. On the server, set `codeMode.publicUrl` in `createMCPServer` or export `INTEGRATE_URL` — auto-detection uses either value.
 </Callout>
+
+### Scoping tools to connected integrations
+
+Code Mode reduces tools sent to the model, but discovery can still fetch every configured integration on cold start. Pass `connectedOnly` with a user context so only OAuth-connected integrations are loaded:
+
+```typescript
+const tools = await getVercelAITools(serverClient, {
+  context: { userId: session.user.id },
+  connectedOnly: true,
+  mode: "code",
+});
+```
+
+See [MCP Tool Scoping](/docs/guides/mcp-tool-scoping) and [Performance](/docs/guides/performance).
 
 ## Usage
 

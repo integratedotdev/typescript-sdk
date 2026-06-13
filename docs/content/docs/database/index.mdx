@@ -43,6 +43,22 @@ export const { client } = createMCPServer({
 
 Explicit callbacks on `createMCPServer` still work and **override** adapter defaults when both are set.
 
+## Connected-provider tool loading
+
+When using a database adapter, pair token storage with [connected-only tool discovery](/docs/guides/mcp-tool-scoping):
+
+```typescript
+import { getVercelAITools } from "integrate-sdk/server";
+
+const tools = await getVercelAITools(serverClient, {
+  context: { userId: session.user.id },
+  connectedOnly: true,
+  mode: "code",
+});
+```
+
+Use `listConnectedProviders` from `integrate-sdk/server` when you need the connected provider list outside AI helpers.
+
 ## Guides
 
 - [Drizzle](/docs/database/drizzle) — PostgreSQL, MySQL, SQLite

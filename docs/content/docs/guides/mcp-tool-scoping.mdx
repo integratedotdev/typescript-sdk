@@ -1,0 +1,96 @@
+---
+title: MCP Tool Scoping
+description: How integration config, OAuth, and API keys control which tools are listed and executed
+---
+
+Integrate uses three independent layers to scope MCP tools. Understanding them prevents slow tool discovery and models seeing tools the user cannot use.
+
+## The three layers
+
+| Layer | Mechanism | Controls |
+|-------|-----------|----------|
+| **Integration config** | Integrations passed to `createMCPServer` + `X-Integrations` header | Which tool *definitions* exist in your app |
+| **OAuth tokens** | `getProviderToken(provider, email, context)` on each `tools/call` | Whether a tool *executes* for a user |
+| **API key** | `apiKey` on server config → `X-API-Key` on MCP requests | Billing, rate limits, usage `userId` |
+
+Listing is **config-based** by default: if Gmail is in your server config, Gmail tools appear even when the user has not connected Gmail. Execution fails without a token.
+
+## Connected-only tool loading
+
+Use `connectedOnly` when building AI tools for a signed-in user so you only fetch schemas for integrations they have OAuth tokens for:
+
+```typescript
+import { getVercelAITools } from "integrate-sdk/server";
+import { serverClient } from "@/lib/integrate";
+
+const tools = await getVercelAITools(serverClient, {
+  context: { userId: session.user.id },
+  connectedOnly: true,
+  mode: "code",
+});
+```
+
+This calls `getProviderToken` per configured integration (via your database adapter or callbacks) and only runs `list_tools_by_integration` for providers with usable tokens.
+
+### Manual integration filter
+
+Pass an explicit allowlist when you already know which providers to expose:
+
+```typescript
+const tools = await getVercelAITools(serverClient, {
+  integrationIds: ["github", "gmail", "slack"],
+  context: { userId },
+});
+```
+
+Or on the client directly:
+
+```typescript
+const mcpTools = await serverClient.getEnabledToolsAsync({
+  integrationIds: ["github"],
+  context: { userId },
+});
+```
+
+### `listConnectedProviders` helper
+
+For custom logic (routing, UI badges, background jobs), use the exported helper:
+
+```typescript
+import { listConnectedProviders } from "integrate-sdk/server";
+
+const connected = await listConnectedProviders(
+  ["github", "gmail", "slack"],
+  (provider, email, context) =>
+    serverClient.getProviderToken(provider, email, context),
+  { userId: session.user.id }
+);
+```
+
+With a database adapter, `getProviderToken` is already wired — you can also derive connected providers from token rows using `listConnectedProvidersFromRows`.
+
+## Code Mode + scoping
+
+[Code Mode](/docs/artificial-intelligence/code-mode) collapses hundreds of MCP tools into `execute_code` + `get_types`, which dramatically reduces context size. Pair it with `connectedOnly` so cold-start discovery only hits integrations the user has connected:
+
+```typescript
+const tools = await getVercelAITools(serverClient, {
+  context: { userId },
+  connectedOnly: true,
+  mode: "code",
+});
+```
+
+Set `codeMode.publicUrl` or `INTEGRATE_URL` so Code Mode can call back into `/api/integrate/mcp`.
+
+## Triggers and automations
+
+Scheduled work belongs in **your application database**, not the Integrate platform dashboard. Configure `triggers` callbacks or the [database adapter](/docs/database) in your app; the MCP scheduler calls your `/api/integrate/triggers/notify` route.
+
+The hosted dashboard at integrate.dev is for API keys, billing, and usage — not for creating triggers on behalf of your users.
+
+## Related
+
+- [Performance](/docs/guides/performance) — caching and concurrency
+- [Database adapters](/docs/database) — token storage and `connectedOnly`
+- [Triggers](/docs/getting-started/triggers) — SDK trigger callbacks
