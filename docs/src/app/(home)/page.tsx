@@ -147,6 +147,13 @@ export default async function HomePage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-white dark:bg-zinc-950">
+      {/* Hidden from visual layout; exposed for crawlers and AI agents */}
+      <div className="sr-only" aria-hidden="true">
+        Integrate documentation for AI agents: start at https://integrate.dev/llms.txt
+        for a full Markdown index. Per-page exports append .mdx to docs paths, for example
+        https://integrate.dev/docs/getting-started/basic-usage.mdx. Human docs live at
+        https://integrate.dev/docs.
+      </div>
       <main className="flex flex-1 flex-col">
         {/* Hero Section */}
         <section className="py-12 relative min-h-[90vh] overflow-hidden">

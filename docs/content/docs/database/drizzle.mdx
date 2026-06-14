@@ -50,9 +50,9 @@ export const { client } = createMCPServer({
 });
 ```
 
-## Better Auth example
+## Session context example
 
-Better Auth's own `drizzleAdapter` handles auth tables. Integrate's adapter is separate: it persists **integration OAuth tokens** in `provider_token`, not Better Auth `account` rows.
+Integrate's Drizzle adapter persists **integration OAuth tokens** in `provider_token`. It is separate from your app's user/session tables—wire `getSessionContext` to whatever auth layer you already use.
 
 ```typescript
 import { auth } from "./auth";

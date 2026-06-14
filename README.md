@@ -344,7 +344,7 @@ For complete OAuth setup including:
 - Multiple providers
 - Callback page setup
 
-See the [`/examples`](/examples) directory or [OAuth documentation](https://integrate.dev/docs/guides/oauth-flow).
+See the [`/examples`](/examples) directory or [OAuth documentation](https://integrate.dev/docs/getting-started/basic-usage).
 
 ## Scheduled Triggers
 
@@ -488,7 +488,7 @@ const result = await generateText({
 For detailed guides, API reference, and examples, visit the [complete documentation](https://integrate.dev):
 
 - **[Getting Started](https://integrate.dev/docs/getting-started/installation)** - Installation and quick start
-- **[OAuth Flow](https://integrate.dev/docs/guides/oauth-flow)** - OAuth 2.0 authorization guide
+- **[OAuth Flow](https://integrate.dev/docs/getting-started/basic-usage)** - OAuth 2.0 authorization guide
 - **[Integrations](https://integrate.dev/docs/integrations)** - Built-in integrations and configuration
 - **[Vercel AI SDK](https://integrate.dev/docs/artificial-intelligence/vercel-ai-sdk)** - AI model integration
 - **[Advanced Usage](https://integrate.dev/docs/guides/advanced-usage)** - Error handling, retries, and more

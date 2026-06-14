@@ -1,0 +1,27 @@
+---
+title: Integrations
+description: Browse OAuth integrations available through the Integrate MCP server
+---
+
+import { Cards, Card } from "fumadocs-ui/components/card";
+
+The Integrate MCP server exposes tools for 200+ third-party services. Each integration has its own OAuth configuration, scopes, and typed tools in the SDK.
+
+Browse the sidebar for a specific provider, or start with the most common ones below.
+
+<Cards>
+  <Card title="GitHub" href="/docs/integrations/github" description="Repos, issues, PRs, and more" />
+  <Card title="Gmail" href="/docs/integrations/gmail" description="Send and manage email" />
+  <Card title="Notion" href="/docs/integrations/notion" description="Pages, databases, and blocks" />
+  <Card title="Slack" href="/docs/integrations/slack" description="Messages and channels" />
+  <Card title="Linear" href="/docs/integrations/linear" description="Issues and projects" />
+  <Card title="Default (server)" href="/docs/integrations/default" description="Server-level MCP tools" />
+</Cards>
+
+## Full catalog
+
+See the [integrations directory](/integrations) on the marketing site for logos and search, or use the docs sidebar for per-integration setup guides.
+
+## Custom integrations
+
+New providers are added on the [Integrate MCP server](https://github.com/integratedotdev/mcp-server). If you need a provider that is not listed yet, open an issue or contribute an integration following the patterns in that repository.

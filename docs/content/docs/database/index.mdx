@@ -16,10 +16,10 @@ You can configure persistence in two ways:
 
 | Approach | When to use |
 |----------|-------------|
-| **Database adapter** (recommended) | Drizzle, Prisma, or MongoDB. Mirrors [Better Auth's adapter pattern](https://www.better-auth.com/docs/concepts/database) |
+| **Database adapter** (recommended) | Drizzle, Prisma, or MongoDB. Same callback shape as hand-written token storage |
 | **Raw callbacks** | Custom storage, legacy setups, or non-standard schemas |
 
-With adapters, pass `database` to `createMCPServer`. Token and trigger CRUD are handled for you. You still provide **`getSessionContext`** to map requests to a `userId` (Better Auth, Clerk, cron headers, etc.).
+With adapters, pass `database` to `createMCPServer`. Token and trigger CRUD are handled for you. You still provide **`getSessionContext`** to map requests to a `userId` (session cookie, Clerk, service headers, etc.).
 
 ```typescript
 import { createMCPServer, githubIntegration } from "integrate-sdk/server";
