@@ -168,7 +168,7 @@ export default async function HomePage() {
                 View Docs
               </Link>
               <a
-                href="https://app.integrate.dev"
+                href="https://integrate.dev/dashboard/login"
                 className="inline-flex h-10 items-center gap-1 rounded-full bg-zinc-900 px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
               >
                 Get Started
@@ -214,7 +214,7 @@ export default async function HomePage() {
                   View Docs
                 </Link>
                 <a
-                  href="https://app.integrate.dev"
+                  href="https://integrate.dev/dashboard/login"
                   className="inline-flex h-10 items-center gap-1 rounded-full bg-zinc-900 px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
                 >
                   Get Started
@@ -270,7 +270,7 @@ export default async function HomePage() {
                   View Docs
                 </Link>
                 <a
-                  href="https://app.integrate.dev"
+                  href="https://integrate.dev/dashboard/login"
                   className="inline-flex h-10 items-center gap-1 rounded-full bg-zinc-900 px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
                 >
                   Get Started
@@ -299,7 +299,7 @@ export default async function HomePage() {
                 View Docs
               </Link>
               <a
-                href="https://app.integrate.dev"
+                href="https://integrate.dev/dashboard/login"
                 className="inline-flex h-10 items-center gap-1 rounded-full bg-white px-6 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-100"
               >
                 Get Started

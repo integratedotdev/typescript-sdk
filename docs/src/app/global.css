@@ -33,15 +33,15 @@ pre code {
 }
 
 /* Make Sign In and Get Started buttons rounded-full with more padding */
-nav a[href="https://app.integrate.dev"],
-nav a[href="https://app.integrate.dev/signup"] {
+nav a[href="https://integrate.dev/dashboard/login"],
+nav a[href="https://integrate.dev/dashboard/signup"] {
   border-radius: 9999px;
   padding-left: 1.5rem;
   padding-right: 1.5rem;
 }
 
 /* Style Get Started button like hero section (inverted colors) */
-nav a[href="https://app.integrate.dev/signup"] {
+nav a[href="https://integrate.dev/dashboard/signup"] {
   background-color: rgb(24 24 27); /* bg-zinc-900 */
   color: rgb(255 255 255); /* text-white */
   transition-property: background-color;
@@ -49,16 +49,16 @@ nav a[href="https://app.integrate.dev/signup"] {
   transition-duration: 150ms;
 }
 
-nav a[href="https://app.integrate.dev/signup"]:hover {
+nav a[href="https://integrate.dev/dashboard/signup"]:hover {
   background-color: rgb(39 39 42); /* hover:bg-zinc-800 */
 }
 
 /* Dark mode: white background with dark text */
-.dark nav a[href="https://app.integrate.dev/signup"] {
+.dark nav a[href="https://integrate.dev/dashboard/signup"] {
   background-color: rgb(255 255 255); /* dark:bg-white */
   color: rgb(24 24 27); /* dark:text-zinc-900 */
 }
 
-.dark nav a[href="https://app.integrate.dev/signup"]:hover {
+.dark nav a[href="https://integrate.dev/dashboard/signup"]:hover {
   background-color: rgb(244 244 245); /* dark:hover:bg-zinc-100 */
 }

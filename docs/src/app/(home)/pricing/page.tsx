@@ -161,7 +161,7 @@ export default function PricingPage() {
                       ))}
                     </ul>
                     <a
-                      href="https://app.integrate.dev"
+                      href="https://integrate.dev/dashboard/login"
                       className={`flex w-full items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-colors ${
                         plan.highlight
                           ? "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
@@ -253,7 +253,7 @@ export default function PricingPage() {
                 View Docs
               </Link>
               <a
-                href="https://app.integrate.dev"
+                href="https://integrate.dev/dashboard/login"
                 className="inline-flex h-10 items-center gap-1 rounded-full bg-white px-6 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-100"
               >
                 Get Started

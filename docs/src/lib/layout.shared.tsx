@@ -26,13 +26,13 @@ export function baseOptions(includeMainLinks: boolean = true): BaseLayoutProps {
   links.push(
     {
       type: "button",
-      url: "https://app.integrate.dev",
+      url: "https://integrate.dev/dashboard/login",
       text: "Sign In",
       secondary: true,
     },
     {
       type: "button",
-      url: "https://app.integrate.dev/signup",
+      url: "https://integrate.dev/dashboard/signup",
       text: "Get Started",
       secondary: true,
     },

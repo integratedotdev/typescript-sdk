@@ -1,0 +1,19 @@
+{
+  "$schema": "https://openapi.vercel.sh/microfrontends.json",
+  "applications": {
+    "integrate-docs": {
+      "packageName": "integrate",
+      "development": {
+        "fallback": "https://integrate.dev"
+      }
+    },
+    "integrate-dashboard": {
+      "packageName": "integrate-dashboard",
+      "routing": [
+        {
+          "paths": ["/dashboard/:path*"]
+        }
+      ]
+    }
+  }
+}
