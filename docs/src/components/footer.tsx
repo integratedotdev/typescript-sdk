@@ -52,7 +52,7 @@ export function Footer() {
             <ul className="space-y-2 text-zinc-600 dark:text-zinc-400">
               <li>
                 <Link
-                  href="/docs/getting-started/quick-start"
+                  href="/docs/getting-started/basic-usage"
                   className="hover:text-zinc-900 dark:hover:text-white"
                 >
                   Quick Start
@@ -60,7 +60,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/docs/reference/api-reference"
+                  href="/docs/reference/options"
                   className="hover:text-zinc-900 dark:hover:text-white"
                 >
                   API Reference

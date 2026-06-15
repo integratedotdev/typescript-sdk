@@ -26,6 +26,7 @@ const SDK_ROOT = path.resolve(DOCS_ROOT, "..");
 const INTEGRATIONS_DIR = path.join(SDK_ROOT, "src/integrations");
 const OUTPUT_DIR = path.join(DOCS_ROOT, "content/docs/integrations");
 const TOOL_PARAMS_DIR = path.join(DOCS_ROOT, "generated/tool-params");
+const SLUG_MAP_PATH = path.join(DOCS_ROOT, "generated/integration-slug-map.json");
 const META_PATH = path.join(OUTPUT_DIR, "meta.json");
 
 const EXCLUDED_FILES = new Set([
@@ -61,6 +62,7 @@ type IntegrationSpec = {
   hasOAuth: boolean;
   clientMethods: ClientMethod[];
   clientPath: string | null;
+  logoUrl?: string;
 };
 
 function pascalCase(id: string): string {
@@ -256,10 +258,22 @@ function inferAuthMode(source: string): IntegrationAuthMode {
   return "none";
 }
 
+function logoBasename(logoUrl: string): string | null {
+  const filename = logoUrl.split("/").pop();
+  if (!filename) return null;
+  return filename.replace(/\.(png|jpe?g|webp|gif|svg)$/i, "");
+}
+
 function extractReturnMetadata(
   source: string,
   filePath: string,
-): { id?: string; name?: string; description?: string; category?: string } {
+): {
+  id?: string;
+  name?: string;
+  description?: string;
+  category?: string;
+  logoUrl?: string;
+} {
   const project = new Project({ useInMemoryFileSystem: true });
   const sourceFile = project.createSourceFile(filePath, source, {
     overwrite: true,
@@ -274,8 +288,13 @@ function extractReturnMetadata(
   const expression = returnStmt?.getExpression();
   if (!expression?.isKind(SyntaxKind.ObjectLiteralExpression)) return {};
 
-  const result: { id?: string; name?: string; description?: string; category?: string } =
-    {};
+  const result: {
+    id?: string;
+    name?: string;
+    description?: string;
+    category?: string;
+    logoUrl?: string;
+  } = {};
 
   for (const prop of expression.getProperties()) {
     if (!prop.isKind(SyntaxKind.PropertyAssignment)) continue;
@@ -288,6 +307,7 @@ function extractReturnMetadata(
     if (name === "name") result.name = value;
     if (name === "description") result.description = value;
     if (name === "category") result.category = value;
+    if (name === "logoUrl") result.logoUrl = value;
   }
 
   return result;
@@ -410,6 +430,7 @@ async function discoverIntegrations(): Promise<IntegrationSpec[]> {
       hasOAuth: docsMeta.authMode === "oauth",
       clientMethods,
       clientPath: hasClient ? clientPath : null,
+      logoUrl: returnMeta.logoUrl,
     });
   }
 
@@ -735,6 +756,25 @@ async function main() {
   await writeFile(
     META_PATH,
     `${JSON.stringify({ pages }, null, 2)}\n`,
+    "utf8",
+  );
+
+  const byLogoBasename: Record<string, string> = {};
+  const docIds = new Set(specs.map((s) => s.id));
+
+  for (const spec of specs) {
+    if (spec.logoUrl) {
+      const basename = logoBasename(spec.logoUrl);
+      if (basename) {
+        byLogoBasename[basename] = spec.id;
+      }
+    }
+  }
+
+  await mkdir(path.dirname(SLUG_MAP_PATH), { recursive: true });
+  await writeFile(
+    SLUG_MAP_PATH,
+    `${JSON.stringify({ byLogoBasename, docIds: [...docIds].sort() }, null, 2)}\n`,
     "utf8",
   );
 
