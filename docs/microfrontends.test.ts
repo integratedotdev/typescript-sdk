@@ -11,6 +11,8 @@ describe("microfrontends", () => {
           "/dashboard/login",
           "/dashboard/home",
           "/dashboard/api/auth",
+          "/dashboard-assets/_next/static/chunks/main.js",
+          "/vc-ap-13c0d8/_next/static/chunks/main.js",
         ],
       });
     }).not.toThrow();

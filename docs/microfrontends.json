@@ -9,9 +9,14 @@
     },
     "integrate-dashboard": {
       "packageName": "integrate-dashboard",
+      "assetPrefix": "dashboard-assets",
       "routing": [
         {
-          "paths": ["/dashboard/:path*"]
+          "paths": [
+            "/dashboard/:path*",
+            "/dashboard-assets/:path*",
+            "/vc-ap-13c0d8/:path*"
+          ]
         }
       ]
     }
