@@ -68,6 +68,18 @@ Use `listConnectedProviders` from `integrate-sdk/server` when you need the conne
 - [Triggers](/docs/database/triggers): composing `onComplete` and `getCallbackUrl`
 - [Hooks](/docs/database/hooks): cache invalidation, identity resolution, trigger authorization
 
+## Examples
+
+Runnable Next.js examples for each database adapter live in the [examples repository](https://github.com/integratedotdev/examples):
+
+| Adapter | Example |
+|---------|---------|
+| Drizzle | [`database/drizzle-example`](https://github.com/integratedotdev/examples/tree/main/database/drizzle-example) |
+| Prisma | [`database/prisma-example`](https://github.com/integratedotdev/examples/tree/main/database/prisma-example) |
+| MongoDB | [`database/mongodb-example`](https://github.com/integratedotdev/examples/tree/main/database/mongodb-example) |
+
+Each example connects GitHub OAuth, persists tokens with the adapter, and lists repositories from the browser.
+
 ## What stays app-specific
 
 `getSessionContext` cannot be fully abstracted. Each app wires its auth library or internal service headers. Optional [hooks](/docs/database/hooks) cover app-specific behavior (cache revalidation, GitHub email resolution, trigger ownership repair) without forking the adapter.
