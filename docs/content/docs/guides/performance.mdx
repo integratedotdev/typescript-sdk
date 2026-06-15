@@ -22,7 +22,7 @@ Mitigations (use together):
 await serverClient.getEnabledToolsAsync({
   connectedOnly: true,
   context: { userId },
-  fetchConcurrency: 8, // default in v0.9.57+
+  fetchConcurrency: 8, // default in v0.10.0+
 });
 ```
 
@@ -38,7 +38,7 @@ await getVercelAITools(serverClient, {
 
 Invalidate your app-level cache when tokens change (OAuth connect/disconnect).
 
-## Built-in tool discovery cache (v0.9.60+)
+## Built-in tool discovery cache (v0.10.0+)
 
 Pass a `cache` adapter to `getVercelAITools` instead of hand-rolling Redis + `hydrateToolCache`:
 

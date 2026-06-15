@@ -23,7 +23,26 @@ const config = {
     ];
   },
   async redirects() {
+    const googleIntegrationRedirects = [
+      ["gcal", "google_calendar"],
+      ["gchat", "google_chat"],
+      ["gcontacts", "google_contacts"],
+      ["gdocs", "google_docs"],
+      ["gdrive", "google_drive"],
+      ["gkeep", "google_keep"],
+      ["gmeet", "google_meet"],
+      ["gsheets", "google_sheets"],
+      ["gslides", "google_slides"],
+      ["gtasks", "google_tasks"],
+      ["ga4", "google_analytics"],
+    ];
+
     return [
+      ...googleIntegrationRedirects.map(([oldId, newId]) => ({
+        source: `/docs/integrations/${oldId}`,
+        destination: `/docs/integrations/${newId}`,
+        permanent: true,
+      })),
       {
         source: "/:path*",
         has: [{ type: "host", value: "app.integrate.dev" }],
