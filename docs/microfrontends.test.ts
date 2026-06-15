@@ -1,10 +1,13 @@
 import { describe, expect, test } from "bun:test";
+import { join } from "node:path";
 import { validateRouting } from "@vercel/microfrontends/next/testing";
+
+const microfrontendsConfigPath = join(import.meta.dir, "microfrontends.json");
 
 describe("microfrontends", () => {
   test("routing", () => {
     expect(() => {
-      validateRouting("./microfrontends.json", {
+      validateRouting(microfrontendsConfigPath, {
         "integrate-docs": ["/", "/docs", "/docs/getting-started"],
         "integrate-dashboard": [
           "/dashboard",
