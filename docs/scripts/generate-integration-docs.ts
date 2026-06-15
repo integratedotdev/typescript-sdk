@@ -706,8 +706,9 @@ async function main() {
   await rm(TOOL_PARAMS_DIR, { recursive: true, force: true });
   await mkdir(TOOL_PARAMS_DIR, { recursive: true });
 
+  const PRESERVED_MDX = new Set(["default.mdx", "index.mdx"]);
   const existing = (await readdir(OUTPUT_DIR)).filter(
-    (f) => f.endsWith(".mdx") && f !== "default.mdx",
+    (f) => f.endsWith(".mdx") && !PRESERVED_MDX.has(f),
   );
   for (const file of existing) {
     await rm(path.join(OUTPUT_DIR, file));
@@ -730,7 +731,7 @@ async function main() {
     await writeFile(path.join(OUTPUT_DIR, `${spec.id}.mdx`), mdx, "utf8");
   }
 
-  const pages = ["default", ...specs.map((s) => s.id)];
+  const pages = ["index", "default", ...specs.map((s) => s.id)];
   await writeFile(
     META_PATH,
     `${JSON.stringify({ pages }, null, 2)}\n`,
