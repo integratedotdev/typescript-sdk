@@ -14,6 +14,7 @@ import type {
 import { MCPMethod } from "./protocol/messages.js";
 import type { MCPIntegration, OAuthConfig } from "./integrations/types.js";
 import { toConfiguredIntegrationSummary, toConfiguredIntegrationWithToolMetadata } from "./integrations/integration-summary.js";
+import { parseToolsFromListByIntegrationText } from "./integrations/list-tools-by-integration.js";
 import { integrationLibraryPresentationFields } from "./integrations/library-metadata.js";
 import type { MCPClientConfig, ReauthHandler, ToolCallOptions, MCPContext, EnabledToolsAsyncOptions } from "./config/types.js";
 import { listConnectedProviders } from "./database/token-store.js";
@@ -944,23 +945,9 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
                         integration: integration.id,
                       });
 
-                      let toolMetadata: any[] = [];
-                      if (response.content && Array.isArray(response.content)) {
-                        for (const item of response.content) {
-                          if (item.type === 'text' && item.text) {
-                            try {
-                              const parsed = JSON.parse(item.text);
-                              if (Array.isArray(parsed)) {
-                                toolMetadata = parsed;
-                              } else if (parsed.tools && Array.isArray(parsed.tools)) {
-                                toolMetadata = parsed.tools;
-                              }
-                            } catch {
-                              // Not JSON, skip
-                            }
-                          }
-                        }
-                      }
+                      const toolMetadata = this.parseListToolsByIntegrationContent(
+                        response.content
+                      );
 
                       return toConfiguredIntegrationWithToolMetadata(integration, toolMetadata);
                     } catch (error) {
@@ -1019,23 +1006,9 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
                         integration: integration.id,
                       });
 
-                      let toolMetadata: any[] = [];
-                      if (metadataResponse.content && Array.isArray(metadataResponse.content)) {
-                        for (const item of metadataResponse.content) {
-                          if (item.type === 'text' && item.text) {
-                            try {
-                              const parsed = JSON.parse(item.text);
-                              if (Array.isArray(parsed)) {
-                                toolMetadata = parsed;
-                              } else if (parsed.tools && Array.isArray(parsed.tools)) {
-                                toolMetadata = parsed.tools;
-                              }
-                            } catch {
-                              // Not JSON, skip
-                            }
-                          }
-                        }
-                      }
+                      const toolMetadata = this.parseListToolsByIntegrationContent(
+                        metadataResponse.content
+                      );
 
                       return {
                         ...integration,
@@ -1484,6 +1457,25 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
     return {};
   }
 
+  private parseListToolsByIntegrationContent(
+    content: MCPToolCallResponse["content"]
+  ): MCPTool[] {
+    const tools: MCPTool[] = [];
+    if (!content || !Array.isArray(content)) {
+      return tools;
+    }
+
+    for (const item of content) {
+      if (item.type === "text" && item.text) {
+        tools.push(
+          ...parseToolsFromListByIntegrationText(item.text, this.availableTools)
+        );
+      }
+    }
+
+    return tools;
+  }
+
   /**
    * Get a tool by name
    */
@@ -1592,6 +1584,12 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
       return filterToTargets(this.getEnabledTools());
     }
 
+    const transportHeaders = (this.transport as any).headers || {};
+    const hasApiKey = !!transportHeaders['X-API-KEY'];
+    if (hasApiKey) {
+      await this.ensureConnected();
+    }
+
     const tools: MCPTool[] = [];
     const { parallelWithLimit } = await import('./utils/concurrency.js');
     const concurrency = options?.fetchConcurrency ?? 8;
@@ -1604,33 +1602,9 @@ export class MCPClientBase<TIntegrations extends readonly MCPIntegration[] = rea
             integration: integrationId,
           });
 
-          const integrationTools: MCPTool[] = [];
-          if (response.content && Array.isArray(response.content)) {
-            for (const item of response.content) {
-              if (item.type === 'text' && item.text) {
-                try {
-                  const parsed = JSON.parse(item.text);
-                  const parsedTools = Array.isArray(parsed)
-                    ? parsed
-                    : parsed.tools && Array.isArray(parsed.tools)
-                      ? parsed.tools
-                      : [];
-
-                  for (const tool of parsedTools) {
-                    if (tool.name && tool.inputSchema) {
-                      integrationTools.push({
-                        name: tool.name,
-                        description: tool.description,
-                        inputSchema: tool.inputSchema,
-                      });
-                    }
-                  }
-                } catch {
-                  // Not JSON, skip
-                }
-              }
-            }
-          }
+          const integrationTools = this.parseListToolsByIntegrationContent(
+            response.content
+          ).filter((tool) => tool.inputSchema);
           return integrationTools;
         } catch (error) {
           logger.error(`Failed to fetch tools for integration ${integrationId}:`, error);
