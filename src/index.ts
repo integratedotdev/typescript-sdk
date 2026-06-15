@@ -742,6 +742,12 @@ export {
 } from "./integrations/generic.js";
 export type { GenericOAuthIntegrationConfig } from "./integrations/generic.js";
 
+export {
+  allIntegrations,
+  createIntegrationBundle,
+  type IntegrationBundleOptions,
+} from "./integrations/bundle.js";
+
 // Note: AI tools (getVercelAITools, etc.) are only available from 'integrate-sdk/server'
 // They are server-side only and should not be imported in client code
 

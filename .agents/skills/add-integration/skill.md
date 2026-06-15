@@ -306,19 +306,17 @@ Find the block of integration exports (around line 1414) and add:
 export { {camel}Integration } from './integrations/{provider}.js';
 ```
 
-### 7. `index.ts` (root) — Add to default client
+### 7. `src/integrations/bundle.ts` — Add to default integration set (if zero-config)
 
-Add the import:
-
-```typescript
-import { {camel}Integration } from './src/integrations/{provider}.js';
-```
-
-Add to the `integrations` array in `createMCPClient({...})`:
+Add the import and factory call to `allIntegrations()` **only if** the factory can be called with no arguments (OAuth integrations typically qualify). Integrations that require API keys or tenant config at construction time (e.g. `auth0Integration`, `granolaIntegration`) are exported from `src/index.ts` but are **not** in the default bundle — apps add them explicitly when credentials are available.
 
 ```typescript
+import { {camel}Integration } from './{provider}.js';
+// in allIntegrations():
     {camel}Integration(),
 ```
+
+The root `index.ts` default `client` uses `createIntegrationBundle()` — do not duplicate the list there.
 
 ### 8. `src/integrations/library-metadata.ts` — Add catalog entry
 
