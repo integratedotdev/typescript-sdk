@@ -41,11 +41,11 @@ import { linearIntegration } from './linear.js';
 import { vercelIntegration } from './vercel.js';
 import { zendeskIntegration } from './zendesk.js';
 import { stripeIntegration } from './stripe.js';
-import { gcalIntegration } from './gcal.js';
-import { gmeetIntegration } from './gmeet.js';
-import { gtasksIntegration } from './gtasks.js';
-import { gkeepIntegration } from './gkeep.js';
-import { gcontactsIntegration } from './gcontacts.js';
+import { googleCalendarIntegration } from './google_calendar.js';
+import { googleMeetIntegration } from './google_meet.js';
+import { googleTasksIntegration } from './google_tasks.js';
+import { googleKeepIntegration } from './google_keep.js';
+import { googleContactsIntegration } from './google_contacts.js';
 import { outlookIntegration } from './outlook.js';
 import { teamsIntegration } from './teams.js';
 import { airtableIntegration } from './airtable.js';
@@ -62,10 +62,10 @@ import { sharepointIntegration } from './sharepoint.js';
 import { wordIntegration } from './word.js';
 import { excelIntegration } from './excel.js';
 import { powerpointIntegration } from './powerpoint.js';
-import { gdocsIntegration } from './gdocs.js';
-import { gdriveIntegration } from './gdrive.js';
-import { gsheetsIntegration } from './gsheets.js';
-import { gslidesIntegration } from './gslides.js';
+import { googleDocsIntegration } from './google_docs.js';
+import { googleDriveIntegration } from './google_drive.js';
+import { googleSheetsIntegration } from './google_sheets.js';
+import { googleSlidesIntegration } from './google_slides.js';
 import { polarIntegration } from './polar.js';
 import { facebookIntegration } from './facebook.js';
 import { figmaIntegration } from './figma.js';
@@ -77,7 +77,7 @@ import { threadsIntegration } from './threads.js';
 import { tiktokIntegration } from './tiktok.js';
 import { typeformIntegration } from './typeform.js';
 import { xeroIntegration } from './xero.js';
-import { gchatIntegration } from './gchat.js';
+import { googleChatIntegration } from './google_chat.js';
 import { shopifyIntegration } from './shopify.js';
 import { youtubeIntegration } from './youtube.js';
 import { zoomIntegration } from './zoom.js';
@@ -160,11 +160,11 @@ export function allIntegrations(): MCPIntegration[] {
     vercelIntegration(),
     zendeskIntegration(),
     stripeIntegration(),
-    gcalIntegration(),
-    gmeetIntegration(),
-    gtasksIntegration(),
-    gkeepIntegration(),
-    gcontactsIntegration(),
+    googleCalendarIntegration(),
+    googleMeetIntegration(),
+    googleTasksIntegration(),
+    googleKeepIntegration(),
+    googleContactsIntegration(),
     outlookIntegration(),
     teamsIntegration(),
     airtableIntegration(),
@@ -181,10 +181,10 @@ export function allIntegrations(): MCPIntegration[] {
     wordIntegration(),
     excelIntegration(),
     powerpointIntegration(),
-    gdocsIntegration(),
-    gdriveIntegration(),
-    gsheetsIntegration(),
-    gslidesIntegration(),
+    googleDocsIntegration(),
+    googleDriveIntegration(),
+    googleSheetsIntegration(),
+    googleSlidesIntegration(),
     polarIntegration(),
     facebookIntegration(),
     figmaIntegration(),
@@ -196,7 +196,7 @@ export function allIntegrations(): MCPIntegration[] {
     tiktokIntegration(),
     typeformIntegration(),
     xeroIntegration(),
-    gchatIntegration(),
+    googleChatIntegration(),
     shopifyIntegration(),
     youtubeIntegration(),
     zoomIntegration(),

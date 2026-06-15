@@ -524,23 +524,23 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     description: "Send, read, and search Gmail messages",
     category: "Communication",
   },
-  gcal: {
+  google_calendar: {
     description: "Manage Google Calendar events and schedules",
     category: "Productivity",
   },
-  gtasks: {
+  google_tasks: {
     description: "Manage Google Tasks lists and to-dos",
     category: "Productivity",
   },
-  gkeep: {
+  google_keep: {
     description: "Manage Google Keep notes, attachments, and sharing permissions",
     category: "Productivity",
   },
-  gmeet: {
+  google_meet: {
     description: "Create Google Meet links and manage meeting events via Calendar",
     category: "Communication",
   },
-  gcontacts: {
+  google_contacts: {
     description: "List, search, create, update, and delete Google Contacts via the People API",
     category: "Communication",
   },
@@ -676,19 +676,19 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     description: "Manage Todoist tasks, projects, and labels",
     category: "Productivity",
   },
-  gslides: {
+  google_slides: {
     description: "Create and update Google Slides presentations",
     category: "Productivity",
   },
-  gsheets: {
+  google_sheets: {
     description: "Read and update Google Sheets spreadsheets",
     category: "Productivity",
   },
-  gdocs: {
+  google_docs: {
     description: "Create and edit Google Docs documents",
     category: "Productivity",
   },
-  gdrive: {
+  google_drive: {
     description: "Manage Google Drive files, folders, and sharing",
     category: "Storage",
   },
@@ -804,11 +804,11 @@ export const INTEGRATION_LIBRARY_METADATA: Record<string, LibraryEntry> = {
     description: "Read eToro portfolio data and market instruments",
     category: "Finance",
   },
-  ga4: {
+  google_analytics: {
     description: "Read Google Analytics reports, properties, and events",
     category: "Analytics",
   },
-  gchat: {
+  google_chat: {
     description: "Send messages and manage Google Chat spaces and memberships",
     category: "Communication",
   },

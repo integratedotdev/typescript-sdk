@@ -1,7 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Footer } from "@/components/footer";
-import { resolveIntegrationDocSlug } from "@/lib/resolve-integration-slug";
 import { type IntegrationCard, IntegrationsGrid } from "./integrations-grid";
 
 export const revalidate = 60;
@@ -14,6 +13,21 @@ type IntegrationResponse = {
     owner?: string;
   }[];
 };
+
+function integrationSlug(integration: { name: string; logo_url: string }) {
+  const filename = integration.logo_url.split("/").pop();
+  if (filename) {
+    const id = filename.replace(/\.(png|jpe?g|webp|gif|svg)$/i, "");
+    if (/^[a-z0-9_]+$/.test(id)) {
+      return id;
+    }
+  }
+  const normalized = integration.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/(^_|_$)/g, "");
+  return normalized || "default";
+}
 
 async function getIntegrations(): Promise<IntegrationCard[]> {
   try {
@@ -33,7 +47,7 @@ async function getIntegrations(): Promise<IntegrationCard[]> {
     return data.integrations
       .map((integration) => ({
         name: integration.name,
-        slug: resolveIntegrationDocSlug(integration),
+        slug: integrationSlug(integration),
         description: integration.description,
         logoUrl: integration.logo_url,
         owner: integration.owner,

@@ -337,21 +337,21 @@ export type { ZendeskIntegrationConfig, ZendeskTools, ZendeskIntegrationClient }
 export { stripeIntegration } from "./integrations/stripe.js";
 export type { StripeIntegrationConfig, StripeTools, StripeIntegrationClient } from "./integrations/stripe.js";
 
-export { gcalIntegration } from "./integrations/gcal.js";
-export type { GcalIntegrationConfig, GcalTools, GcalIntegrationClient } from "./integrations/gcal.js";
+export { googleCalendarIntegration } from "./integrations/google_calendar.js";
+export type { GoogleCalendarIntegrationConfig, GoogleCalendarTools, GoogleCalendarIntegrationClient } from "./integrations/google_calendar.js";
 
-export { gtasksIntegration } from "./integrations/gtasks.js";
-export type { GtasksIntegrationConfig, GtasksTools, GtasksIntegrationClient } from "./integrations/gtasks.js";
+export { googleTasksIntegration } from "./integrations/google_tasks.js";
+export type { GoogleTasksIntegrationConfig, GoogleTasksTools, GoogleTasksIntegrationClient } from "./integrations/google_tasks.js";
 
-export { gkeepIntegration } from "./integrations/gkeep.js";
-export type { GkeepIntegrationConfig, GkeepTools, GkeepIntegrationClient } from "./integrations/gkeep.js";
+export { googleKeepIntegration } from "./integrations/google_keep.js";
+export type { GoogleKeepIntegrationConfig, GoogleKeepTools, GoogleKeepIntegrationClient } from "./integrations/google_keep.js";
 
-export { gcontactsIntegration } from "./integrations/gcontacts.js";
+export { googleContactsIntegration } from "./integrations/google_contacts.js";
 export type {
-  GcontactsIntegrationConfig,
-  GcontactsTools,
-  GcontactsIntegrationClient,
-} from "./integrations/gcontacts.js";
+  GoogleContactsIntegrationConfig,
+  GoogleContactsTools,
+  GoogleContactsIntegrationClient,
+} from "./integrations/google_contacts.js";
 
 export { outlookIntegration } from "./integrations/outlook.js";
 export type { OutlookIntegrationConfig, OutlookTools, OutlookIntegrationClient } from "./integrations/outlook.js";
@@ -405,14 +405,14 @@ export type {
   PaperIntegrationClient,
 } from "./integrations/paper.js";
 
-export { gdocsIntegration } from "./integrations/gdocs.js";
-export type { GDocsIntegrationConfig, GDocsTools, GDocsIntegrationClient } from "./integrations/gdocs.js";
+export { googleDocsIntegration } from "./integrations/google_docs.js";
+export type { GDocsIntegrationConfig, GDocsTools, GDocsIntegrationClient } from "./integrations/google_docs.js";
 
-export { gsheetsIntegration } from "./integrations/gsheets.js";
-export type { GSheetsIntegrationConfig, GSheetsTools, GSheetsIntegrationClient } from "./integrations/gsheets.js";
+export { googleSheetsIntegration } from "./integrations/google_sheets.js";
+export type { GSheetsIntegrationConfig, GSheetsTools, GSheetsIntegrationClient } from "./integrations/google_sheets.js";
 
-export { gslidesIntegration } from "./integrations/gslides.js";
-export type { GSlidesIntegrationConfig, GSlidesTools, GSlidesIntegrationClient } from "./integrations/gslides.js";
+export { googleSlidesIntegration } from "./integrations/google_slides.js";
+export type { GSlidesIntegrationConfig, GSlidesTools, GSlidesIntegrationClient } from "./integrations/google_slides.js";
 
 export { polarIntegration } from "./integrations/polar.js";
 export type { PolarIntegrationConfig, PolarTools, PolarIntegrationClient } from "./integrations/polar.js";
@@ -537,8 +537,8 @@ export type {
 export { attioIntegration } from "./integrations/attio.js";
 export type { AttioIntegrationConfig, AttioTools, AttioScopes, AttioIntegrationClient } from "./integrations/attio.js";
 
-export { gchatIntegration } from "./integrations/gchat.js";
-export type { GchatIntegrationConfig, GchatTools, GchatScopes, GchatIntegrationClient } from "./integrations/gchat.js";
+export { googleChatIntegration } from "./integrations/google_chat.js";
+export type { GoogleChatIntegrationConfig, GoogleChatTools, GoogleChatScopes, GoogleChatIntegrationClient } from "./integrations/google_chat.js";
 
 export { shopifyIntegration } from "./integrations/shopify.js";
 export type { ShopifyIntegrationConfig, ShopifyTools, ShopifyScopes, ShopifyIntegrationClient } from "./integrations/shopify.js";
@@ -616,17 +616,17 @@ export type { ClickUpIntegrationConfig, ClickUpTools, ClickUpIntegrationClient }
 export { excelIntegration } from "./integrations/excel.js";
 export type { ExcelIntegrationConfig, ExcelTools, ExcelIntegrationClient } from "./integrations/excel.js";
 
-export { ga4Integration } from "./integrations/ga4.js";
-export type { Ga4IntegrationConfig, Ga4Tools, Ga4IntegrationClient } from "./integrations/ga4.js";
+export { googleAnalyticsIntegration } from "./integrations/google_analytics.js";
+export type { GoogleAnalyticsIntegrationConfig, GoogleAnalyticsTools, GoogleAnalyticsIntegrationClient } from "./integrations/google_analytics.js";
 
-export { gdriveIntegration } from "./integrations/gdrive.js";
-export type { GDriveIntegrationConfig, GDriveTools, GDriveIntegrationClient } from "./integrations/gdrive.js";
+export { googleDriveIntegration } from "./integrations/google_drive.js";
+export type { GDriveIntegrationConfig, GDriveTools, GDriveIntegrationClient } from "./integrations/google_drive.js";
 
 export { gitlabIntegration } from "./integrations/gitlab.js";
 export type { GitLabIntegrationConfig, GitLabTools, GitLabIntegrationClient } from "./integrations/gitlab.js";
 
-export { gmeetIntegration } from "./integrations/gmeet.js";
-export type { GmeetIntegrationConfig, GmeetTools, GmeetIntegrationClient } from "./integrations/gmeet.js";
+export { googleMeetIntegration } from "./integrations/google_meet.js";
+export type { GoogleMeetIntegrationConfig, GoogleMeetTools, GoogleMeetIntegrationClient } from "./integrations/google_meet.js";
 
 export { mondayIntegration } from "./integrations/monday.js";
 export type { MondayIntegrationConfig, MondayTools, MondayIntegrationClient } from "./integrations/monday.js";

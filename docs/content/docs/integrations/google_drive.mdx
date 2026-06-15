@@ -1,0 +1,209 @@
+---
+title: "Google Drive Integration"
+description: "Manage Google Drive files, folders, and sharing"
+---
+
+The Google Drive integration provides access to manage Google Drive files, folders, and sharing through the Integrate MCP server.
+
+## Installation
+
+The Google Drive integration is included with the SDK:
+
+```typescript
+import { googleDriveIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Google Drive OAuth App
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Drive integration to your server configuration. The integration automatically reads `GOOGLE_DRIVE_CLIENT_ID` and `GOOGLE_DRIVE_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, googleDriveIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    googleDriveIntegration({
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+googleDriveIntegration({
+  clientId: process.env.CUSTOM_GOOGLE_DRIVE_ID,
+  clientSecret: process.env.CUSTOM_GOOGLE_DRIVE_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("google_drive");
+const result = await client.google_drive.listFiles({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, googleDriveIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [googleDriveIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/google_drive.ts"
+  name="GDriveIntegrationConfig"
+/>
+
+
+## Tools
+
+### `google_drive_copy_file`
+
+Copy a file
+
+<AutoTypeTable
+  path="generated/tool-params/google_drive.ts"
+  name="GoogleDriveCopyFileParams"
+/>
+
+### `google_drive_create_folder`
+
+Create a new folder
+
+<AutoTypeTable
+  path="generated/tool-params/google_drive.ts"
+  name="GoogleDriveCreateFolderParams"
+/>
+
+### `google_drive_delete_file`
+
+Permanently delete a file or folder (not recoverable)
+
+<AutoTypeTable
+  path="generated/tool-params/google_drive.ts"
+  name="GoogleDriveDeleteFileParams"
+/>
+
+### `google_drive_download_file`
+
+Download file content as text. Google Workspace files are auto-exported.
+
+<AutoTypeTable
+  path="generated/tool-params/google_drive.ts"
+  name="GoogleDriveDownloadFileParams"
+/>
+
+### `google_drive_get_about`
+
+Get current user info and storage quota
+
+_No parameters._
+
+### `google_drive_get_file`
+
+Get metadata for a file or folder
+
+<AutoTypeTable
+  path="generated/tool-params/google_drive.ts"
+  name="GoogleDriveGetFileParams"
+/>
+
+### `google_drive_list_files`
+
+List files and folders in Google Drive
+
+<AutoTypeTable
+  path="generated/tool-params/google_drive.ts"
+  name="GoogleDriveListFilesParams"
+/>
+
+### `google_drive_list_permissions`
+
+List sharing permissions on a file or folder
+
+<AutoTypeTable
+  path="generated/tool-params/google_drive.ts"
+  name="GoogleDriveListPermissionsParams"
+/>
+
+### `google_drive_move_file`
+
+Move a file or folder to a different parent
+
+<AutoTypeTable
+  path="generated/tool-params/google_drive.ts"
+  name="GoogleDriveMoveFileParams"
+/>
+
+### `google_drive_remove_permission`
+
+Remove a sharing permission
+
+<AutoTypeTable
+  path="generated/tool-params/google_drive.ts"
+  name="GoogleDriveRemovePermissionParams"
+/>
+
+### `google_drive_rename_file`
+
+Rename a file or folder
+
+<AutoTypeTable
+  path="generated/tool-params/google_drive.ts"
+  name="GoogleDriveRenameFileParams"
+/>
+
+### `google_drive_share_file`
+
+Share a file or folder
+
+<AutoTypeTable
+  path="generated/tool-params/google_drive.ts"
+  name="GoogleDriveShareFileParams"
+/>
+
+### `google_drive_trash_file`
+
+Move a file or folder to trash (recoverable)
+
+<AutoTypeTable
+  path="generated/tool-params/google_drive.ts"
+  name="GoogleDriveTrashFileParams"
+/>
+
+### `google_drive_upload_text_file`
+
+Create a new file with text content
+
+<AutoTypeTable
+  path="generated/tool-params/google_drive.ts"
+  name="GoogleDriveUploadTextFileParams"
+/>
+
+## Notes
+
+- Category: Storage
+- Authentication mode: OAuth

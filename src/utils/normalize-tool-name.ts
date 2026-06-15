@@ -4,12 +4,12 @@
  */
 export const TOOL_ALIASES: Record<string, string> = {
   github_list_repo_contents: "github_get_file_contents",
-  gdrive_list: "gdrive_list_files",
-  gdrive_get: "gdrive_get_file",
-  gdrive_delete: "gdrive_delete_file",
-  gdrive_trash: "gdrive_trash_file",
-  gdrive_upload: "gdrive_upload_text_file",
-  gdrive_download: "gdrive_download_file",
+  gdrive_list: "google_drive_list_files",
+  gdrive_get: "google_drive_get_file",
+  gdrive_delete: "google_drive_delete_file",
+  gdrive_trash: "google_drive_trash_file",
+  gdrive_upload: "google_drive_upload_text_file",
+  gdrive_download: "google_drive_download_file",
   slack_send: "slack_send_message",
   gmail_send: "gmail_send_email",
   notion_create_page: "notion_create_page",

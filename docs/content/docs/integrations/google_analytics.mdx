@@ -1,0 +1,131 @@
+---
+title: "Google Analytics Integration"
+description: "Read Google Analytics reports, properties, and events"
+---
+
+The Google Analytics integration provides access to read Google Analytics reports, properties, and events through the Integrate MCP server.
+
+## Installation
+
+The Google Analytics integration is included with the SDK:
+
+```typescript
+import { googleAnalyticsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Google Analytics OAuth App
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Analytics integration to your server configuration. The integration automatically reads `GOOGLE_ANALYTICS_CLIENT_ID` and `GOOGLE_ANALYTICS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, googleAnalyticsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    googleAnalyticsIntegration({
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+googleAnalyticsIntegration({
+  clientId: process.env.CUSTOM_GOOGLE_ANALYTICS_ID,
+  clientSecret: process.env.CUSTOM_GOOGLE_ANALYTICS_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("google_analytics");
+const result = await client.google_analytics.batchRunReports({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, googleAnalyticsIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [googleAnalyticsIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/google_analytics.ts"
+  name="GoogleAnalyticsIntegrationConfig"
+/>
+
+
+## Tools
+
+### `google_analytics_batch_run_reports`
+
+Analytics batch run reports
+
+<AutoTypeTable
+  path="generated/tool-params/google_analytics.ts"
+  name="GoogleAnalyticsBatchRunReportsParams"
+/>
+
+### `google_analytics_get_property`
+
+Analytics get property
+
+<AutoTypeTable
+  path="generated/tool-params/google_analytics.ts"
+  name="GoogleAnalyticsGetPropertyParams"
+/>
+
+### `google_analytics_list_account_summaries`
+
+Analytics list account summaries
+
+<AutoTypeTable
+  path="generated/tool-params/google_analytics.ts"
+  name="GoogleAnalyticsListAccountSummariesParams"
+/>
+
+### `google_analytics_run_realtime_report`
+
+Analytics run realtime report
+
+<AutoTypeTable
+  path="generated/tool-params/google_analytics.ts"
+  name="GoogleAnalyticsRunRealtimeReportParams"
+/>
+
+### `google_analytics_run_report`
+
+Analytics run report
+
+<AutoTypeTable
+  path="generated/tool-params/google_analytics.ts"
+  name="GoogleAnalyticsRunReportParams"
+/>
+
+## Notes
+
+- Category: Analytics
+- Authentication mode: OAuth

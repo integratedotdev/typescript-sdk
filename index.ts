@@ -70,11 +70,11 @@ import { linearIntegration } from './src/integrations/linear.js';
 import { vercelIntegration } from './src/integrations/vercel.js';
 import { zendeskIntegration } from './src/integrations/zendesk.js';
 import { stripeIntegration } from './src/integrations/stripe.js';
-import { gcalIntegration } from './src/integrations/gcal.js';
-import { gmeetIntegration } from './src/integrations/gmeet.js';
-import { gtasksIntegration } from './src/integrations/gtasks.js';
-import { gkeepIntegration } from './src/integrations/gkeep.js';
-import { gcontactsIntegration } from './src/integrations/gcontacts.js';
+import { googleCalendarIntegration } from './src/integrations/google_calendar.js';
+import { googleMeetIntegration } from './src/integrations/google_meet.js';
+import { googleTasksIntegration } from './src/integrations/google_tasks.js';
+import { googleKeepIntegration } from './src/integrations/google_keep.js';
+import { googleContactsIntegration } from './src/integrations/google_contacts.js';
 import { outlookIntegration } from './src/integrations/outlook.js';
 import { teamsIntegration } from './src/integrations/teams.js';
 import { airtableIntegration } from './src/integrations/airtable.js';
@@ -91,10 +91,10 @@ import { sharepointIntegration } from './src/integrations/sharepoint.js';
 import { wordIntegration } from './src/integrations/word.js';
 import { excelIntegration } from './src/integrations/excel.js';
 import { powerpointIntegration } from './src/integrations/powerpoint.js';
-import { gdocsIntegration } from './src/integrations/gdocs.js';
-import { gdriveIntegration } from './src/integrations/gdrive.js';
-import { gsheetsIntegration } from './src/integrations/gsheets.js';
-import { gslidesIntegration } from './src/integrations/gslides.js';
+import { googleDocsIntegration } from './src/integrations/google_docs.js';
+import { googleDriveIntegration } from './src/integrations/google_drive.js';
+import { googleSheetsIntegration } from './src/integrations/google_sheets.js';
+import { googleSlidesIntegration } from './src/integrations/google_slides.js';
 import { polarIntegration } from './src/integrations/polar.js';
 import { facebookIntegration } from './src/integrations/facebook.js';
 import { figmaIntegration } from './src/integrations/figma.js';
@@ -106,7 +106,7 @@ import { threadsIntegration } from './src/integrations/threads.js';
 import { tiktokIntegration } from './src/integrations/tiktok.js';
 import { typeformIntegration } from './src/integrations/typeform.js';
 import { xeroIntegration } from './src/integrations/xero.js';
-import { gchatIntegration } from './src/integrations/gchat.js';
+import { googleChatIntegration } from './src/integrations/google_chat.js';
 import { shopifyIntegration } from './src/integrations/shopify.js';
 import { youtubeIntegration } from './src/integrations/youtube.js';
 import { zoomIntegration } from './src/integrations/zoom.js';
@@ -236,11 +236,11 @@ export const client = createMCPClient({
     vercelIntegration(),
     zendeskIntegration(),
     stripeIntegration(),
-    gcalIntegration(),
-    gmeetIntegration(),
-    gtasksIntegration(),
-    gkeepIntegration(),
-    gcontactsIntegration(),
+    googleCalendarIntegration(),
+    googleMeetIntegration(),
+    googleTasksIntegration(),
+    googleKeepIntegration(),
+    googleContactsIntegration(),
     outlookIntegration(),
     teamsIntegration(),
     airtableIntegration(),
@@ -257,10 +257,10 @@ export const client = createMCPClient({
     wordIntegration(),
     excelIntegration(),
     powerpointIntegration(),
-    gdocsIntegration(),
-    gdriveIntegration(),
-    gsheetsIntegration(),
-    gslidesIntegration(),
+    googleDocsIntegration(),
+    googleDriveIntegration(),
+    googleSheetsIntegration(),
+    googleSlidesIntegration(),
     polarIntegration(),
     facebookIntegration(),
     figmaIntegration(),
@@ -272,7 +272,7 @@ export const client = createMCPClient({
     tiktokIntegration(),
     typeformIntegration(),
     xeroIntegration(),
-    gchatIntegration(),
+    googleChatIntegration(),
     shopifyIntegration(),
     youtubeIntegration(),
     zoomIntegration(),

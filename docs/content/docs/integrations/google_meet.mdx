@@ -1,0 +1,140 @@
+---
+title: "Google Meet Integration"
+description: "Create and manage Google Meet links via Calendar conference data"
+---
+
+The Google Meet integration provides access to create and manage Google Meet links via Calendar conference data through the Integrate MCP server.
+
+## Installation
+
+The Google Meet integration is included with the SDK:
+
+```typescript
+import { googleMeetIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Google Meet OAuth App
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Meet integration to your server configuration. The integration automatically reads `GOOGLE_MEET_CLIENT_ID` and `GOOGLE_MEET_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, googleMeetIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    googleMeetIntegration({
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+googleMeetIntegration({
+  clientId: process.env.CUSTOM_GOOGLE_MEET_ID,
+  clientSecret: process.env.CUSTOM_GOOGLE_MEET_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("google_meet");
+const result = await client.google_meet.addMeetToEvent({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, googleMeetIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [googleMeetIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/google_meet.ts"
+  name="GoogleMeetIntegrationConfig"
+/>
+
+
+## Tools
+
+### `google_meet_add_meet_to_event`
+
+Meet add meet to event
+
+<AutoTypeTable
+  path="generated/tool-params/google_meet.ts"
+  name="GoogleMeetAddMeetToEventParams"
+/>
+
+### `google_meet_create_meeting`
+
+Meet create meeting
+
+<AutoTypeTable
+  path="generated/tool-params/google_meet.ts"
+  name="GoogleMeetCreateMeetingParams"
+/>
+
+### `google_meet_delete_meeting`
+
+Meet delete meeting
+
+<AutoTypeTable
+  path="generated/tool-params/google_meet.ts"
+  name="GoogleMeetDeleteMeetingParams"
+/>
+
+### `google_meet_get_meeting`
+
+Meet get meeting
+
+<AutoTypeTable
+  path="generated/tool-params/google_meet.ts"
+  name="GoogleMeetGetMeetingParams"
+/>
+
+### `google_meet_list_meetings`
+
+Meet list meetings
+
+<AutoTypeTable
+  path="generated/tool-params/google_meet.ts"
+  name="GoogleMeetListMeetingsParams"
+/>
+
+### `google_meet_update_meeting`
+
+Meet update meeting
+
+<AutoTypeTable
+  path="generated/tool-params/google_meet.ts"
+  name="GoogleMeetUpdateMeetingParams"
+/>
+
+## Notes
+
+- Category: Communication
+- Authentication mode: OAuth

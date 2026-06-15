@@ -1,0 +1,194 @@
+---
+title: "Google Tasks Integration"
+description: "Manage Google Tasks lists and to-dos synced with your Google account"
+---
+
+The Google Tasks integration provides access to manage Google Tasks lists and to-dos synced with your Google account through the Integrate MCP server.
+
+## Installation
+
+The Google Tasks integration is included with the SDK:
+
+```typescript
+import { googleTasksIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Google Tasks OAuth App
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Tasks integration to your server configuration. The integration automatically reads `GOOGLE_TASKS_CLIENT_ID` and `GOOGLE_TASKS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, googleTasksIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    googleTasksIntegration({
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+googleTasksIntegration({
+  clientId: process.env.CUSTOM_GOOGLE_TASKS_ID,
+  clientSecret: process.env.CUSTOM_GOOGLE_TASKS_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("google_tasks");
+const result = await client.google_tasks.clearCompleted({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, googleTasksIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [googleTasksIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/google_tasks.ts"
+  name="GoogleTasksIntegrationConfig"
+/>
+
+
+## Tools
+
+### `google_tasks_clear_completed`
+
+Tasks clear completed
+
+<AutoTypeTable
+  path="generated/tool-params/google_tasks.ts"
+  name="GoogleTasksClearCompletedParams"
+/>
+
+### `google_tasks_create_task`
+
+Tasks create task
+
+<AutoTypeTable
+  path="generated/tool-params/google_tasks.ts"
+  name="GoogleTasksCreateTaskParams"
+/>
+
+### `google_tasks_create_tasklist`
+
+Tasks create tasklist
+
+<AutoTypeTable
+  path="generated/tool-params/google_tasks.ts"
+  name="GoogleTasksCreateTasklistParams"
+/>
+
+### `google_tasks_delete_task`
+
+Tasks delete task
+
+<AutoTypeTable
+  path="generated/tool-params/google_tasks.ts"
+  name="GoogleTasksDeleteTaskParams"
+/>
+
+### `google_tasks_delete_tasklist`
+
+Tasks delete tasklist
+
+<AutoTypeTable
+  path="generated/tool-params/google_tasks.ts"
+  name="GoogleTasksDeleteTasklistParams"
+/>
+
+### `google_tasks_get_task`
+
+Tasks get task
+
+<AutoTypeTable
+  path="generated/tool-params/google_tasks.ts"
+  name="GoogleTasksGetTaskParams"
+/>
+
+### `google_tasks_get_tasklist`
+
+Tasks get tasklist
+
+<AutoTypeTable
+  path="generated/tool-params/google_tasks.ts"
+  name="GoogleTasksGetTasklistParams"
+/>
+
+### `google_tasks_list_tasklists`
+
+Tasks list tasklists
+
+<AutoTypeTable
+  path="generated/tool-params/google_tasks.ts"
+  name="GoogleTasksListTasklistsParams"
+/>
+
+### `google_tasks_list_tasks`
+
+Tasks list tasks
+
+<AutoTypeTable
+  path="generated/tool-params/google_tasks.ts"
+  name="GoogleTasksListTasksParams"
+/>
+
+### `google_tasks_move_task`
+
+Tasks move task
+
+<AutoTypeTable
+  path="generated/tool-params/google_tasks.ts"
+  name="GoogleTasksMoveTaskParams"
+/>
+
+### `google_tasks_update_task`
+
+Tasks update task
+
+<AutoTypeTable
+  path="generated/tool-params/google_tasks.ts"
+  name="GoogleTasksUpdateTaskParams"
+/>
+
+### `google_tasks_update_tasklist`
+
+Tasks update tasklist
+
+<AutoTypeTable
+  path="generated/tool-params/google_tasks.ts"
+  name="GoogleTasksUpdateTasklistParams"
+/>
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth

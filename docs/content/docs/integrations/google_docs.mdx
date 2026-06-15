@@ -1,0 +1,176 @@
+---
+title: "Google Docs Integration"
+description: "Create and edit Google Docs documents"
+---
+
+The Google Docs integration provides access to create and edit Google Docs documents through the Integrate MCP server.
+
+## Installation
+
+The Google Docs integration is included with the SDK:
+
+```typescript
+import { googleDocsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Google Docs OAuth App
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Docs integration to your server configuration. The integration automatically reads `GOOGLE_DOCS_CLIENT_ID` and `GOOGLE_DOCS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, googleDocsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    googleDocsIntegration({
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+googleDocsIntegration({
+  clientId: process.env.CUSTOM_GOOGLE_DOCS_ID,
+  clientSecret: process.env.CUSTOM_GOOGLE_DOCS_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("google_docs");
+const result = await client.google_docs.list({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, googleDocsIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [googleDocsIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/google_docs.ts"
+  name="GDocsIntegrationConfig"
+/>
+
+
+## Tools
+
+### `google_docs_append_text`
+
+Docs append text
+
+<AutoTypeTable
+  path="generated/tool-params/google_docs.ts"
+  name="GoogleDocsAppendTextParams"
+/>
+
+### `google_docs_batch_update`
+
+Docs batch update
+
+<AutoTypeTable
+  path="generated/tool-params/google_docs.ts"
+  name="GoogleDocsBatchUpdateParams"
+/>
+
+### `google_docs_create`
+
+Docs create
+
+<AutoTypeTable
+  path="generated/tool-params/google_docs.ts"
+  name="GoogleDocsCreateParams"
+/>
+
+### `google_docs_create_comment`
+
+Docs create comment
+
+<AutoTypeTable
+  path="generated/tool-params/google_docs.ts"
+  name="GoogleDocsCreateCommentParams"
+/>
+
+### `google_docs_delete`
+
+Docs delete
+
+<AutoTypeTable
+  path="generated/tool-params/google_docs.ts"
+  name="GoogleDocsDeleteParams"
+/>
+
+### `google_docs_delete_comment`
+
+Docs delete comment
+
+<AutoTypeTable
+  path="generated/tool-params/google_docs.ts"
+  name="GoogleDocsDeleteCommentParams"
+/>
+
+### `google_docs_get`
+
+Docs get
+
+<AutoTypeTable
+  path="generated/tool-params/google_docs.ts"
+  name="GoogleDocsGetParams"
+/>
+
+### `google_docs_list`
+
+Docs list
+
+<AutoTypeTable
+  path="generated/tool-params/google_docs.ts"
+  name="GoogleDocsListParams"
+/>
+
+### `google_docs_list_comments`
+
+Docs list comments
+
+<AutoTypeTable
+  path="generated/tool-params/google_docs.ts"
+  name="GoogleDocsListCommentsParams"
+/>
+
+### `google_docs_replace_text`
+
+Docs replace text
+
+<AutoTypeTable
+  path="generated/tool-params/google_docs.ts"
+  name="GoogleDocsReplaceTextParams"
+/>
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth

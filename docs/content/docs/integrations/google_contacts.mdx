@@ -1,0 +1,176 @@
+---
+title: "Google Contacts Integration"
+description: "List, search, create, update, and delete Google Contacts via the People API"
+---
+
+The Google Contacts integration provides access to list, search, create, update, and delete Google Contacts via the People API through the Integrate MCP server.
+
+## Installation
+
+The Google Contacts integration is included with the SDK:
+
+```typescript
+import { googleContactsIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Google Contacts OAuth App
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Contacts integration to your server configuration. The integration automatically reads `GOOGLE_CONTACTS_CLIENT_ID` and `GOOGLE_CONTACTS_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, googleContactsIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    googleContactsIntegration({
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+googleContactsIntegration({
+  clientId: process.env.CUSTOM_GOOGLE_CONTACTS_ID,
+  clientSecret: process.env.CUSTOM_GOOGLE_CONTACTS_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("google_contacts");
+const result = await client.google_contacts.batchGetContacts({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, googleContactsIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [googleContactsIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/google_contacts.ts"
+  name="GoogleContactsIntegrationConfig"
+/>
+
+
+## Tools
+
+### `google_contacts_batch_get_contacts`
+
+Contacts batch get contacts
+
+<AutoTypeTable
+  path="generated/tool-params/google_contacts.ts"
+  name="GoogleContactsBatchGetContactsParams"
+/>
+
+### `google_contacts_copy_other_contact`
+
+Contacts copy other contact
+
+<AutoTypeTable
+  path="generated/tool-params/google_contacts.ts"
+  name="GoogleContactsCopyOtherContactParams"
+/>
+
+### `google_contacts_create_contact`
+
+Contacts create contact
+
+<AutoTypeTable
+  path="generated/tool-params/google_contacts.ts"
+  name="GoogleContactsCreateContactParams"
+/>
+
+### `google_contacts_delete_contact`
+
+Contacts delete contact
+
+<AutoTypeTable
+  path="generated/tool-params/google_contacts.ts"
+  name="GoogleContactsDeleteContactParams"
+/>
+
+### `google_contacts_get_person`
+
+Contacts get person
+
+<AutoTypeTable
+  path="generated/tool-params/google_contacts.ts"
+  name="GoogleContactsGetPersonParams"
+/>
+
+### `google_contacts_get_self`
+
+Contacts get self
+
+<AutoTypeTable
+  path="generated/tool-params/google_contacts.ts"
+  name="GoogleContactsGetSelfParams"
+/>
+
+### `google_contacts_list_connections`
+
+Contacts list connections
+
+<AutoTypeTable
+  path="generated/tool-params/google_contacts.ts"
+  name="GoogleContactsListConnectionsParams"
+/>
+
+### `google_contacts_list_other_contacts`
+
+Contacts list other contacts
+
+<AutoTypeTable
+  path="generated/tool-params/google_contacts.ts"
+  name="GoogleContactsListOtherContactsParams"
+/>
+
+### `google_contacts_search_contacts`
+
+Contacts search contacts
+
+<AutoTypeTable
+  path="generated/tool-params/google_contacts.ts"
+  name="GoogleContactsSearchContactsParams"
+/>
+
+### `google_contacts_update_contact`
+
+Contacts update contact
+
+<AutoTypeTable
+  path="generated/tool-params/google_contacts.ts"
+  name="GoogleContactsUpdateContactParams"
+/>
+
+## Notes
+
+- Category: Communication
+- Authentication mode: OAuth

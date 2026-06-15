@@ -1,0 +1,157 @@
+---
+title: "Google Keep Integration"
+description: "Manage Google Keep notes, attachments, and sharing permissions"
+---
+
+The Google Keep integration provides access to manage Google Keep notes, attachments, and sharing permissions through the Integrate MCP server.
+
+## Installation
+
+The Google Keep integration is included with the SDK:
+
+```typescript
+import { googleKeepIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Google Keep OAuth App
+
+1. Create an OAuth application for Google Keep
+2. Configure your redirect URI
+3. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Keep integration to your server configuration. The integration automatically reads `GOOGLE_KEEP_CLIENT_ID` and `GOOGLE_KEEP_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, googleKeepIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    googleKeepIntegration({
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+googleKeepIntegration({
+  clientId: process.env.CUSTOM_GOOGLE_KEEP_ID,
+  clientSecret: process.env.CUSTOM_GOOGLE_KEEP_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("google_keep");
+const result = await client.google_keep.listNotes({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, googleKeepIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [googleKeepIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/google_keep.ts"
+  name="GoogleKeepIntegrationConfig"
+/>
+
+
+## Tools
+
+### `google_keep_list_notes`
+
+Keep list notes
+
+<AutoTypeTable
+  path="generated/tool-params/google_keep.ts"
+  name="GoogleKeepListNotesParams"
+/>
+
+### `google_keep_get_note`
+
+Keep get note
+
+<AutoTypeTable
+  path="generated/tool-params/google_keep.ts"
+  name="GoogleKeepGetNoteParams"
+/>
+
+### `google_keep_create_text_note`
+
+Keep create text note
+
+<AutoTypeTable
+  path="generated/tool-params/google_keep.ts"
+  name="GoogleKeepCreateTextNoteParams"
+/>
+
+### `google_keep_create_list_note`
+
+Keep create list note
+
+<AutoTypeTable
+  path="generated/tool-params/google_keep.ts"
+  name="GoogleKeepCreateListNoteParams"
+/>
+
+### `google_keep_delete_note`
+
+Keep delete note
+
+<AutoTypeTable
+  path="generated/tool-params/google_keep.ts"
+  name="GoogleKeepDeleteNoteParams"
+/>
+
+### `google_keep_download_attachment`
+
+Keep download attachment
+
+<AutoTypeTable
+  path="generated/tool-params/google_keep.ts"
+  name="GoogleKeepDownloadAttachmentParams"
+/>
+
+### `google_keep_batch_create_permissions`
+
+Keep batch create permissions
+
+<AutoTypeTable
+  path="generated/tool-params/google_keep.ts"
+  name="GoogleKeepBatchCreatePermissionsParams"
+/>
+
+### `google_keep_batch_delete_permissions`
+
+Keep batch delete permissions
+
+<AutoTypeTable
+  path="generated/tool-params/google_keep.ts"
+  name="GoogleKeepBatchDeletePermissionsParams"
+/>
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth

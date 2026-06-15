@@ -12,10 +12,10 @@ import { railwayIntegration } from "../../src/integrations/railway.js";
 import { vercelIntegration } from "../../src/integrations/vercel.js";
 import { zendeskIntegration } from "../../src/integrations/zendesk.js";
 import { stripeIntegration } from "../../src/integrations/stripe.js";
-import { gcalIntegration } from "../../src/integrations/gcal.js";
-import { gcontactsIntegration } from "../../src/integrations/gcontacts.js";
-import { gtasksIntegration } from "../../src/integrations/gtasks.js";
-import { gmeetIntegration } from "../../src/integrations/gmeet.js";
+import { googleCalendarIntegration } from "../../src/integrations/google_calendar.js";
+import { googleContactsIntegration } from "../../src/integrations/google_contacts.js";
+import { googleTasksIntegration } from "../../src/integrations/google_tasks.js";
+import { googleMeetIntegration } from "../../src/integrations/google_meet.js";
 import { outlookIntegration } from "../../src/integrations/outlook.js";
 import { teamsIntegration } from "../../src/integrations/teams.js";
 import { airtableIntegration } from "../../src/integrations/airtable.js";
@@ -29,9 +29,9 @@ import { rampIntegration } from "../../src/integrations/ramp.js";
 import { onedriveIntegration } from "../../src/integrations/onedrive.js";
 import { dropboxIntegration } from "../../src/integrations/dropbox.js";
 import { paperIntegration } from "../../src/integrations/paper.js";
-import { gdocsIntegration } from "../../src/integrations/gdocs.js";
-import { gsheetsIntegration } from "../../src/integrations/gsheets.js";
-import { gslidesIntegration } from "../../src/integrations/gslides.js";
+import { googleDocsIntegration } from "../../src/integrations/google_docs.js";
+import { googleSheetsIntegration } from "../../src/integrations/google_sheets.js";
+import { googleSlidesIntegration } from "../../src/integrations/google_slides.js";
 import { polarIntegration } from "../../src/integrations/polar.js";
 import { planetscaleIntegration } from "../../src/integrations/planetscale.js";
 import { supabaseIntegration } from "../../src/integrations/supabase.js";
@@ -984,30 +984,30 @@ describe("Integration System", () => {
 
   describe("Google Calendar Integration", () => {
     test("creates integration with correct structure", () => {
-      const integration = gcalIntegration({
+      const integration = googleCalendarIntegration({
         clientId: "test-client-id",
         clientSecret: "test-client-secret",
       });
 
-      expect(integration.id).toBe("gcal");
+      expect(integration.id).toBe("google_calendar");
       expect(integration.tools).toBeArray();
       expect(integration.tools.length).toBeGreaterThan(0);
       expect(integration.oauth).toBeDefined();
     });
 
     test("includes OAuth configuration", () => {
-      const integration = gcalIntegration({
+      const integration = googleCalendarIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.provider).toBe("gcal");
+      expect(integration.oauth?.provider).toBe("google_calendar");
       expect(integration.oauth?.clientId).toBe("test-id");
       expect(integration.oauth?.clientSecret).toBe("test-secret");
     });
 
     test("does not set scopes when not provided (server provides defaults)", () => {
-      const integration = gcalIntegration({
+      const integration = googleCalendarIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -1016,18 +1016,18 @@ describe("Integration System", () => {
     });
 
     test("includes expected tools", () => {
-      const integration = gcalIntegration({
+      const integration = googleCalendarIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.tools).toContain("gcal_list_calendars");
-      expect(integration.tools).toContain("gcal_create_event");
-      expect(integration.tools).toContain("gcal_quick_add");
+      expect(integration.tools).toContain("google_calendar_list_calendars");
+      expect(integration.tools).toContain("google_calendar_create_event");
+      expect(integration.tools).toContain("google_calendar_quick_add");
     });
 
     test("has lifecycle hooks defined", () => {
-      const integration = gcalIntegration({
+      const integration = googleCalendarIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -1037,7 +1037,7 @@ describe("Integration System", () => {
     });
 
     test("lifecycle hooks execute successfully", async () => {
-      const integration = gcalIntegration({
+      const integration = googleCalendarIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -1049,12 +1049,12 @@ describe("Integration System", () => {
 
   describe("Google Contacts Integration", () => {
     test("creates integration with correct structure", () => {
-      const integration = gcontactsIntegration({
+      const integration = googleContactsIntegration({
         clientId: "test-client-id",
         clientSecret: "test-client-secret",
       });
 
-      expect(integration.id).toBe("gcontacts");
+      expect(integration.id).toBe("google_contacts");
       expect(integration.tools).toBeArray();
       expect(integration.tools.length).toBeGreaterThan(0);
       expect(integration.oauth).toBeDefined();
@@ -1064,18 +1064,18 @@ describe("Integration System", () => {
     });
 
     test("includes OAuth configuration", () => {
-      const integration = gcontactsIntegration({
+      const integration = googleContactsIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.provider).toBe("gcontacts");
+      expect(integration.oauth?.provider).toBe("google_contacts");
       expect(integration.oauth?.clientId).toBe("test-id");
       expect(integration.oauth?.clientSecret).toBe("test-secret");
     });
 
     test("does not set scopes when not provided (server provides defaults)", () => {
-      const integration = gcontactsIntegration({
+      const integration = googleContactsIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -1084,18 +1084,18 @@ describe("Integration System", () => {
     });
 
     test("includes expected tools", () => {
-      const integration = gcontactsIntegration({
+      const integration = googleContactsIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.tools).toContain("gcontacts_list_connections");
-      expect(integration.tools).toContain("gcontacts_create_contact");
-      expect(integration.tools).toContain("gcontacts_search_contacts");
+      expect(integration.tools).toContain("google_contacts_list_connections");
+      expect(integration.tools).toContain("google_contacts_create_contact");
+      expect(integration.tools).toContain("google_contacts_search_contacts");
     });
 
     test("has lifecycle hooks defined", () => {
-      const integration = gcontactsIntegration({
+      const integration = googleContactsIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -1105,7 +1105,7 @@ describe("Integration System", () => {
     });
 
     test("lifecycle hooks execute successfully", async () => {
-      const integration = gcontactsIntegration({
+      const integration = googleContactsIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -1117,30 +1117,30 @@ describe("Integration System", () => {
 
   describe("Google Tasks Integration", () => {
     test("creates integration with correct structure", () => {
-      const integration = gtasksIntegration({
+      const integration = googleTasksIntegration({
         clientId: "test-client-id",
         clientSecret: "test-client-secret",
       });
 
-      expect(integration.id).toBe("gtasks");
+      expect(integration.id).toBe("google_tasks");
       expect(integration.tools).toBeArray();
       expect(integration.tools.length).toBeGreaterThan(0);
       expect(integration.oauth).toBeDefined();
     });
 
     test("includes OAuth configuration", () => {
-      const integration = gtasksIntegration({
+      const integration = googleTasksIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.provider).toBe("gtasks");
+      expect(integration.oauth?.provider).toBe("google_tasks");
       expect(integration.oauth?.clientId).toBe("test-id");
       expect(integration.oauth?.clientSecret).toBe("test-secret");
     });
 
     test("does not set scopes when not provided (server provides defaults)", () => {
-      const integration = gtasksIntegration({
+      const integration = googleTasksIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -1149,18 +1149,18 @@ describe("Integration System", () => {
     });
 
     test("includes expected tools", () => {
-      const integration = gtasksIntegration({
+      const integration = googleTasksIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.tools).toContain("gtasks_list_tasklists");
-      expect(integration.tools).toContain("gtasks_create_task");
-      expect(integration.tools).toContain("gtasks_clear_completed");
+      expect(integration.tools).toContain("google_tasks_list_tasklists");
+      expect(integration.tools).toContain("google_tasks_create_task");
+      expect(integration.tools).toContain("google_tasks_clear_completed");
     });
 
     test("lifecycle hooks execute successfully", async () => {
-      const integration = gtasksIntegration({
+      const integration = googleTasksIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -1172,41 +1172,41 @@ describe("Integration System", () => {
 
   describe("Google Meet Integration", () => {
     test("creates integration with correct structure", () => {
-      const integration = gmeetIntegration({
+      const integration = googleMeetIntegration({
         clientId: "test-client-id",
         clientSecret: "test-client-secret",
       });
 
-      expect(integration.id).toBe("gmeet");
+      expect(integration.id).toBe("google_meet");
       expect(integration.tools).toBeArray();
       expect(integration.tools.length).toBeGreaterThan(0);
       expect(integration.oauth).toBeDefined();
     });
 
     test("includes OAuth configuration", () => {
-      const integration = gmeetIntegration({
+      const integration = googleMeetIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.provider).toBe("gmeet");
+      expect(integration.oauth?.provider).toBe("google_meet");
       expect(integration.oauth?.clientId).toBe("test-id");
       expect(integration.oauth?.clientSecret).toBe("test-secret");
     });
 
     test("includes expected tools", () => {
-      const integration = gmeetIntegration({
+      const integration = googleMeetIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.tools).toContain("gmeet_create_meeting");
-      expect(integration.tools).toContain("gmeet_list_meetings");
-      expect(integration.tools).toContain("gmeet_add_meet_to_event");
+      expect(integration.tools).toContain("google_meet_create_meeting");
+      expect(integration.tools).toContain("google_meet_list_meetings");
+      expect(integration.tools).toContain("google_meet_add_meet_to_event");
     });
 
     test("lifecycle hooks execute successfully", async () => {
-      const integration = gmeetIntegration({
+      const integration = googleMeetIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -2127,30 +2127,30 @@ describe("Integration System", () => {
 
   describe("Google Docs Integration", () => {
     test("creates integration with correct structure", () => {
-      const integration = gdocsIntegration({
+      const integration = googleDocsIntegration({
         clientId: "test-client-id",
         clientSecret: "test-client-secret",
       });
 
-      expect(integration.id).toBe("gdocs");
+      expect(integration.id).toBe("google_docs");
       expect(integration.tools).toBeArray();
       expect(integration.tools.length).toBeGreaterThan(0);
       expect(integration.oauth).toBeDefined();
     });
 
     test("includes OAuth configuration", () => {
-      const integration = gdocsIntegration({
+      const integration = googleDocsIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.provider).toBe("gdocs");
+      expect(integration.oauth?.provider).toBe("google_docs");
       expect(integration.oauth?.clientId).toBe("test-id");
       expect(integration.oauth?.clientSecret).toBe("test-secret");
     });
 
     test("does not set scopes when not provided (server provides defaults)", () => {
-      const integration = gdocsIntegration({
+      const integration = googleDocsIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -2159,20 +2159,20 @@ describe("Integration System", () => {
     });
 
     test("includes expected tools", () => {
-      const integration = gdocsIntegration({
+      const integration = googleDocsIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.tools).toContain("gdocs_list");
-      expect(integration.tools).toContain("gdocs_get");
-      expect(integration.tools).toContain("gdocs_create");
-      expect(integration.tools).toContain("gdocs_append_text");
-      expect(integration.tools).toContain("gdocs_replace_text");
+      expect(integration.tools).toContain("google_docs_list");
+      expect(integration.tools).toContain("google_docs_get");
+      expect(integration.tools).toContain("google_docs_create");
+      expect(integration.tools).toContain("google_docs_append_text");
+      expect(integration.tools).toContain("google_docs_replace_text");
     });
 
     test("has lifecycle hooks defined", () => {
-      const integration = gdocsIntegration({
+      const integration = googleDocsIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -2182,7 +2182,7 @@ describe("Integration System", () => {
     });
 
     test("lifecycle hooks execute successfully", async () => {
-      const integration = gdocsIntegration({
+      const integration = googleDocsIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -2194,30 +2194,30 @@ describe("Integration System", () => {
 
   describe("Google Sheets Integration", () => {
     test("creates integration with correct structure", () => {
-      const integration = gsheetsIntegration({
+      const integration = googleSheetsIntegration({
         clientId: "test-client-id",
         clientSecret: "test-client-secret",
       });
 
-      expect(integration.id).toBe("gsheets");
+      expect(integration.id).toBe("google_sheets");
       expect(integration.tools).toBeArray();
       expect(integration.tools.length).toBeGreaterThan(0);
       expect(integration.oauth).toBeDefined();
     });
 
     test("includes OAuth configuration", () => {
-      const integration = gsheetsIntegration({
+      const integration = googleSheetsIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.provider).toBe("gsheets");
+      expect(integration.oauth?.provider).toBe("google_sheets");
       expect(integration.oauth?.clientId).toBe("test-id");
       expect(integration.oauth?.clientSecret).toBe("test-secret");
     });
 
     test("does not set scopes when not provided (server provides defaults)", () => {
-      const integration = gsheetsIntegration({
+      const integration = googleSheetsIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -2226,23 +2226,23 @@ describe("Integration System", () => {
     });
 
     test("includes expected tools", () => {
-      const integration = gsheetsIntegration({
+      const integration = googleSheetsIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.tools).toContain("gsheets_list");
-      expect(integration.tools).toContain("gsheets_get");
-      expect(integration.tools).toContain("gsheets_get_values");
-      expect(integration.tools).toContain("gsheets_update_values");
-      expect(integration.tools).toContain("gsheets_create");
-      expect(integration.tools).toContain("gsheets_append_values");
-      expect(integration.tools).toContain("gsheets_clear_values");
-      expect(integration.tools).toContain("gsheets_batch_update_values");
+      expect(integration.tools).toContain("google_sheets_list");
+      expect(integration.tools).toContain("google_sheets_get");
+      expect(integration.tools).toContain("google_sheets_get_values");
+      expect(integration.tools).toContain("google_sheets_update_values");
+      expect(integration.tools).toContain("google_sheets_create");
+      expect(integration.tools).toContain("google_sheets_append_values");
+      expect(integration.tools).toContain("google_sheets_clear_values");
+      expect(integration.tools).toContain("google_sheets_batch_update_values");
     });
 
     test("has lifecycle hooks defined", () => {
-      const integration = gsheetsIntegration({
+      const integration = googleSheetsIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -2252,7 +2252,7 @@ describe("Integration System", () => {
     });
 
     test("lifecycle hooks execute successfully", async () => {
-      const integration = gsheetsIntegration({
+      const integration = googleSheetsIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -2264,30 +2264,30 @@ describe("Integration System", () => {
 
   describe("Google Slides Integration", () => {
     test("creates integration with correct structure", () => {
-      const integration = gslidesIntegration({
+      const integration = googleSlidesIntegration({
         clientId: "test-client-id",
         clientSecret: "test-client-secret",
       });
 
-      expect(integration.id).toBe("gslides");
+      expect(integration.id).toBe("google_slides");
       expect(integration.tools).toBeArray();
       expect(integration.tools.length).toBeGreaterThan(0);
       expect(integration.oauth).toBeDefined();
     });
 
     test("includes OAuth configuration", () => {
-      const integration = gslidesIntegration({
+      const integration = googleSlidesIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.oauth?.provider).toBe("gslides");
+      expect(integration.oauth?.provider).toBe("google_slides");
       expect(integration.oauth?.clientId).toBe("test-id");
       expect(integration.oauth?.clientSecret).toBe("test-secret");
     });
 
     test("does not set scopes when not provided (server provides defaults)", () => {
-      const integration = gslidesIntegration({
+      const integration = googleSlidesIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -2296,22 +2296,22 @@ describe("Integration System", () => {
     });
 
     test("includes expected tools", () => {
-      const integration = gslidesIntegration({
+      const integration = googleSlidesIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
 
-      expect(integration.tools).toContain("gslides_list");
-      expect(integration.tools).toContain("gslides_get");
-      expect(integration.tools).toContain("gslides_get_page");
-      expect(integration.tools).toContain("gslides_create");
-      expect(integration.tools).toContain("gslides_add_slide");
-      expect(integration.tools).toContain("gslides_delete_slide");
-      expect(integration.tools).toContain("gslides_update_text");
+      expect(integration.tools).toContain("google_slides_list");
+      expect(integration.tools).toContain("google_slides_get");
+      expect(integration.tools).toContain("google_slides_get_page");
+      expect(integration.tools).toContain("google_slides_create");
+      expect(integration.tools).toContain("google_slides_add_slide");
+      expect(integration.tools).toContain("google_slides_delete_slide");
+      expect(integration.tools).toContain("google_slides_update_text");
     });
 
     test("has lifecycle hooks defined", () => {
-      const integration = gslidesIntegration({
+      const integration = googleSlidesIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });
@@ -2321,7 +2321,7 @@ describe("Integration System", () => {
     });
 
     test("lifecycle hooks execute successfully", async () => {
-      const integration = gslidesIntegration({
+      const integration = googleSlidesIntegration({
         clientId: "test-id",
         clientSecret: "test-secret",
       });

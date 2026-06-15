@@ -32,22 +32,22 @@ const ZOHO_API_CONSOLE = {
 } as const;
 
 const GOOGLE_INTEGRATION_IDS = new Set([
-  "gcal",
-  "gchat",
-  "gcontacts",
-  "gdocs",
-  "gdrive",
+  "google_calendar",
+  "google_chat",
+  "google_contacts",
+  "google_docs",
+  "google_drive",
   "gmail",
-  "gmeet",
+  "google_meet",
   "google_ads",
   "google_classroom",
   "google_forms",
   "google_home",
   "google_play_console",
-  "gsheets",
-  "gslides",
-  "gtasks",
-  "ga4",
+  "google_sheets",
+  "google_slides",
+  "google_tasks",
+  "google_analytics",
   "youtube",
 ]);
 
@@ -105,15 +105,15 @@ export const INTEGRATION_DOCS_METADATA: Record<string, IntegrationDocsMetadata> 
       url: "https://www.figma.com/developers/apps",
     },
   },
-  gcal: {
+  google_calendar: {
     authMode: "oauth",
     developerPortal: GOOGLE_CLOUD_PORTAL,
   },
-  gdocs: {
+  google_docs: {
     authMode: "oauth",
     developerPortal: GOOGLE_CLOUD_PORTAL,
   },
-  gdrive: {
+  google_drive: {
     authMode: "oauth",
     developerPortal: GOOGLE_CLOUD_PORTAL,
   },
@@ -128,11 +128,11 @@ export const INTEGRATION_DOCS_METADATA: Record<string, IntegrationDocsMetadata> 
     authMode: "oauth",
     developerPortal: GOOGLE_CLOUD_PORTAL,
   },
-  gsheets: {
+  google_sheets: {
     authMode: "oauth",
     developerPortal: GOOGLE_CLOUD_PORTAL,
   },
-  gslides: {
+  google_slides: {
     authMode: "oauth",
     developerPortal: GOOGLE_CLOUD_PORTAL,
   },

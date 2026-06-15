@@ -1,0 +1,167 @@
+---
+title: "Google Slides Integration"
+description: "Create and update Google Slides presentations"
+---
+
+The Google Slides integration provides access to create and update Google Slides presentations through the Integrate MCP server.
+
+## Installation
+
+The Google Slides integration is included with the SDK:
+
+```typescript
+import { googleSlidesIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Google Slides OAuth App
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Slides integration to your server configuration. The integration automatically reads `GOOGLE_SLIDES_CLIENT_ID` and `GOOGLE_SLIDES_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, googleSlidesIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    googleSlidesIntegration({
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+googleSlidesIntegration({
+  clientId: process.env.CUSTOM_GOOGLE_SLIDES_ID,
+  clientSecret: process.env.CUSTOM_GOOGLE_SLIDES_SECRET,
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("google_slides");
+const result = await client.google_slides.list({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, googleSlidesIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [googleSlidesIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/google_slides.ts"
+  name="GSlidesIntegrationConfig"
+/>
+
+
+## Tools
+
+### `google_slides_add_slide`
+
+Slides add slide
+
+<AutoTypeTable
+  path="generated/tool-params/google_slides.ts"
+  name="GoogleSlidesAddSlideParams"
+/>
+
+### `google_slides_batch_update`
+
+Slides batch update
+
+<AutoTypeTable
+  path="generated/tool-params/google_slides.ts"
+  name="GoogleSlidesBatchUpdateParams"
+/>
+
+### `google_slides_create`
+
+Slides create
+
+<AutoTypeTable
+  path="generated/tool-params/google_slides.ts"
+  name="GoogleSlidesCreateParams"
+/>
+
+### `google_slides_delete`
+
+Slides delete
+
+<AutoTypeTable
+  path="generated/tool-params/google_slides.ts"
+  name="GoogleSlidesDeleteParams"
+/>
+
+### `google_slides_delete_slide`
+
+Slides delete slide
+
+<AutoTypeTable
+  path="generated/tool-params/google_slides.ts"
+  name="GoogleSlidesDeleteSlideParams"
+/>
+
+### `google_slides_get`
+
+Slides get
+
+<AutoTypeTable
+  path="generated/tool-params/google_slides.ts"
+  name="GoogleSlidesGetParams"
+/>
+
+### `google_slides_get_page`
+
+Slides get page
+
+<AutoTypeTable
+  path="generated/tool-params/google_slides.ts"
+  name="GoogleSlidesGetPageParams"
+/>
+
+### `google_slides_list`
+
+Slides list
+
+<AutoTypeTable
+  path="generated/tool-params/google_slides.ts"
+  name="GoogleSlidesListParams"
+/>
+
+### `google_slides_update_text`
+
+Slides update text
+
+<AutoTypeTable
+  path="generated/tool-params/google_slides.ts"
+  name="GoogleSlidesUpdateTextParams"
+/>
+
+## Notes
+
+- Category: Productivity
+- Authentication mode: OAuth

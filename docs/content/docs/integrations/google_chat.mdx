@@ -1,0 +1,167 @@
+---
+title: "Google Chat Integration"
+description: "List Google Chat spaces and manage messages and memberships"
+---
+
+The Google Chat integration provides access to list Google Chat spaces and manage messages and memberships through the Integrate MCP server.
+
+## Installation
+
+The Google Chat integration is included with the SDK:
+
+```typescript
+import { googleChatIntegration } from "integrate-sdk/server";
+```
+
+## Setup
+
+### 1. Create a Google Chat OAuth App
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new OAuth application
+3. Configure your redirect URI
+4. Note your Client ID and Client Secret
+
+### 2. Configure the Integration on Your Server
+
+Add the Google Chat integration to your server configuration. The integration automatically reads `GOOGLE_CHAT_CLIENT_ID` and `GOOGLE_CHAT_CLIENT_SECRET` from your environment variables:
+
+```typescript
+import { createMCPServer, googleChatIntegration } from "integrate-sdk/server";
+
+export const { client: serverClient } = createMCPServer({
+  apiKey: process.env.INTEGRATE_API_KEY,
+  integrations: [
+    googleChatIntegration({
+      scopes: ["https://www.googleapis.com/auth/chat.messages", "https://www.googleapis.com/auth/chat.spaces.readonly"], // Optional
+    }),
+  ],
+});
+```
+
+You can override the environment variables by passing explicit values:
+
+```typescript
+googleChatIntegration({
+  clientId: process.env.CUSTOM_GOOGLE_CHAT_ID,
+  clientSecret: process.env.CUSTOM_GOOGLE_CHAT_SECRET,
+      scopes: ["https://www.googleapis.com/auth/chat.messages", "https://www.googleapis.com/auth/chat.spaces.readonly"], // Optional
+});
+```
+
+### 3. Client-Side Usage
+
+The default client automatically includes all integrations. You can use it directly:
+
+```typescript
+import { client } from "integrate-sdk";
+
+await client.authorize("google_chat");
+const result = await client.google_chat.deleteMessage({});
+
+console.log(result);
+```
+
+If you're using a custom client, add the integration to the integrations array:
+
+```typescript
+import { createMCPClient, googleChatIntegration } from "integrate-sdk";
+
+const customClient = createMCPClient({
+  integrations: [googleChatIntegration()],
+});
+```
+
+## Configuration Options
+
+<AutoTypeTable
+  path="../src/integrations/google_chat.ts"
+  name="GoogleChatIntegrationConfig"
+/>
+
+
+## Default Scopes
+
+These defaults are applied unless you override `scopes` in the integration config:
+
+- `https://www.googleapis.com/auth/chat.messages`
+- `https://www.googleapis.com/auth/chat.spaces.readonly`
+
+## Tools
+
+### `google_chat_delete_message`
+
+Chat delete message
+
+<AutoTypeTable
+  path="generated/tool-params/google_chat.ts"
+  name="GoogleChatDeleteMessageParams"
+/>
+
+### `google_chat_get_message`
+
+Chat get message
+
+<AutoTypeTable
+  path="generated/tool-params/google_chat.ts"
+  name="GoogleChatGetMessageParams"
+/>
+
+### `google_chat_get_space`
+
+Chat get space
+
+<AutoTypeTable
+  path="generated/tool-params/google_chat.ts"
+  name="GoogleChatGetSpaceParams"
+/>
+
+### `google_chat_list_members`
+
+Chat list members
+
+<AutoTypeTable
+  path="generated/tool-params/google_chat.ts"
+  name="GoogleChatListMembersParams"
+/>
+
+### `google_chat_list_messages`
+
+Chat list messages
+
+<AutoTypeTable
+  path="generated/tool-params/google_chat.ts"
+  name="GoogleChatListMessagesParams"
+/>
+
+### `google_chat_list_spaces`
+
+Chat list spaces
+
+<AutoTypeTable
+  path="generated/tool-params/google_chat.ts"
+  name="GoogleChatListSpacesParams"
+/>
+
+### `google_chat_send_message`
+
+Chat send message
+
+<AutoTypeTable
+  path="generated/tool-params/google_chat.ts"
+  name="GoogleChatSendMessageParams"
+/>
+
+### `google_chat_update_message`
+
+Chat update message
+
+<AutoTypeTable
+  path="generated/tool-params/google_chat.ts"
+  name="GoogleChatUpdateMessageParams"
+/>
+
+## Notes
+
+- Category: Communication
+- Authentication mode: OAuth
