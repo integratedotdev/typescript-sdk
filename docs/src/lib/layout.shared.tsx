@@ -1,4 +1,5 @@
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
+import { BrandLogo } from "@/components/brand-logo";
 
 export function baseOptions(includeMainLinks: boolean = true): BaseLayoutProps {
   const links: BaseLayoutProps["links"] = [];
@@ -44,7 +45,7 @@ export function baseOptions(includeMainLinks: boolean = true): BaseLayoutProps {
       : {}),
     links,
     nav: {
-      title: "Integrate",
+      title: <BrandLogo />,
     },
     themeSwitch: {
       enabled: false,
