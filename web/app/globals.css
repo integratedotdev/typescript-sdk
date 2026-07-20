@@ -156,6 +156,21 @@
 .docs-prose pre {
   @apply mb-4 overflow-x-auto border border-dashed border-border bg-muted p-4 text-[13px] leading-6;
 }
+.docs-prose pre [data-line] {
+  @apply px-0;
+}
+.docs-prose figure[data-rehype-pretty-code-figure] {
+  @apply mb-4;
+}
+.docs-prose figure[data-rehype-pretty-code-figure] pre {
+  @apply mb-0;
+}
+.docs-prose code[data-theme] {
+  @apply bg-transparent p-0;
+}
+.docs-prose :not(pre) > code {
+  @apply rounded border border-dashed border-border bg-muted px-1 py-0.5 text-[0.9em];
+}
 .docs-prose table {
   @apply mb-6 w-full border-collapse text-sm;
 }

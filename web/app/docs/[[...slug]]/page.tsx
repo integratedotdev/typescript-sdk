@@ -1,6 +1,9 @@
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
+import rehypePrettyCode from "rehype-pretty-code";
+import rehypeSlug from "rehype-slug";
 import { DocsSidebar } from "@/components/docs-sidebar";
+import { DocsToc, extractToc } from "@/components/docs-toc";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { mdxComponents } from "@/components/mdx-components";
@@ -31,10 +34,12 @@ export default async function DocsPage({ params }: Props) {
 
   if (!doc) notFound();
 
+  const toc = extractToc(doc.content);
+
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <SiteHeader />
-      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-6 py-10 lg:flex-row">
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10 lg:flex-row">
         <DocsSidebar tree={tree} />
         <article className="min-w-0 flex-1">
           <p className="mb-2 text-xs text-muted-foreground">
@@ -57,11 +62,22 @@ export default async function DocsPage({ params }: Props) {
               options={{
                 mdxOptions: {
                   remarkPlugins: [remarkGfm],
+                  rehypePlugins: [
+                    rehypeSlug,
+                    [
+                      rehypePrettyCode,
+                      {
+                        theme: "github-light",
+                        keepBackground: false,
+                      },
+                    ],
+                  ],
                 },
               }}
             />
           </div>
         </article>
+        <DocsToc headings={toc} />
       </div>
       <SiteFooter />
     </div>

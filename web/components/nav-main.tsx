@@ -29,12 +29,25 @@ export function NavMain({ items, onItemClick }: NavMainProps) {
       {items.map((item) => (
         <SidebarMenuItem key={item.title}>
           {item.onClick ? (
-            <SidebarMenuButton 
+            <SidebarMenuButton
               isActive={item.isActive}
               onClick={() => onItemClick?.(item.onClick as string)}
+              className={
+                item.onClick === "billing"
+                  ? "!text-link hover:!text-link hover:underline"
+                  : undefined
+              }
             >
-              <item.icon className="size-4" />
-              <span>{item.title}</span>
+              <item.icon
+                className={
+                  item.onClick === "billing" ? "size-4 text-link" : "size-4"
+                }
+              />
+              <span
+                className={item.onClick === "billing" ? "text-link" : undefined}
+              >
+                {item.title}
+              </span>
             </SidebarMenuButton>
           ) : item.external ? (
             <SidebarMenuButton asChild isActive={item.isActive}>

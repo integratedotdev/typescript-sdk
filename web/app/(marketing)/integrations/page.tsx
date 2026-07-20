@@ -3,6 +3,10 @@ import {
   IntegrationsGrid,
   type IntegrationCard,
 } from "./integrations-grid";
+import {
+  formatIntegrationCount,
+  getIntegrationCountFloor,
+} from "@/lib/integrations-count";
 
 type IntegrationResponse = {
   integrations: {
@@ -50,11 +54,17 @@ async function getIntegrations(): Promise<IntegrationCard[]> {
 }
 
 export default async function IntegrationsPage() {
-  const integrations = await getIntegrations();
+  const [integrations, countFloor] = await Promise.all([
+    getIntegrations(),
+    getIntegrationCountFloor(),
+  ]);
+  const countLabel = formatIntegrationCount(countFloor);
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">
-      <h1 className="text-3xl font-bold tracking-tight">Integrations</h1>
+      <h1 className="text-3xl font-bold tracking-tight">
+        {countLabel} integrations
+      </h1>
       <p className="mt-3 max-w-xl text-muted-foreground">
         Browse MCP-ready integrations. Jump into the docs for setup and tools.
       </p>

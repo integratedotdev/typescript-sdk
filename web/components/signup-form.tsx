@@ -153,17 +153,11 @@ export function SignupForm({
   return (
     <form className={cn("flex flex-col gap-5", className)} onSubmit={handleSubmit} {...props}>
       <FieldGroup>
-        <div className="flex flex-col items-center gap-2 text-center">
-          <h1 className="text-2xl font-bold tracking-tight">
-            {isFromInvitation ? "Join your team" : "Create your account"}
-          </h1>
-          <p className="text-muted-foreground text-sm text-balance max-w-[280px]">
-            {isFromInvitation 
-              ? "Create an account to accept your invitation"
-              : "Get started with your free account"
-            }
+        {isFromInvitation && (
+          <p className="text-sm text-muted-foreground">
+            Create an account to accept your invitation.
           </p>
-        </div>
+        )}
         <Field>
           <FieldLabel htmlFor="name">Full Name</FieldLabel>
           <Input 

@@ -1,9 +1,13 @@
 import Link from "next/link";
+import {
+  formatIntegrationCount,
+  getIntegrationCountFloor,
+} from "@/lib/integrations-count";
 
 const products = [
   {
     name: "SDK",
-    description: "Type-safe TypeScript client for 200+ integrations.",
+    description: "Type-safe TypeScript client for your integrations.",
     href: "/docs/getting-started/installation",
   },
   {
@@ -18,7 +22,10 @@ const products = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const countFloor = await getIntegrationCountFloor();
+  const countLabel = formatIntegrationCount(countFloor);
+
   return (
     <div className="mx-auto max-w-5xl px-6">
       <div className="sr-only" aria-hidden="true">
@@ -31,7 +38,7 @@ export default function HomePage() {
       <section className="flex min-h-[70vh] flex-col justify-center py-16">
         <p className="mb-6 text-sm font-bold tracking-tight">integrate</p>
         <h1 className="max-w-2xl text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
-          Reliability by design. Agent-ready APIs.
+          {countLabel} APIs all ready to be integrated by your agent.
         </h1>
         <p className="mt-4 max-w-xl text-muted-foreground">
           Tell your agent to run this command{" "}
@@ -79,7 +86,9 @@ export default function HomePage() {
                     {row.name}
                   </td>
                   <td className="border border-dashed border-border px-3 py-2 text-muted-foreground">
-                    {row.description}
+                    {row.name === "SDK"
+                      ? `Type-safe TypeScript client for ${countLabel.toLowerCase()} integrations.`
+                      : row.description}
                   </td>
                   <td className="border border-dashed border-border px-3 py-2">
                     <Link href={row.href}>Explore {row.name}</Link>
