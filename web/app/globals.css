@@ -168,6 +168,16 @@
 .docs-prose code[data-theme] {
   @apply bg-transparent p-0;
 }
+.docs-prose code[data-theme*=" "],
+.docs-prose code[data-theme*=" "] span {
+  color: var(--shiki-light);
+  background-color: transparent;
+}
+.dark .docs-prose code[data-theme*=" "],
+.dark .docs-prose code[data-theme*=" "] span {
+  color: var(--shiki-dark);
+  background-color: transparent;
+}
 .docs-prose :not(pre) > code {
   @apply rounded border border-dashed border-border bg-muted px-1 py-0.5 text-[0.9em];
 }
