@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 
 export function SiteFooter() {
   return (
@@ -68,8 +69,9 @@ export function SiteFooter() {
           </ul>
         </div>
       </div>
-      <div className="mx-auto max-w-5xl border-t border-dashed border-border px-6 py-6 text-sm text-muted-foreground">
-        © 2026 Integrate. All rights reserved.
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 border-t border-dashed border-border px-6 py-6 text-sm text-muted-foreground">
+        <p>© 2026 Integrate. All rights reserved.</p>
+        <ThemeSwitcher />
       </div>
     </footer>
   );

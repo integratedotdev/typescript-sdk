@@ -35,8 +35,8 @@ export default function RootLayout({
       <body className={`${ibmPlexMono.variable} font-mono antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
+          defaultTheme="system"
+          enableSystem
           disableTransitionOnChange
         >
           {children}
