@@ -1,0 +1,1 @@
+ALTER TABLE "api_key" ADD COLUMN "last_refill_at" timestamp;

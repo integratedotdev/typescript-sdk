@@ -1,0 +1,68 @@
+---
+title: Installation
+description: Install the Integrate SDK in your project
+---
+
+
+Install the Integrate SDK using your preferred package manager.
+
+<Tabs items={['bun (Recommended)', 'npm', 'pnpm', 'yarn']}>
+  <Tab value="bun (Recommended)">
+    ```bash
+    bun add integrate-sdk
+    ```
+  </Tab>
+  <Tab value="npm">
+    ```bash
+    npm install integrate-sdk
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add integrate-sdk
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add integrate-sdk
+    ```
+  </Tab>
+</Tabs>
+
+## TypeScript Support
+
+The SDK is built with TypeScript and includes type definitions out of the box. No additional `@types` packages are needed.
+
+## Requirements
+
+- Node.js 20.9+ or newer
+- TypeScript 5.6+ (for TypeScript projects)
+- `integrate-sdk` **0.10.0+** (Google integrations use `google_*` ids; see [migration note](#google-integration-ids-v0100) below)
+
+## Google integration ids (v0.10.0+)
+
+In **0.10.0**, short Google integration ids were renamed to `google_*` for consistency with blob assets and docs URLs. `gmail` is unchanged.
+
+| Before (≤0.9.x) | Now (0.10.0+) |
+|-----------------|---------------|
+| `gcal` | `google_calendar` |
+| `gchat` | `google_chat` |
+| `gcontacts` | `google_contacts` |
+| `gdocs` | `google_docs` |
+| `gdrive` | `google_drive` |
+| `gkeep` | `google_keep` |
+| `gmeet` | `google_meet` |
+| `gsheets` | `google_sheets` |
+| `gslides` | `google_slides` |
+| `gtasks` | `google_tasks` |
+| `ga4` | `google_analytics` |
+
+Update integration factories (`googleCalendarIntegration()`), client namespaces (`client.google_calendar`), env vars (`GOOGLE_CALENDAR_CLIENT_ID`), and tool names (`google_calendar_list_events`) when upgrading.
+
+## Examples
+
+Browse runnable projects for frameworks, database adapters, and AI SDKs in the [Integrate examples repository](https://github.com/integratedotdev/examples). Frontend and database examples use Next.js by default; backend examples cover Express, Hono, Fastify, and more.
+
+## Next Steps
+
+Now that you have the SDK installed, check out the [Basic Usage](/docs/getting-started/basic-usage) guide to create your first integration.

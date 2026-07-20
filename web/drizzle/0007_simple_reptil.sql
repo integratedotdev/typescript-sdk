@@ -1,0 +1,1 @@
+ALTER TABLE "api_key" ADD COLUMN "request_count" integer DEFAULT 0;
